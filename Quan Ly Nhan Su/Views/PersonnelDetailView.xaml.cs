@@ -789,7 +789,22 @@ namespace TaxPersonnelManagement.Views
                             {
                                 item.PersonnelId = existingP.Id; // Link ForeignKey
                                 context.LeaveHistories.Add(item); 
-                                // Alternatively: existingP.LeaveHistories.Add(item);
+                            }
+                            
+                            // 4. Update existing
+                            var toUpdate = _personnel.LeaveHistories.Where(lh => lh.Id != 0).ToList();
+                            foreach(var item in toUpdate)
+                            {
+                                var dbItem = existingP.LeaveHistories.FirstOrDefault(x => x.Id == item.Id);
+                                if (dbItem != null)
+                                {
+                                    dbItem.LeaveType = item.LeaveType;
+                                    dbItem.StartDate = item.StartDate;
+                                    dbItem.EndDate = item.EndDate;
+                                    dbItem.DurationDays = item.DurationDays;
+                                    dbItem.Reason = item.Reason;
+                                    dbItem.LeaveYear = item.LeaveYear;
+                                }
                             }
                         }
                     }

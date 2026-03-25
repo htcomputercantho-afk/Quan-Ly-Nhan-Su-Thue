@@ -35,3 +35,8 @@ Desktop.ini
 .gemini/
 .agent/
 .agents/
+
+## App specific logs and configs
+debug.log
+user.config
+Quan Ly Nhan Su/user.config

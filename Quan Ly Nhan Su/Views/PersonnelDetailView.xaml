@@ -1098,8 +1098,8 @@
                                             <TextBlock Text="5. Nội dung nghỉ chi tiết" Style="{StaticResource ModernLabel}"/>
                                             <Grid>
                                                 <TextBox x:Name="txtLeaveReason" 
-                                                         Height="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="10"
-                                                         BorderThickness="1" BorderBrush="#D0D0D0" Background="Transparent"/>
+                                                         MinHeight="60" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="10"
+                                                         BorderThickness="1" BorderBrush="#D0D0D0" Background="Transparent" MaxHeight="200" VerticalScrollBarVisibility="Auto"/>
                                                 <TextBlock Text="Nhập lý do chi tiết vào đây..." Foreground="#999" Margin="12,12,0,0" 
                                                            VerticalAlignment="Top" IsHitTestVisible="False">
                                                     <TextBlock.Style>
@@ -1145,8 +1145,9 @@
                                       AlternatingRowBackground="#FAFAFA"
                                       GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
                                       VerticalGridLinesBrush="Transparent"
-                                      RowHeight="52"
-                                      ColumnHeaderHeight="55">
+                                      MinRowHeight="52"
+                                      ColumnHeaderHeight="55"
+                                      ScrollViewer.CanContentScroll="False">
                                 <DataGrid.Resources>
                                     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
                                     
@@ -1184,10 +1185,10 @@
                                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                     </Style>
                                     
-                                    <Style TargetType="TextBlock" x:Key="LeftAlignedWrapCell">
+                                    <Style TargetType="TextBlock" x:Key="CenterAlignedWrapCell">
                                         <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="HorizontalAlignment" Value="Left"/>
-                                        <Setter Property="TextAlignment" Value="Left"/>
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="TextAlignment" Value="Center"/>
                                         <Setter Property="TextWrapping" Value="Wrap"/>
                                         <Setter Property="Padding" Value="10 5"/>
                                     </Style>
@@ -1269,7 +1270,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Số ngày" Binding="{Binding DurationDays}" Width="60" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
+                                    <DataGridTextColumn Header="Số ngày" Binding="{Binding DurationDays}" Width="85" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -1278,23 +1279,34 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Lý do" Binding="{Binding UserReasonDisplay}" Width="1.5*" IsReadOnly="True" ElementStyle="{DynamicResource LeftAlignedWrapCell}">
-                                        <DataGridTextColumn.CellStyle>
-                                            <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
-                                                <Setter Property="ToolTip" Value="{Binding UserReasonDisplay}"/>
-                                                <Setter Property="Padding" Value="5 0"/>
-                                            </Style>
-                                        </DataGridTextColumn.CellStyle>
-                                    </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Ghi chú hệ thống" Binding="{Binding SystemMessageDisplay}" Width="*" MinWidth="140" IsReadOnly="True">
-                                        <DataGridTextColumn.ElementStyle>
-                                            <Style TargetType="TextBlock" BasedOn="{StaticResource LeftAlignedWrapCell}">
-                                                <Setter Property="Foreground" Value="#E53E3E"/>
-                                                <Setter Property="FontStyle" Value="Italic"/>
-                                                <Setter Property="ToolTip" Value="{Binding SystemMessageDisplay}"/>
-                                            </Style>
-                                        </DataGridTextColumn.ElementStyle>
-                                    </DataGridTextColumn>
+                                    <DataGridTemplateColumn Header="Lý do" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding UserReasonDisplay}" 
+                                                           TextWrapping="Wrap" 
+                                                           TextAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" 
+                                                           Padding="10 5" 
+                                                           ToolTip="{Binding UserReasonDisplay}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Ghi chú hệ thống" Width="*" MinWidth="140">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding SystemMessageDisplay}" 
+                                                           TextWrapping="Wrap" 
+                                                           TextAlignment="Center" 
+                                                           VerticalAlignment="Center" 
+                                                           HorizontalAlignment="Center" 
+                                                           Padding="10 5" 
+                                                           Foreground="#E53E3E" 
+                                                           FontStyle="Italic" 
+                                                           ToolTip="{Binding SystemMessageDisplay}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="Hành động" Width="90">
                                         <DataGridTemplateColumn.CellStyle>
                                             <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">

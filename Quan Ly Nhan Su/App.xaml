@@ -1,4 +1,4 @@
-﻿<Application x:Class="TaxPersonnelManagement.App"
+<Application x:Class="TaxPersonnelManagement.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -97,7 +97,7 @@
                 <Setter Property="GridLinesVisibility" Value="Horizontal" />
                 <Setter Property="HorizontalGridLinesBrush" Value="#E0E0E0" />
                 <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
-                <Setter Property="RowHeight" Value="45" />
+                <Setter Property="MinRowHeight" Value="45" />
                 <Setter Property="ColumnHeaderHeight" Value="50" />
                 <Setter Property="HeadersVisibility" Value="Column" />
                 <Setter Property="AlternationCount" Value="0" /> <!-- No zebra striping for cleaner look -->

@@ -372,7 +372,8 @@
                                           Background="White" BorderBrush="#EEEEEE" BorderThickness="1" 
                                           RowBackground="White" AlternatingRowBackground="#FAFAFA"
                                           HorizontalGridLinesBrush="#EEEEEE" VerticalGridLinesBrush="Transparent"
-                                          Margin="15 0 15 15">
+                                          Margin="15 0 15 15" ScrollViewer.CanContentScroll="False"
+                                          EnableRowVirtualization="False" EnableColumnVirtualization="False">
                                     <DataGrid.ColumnHeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
                                             <Setter Property="Background" Value="#F5F5F5"/>
@@ -389,7 +390,7 @@
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="DataGridCell">
                                                         <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                                            <ContentPresenter VerticalAlignment="Center"/>
+                                                            <ContentPresenter VerticalAlignment="Stretch"/>
                                                         </Border>
                                                     </ControlTemplate>
                                                 </Setter.Value>
@@ -433,7 +434,7 @@
                                         <DataGridTemplateColumn Header="Ghi chú" Width="2*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap">
+                                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">
                                                         <Run Text="{Binding DurationDays, Converter={StaticResource DaysToMonthsDaysConverter}, StringFormat=({0})}" Foreground="#1976D2"/>
                                                         <Run Text="{Binding UserReasonDisplay, StringFormat=' - \{0\}', Mode=OneWay}" Foreground="#90A4AE" FontStyle="Italic"/>
                                                     </TextBlock>
