@@ -1,0 +1,32 @@
+<Window x:Class="TaxPersonnelManagement.Views.AddDisciplineTypeDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Thêm hình thức kỷ luật" Height="250" Width="400"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None"
+        Background="White" AllowsTransparency="True">
+    
+    <Border BorderBrush="{DynamicResource PrimaryHueMidBrush}" BorderThickness="1" CornerRadius="5">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Thêm hình thức kỷ luật mới" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" HorizontalAlignment="Center"/>
+
+            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                <TextBox x:Name="txtName" materialDesign:HintAssist.Hint="Tên hình thức (ví dụ: Hạ bậc lương)" Style="{StaticResource ModernTextBox}" Margin="0 10"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 10 0 0">
+                <Button x:Name="btnCancel" Content="Hủy bỏ" Style="{StaticResource PremiumOutlineButtonStyle}" Click="btnCancel_Click" Margin="0 0 10 0"/>
+                <Button x:Name="btnSave" Content="Lưu" Style="{StaticResource PremiumButtonStyle}" Click="btnSave_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

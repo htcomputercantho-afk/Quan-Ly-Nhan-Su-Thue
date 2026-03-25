@@ -1,0 +1,34 @@
+<Window x:Class="TaxPersonnelManagement.Views.WarningWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        SizeToContent="Height" Width="400"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+    
+    <Border Background="White" CornerRadius="15" BorderBrush="#FFC107" BorderThickness="1" Margin="20">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
+        </Border.Effect>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <materialDesign:PackIcon Kind="AlertCircle" Width="50" Height="50" Foreground="#FFC107" HorizontalAlignment="Center" Margin="0 0 0 15"/>
+                <TextBlock x:Name="txtTitle" Text="Cảnh Báo" FontSize="20" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0 0 0 10"/>
+                <TextBlock x:Name="txtMessage" Text="Nội dung cảnh báo..." FontSize="14" Foreground="#555" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center"/>
+            </StackPanel>
+            
+            <Button Grid.Row="1" Content="Đóng" Click="Close_Click" Margin="0 20 0 0" 
+                    Width="100" Height="35"
+                    Style="{StaticResource PremiumButtonStyle}" 
+                    Background="#FFC107" BorderBrush="#FFC107" Foreground="White"
+                    HorizontalAlignment="Center"/>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,57 @@
+<Window x:Class="TaxPersonnelManagement.Views.ConfirmDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Xác nhận" Width="400" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Language="vi-VN">
+
+    <Border CornerRadius="8" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="-90" RenderingBias="Quality" ShadowDepth="2" Opacity="0.1"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="White" CornerRadius="8 8 0 0" Padding="20 0" BorderBrush="#E0E0E0" BorderThickness="0 0 0 1">
+                <TextBlock Text="Xác nhận" Foreground="#333" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- Content -->
+            <Grid Grid.Row="1" Margin="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <materialDesign:PackIcon Kind="AlertCircleOutline" Foreground="#FF9800" Width="40" Height="40" VerticalAlignment="Center" Margin="0 0 15 0"/>
+                <TextBlock x:Name="txtMessage" Grid.Column="1" Text="Bạn có chắc chắn muốn thực hiện?" 
+                           TextWrapping="Wrap" FontSize="14" VerticalAlignment="Center" Foreground="#444"/>
+            </Grid>
+
+            <!-- Actions -->
+            <Grid Grid.Row="2" Background="#FAFAFA" Grid.ColumnSpan="2" Height="60">
+                <Border CornerRadius="0 0 8 8"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 0 15 0">
+                    <Button x:Name="btnCancel" Content="Hủy bỏ" Width="100" Margin="0 0 10 0" Height="36"
+                            Style="{DynamicResource MaterialDesignFlatButton}" Foreground="#666"
+                            Click="btnCancel_Click"/>
+                    
+                    <Button x:Name="btnConfirm" Content="Đồng ý" Width="100" Height="36"
+                            Style="{DynamicResource MaterialDesignRaisedButton}" Background="#E53935" BorderThickness="0" Foreground="White"
+                            materialDesign:ButtonAssist.CornerRadius="4"
+                            Click="btnConfirm_Click"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

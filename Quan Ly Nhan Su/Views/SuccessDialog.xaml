@@ -1,0 +1,53 @@
+<Window x:Class="TaxPersonnelManagement.Views.SuccessDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Thông báo" Width="450" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Language="vi-VN">
+
+    <Border CornerRadius="12" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" Direction="-90" RenderingBias="Quality" ShadowDepth="4" Opacity="0.15"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header and Content -->
+            
+            <Grid Grid.Row="0" Margin="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Big Green Check Icon -->
+                <materialDesign:PackIcon Kind="CheckCircle" Foreground="#4CAF50" Width="48" Height="48" VerticalAlignment="Center" Margin="0 0 20 0"/>
+                
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 10 0 10">
+                    <TextBlock Text="Thành công!" FontSize="18" FontWeight="Bold" Foreground="#4CAF50" Margin="0 0 0 10"/>
+                    <TextBlock x:Name="txtMessage" Text="Xuất file Excel thành công." 
+                               TextWrapping="Wrap" FontSize="14" Foreground="#555" LineHeight="22"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Actions -->
+            <Grid Grid.Row="1" Background="#F5F5F5" Height="60">
+                <Border CornerRadius="0 0 12 12"/>
+                <Button x:Name="btnClose" Content="Đóng" Width="100" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Style="{DynamicResource MaterialDesignRaisedButton}" 
+                        Background="#4CAF50" BorderThickness="0" Foreground="White"
+                        materialDesign:ButtonAssist.CornerRadius="18"
+                        Click="btnClose_Click"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

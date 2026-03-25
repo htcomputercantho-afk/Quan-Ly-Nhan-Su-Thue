@@ -1,0 +1,670 @@
+<Window x:Class="TaxPersonnelManagement.Views.PersonnelProfileDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
+        mc:Ignorable="d"
+        Title="HỒ SƠ CHI TIẾT NHÂN SỰ" Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None"
+        Background="White" AllowsTransparency="True">
+    
+    <Window.Resources>
+        <converters:NameToInitialsConverter x:Key="NameToInitialsConverter"/>
+        <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+        <converters:EmptyStringToDashConverter x:Key="EmptyStringToDashConverter"/>
+        <converters:MajorUniversityConverter x:Key="MajorUniversityConverter"/>
+        <converters:DaysToMonthsDaysConverter x:Key="DaysToMonthsDaysConverter"/>
+        <converters:PhoneFormatterConverter x:Key="PhoneFormatterConverter"/>
+    </Window.Resources>
+
+    <Border BorderBrush="#1565C0" BorderThickness="1" CornerRadius="0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/> <!-- Header -->
+                <RowDefinition Height="*"/>   <!-- Content -->
+                <RowDefinition Height="60"/> <!-- Footer -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Background="#1565C0" MouseDown="Header_MouseDown">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 0">
+                    <materialDesign:PackIcon Kind="CardAccountDetails" Foreground="White" Width="24" Height="24" Margin="0 0 10 0"/>
+                    <TextBlock Text="HỒ SƠ CHI TIẾT NHÂN SỰ" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Button Click="btnClose_Click" HorizontalAlignment="Right" Width="32" Height="32" Margin="0 0 10 0" Padding="0" Background="Transparent" BorderThickness="0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#FFCDD2"/>
+                                    <Setter Property="Background" Value="#10000000"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <materialDesign:PackIcon Kind="Close" Width="24" Height="24"/>
+                </Button>
+            </Grid>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280"/> <!-- Left Sidebar -->
+                    <ColumnDefinition Width="*"/>   <!-- Right Content -->
+                </Grid.ColumnDefinitions>
+
+                <!-- LEFT SIDEBAR -->
+                <Border Grid.Column="0" BorderBrush="#EEEEEE" BorderThickness="0 0 1 0" Background="#FAFAFA">
+                    <StackPanel Margin="20 40 20 20" HorizontalAlignment="Center">
+                        <!-- Avatar -->
+                        <Grid Width="120" Height="120" Margin="0 0 0 15">
+                             <Border CornerRadius="60" Background="#90CAF9" BorderBrush="#1565C0" BorderThickness="2">
+                                <TextBlock Text="{Binding FullName, Converter={StaticResource NameToInitialsConverter}}" 
+                                           Foreground="#1565C0" FontWeight="Bold" FontSize="48" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <Border CornerRadius="60" BorderBrush="#1565C0" BorderThickness="2">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
+                                </Border.Background>
+                            </Border>
+                        </Grid>
+
+                        <!-- Name & ID -->
+                        <TextBlock Text="{Binding FullName}" FontSize="18" FontWeight="Bold" Foreground="#1565C0" TextWrapping="Wrap" TextAlignment="Center" Margin="0 0 0 5"/>
+                        <Border CornerRadius="4" Padding="8 2" HorizontalAlignment="Center" Margin="0 0 0 15">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#D32F2F"/>
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding StaffId}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding StaffId}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding StaffId}" Foreground="White" FontWeight="Bold" FontSize="12"/>
+                        </Border>
+
+                        <!-- Position -->
+                        <TextBlock Text="{Binding Position}" FontWeight="Bold" FontSize="17" Foreground="#37474F" TextAlignment="Center" Margin="0 0 0 5"/>
+                        <TextBlock Text="{Binding Department}" FontWeight="Bold" FontSize="15" Foreground="#B71C1C" TextAlignment="Center" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- RIGHT CONTENT -->
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="20">
+                    <StackPanel>
+                        <!-- 1. GENERAL INFO -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Information" Foreground="#1565C0" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="1. THÔNG TIN CHUNG" FontWeight="Bold" Foreground="#1565C0" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <Grid Margin="15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <!-- Row 1 -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0 0 0 15">
+                                        <TextBlock Text="Ngày tháng năm sinh:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0 0 0 15">
+                                        <TextBlock Text="Giới tính:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding Gender, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <!-- Row 2 -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0 0 0 15">
+                                        <TextBlock Text="SĐT:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PhoneNumber, Converter={StaticResource PhoneFormatterConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 0 0 15">
+                                        <TextBlock Text="Email:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding Email, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <!-- Row 3 -->
+                                    <Border Grid.Row="2" Grid.ColumnSpan="2" BorderBrush="#EEEEEE" BorderThickness="0 1 0 0" Margin="0 0 0 15"/>
+
+                                    <StackPanel Grid.Row="3" Grid.Column="0" Margin="0 0 0 15">
+                                        <TextBlock Text="CCCD/CMND:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding IdentityCardNumber, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="3" Grid.Column="1" Margin="0 0 0 15">
+                                        <TextBlock Text="Nơi cấp:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding IdentityCardPlace, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="4" Grid.Column="0">
+                                        <TextBlock Text="Mã số BHXH:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding SocialSecurityNumber, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="4" Grid.Column="1">
+                                        <TextBlock Text="Nơi sinh:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding BirthPlace, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 2. EDUCATION -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="School" Foreground="#2E7D32" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="2. ĐÀO TẠO" FontWeight="Bold" Foreground="#2E7D32" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <Grid Margin="15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Row 1 -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0 0 0 15">
+                                        <TextBlock Text="Trình độ:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding EducationLevel, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0 0 0 15">
+                                        <TextBlock Text="Chuyên ngành:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource MajorUniversityConverter}">
+                                                    <Binding Path="Major"/>
+                                                    <Binding Path="University"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- Row 2 -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0 0 0 15">
+                                        <TextBlock Text="Tin học:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding ITSkillLevel, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0 0 0 15">
+                                        <TextBlock Text="Ngoại ngữ:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding LanguageSkillLevel, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <!-- Row 3 -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0">
+                                        <TextBlock Text="Quản lý Nhà nước:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding StateManagementLevel, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="2" Grid.Column="1">
+                                        <TextBlock Text="Lý luận Chính trị:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PoliticalTheoryLevel, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 3. SALARY -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CashMultiple" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="3. THÔNG TIN LƯƠNG" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                
+                                <Grid Margin="15 10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/> <!-- Divider -->
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/> <!-- Divider -->
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                        <TextBlock Text="Mã ngạch" Foreground="#78909C" FontSize="15" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding RankCode, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                    
+                                    <Border Grid.Column="1" Width="1" Background="#EEEEEE" Margin="0 5"/>
+
+                                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                        <TextBlock Text="Bậc lương" Foreground="#78909C" FontSize="15" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding CurrentSalaryStep, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <Border Grid.Column="3" Width="1" Background="#EEEEEE" Margin="0 5"/>
+
+                                    <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                                        <TextBlock Text="Hệ số lương" Foreground="#78909C" FontSize="15" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding CurrentSalaryCoefficient}" FontWeight="Bold" Foreground="#D32F2F" FontSize="18" Margin="0 4 0 0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <Border Background="#FAFAFA" CornerRadius="4" Margin="15 0 15 15" Padding="15">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="20"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="0">
+                                            <TextBlock Text="% Vượt khung:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding ExceedFramePercent, StringFormat={}{0}%}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="1">
+                                            <TextBlock Text="PC chức vụ:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding PositionAllowance, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="2">
+                                            <TextBlock Text="Thời hạn bảo lưu:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding SalaryReservationDeadline, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Divider Row 1 is padding -->
+
+                                        <StackPanel Grid.Row="2" Grid.Column="0">
+                                            <TextBlock Text="Mốc tính lương lần sau:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.Column="1">
+                                            <TextBlock Text="Dự kiến lên lương:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 4. LEAVE -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="PalmTree" Foreground="#7B1FA2" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="4. THÔNG TIN NGHỈ PHÉP" FontWeight="Bold" Foreground="#7B1FA2" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <Grid Margin="15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border Grid.Column="0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="Tổng phép" Foreground="#78909C" FontSize="12" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding TotalAnnualLeaveDays}" FontWeight="Bold" Foreground="Black" FontSize="16" HorizontalAlignment="Center" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                     <Border Grid.Column="2" Background="#FFEBEE" BorderBrush="#EF5350" BorderThickness="1" CornerRadius="4" Padding="10">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="Đã nghỉ" Foreground="#D32F2F" FontSize="12" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtUsedLeave" Text="0" FontWeight="Bold" Foreground="#D32F2F" FontSize="16" HorizontalAlignment="Center" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Border>
+                                    
+                                     <Border Grid.Column="4" Background="#E8F5E9" BorderBrush="#66BB6A" BorderThickness="1" CornerRadius="4" Padding="10">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="Còn lại" Foreground="#2E7D32" FontSize="12" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="txtRemainingLeave" Text="12" FontWeight="Bold" Foreground="#2E7D32" FontSize="16" HorizontalAlignment="Center" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <Separator Background="#EEEEEE" Margin="15 0 15 10"/>
+                                <TextBlock Text="Chi tiết lịch sử nghỉ:" FontWeight="Bold" Foreground="#455A64" Margin="15 0 0 10"/>
+                                
+                                <DataGrid x:Name="dgLeaveHistory" ItemsSource="{Binding LeaveHistories}" 
+                                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" 
+                                          IsReadOnly="True" HeadersVisibility="Column" 
+                                          Background="White" BorderBrush="#EEEEEE" BorderThickness="1" 
+                                          RowBackground="White" AlternatingRowBackground="#FAFAFA"
+                                          HorizontalGridLinesBrush="#EEEEEE" VerticalGridLinesBrush="Transparent"
+                                          Margin="15 0 15 15">
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="Padding" Value="10"/>
+                                            <Setter Property="BorderThickness" Value="0 0 0 1"/>
+                                            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+                                    <DataGrid.CellStyle>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="Padding" Value="10 8"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="DataGridCell">
+                                                        <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                                            <ContentPresenter VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="Foreground" Value="Black"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.CellStyle>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Loại" Binding="{Binding LeaveType}" Width="1.5*">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTemplateColumn Header="Thời gian" Width="1.5*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock VerticalAlignment="Center">
+                                                        <Run Text="{Binding StartDate, StringFormat=dd/MM/yyyy}"/>
+                                                        <Run Text=" - "/>
+                                                        <Run Text="{Binding EndDate, StringFormat=dd/MM/yyyy}"/>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Số ngày" Binding="{Binding DurationDays, StringFormat={}{0} ngày}" Width="1*">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTemplateColumn Header="Ghi chú" Width="2*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock VerticalAlignment="Center" TextWrapping="Wrap">
+                                                        <Run Text="{Binding DurationDays, Converter={StaticResource DaysToMonthsDaysConverter}, StringFormat=({0})}" Foreground="#1976D2"/>
+                                                        <Run Text="{Binding UserReasonDisplay, StringFormat=' - \{0\}', Mode=OneWay}" Foreground="#90A4AE" FontStyle="Italic"/>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock x:Name="txtNoLeaveHistory" Text="Chưa có lịch sử nghỉ" FontStyle="Italic" Foreground="#B0BEC5" HorizontalAlignment="Center" Margin="0 0 0 20" Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 5. WORK HISTORY -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="History" Foreground="#0288D1" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="5. CÔNG TÁC" FontWeight="Bold" Foreground="#0288D1" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <StackPanel Margin="15">
+                                    <TextBlock Text="A. THÔNG TIN CÔNG TÁC" FontWeight="Bold" Foreground="#1976D2" Margin="0 0 0 10"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0 0 0 15">
+                                            <TextBlock Text="Thời gian công tác tại cơ quan thuế:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding TaxAuthorityStartDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <Separator Background="#EEEEEE" Margin="0 0 0 15"/>
+                                    
+                                    <Grid Margin="0 0 0 15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0 0 10 0">
+                                            <TextBlock Text="Thời gian công tác tính theo QĐ gần nhất:" Foreground="#78909C" FontSize="15" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding PositionDecisionDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="0 0 10 0">
+                                            <TextBlock Text="Thời điểm tính thời gian công tác:" Foreground="#78909C" FontSize="15" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding PositionCalculationDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        
+
+                                    </Grid>
+
+                                    <!-- Added Calculated Stats Row -->
+                                    <Grid Margin="0 0 0 15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
+                                            <StackPanel>
+                                                <TextBlock Text="Số năm công tác tính đến thời điểm hiện tại:" Foreground="#78909C" FontSize="12" TextWrapping="Wrap"/>
+                                                <TextBlock x:Name="txtCalculatedYears" Text="0" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="2" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
+                                            <StackPanel>
+                                                <TextBlock Text="Số tháng công tác tính đến thời điểm hiện tại:" Foreground="#78909C" FontSize="12" TextWrapping="Wrap"/>
+                                                <TextBlock x:Name="txtCalculatedMonths" Text="0" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="4" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
+                                            <StackPanel>
+                                                <TextBlock Text="Năm giữ vị trí công tác:" Foreground="#78909C" FontSize="12" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding PositionYear}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <TextBlock Text="B. THÔNG TIN NGHỈ HƯU" FontWeight="Bold" Foreground="#D32F2F" Margin="0 10 0 10"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                            <TextBlock Text="Ngày về hưu" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding RetirementDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                         <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                            <TextBlock Text="Số năm công tác" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock x:Name="txtYearsWork" Text="---" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                         <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                            <TextBlock Text="Số năm còn công tác" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock x:Name="txtYearsRemaining" Text="---" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                     <TextBlock Text="C. QUÁ TRÌNH CÔNG TÁC CHI TIẾT:" FontWeight="Bold" Foreground="Black" Margin="0 20 0 10"/>
+                                     <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
+                                         <TextBlock Text="{Binding DetailedWorkHistory}" TextWrapping="Wrap" Foreground="#455A64" FontSize="16"/>
+                                     </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                         <!-- 6. PARTY -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Star" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="6. THÔNG TIN ĐẢNG VIÊN" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <Grid Margin="15">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Ngày vào Đảng:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PartyEntryDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Ngày chính thức:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PartyOfficialDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- 7. REWARD/DISCIPLINE -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Medal" Foreground="Black" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock Text="7. KHEN THƯỞNG &amp; KỶ LUẬT" FontWeight="Bold" Foreground="Black" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <StackPanel Margin="15">
+                                    <TextBlock Text="THÔNG TIN KHEN THƯỞNG" FontWeight="Bold" Foreground="#1976D2" Margin="0 0 0 10"/>
+                                    <TextBlock Text="Danh hiệu thi đua:" Foreground="#78909C" FontSize="15" Margin="0 0 0 2"/>
+                                    <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0 0 0 10">
+                                        <TextBlock Text="{Binding EmulationTitles, Converter={StaticResource EmptyStringToDashConverter}}" TextWrapping="Wrap" FontSize="16"/>
+                                    </Border>
+                                    
+                                    <TextBlock Text="Hình thức khen thưởng:" Foreground="#78909C" FontSize="15" Margin="0 0 0 2"/>
+                                    <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0 0 0 20">
+                                        <TextBlock Text="{Binding RewardForms, Converter={StaticResource EmptyStringToDashConverter}}" TextWrapping="Wrap" FontSize="16"/>
+                                    </Border>
+                                    
+                                    <TextBlock Text="THÔNG TIN KỶ LUẬT" FontWeight="Bold" Foreground="#D32F2F" Margin="0 0 0 10"/>
+                                    <!-- No Discipline (Green) -->
+                                    <Border x:Name="bdrNoDiscipline" Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1" CornerRadius="4" Padding="10" Visibility="Collapsed">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="CheckCircle" Foreground="#2E7D32" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                            <TextBlock Text="Không có ghi nhận vi phạm kỷ luật" Foreground="#2E7D32" VerticalAlignment="Center" FontSize="16"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Has Discipline (Red) -->
+                                    <Border x:Name="bdrHasDiscipline" Background="#FFEBEE" BorderBrush="#EF5350" BorderThickness="1" CornerRadius="4" Padding="15" Visibility="Collapsed">
+                                        <StackPanel>
+                                            <!-- Type -->
+                                            <TextBlock Text="Hình thức kỷ luật:" Foreground="#546E7A" FontSize="13" Margin="0 0 0 2"/>
+                                            <TextBlock Text="{Binding DisciplineType}" Foreground="#D32F2F" FontWeight="Bold" FontSize="18" Margin="0 0 0 15"/>
+                                            
+                                            <!-- Decision Info -->
+                                            <Grid Margin="0 0 0 10">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="Số quyết định:" Foreground="#546E7A" FontSize="13" Margin="0 0 0 2"/>
+                                                    <TextBlock Text="{Binding DisciplineDecisionNumber}" FontWeight="Bold" Foreground="#263238" FontSize="16"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1">
+                                                    <TextBlock Text="Ngày ký QĐ:" Foreground="#546E7A" FontSize="13" Margin="0 0 0 2"/>
+                                                    <TextBlock Text="{Binding DisciplineDecisionDate, StringFormat=dd/MM/yyyy}" FontWeight="Bold" Foreground="#263238" FontSize="16"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Divider -->
+                                            <Separator Background="#EF9A9A" Margin="0 5 0 10"/>
+
+                                            <!-- Reason -->
+                                            <TextBlock Text="Nội dung / Lý do kỷ luật:" Foreground="#37474F" FontWeight="Bold" FontSize="14" Margin="0 0 0 4"/>
+                                            <TextBlock Text="{Binding DisciplineReason}" FontStyle="Italic" Foreground="#263238" FontSize="15" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#FAFAFA" BorderBrush="#EEEEEE" BorderThickness="0 1 0 0" Padding="15 0">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Click="btnExportPdf_Click" Style="{DynamicResource MaterialDesignRaisedButton}" Background="#D32F2F" Foreground="White" BorderThickness="0" Height="40" Margin="0 0 10 0" Padding="20 0" materialDesign:ButtonAssist.CornerRadius="6">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FilePdfBox" Margin="0 0 8 0" VerticalAlignment="Center" Width="20" Height="20"/>
+                                <TextBlock Text="Xuất PDF" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="btnClose_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="40" Width="100" 
+                                BorderBrush="#B0BEC5" Foreground="#546E7A" materialDesign:ButtonAssist.CornerRadius="6" Background="Transparent">
+                            <TextBlock Text="Đóng" FontWeight="Bold"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

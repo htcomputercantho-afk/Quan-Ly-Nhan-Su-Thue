@@ -1,0 +1,60 @@
+<Window x:Class="TaxPersonnelManagement.Views.LoginView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Đăng Nhập - Quản Lý Nhân Sự" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Icon="/icon.ico"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Grid>
+        <!-- Vibrant Gradient Background -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#0078D4" Offset="0.0" />
+                <GradientStop Color="#003A75" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- Glass-like Card -->
+        <Border Width="400"  CornerRadius="12" VerticalAlignment="Center" HorizontalAlignment="Center" Effect="{DynamicResource MaterialDesignShadowDepth4}">
+            <Border.Background>
+                <SolidColorBrush Color="White" Opacity="0.95"/>
+            </Border.Background>
+                <StackPanel Margin="40 30">
+                    <Image Source="/icon.ico" Width="64" Height="64" HorizontalAlignment="Center" Margin="0 0 0 15" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    
+                    <TextBlock Text="ĐĂNG NHẬP" FontSize="26" FontWeight="ExtraBold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                    <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0 0 0 30"/>
+
+                    <!-- Username -->
+                    <TextBox x:Name="txtUsername" materialDesign:HintAssist.Hint="Tên đăng nhập" Style="{DynamicResource MaterialDesignOutlinedTextBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 10 0" VerticalContentAlignment="Center"/>
+                    
+                    <!-- Password with Manual Reveal -->
+                    <Grid>
+                        <PasswordBox x:Name="txtPassword" materialDesign:HintAssist.Hint="Mật khẩu" Style="{DynamicResource MaterialDesignOutlinedPasswordBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 40 0" VerticalContentAlignment="Center" PasswordChanged="txtPassword_PasswordChanged"/>
+                        <TextBox x:Name="txtVisiblePassword" materialDesign:HintAssist.Hint="Mật khẩu" Style="{DynamicResource MaterialDesignOutlinedTextBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 40 0" VerticalContentAlignment="Center" Visibility="Collapsed" TextChanged="txtVisiblePassword_TextChanged"/>
+                        
+                        <ToggleButton x:Name="btnTogglePassword" Width="30" Height="30" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 5 0" Style="{DynamicResource MaterialDesignIconToggleButton}" Background="Transparent" BorderThickness="0" Click="btnTogglePassword_Click" Focusable="False" IsTabStop="False">
+                            <materialDesign:PackIcon Kind="Eye" Foreground="{DynamicResource PrimaryColor}" Width="20" Height="20"/>
+                        </ToggleButton>
+                    </Grid>
+
+                    <!-- Remember Me Checkbox -->
+                    <CheckBox x:Name="chkRememberMe" Content="Ghi nhớ đăng nhập" Margin="0 10 0 0" IsChecked="True" Style="{DynamicResource MaterialDesignCheckBox}" Foreground="{DynamicResource TextSecondary}"/>
+
+                    <!-- Primary Action Button -->
+                    <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" IsDefault="True" Margin="0 30 0 0" Click="btnLogin_Click" Style="{DynamicResource PremiumButtonStyle}"/>
+                    
+                    <!-- Secondary Action Button -->
+                    <Button x:Name="btnExit" Content="THOÁT" Margin="0 15 0 0" Click="btnExit_Click" Style="{DynamicResource PremiumOutlineButtonStyle}" BorderThickness="0"/>
+                    <TextBlock Text="Copyright © 2026 Linhoang" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.7" FontSize="11" FontWeight="SemiBold" FontFamily="Segoe UI" HorizontalAlignment="Center" Margin="0 25 0 0"/>
+                </StackPanel>
+
+        </Border>
+    </Grid>
+</Window>

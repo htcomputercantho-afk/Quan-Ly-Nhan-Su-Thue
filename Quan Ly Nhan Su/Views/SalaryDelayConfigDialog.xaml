@@ -1,0 +1,102 @@
+<Window x:Class="TaxPersonnelManagement.Views.SalaryDelayConfigDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Danh mục Lùi thời gian/Lý do" Height="400" Width="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Language="vi-VN">
+
+    <Border CornerRadius="8" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="-90" RenderingBias="Quality" ShadowDepth="2" Opacity="0.1"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/> <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- Input -->
+                <RowDefinition Height="*"/>    <!-- List Content -->
+                <RowDefinition Height="10"/>   <!-- Margin -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="White" CornerRadius="8 8 0 0" Padding="20 0" BorderBrush="#E0E0E0" BorderThickness="0 0 0 1">
+                <Grid>
+                    <TextBlock Text="Danh mục Lùi thời gian/Lý do" Foreground="#333" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Button HorizontalAlignment="Right" Click="btnClose_Click" Background="Transparent" BorderThickness="0" Padding="0" Width="30" Height="30">
+                        <materialDesign:PackIcon Kind="Close" Foreground="#777" Width="20" Height="20"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Input Row -->
+            <Grid Grid.Row="1" Margin="20 20 20 10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="90"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" x:Name="txtName" materialDesign:HintAssist.Hint="VD: Lùi 9 tháng..." 
+                         Style="{StaticResource ModernTextBox}" Height="40" Padding="10 0" VerticalContentAlignment="Center"/>
+
+                <Button x:Name="btnAdd" Grid.Column="2" Height="40" 
+                        Background="{DynamicResource PrimaryHueMidBrush}" BorderThickness="0" Foreground="White"
+                        Click="btnAdd_Click" materialDesign:ButtonAssist.CornerRadius="4">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Floppy" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Thêm" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- List Content -->
+            <Border Grid.Row="2" Margin="20 0 20 0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4">
+                <Grid>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="lstReasons">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#F0F0F0" BorderThickness="0 0 0 1" Padding="15 12" Background="White">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="10"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Text Info -->
+                                            <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Foreground="#333" VerticalAlignment="Center"/>
+
+                                            <!-- Edit Action -->
+                                            <!-- Not fully implemented yet, just add logic later if needed or simplistic edit -->
+                                            <Button Grid.Column="1" Click="btnEdit_Click" Tag="{Binding Id}"
+                                                    Width="30" Height="30" Background="Transparent" BorderThickness="0" Padding="0"
+                                                    Style="{DynamicResource MaterialDesignToolButton}"
+                                                    ToolTip="Sửa" Foreground="#FB8C00">
+                                                <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18"/>
+                                            </Button>
+
+                                            <!-- Delete Action -->
+                                            <Button Grid.Column="3" Click="btnDelete_Click" Tag="{Binding Id}"
+                                                    Width="30" Height="30" Background="Transparent" BorderThickness="0" Padding="0"
+                                                    Style="{DynamicResource MaterialDesignToolButton}"
+                                                    ToolTip="Xóa" Foreground="#E53935">
+                                                <materialDesign:PackIcon Kind="TrashCan" Width="18" Height="18"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
