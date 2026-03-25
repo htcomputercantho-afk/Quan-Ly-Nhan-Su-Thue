@@ -1770,11 +1770,33 @@ namespace TaxPersonnelManagement.Views
                 txtLeaveDuration.Text = item.DurationDays.ToString();
                 txtLeaveReason.Text = item.UserReasonDisplay; // Only show user part
                 
-                if (item.LeaveType == "Phép năm" && item.LeaveYear.HasValue)
+                if (item.LeaveType == "Phép năm")
                 {
-                    LoadLeaveYears(item.LeaveYear.Value); // Ensure the edited year is visible
-                    cboLeaveYear.SelectedItem = item.LeaveYear.Value;
-                    cboLeaveYear.IsEnabled = true;
+                    if (item.LeaveYear.HasValue)
+                    {
+                        LoadLeaveYears(item.LeaveYear.Value); // Ensure the edited year is visible
+                        cboLeaveYear.SelectedItem = item.LeaveYear.Value;
+                        cboLeaveYear.IsEnabled = true;
+                    }
+                    else
+                    {
+                        // Fallback to start date year if LeaveYear is missing
+                        int startYear = item.StartDate.Year;
+                        LoadLeaveYears(startYear);
+                        cboLeaveYear.SelectedItem = startYear;
+                        cboLeaveYear.IsEnabled = true;
+                    }
+
+                    // NEW: Detect Priority from Reason
+                    bool isPriority = !string.IsNullOrEmpty(item.Reason) && 
+                                     (item.Reason.Contains("|SYS:Ưu tiên trừ phép tồn năm") || 
+                                      item.Reason.Contains("|SYS:Trừ tiếp vào phép tồn năm"));
+                    
+                    if (isPriority)
+                    {
+                        chkPrioritizeOldYear.Visibility = Visibility.Visible;
+                        chkPrioritizeOldYear.IsChecked = true;
+                    }
                 }
                 else
                 {

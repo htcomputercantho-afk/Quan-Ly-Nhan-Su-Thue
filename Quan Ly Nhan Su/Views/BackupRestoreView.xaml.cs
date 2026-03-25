@@ -69,7 +69,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     File.Copy(_dbPath, dlg.FileName, overwrite: true);
 
-                    var success = new SuccessDialog($"Sao lưu thành công!\n\nFile sao lưu đã được lưu tại:\n{dlg.FileName}");
+                    var success = new SuccessWindow("Sao lưu thành công!", dlg.FileName);
                     success.ShowDialog();
                 }
             }
@@ -137,7 +137,7 @@ namespace TaxPersonnelManagement.Views
                 // Ghi đè CSDL hiện tại bằng file sao lưu
                 File.Copy(_selectedRestoreFile, _dbPath, overwrite: true);
 
-                var success = new SuccessDialog($"Phục hồi thành công!\n\nBản sao lưu tự động của CSDL cũ:\n{autoBackupPath}\n\nỨng dụng sẽ khởi động lại...");
+                var success = new SuccessWindow("Phục hồi thành công! Ứng dụng sẽ khởi động lại...", autoBackupPath);
                 success.ShowDialog();
 
                 // Khởi động lại ứng dụng

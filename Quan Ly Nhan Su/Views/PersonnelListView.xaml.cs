@@ -10,11 +10,13 @@ namespace TaxPersonnelManagement.Views
 {
     public partial class PersonnelListView : UserControl
     {
-        /// <summary>
-        /// Bộ lọc thẻ Dashboard hiện tại: "All" = Tất cả, "Maternity" = Nghỉ thai sản, "Sick" = Nghỉ ốm.
-        /// Khi người dùng bấm vào thẻ trên Dashboard, giá trị này thay đổi và danh sách sẽ được lọc tương ứng.
-        /// </summary>
         private string _currentCardFilter = "All";
+        
+        // Pagination
+        private List<Personnel> _fullFilteredList = new List<Personnel>();
+        private int _currentPage = 1;
+        private const int PageSize = 20;
+        private int _totalPages = 1;
 
         public PersonnelListView()
         {
@@ -43,10 +45,6 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        /// <summary>
-        /// Tải danh sách phòng ban từ CSDL để hiển thị trong bộ lọc ComboBox.
-        /// Bao gồm cả phòng ban từ bảng Departments và phòng ban đang dùng trong bảng Personnel.
-        /// </summary>
         private void LoadDepartments()
         {
             using (var context = new AppDbContext())
@@ -70,17 +68,12 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        /// <summary>
-        /// Tải danh sách nhân sự từ CSDL, áp dụng bộ lọc tìm kiếm, phòng ban, và thẻ Dashboard.
-        /// Đồng thời cập nhật số liệu thống kê trên các thẻ Dashboard (tổng, thai sản, nghỉ ốm).
-        /// </summary>
         private void LoadData(string search = "")
         {
             using (var context = new AppDbContext())
             {
                 var query = context.Personnel.Include("LeaveHistories").AsQueryable();
 
-                // 1. Lọc theo từ khóa tìm kiếm (Họ tên hoặc Phòng ban)
                 if (!string.IsNullOrEmpty(search))
                 {
                     string s = search.ToLower();
@@ -88,13 +81,11 @@ namespace TaxPersonnelManagement.Views
                                              (p.Department != null && p.Department.ToLower().Contains(s)));
                 }
 
-                // 2. Lọc theo Phòng ban được chọn
                 if (cbDepartmentFilter.SelectedItem is string dept && dept != "-- Tất cả bộ phận --")
                 {
                     query = query.Where(p => p.Department == dept);
                 }
                 
-                // Thứ tự sắp xếp phòng ban theo cấu trúc tổ chức
                 var deptOrder = new List<string> {
                     "Ban lãnh đạo",
                     "Tổ Hành chính, tổng hợp",
@@ -109,7 +100,6 @@ namespace TaxPersonnelManagement.Views
                     "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                 };
 
-                // Sắp xếp theo phòng ban → chức vụ
                 var list = query.AsEnumerable()
                                 .OrderBy(p => {
                                     string dept2 = (p.Department ?? "").Trim();
@@ -125,30 +115,22 @@ namespace TaxPersonnelManagement.Views
                                 })
                                 .ToList();
 
-                // Đánh số thứ tự
-                for (int i = 0; i < list.Count; i++)
-                {
-                    list[i].STT = i + 1;
-                }
-
-                // 3. Cập nhật số liệu thống kê trên các thẻ Dashboard (luôn tính trên toàn bộ danh sách)
+                // Dashboard stats (always on full list)
                 txtTotalCount.Text = list.Count.ToString();
 
                 var now = DateTime.Now.Date;
                 
-                // Đếm số công chức đang nghỉ thai sản
                 int maternity = list.Count(p => p.LeaveHistories != null && 
                                                 p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") && 
                                                                           l.StartDate <= now && l.EndDate >= now));
                 txtMaternityCount.Text = maternity.ToString();
 
-                // Đếm số công chức đang nghỉ ốm
                 int sick = list.Count(p => p.LeaveHistories != null && 
                                            p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) && 
                                                                      l.StartDate <= now && l.EndDate >= now));
                 txtSickCount.Text = sick.ToString();
 
-                // 4. Áp dụng bộ lọc thẻ Dashboard để chỉ hiển thị nhóm công chức được chọn
+                // Apply card filter
                 var displayList = list.AsEnumerable();
                 if (_currentCardFilter == "Maternity")
                 {
@@ -163,7 +145,67 @@ namespace TaxPersonnelManagement.Views
                                                                               l.StartDate <= now && l.EndDate >= now));
                 }
 
-                dgPersonnel.ItemsSource = displayList.ToList();
+                _fullFilteredList = displayList.ToList();
+                _currentPage = 1;
+                ApplyPagination();
+            }
+        }
+
+        private void ApplyPagination()
+        {
+            int totalItems = _fullFilteredList.Count;
+            _totalPages = Math.Max(1, (int)Math.Ceiling((double)totalItems / PageSize));
+            
+            if (_currentPage > _totalPages) _currentPage = _totalPages;
+            if (_currentPage < 1) _currentPage = 1;
+
+            var pageItems = _fullFilteredList
+                .Skip((_currentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Re-number STT across pages
+            int startIndex = (_currentPage - 1) * PageSize;
+            for (int i = 0; i < pageItems.Count; i++)
+            {
+                pageItems[i].STT = startIndex + i + 1;
+            }
+
+            dgPersonnel.ItemsSource = pageItems;
+
+            // Update footer
+            if (totalItems == 0)
+            {
+                txtPagingInfo.Text = "Không có dữ liệu";
+                txtPageInfo.Text = "0 / 0";
+            }
+            else
+            {
+                int from = startIndex + 1;
+                int to = startIndex + pageItems.Count;
+                txtPagingInfo.Text = $"Hiển thị {from} - {to} trên {totalItems} nhân viên";
+                txtPageInfo.Text = $"{_currentPage} / {_totalPages}";
+            }
+
+            btnPrevPage.IsEnabled = _currentPage > 1;
+            btnNextPage.IsEnabled = _currentPage < _totalPages;
+        }
+
+        private void btnPrevPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage > 1)
+            {
+                _currentPage--;
+                ApplyPagination();
+            }
+        }
+
+        private void btnNextPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage < _totalPages)
+            {
+                _currentPage++;
+                ApplyPagination();
             }
         }
 
@@ -287,7 +329,7 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         private void btnExportExcel_Click(object sender, RoutedEventArgs e)
         {
-             if (dgPersonnel.ItemsSource is System.Collections.Generic.IEnumerable<TaxPersonnelManagement.Models.Personnel> list)
+             if (_fullFilteredList != null && _fullFilteredList.Any())
              {
                   // Tên file tự động theo bộ lọc: NghiThaiSan / NghiOm / NhanSu_Full
                   var dlg = new Microsoft.Win32.SaveFileDialog();
@@ -304,11 +346,10 @@ namespace TaxPersonnelManagement.Views
                   {
                       try 
                       {
-                          TaxPersonnelManagement.Services.ExcelExporter.Export(list, dlg.FileName);
-                          
-                          var success = new SuccessWindow("Xuất Excel thành công!");
-                          if (Window.GetWindow(this) is Window parent) success.Owner = parent;
-                          success.ShowDialog();
+                          TaxPersonnelManagement.Services.ExcelExporter.Export(_fullFilteredList, dlg.FileName);
+                                                    var success = new SuccessWindow("Xuất Excel thành công!", dlg.FileName);
+                           if (Window.GetWindow(this) is Window parent) success.Owner = parent;
+                           success.ShowDialog();
                       }
                       catch (Exception ex)
                       {

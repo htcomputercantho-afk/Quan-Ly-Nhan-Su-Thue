@@ -1,0 +1,362 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using TaxPersonnelManagement.Models;
+using TaxPersonnelManagement.Data;
+using System.Collections.ObjectModel;
+using Microsoft.EntityFrameworkCore;
+using ClosedXML.Excel;
+using Microsoft.Win32;
+
+namespace TaxPersonnelManagement.Views
+{
+    public partial class LeaveDetailView : Page
+    {
+        private List<LeaveSummaryItem> _allSummaries = new List<LeaveSummaryItem>();
+        private List<LeaveSummaryItem> _filteredSummaries = new List<LeaveSummaryItem>();
+        private bool _isUpdating = false;
+
+        // Pagination
+        private int _currentPage = 1;
+        private const int PageSize = 20;
+        private int _totalPages = 1;
+
+        public LeaveDetailView()
+        {
+            InitializeComponent();
+            LoadYears();
+        }
+
+        private void LoadYears()
+        {
+            int currentYear = DateTime.Now.Year;
+            var years = new List<int>();
+
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    var leafYears = db.LeaveHistories
+                        .Select(h => h.LeaveYear ?? h.StartDate.Year)
+                        .Distinct()
+                        .ToList();
+                    
+                    years.AddRange(leafYears);
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("Error loading leave years: " + ex.Message);
+            }
+
+            if (!years.Contains(currentYear)) years.Add(currentYear);
+            if (!years.Contains(currentYear - 1)) years.Add(currentYear - 1);
+
+            var distinctYears = years.Distinct().OrderByDescending(y => y).ToList();
+            cboYear.ItemsSource = distinctYears;
+            cboYear.SelectedItem = currentYear;
+        }
+
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyFilter();
+        }
+
+        private void ApplyFilter()
+        {
+            if (_allSummaries == null) return;
+
+            string keyword = txtSearch.Text.Trim().ToLower();
+            _filteredSummaries = _allSummaries.Where(s => 
+                (s.FullName != null && s.FullName.ToLower().Contains(keyword)) ||
+                (s.StaffId != null && s.StaffId.ToLower().Contains(keyword)) ||
+                (s.IdentityCardNumber != null && s.IdentityCardNumber.ToLower().Contains(keyword))
+            ).ToList();
+
+            // Re-assign STT for the entire filtered list
+            for (int i = 0; i < _filteredSummaries.Count; i++)
+            {
+                _filteredSummaries[i].STT = i + 1;
+            }
+
+            _currentPage = 1;
+            ApplyPagination();
+        }
+
+        private void ApplyPagination()
+        {
+            int totalItems = _filteredSummaries.Count;
+            _totalPages = Math.Max(1, (int)Math.Ceiling((double)totalItems / PageSize));
+
+            if (_currentPage > _totalPages) _currentPage = _totalPages;
+            if (_currentPage < 1) _currentPage = 1;
+
+            var pageItems = _filteredSummaries
+                .Skip((_currentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            // Re-number STT across pages
+            int startIndex = (_currentPage - 1) * PageSize;
+            for (int i = 0; i < pageItems.Count; i++)
+            {
+                pageItems[i].STT = startIndex + i + 1;
+            }
+
+            dgLeaveSummary.ItemsSource = pageItems;
+
+            // Update footer
+            if (totalItems == 0)
+            {
+                txtPagingInfo.Text = "Không có dữ liệu";
+                txtPageInfo.Text = "0 / 0";
+            }
+            else
+            {
+                int from = startIndex + 1;
+                int to = startIndex + pageItems.Count;
+                txtPagingInfo.Text = $"Hiển thị {from} - {to} trên {totalItems} nhân viên";
+                txtPageInfo.Text = $"{_currentPage} / {_totalPages}";
+            }
+
+            btnPrevPage.IsEnabled = _currentPage > 1;
+            btnNextPage.IsEnabled = _currentPage < _totalPages;
+        }
+
+        private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage > 1)
+            {
+                _currentPage--;
+                ApplyPagination();
+            }
+        }
+
+        private void BtnNextPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage < _totalPages)
+            {
+                _currentPage++;
+                ApplyPagination();
+            }
+        }
+
+        private void CboYear_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            LoadAllLeaveSummaries();
+        }
+
+        private void LoadAllLeaveSummaries()
+        {
+            if (_isUpdating) return;
+            _isUpdating = true;
+
+            try
+            {
+                int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
+                txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
+
+                using (var db = new AppDbContext())
+                {
+                    var personnelList = db.Personnel.Include(p => p.LeaveHistories)
+                                          .OrderBy(p => p.FullName)
+                                          .ToList();
+                    
+                    var results = new List<LeaveSummaryItem>();
+                    int index = 1;
+
+                    foreach (var p in personnelList)
+                    {
+                        int totalAnnual = CalculateTotalAnnualLeave(p);
+
+                        var histories = p.LeaveHistories
+                            .Where(h => h.LeaveType == "Phép năm" && (h.LeaveYear == selectedYear || (h.LeaveYear == null && h.StartDate.Year == selectedYear)))
+                            .OrderBy(h => h.StartDate)
+                            .ToList();
+
+                        double annualTaken = histories.Sum(h => h.DurationDays);
+                        
+                        var details = new List<string>();
+                        for (int i = 0; i < histories.Count; i++)
+                        {
+                            var h = histories[i];
+                            string reason = h.UserReasonDisplay;
+                            string note = string.IsNullOrWhiteSpace(reason) ? "" : $": {reason}";
+                            details.Add($"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {h.StartDate:dd/MM/yyyy} đến ngày {h.EndDate:dd/MM/yyyy}{note}");
+                        }
+                        string detailedContent = string.Join("\n", details);
+
+                        results.Add(new LeaveSummaryItem
+                        {
+                            STT = index++,
+                            StaffId = p.StaffId,
+                            IdentityCardNumber = p.IdentityCardNumber,
+                            FullName = p.FullName,
+                            TotalTarget = totalAnnual,
+                            ActualTaken = annualTaken,
+                            DetailedContent = detailedContent,
+                            Remaining = totalAnnual - annualTaken,
+                            AvatarBase64 = p.AvatarBase64
+                        });
+                    }
+
+                    _allSummaries = results;
+                    ApplyFilter();
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("Error loading all leave summaries: " + ex.Message);
+            }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
+
+        private int CalculateTotalAnnualLeave(Personnel p)
+        {
+            int baseDays = 12;
+            if (p.TaxAuthorityStartDate.HasValue || p.StartDate.HasValue)
+            {
+                DateTime start = p.TaxAuthorityStartDate ?? p.StartDate!.Value;
+                DateTime now = DateTime.Now;
+                int years = now.Year - start.Year;
+                if (now < start.AddYears(years)) years--;
+                
+                if (years < 0) years = 0;
+                baseDays += (years / 5);
+            }
+            return baseDays;
+        }
+
+        private void BtnExportExcel_Click(object sender, RoutedEventArgs e)
+        {
+            if (_filteredSummaries == null || !_filteredSummaries.Any())
+            {
+                MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                FileName = $"BaoCao_PhepNam_{selectedYear}_{DateTime.Now:yyyyMMdd}.xlsx"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    using (var workbook = new XLWorkbook())
+                    {
+                        var worksheet = workbook.Worksheets.Add("Chi tiết phép năm");
+
+                        // 1. Tiêu đề báo cáo
+                        string title = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
+                        var titleRange = worksheet.Range("A1:H1");
+                        titleRange.Merge();
+                        titleRange.Value = title;
+                        titleRange.Style.Font.Bold = true;
+                        titleRange.Style.Font.FontSize = 16;
+                        titleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        titleRange.Style.Font.FontColor = XLColor.FromHtml("#1565C0");
+                        titleRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        worksheet.Row(1).Height = 40;
+
+                        // 2. Tiêu đề cột
+                        string[] headers = { "STT", "Mã số cán bộ", "Họ và tên", "Số CCCD", "Phép tiêu chuẩn", "Thực tế đã nghỉ", "Nội dung chi tiết", "Phép còn lại" };
+                        for (int i = 0; i < headers.Length; i++)
+                        {
+                            var cell = worksheet.Cell(3, i + 1);
+                            cell.Value = headers[i];
+                            cell.Style.Font.Bold = true;
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
+                            cell.Style.Font.FontColor = XLColor.White;
+                            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            cell.Style.Alignment.WrapText = true;
+                        }
+                        worksheet.Row(3).Height = 25;
+
+                        // 3. Dữ liệu
+                        int currentRow = 4;
+                        foreach (var item in _filteredSummaries)
+                        {
+                            worksheet.Cell(currentRow, 1).Value = item.STT;
+                            worksheet.Cell(currentRow, 2).Value = item.StaffId;
+                            worksheet.Cell(currentRow, 3).Value = item.FullName;
+                            worksheet.Cell(currentRow, 4).Value = "'" + item.IdentityCardNumber;
+                            worksheet.Cell(currentRow, 5).Value = item.TotalTarget;
+                            worksheet.Cell(currentRow, 6).Value = item.ActualTaken;
+                            worksheet.Cell(currentRow, 7).Value = item.DetailedContent;
+                            worksheet.Cell(currentRow, 8).Value = item.Remaining;
+
+                            // Định dạng dòng
+                            for (int i = 1; i <= 8; i++)
+                            {
+                                var cell = worksheet.Cell(currentRow, i);
+                                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                                
+                                if (i != 3 && i != 7) // Căn giữa trừ cột Tên và Nội dung chi tiết
+                                {
+                                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                }
+                                
+                                if (i == 7) // Warp text cho nội dung chi tiết
+                                {
+                                    cell.Style.Alignment.WrapText = true;
+                                }
+                            }
+
+                            // Màu sắc cho Phép tiêu chuẩn, Đã nghỉ, Còn lại
+                            worksheet.Cell(currentRow, 5).Style.Font.FontColor = XLColor.FromHtml("#2E7D32"); // Green
+                            worksheet.Cell(currentRow, 6).Style.Font.FontColor = XLColor.FromHtml("#E65100"); // Orange
+                            worksheet.Cell(currentRow, 8).Style.Font.FontColor = XLColor.FromHtml("#1B5E20"); // Dark Green
+                            worksheet.Cell(currentRow, 8).Style.Font.Bold = true;
+
+                            currentRow++;
+                        }
+
+                        // 4. Định dạng cột
+                        worksheet.Column(1).Width = 5;
+                        worksheet.Column(2).Width = 15;
+                        worksheet.Column(3).Width = 30;
+                        worksheet.Column(4).Width = 20;
+                        worksheet.Column(5).Width = 15;
+                        worksheet.Column(6).Width = 15;
+                        worksheet.Column(7).Width = 60;
+                        worksheet.Column(8).Width = 15;
+
+                        workbook.SaveAs(saveFileDialog.FileName);
+                        var success = new SuccessWindow("Xuất báo cáo Excel thành công!", saveFileDialog.FileName);
+                        if (Window.GetWindow(this) is Window parent) success.Owner = parent;
+                        success.ShowDialog();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi xuất Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+    }
+
+    public class LeaveSummaryItem
+    {
+        public int STT { get; set; }
+        public string StaffId { get; set; }
+        public string IdentityCardNumber { get; set; }
+        public string FullName { get; set; }
+        public int TotalTarget { get; set; }
+        public double ActualTaken { get; set; }
+        public string DetailedContent { get; set; }
+        public double Remaining { get; set; }
+        public string AvatarBase64 { get; set; }
+    }
+}

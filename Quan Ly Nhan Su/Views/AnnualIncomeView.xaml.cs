@@ -257,7 +257,7 @@ namespace TaxPersonnelManagement.Views
                         
                         db.SaveChanges();
                         
-                        var successDialog = new SuccessDialog("Đã lưu dữ liệu thu nhập thành công!");
+                        var successDialog = new SuccessWindow("Đã lưu dữ liệu thu nhập thành công!");
                         successDialog.Owner = Window.GetWindow(this);
                         successDialog.ShowDialog();
                     }
@@ -446,7 +446,7 @@ namespace TaxPersonnelManagement.Views
                             lvPersonnel.SelectedItem = temp;
                         }
 
-                        var successDialog = new SuccessDialog($"Import thành công!\n\n- Đã cập nhật lương cho {successCount} công chức.\n- Không tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.");
+                        var successDialog = new SuccessWindow($"Import thành công!\n\n- Đã cập nhật lương cho {successCount} công chức.\n- Không tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.", openFileDialog.FileName);
                         successDialog.ShowDialog();
                     }
                 }

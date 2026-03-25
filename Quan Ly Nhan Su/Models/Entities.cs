@@ -228,8 +228,8 @@ namespace TaxPersonnelManagement.Models
             get 
             {
                 if (string.IsNullOrEmpty(Reason)) return "";
-                // Split by |SYS: first
-                var parts = Reason.Split(new[] { "|SYS:" }, StringSplitOptions.None);
+                // Split by |SYS: OR |LINK:
+                var parts = Reason.Split(new[] { "|SYS:", "|LINK:" }, StringSplitOptions.None);
                 return parts[0].Trim();
             }
         }

@@ -204,7 +204,7 @@ namespace TaxPersonnelManagement.Views
 
                     db.SaveChanges();
                     
-                    var success = new SuccessDialog($"Đã nhập thu nhập thành công cho {updateCount} công chức!");
+                    var success = new SuccessWindow($"Đã nhập thu nhập thành công cho {updateCount} công chức!");
                     success.Owner = this;
                     success.ShowDialog();
                     

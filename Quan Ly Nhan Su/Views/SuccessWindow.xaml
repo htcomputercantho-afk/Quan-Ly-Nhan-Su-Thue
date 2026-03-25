@@ -2,31 +2,61 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Height="180" Width="300"
+        Height="350" Width="420"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent">
     
-    <Border Background="White" CornerRadius="15" BorderBrush="#E0E0E0" BorderThickness="1">
+    <Border Background="White" CornerRadius="20" BorderBrush="#EEEEEE" BorderThickness="1">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="8" Opacity="0.15" Color="#000000"/>
         </Border.Effect>
-        <Grid>
+        <Grid Margin="20">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <materialDesign:PackIcon Kind="CheckCircle" Width="60" Height="60" Foreground="#4CAF50" HorizontalAlignment="Center" Margin="0 0 0 15"/>
-                <TextBlock x:Name="txtMessage" Text="Cập nhật thành công!" FontSize="18" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center"/>
+            <!-- Top Icon -->
+            <materialDesign:PackIcon Grid.Row="0" Kind="CheckCircle" Width="70" Height="70" 
+                                    Foreground="#43A047" HorizontalAlignment="Center" Margin="0 5 0 15">
+                <materialDesign:PackIcon.Effect>
+                    <DropShadowEffect BlurRadius="10" Opacity="0.3" Color="#43A047" ShadowDepth="2"/>
+                </materialDesign:PackIcon.Effect>
+            </materialDesign:PackIcon>
+
+            <!-- Message -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                <TextBlock x:Name="txtMessage" Text="Thành công!" 
+                           FontSize="22" FontWeight="SemiBold" Foreground="#212121" 
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+                <TextBlock x:Name="txtSubMessage" Text="" 
+                           FontSize="14" Foreground="#757575" Margin="0 10 0 0"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Visibility="Collapsed"/>
             </StackPanel>
             
-            <Button Grid.Row="1" Content="Đóng" Click="Close_Click" Margin="0 0 0 20" 
-                    Width="100" Height="35"
-                    Style="{StaticResource PremiumButtonStyle}" 
-                    HorizontalAlignment="Center"/>
+            <!-- Actions -->
+            <StackPanel Grid.Row="2" Margin="0 25 0 5">
+                <StackPanel x:Name="pnlActions" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 15" Visibility="Collapsed">
+                    <Button x:Name="btnOpenFile" Content="Mở tệp" Click="OpenFile_Click" 
+                            Style="{DynamicResource MaterialDesignFlatMidPrimaryButton}"
+                            materialDesign:ButtonAssist.CornerRadius="18"
+                            Height="38" Padding="20 0" Margin="0 0 10 0"/>
+                    
+                    <Button x:Name="btnOpenFolder" Content="Mở thư mục" Click="OpenFolder_Click" 
+                            Style="{DynamicResource MaterialDesignFlatButton}"
+                            materialDesign:ButtonAssist.CornerRadius="18"
+                            Height="38" Padding="20 0"/>
+                </StackPanel>
+
+                <Button Content="Đóng" Click="Close_Click" 
+                        Width="140" Height="45"
+                        Style="{DynamicResource PremiumButtonStyle}"
+                        materialDesign:ButtonAssist.CornerRadius="22"
+                        HorizontalAlignment="Center"/>
+            </StackPanel>
         </Grid>
     </Border>
 </Window>

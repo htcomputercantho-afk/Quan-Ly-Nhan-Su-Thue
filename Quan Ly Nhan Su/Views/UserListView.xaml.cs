@@ -53,7 +53,7 @@ namespace TaxPersonnelManagement.Views
             if (dialog.IsSuccess)
             {
                 LoadData();
-                var success = new SuccessDialog("Đã thêm tài khoản mới thành công!");
+                var success = new SuccessWindow("Đã thêm tài khoản mới thành công!");
                 success.Owner = Window.GetWindow(this);
                 success.ShowDialog();
             }
@@ -70,7 +70,7 @@ namespace TaxPersonnelManagement.Views
                 if (dialog.IsSuccess)
                 {
                     LoadData();
-                    var success = new SuccessDialog("Cập nhật thông tin thành công!");
+                    var success = new SuccessWindow("Cập nhật thông tin thành công!");
                     success.Owner = Window.GetWindow(this);
                     success.ShowDialog();
                 }
@@ -90,7 +90,7 @@ namespace TaxPersonnelManagement.Views
 
                     if (dialog.IsSuccess)
                     {
-                        var success = new SuccessDialog("Đổi mật khẩu thành công!");
+                        var success = new SuccessWindow("Đổi mật khẩu thành công!");
                         success.Owner = Window.GetWindow(this);
                         success.ShowDialog();
                     }
@@ -131,7 +131,7 @@ namespace TaxPersonnelManagement.Views
                                     LoadData();
                                     txtSearch.Text = string.Empty; // Reset search
 
-                                    var success = new SuccessDialog("Đã xóa tài khoản thành công!");
+                                    var success = new SuccessWindow("Đã xóa tài khoản thành công!");
                                     success.Owner = Window.GetWindow(this);
                                     success.ShowDialog();
                                 }

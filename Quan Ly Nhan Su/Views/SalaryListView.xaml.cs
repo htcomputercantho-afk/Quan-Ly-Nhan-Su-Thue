@@ -11,20 +11,22 @@ namespace TaxPersonnelManagement.Views
 {
     public partial class SalaryListView : UserControl
     {
+        // Pagination
+        private List<Personnel> _fullSalaryList = new List<Personnel>();
+        private int _currentPage = 1;
+        private const int PageSize = 20;
+        private int _totalPages = 1;
+
         public SalaryListView()
         {
             InitializeComponent();
             ApplyAuthorization();
             LoadFilterOptions();
-            LoadData(); // Call LoadData after filters are initialized
+            LoadData();
         }
 
         private void ApplyAuthorization()
         {
-            // SalaryListView currently only has export button in header, which Staff can use?
-            // Wait, the plan says: "Đối với Staff: Ẩn các nút thao tác như Thêm mới, Xóa, Import Excel, Lưu dữ liệu."
-            // Export is okay to keep for Staff unless specified otherwise. Plan says: "Chỉ được XEM thông tin cán bộ, bảng lương, tổng thu nhập năm... KHÔNG ĐƯỢC: Import file Excel"
-            // We need to hide action columns in the DataGrid for Staff!
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
@@ -38,7 +40,7 @@ namespace TaxPersonnelManagement.Views
         public class FilterItem
         {
             public string Label { get; set; }
-            public int Value { get; set; } // 1-12 for Months, 1-4 for Quarters, 1-2 for HalfYears, 0 for All
+            public int Value { get; set; }
             public FilterType Type { get; set; }
             public bool IsHeader { get; set; }
 
@@ -56,7 +58,6 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadFilterOptions()
         {
-            // Year Filter
             var years = new List<FilterItem>();
             years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
             int currentYear = DateTime.Now.Year;
@@ -67,23 +68,19 @@ namespace TaxPersonnelManagement.Views
             cbYear.ItemsSource = years;
             cbYear.SelectedIndex = 0;
 
-            // Period Filter
             var periods = new List<FilterItem>();
             periods.Add(new FilterItem { Label = "-- Cả năm --", Value = 0, Type = FilterType.None });
 
-            // Quarters
             periods.Add(new FilterItem { Label = "Theo Quý", IsHeader = true, Type = FilterType.Header });
             periods.Add(new FilterItem { Label = "Quý I (Tháng 1 - 3)", Value = 1, Type = FilterType.Quarter });
             periods.Add(new FilterItem { Label = "Quý II (Tháng 4 - 6)", Value = 2, Type = FilterType.Quarter });
             periods.Add(new FilterItem { Label = "Quý III (Tháng 7 - 9)", Value = 3, Type = FilterType.Quarter });
             periods.Add(new FilterItem { Label = "Quý IV (Tháng 10 - 12)", Value = 4, Type = FilterType.Quarter });
 
-            // Half Years
             periods.Add(new FilterItem { Label = "Theo Bán niên", IsHeader = true, Type = FilterType.Header });
             periods.Add(new FilterItem { Label = "6 tháng đầu năm", Value = 1, Type = FilterType.HalfYear });
             periods.Add(new FilterItem { Label = "6 tháng cuối năm", Value = 2, Type = FilterType.HalfYear });
 
-            // Months
             periods.Add(new FilterItem { Label = "Chi tiết theo Tháng", IsHeader = true, Type = FilterType.Header });
             for (int i = 1; i <= 12; i++)
             {
@@ -103,20 +100,18 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                using (var context = new AppDbContext()) // Changed to AppDbContext as per original file
+                using (var context = new AppDbContext())
                 {
                     var query = context.Personnel.AsQueryable();
 
-                    // Apply Year Filter
                     if (cbYear.SelectedItem is FilterItem selectedYear && selectedYear.Value > 0)
                     {
                         query = query.Where(p => p.ExpectedSalaryIncreaseDate.HasValue && p.ExpectedSalaryIncreaseDate.Value.Year == selectedYear.Value);
                     }
 
-                    // Apply Period Filter
                     if (cbPeriod.SelectedItem is FilterItem selectedPeriod && selectedPeriod.Value > 0)
                     {
-                        query = query.Where(p => p.ExpectedSalaryIncreaseDate.HasValue); // Ensure date has a value before filtering by month/quarter/half-year
+                        query = query.Where(p => p.ExpectedSalaryIncreaseDate.HasValue);
 
                         switch (selectedPeriod.Type)
                         {
@@ -129,22 +124,74 @@ namespace TaxPersonnelManagement.Views
                                 query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month >= startMonth && p.ExpectedSalaryIncreaseDate.Value.Month <= endMonth);
                                 break;
                             case FilterType.HalfYear:
-                                if (selectedPeriod.Value == 1) // First Half
+                                if (selectedPeriod.Value == 1)
                                     query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month >= 1 && p.ExpectedSalaryIncreaseDate.Value.Month <= 6);
-                                else // Second Half
+                                else
                                     query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month >= 7 && p.ExpectedSalaryIncreaseDate.Value.Month <= 12);
                                 break;
                         }
                     }
 
-                    var list = query.OrderBy(p => p.FullName).ToList();
-                    
-                    dgSalary.ItemsSource = list;
+                    _fullSalaryList = query.OrderBy(p => p.FullName).ToList();
+                    _currentPage = 1;
+                    ApplyPagination();
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Lỗi tải dữ liệu: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ApplyPagination()
+        {
+            int totalItems = _fullSalaryList.Count;
+            _totalPages = Math.Max(1, (int)Math.Ceiling((double)totalItems / PageSize));
+
+            if (_currentPage > _totalPages) _currentPage = _totalPages;
+            if (_currentPage < 1) _currentPage = 1;
+
+            var pageItems = _fullSalaryList
+                .Skip((_currentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToList();
+
+            dgSalary.ItemsSource = pageItems;
+
+            // Update footer
+            if (totalItems == 0)
+            {
+                txtPagingInfo.Text = "Không có dữ liệu";
+                txtPageInfo.Text = "0 / 0";
+            }
+            else
+            {
+                int startIndex = (_currentPage - 1) * PageSize;
+                int from = startIndex + 1;
+                int to = startIndex + pageItems.Count;
+                txtPagingInfo.Text = $"Hiển thị {from} - {to} trên {totalItems} nhân sự";
+                txtPageInfo.Text = $"{_currentPage} / {_totalPages}";
+            }
+
+            btnPrevPage.IsEnabled = _currentPage > 1;
+            btnNextPage.IsEnabled = _currentPage < _totalPages;
+        }
+
+        private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage > 1)
+            {
+                _currentPage--;
+                ApplyPagination();
+            }
+        }
+
+        private void BtnNextPage_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentPage < _totalPages)
+            {
+                _currentPage++;
+                ApplyPagination();
             }
         }
 
@@ -190,7 +237,7 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                var data = dgSalary.ItemsSource as IEnumerable<Personnel>;
+                var data = _fullSalaryList;
                 if (data == null || !data.Any())
                 {
                     MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -304,8 +351,9 @@ namespace TaxPersonnelManagement.Views
                         nameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
 
                         workbook.SaveAs(saveFileDialog.FileName);
-                        var dialog = new SuccessDialog("Xuất file Excel thành công!\nFile đã được lưu tại đường dẫn bạn chọn.");
-                        dialog.ShowDialog();
+                        var success = new SuccessWindow("Xuất danh sách lương thành công!", saveFileDialog.FileName);
+                        if (Window.GetWindow(this) is Window parent) success.Owner = parent;
+                        success.ShowDialog();
                     }
                 }
             }

@@ -100,7 +100,13 @@
         </materialDesign:Card>
 
         <materialDesign:Card Grid.Row="2" Style="{DynamicResource MaterialDesignCard}">
-            <DataGrid x:Name="dgSalary" AutoGenerateColumns="False" IsReadOnly="True" 
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+            <DataGrid x:Name="dgSalary" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="True" 
                       CanUserAddRows="False" HeadersVisibility="Column"
                       LoadingRow="dgSalary_LoadingRow"
                       BorderThickness="0" VerticalGridLinesBrush="Transparent" HorizontalGridLinesBrush="#EEEEEE"
@@ -276,6 +282,23 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+
+                <!-- Pagination Footer -->
+                <Grid Grid.Row="1" Margin="15 8">
+                    <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 nhân viên" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="btnPrevPage" Click="BtnPrevPage_Click" 
+                                Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">
+                            <materialDesign:PackIcon Kind="ChevronLeft" Foreground="#607D8B"/>
+                        </Button>
+                        <TextBlock x:Name="txtPageInfo" Text="1 / 1" VerticalAlignment="Center" Margin="10 0" FontWeight="Bold" Foreground="#455A64"/>
+                        <Button x:Name="btnNextPage" Click="BtnNextPage_Click" 
+                                Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30">
+                            <materialDesign:PackIcon Kind="ChevronRight" Foreground="#607D8B"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </materialDesign:Card>
     </Grid>
 </UserControl>
