@@ -157,6 +157,10 @@ namespace TaxPersonnelManagement.Views
             {
                 int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
                 txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
+                
+                // Update DataGrid dynamic headers
+                colOldYear.Header = $"Nghỉ phép năm {selectedYear - 1}";
+                colCurrentYear.Header = $"Nghỉ phép năm {selectedYear}";
 
                 using (var db = new AppDbContext())
                 {
@@ -169,14 +173,21 @@ namespace TaxPersonnelManagement.Views
 
                     foreach (var p in personnelList)
                     {
-                        int totalAnnual = CalculateTotalAnnualLeave(p);
+                        int prevYear = selectedYear - 1;
+                        double takenFromOldYear = p.LeaveHistories
+                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear && h.LeaveYear == prevYear)
+                            .Sum(h => h.DurationDays);
+
+                        double takenFromCurrentYear = p.LeaveHistories
+                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear && (h.LeaveYear == selectedYear || h.LeaveYear == null))
+                            .Sum(h => h.DurationDays);
+
+                        double annualTaken = takenFromOldYear + takenFromCurrentYear;
 
                         var histories = p.LeaveHistories
-                            .Where(h => h.LeaveType == "Phép năm" && (h.LeaveYear == selectedYear || (h.LeaveYear == null && h.StartDate.Year == selectedYear)))
+                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear)
                             .OrderBy(h => h.StartDate)
                             .ToList();
-
-                        double annualTaken = histories.Sum(h => h.DurationDays);
                         
                         var details = new List<string>();
                         for (int i = 0; i < histories.Count; i++)
@@ -195,6 +206,8 @@ namespace TaxPersonnelManagement.Views
                             IdentityCardNumber = p.IdentityCardNumber,
                             FullName = p.FullName,
                             TotalTarget = totalAnnual,
+                            TakenFromOldYear = takenFromOldYear,
+                            TakenFromCurrentYear = takenFromCurrentYear,
                             ActualTaken = annualTaken,
                             DetailedContent = detailedContent,
                             Remaining = totalAnnual - annualTaken,
@@ -268,11 +281,69 @@ namespace TaxPersonnelManagement.Views
                         worksheet.Row(1).Height = 40;
 
                         // 2. Tiêu đề cột
-                        string[] headers = { "STT", "Mã số cán bộ", "Họ và tên", "Số CCCD", "Phép tiêu chuẩn", "Thực tế đã nghỉ", "Nội dung chi tiết", "Phép còn lại" };
-                        for (int i = 0; i < headers.Length; i++)
+                        // 2. Tiêu đề cột
+                        // Row 2: Merged headers
+                        var entRange = worksheet.Range("E2:E3");
+                        entRange.Merge();
+                        entRange.Value = "Số ngày được nghỉ phép";
+                        entRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        entRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        entRange.Style.Font.Bold = true;
+                        entRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
+                        entRange.Style.Font.FontColor = XLColor.White;
+                        entRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var takenRange = worksheet.Range("F2:H2");
+                        takenRange.Merge();
+                        takenRange.Value = $"Số ngày đã nghỉ phép năm {selectedYear}";
+                        takenRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        takenRange.Style.Font.Bold = true;
+                        takenRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
+                        takenRange.Style.Font.FontColor = XLColor.White;
+                        takenRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        string[] row2Headers = { "STT", "Mã số cán bộ", "Họ và tên", "Số CCCD" };
+                        for (int i = 0; i < row2Headers.Length; i++)
                         {
-                            var cell = worksheet.Cell(3, i + 1);
-                            cell.Value = headers[i];
+                            var cell = worksheet.Range(worksheet.Cell(2, i + 1), worksheet.Cell(3, i + 1));
+                            cell.Merge();
+                            cell.Value = row2Headers[i];
+                            cell.Style.Font.Bold = true;
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
+                            cell.Style.Font.FontColor = XLColor.White;
+                            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        }
+
+                        // Row 3: Sub-headers
+                        worksheet.Cell(3, 6).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
+                        worksheet.Cell(3, 7).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear}";
+                        worksheet.Cell(3, 8).Value = "Tổng";
+                        
+                        var remRange = worksheet.Range("I2:I3");
+                        remRange.Merge();
+                        remRange.Value = "Phép còn lại";
+                        remRange.Style.Font.Bold = true;
+                        remRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
+                        remRange.Style.Font.FontColor = XLColor.White;
+                        remRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        remRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        remRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var detailRange = worksheet.Range("J2:J3");
+                        detailRange.Merge();
+                        detailRange.Value = "Nội dung chi tiết";
+                        detailRange.Style.Font.Bold = true;
+                        detailRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
+                        detailRange.Style.Font.FontColor = XLColor.White;
+                        detailRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        detailRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        detailRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        for (int i = 6; i <= 8; i++)
+                        {
+                            var cell = worksheet.Cell(3, i);
                             cell.Style.Font.Bold = true;
                             cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");
                             cell.Style.Font.FontColor = XLColor.White;
@@ -281,7 +352,9 @@ namespace TaxPersonnelManagement.Views
                             cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                             cell.Style.Alignment.WrapText = true;
                         }
-                        worksheet.Row(3).Height = 25;
+
+                        worksheet.Row(2).Height = 25;
+                        worksheet.Row(3).Height = 40;
 
                         // 3. Dữ liệu
                         int currentRow = 4;
@@ -292,33 +365,37 @@ namespace TaxPersonnelManagement.Views
                             worksheet.Cell(currentRow, 3).Value = item.FullName;
                             worksheet.Cell(currentRow, 4).Value = "'" + item.IdentityCardNumber;
                             worksheet.Cell(currentRow, 5).Value = item.TotalTarget;
-                            worksheet.Cell(currentRow, 6).Value = item.ActualTaken;
-                            worksheet.Cell(currentRow, 7).Value = item.DetailedContent;
-                            worksheet.Cell(currentRow, 8).Value = item.Remaining;
+                            worksheet.Cell(currentRow, 6).Value = item.TakenFromOldYear;
+                            worksheet.Cell(currentRow, 7).Value = item.TakenFromCurrentYear;
+                            worksheet.Cell(currentRow, 8).Value = item.ActualTaken;
+                            worksheet.Cell(currentRow, 9).Value = item.Remaining;
+                            worksheet.Cell(currentRow, 10).Value = item.DetailedContent;
 
                             // Định dạng dòng
-                            for (int i = 1; i <= 8; i++)
+                            for (int i = 1; i <= 10; i++)
                             {
                                 var cell = worksheet.Cell(currentRow, i);
                                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                                 cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                                 
-                                if (i != 3 && i != 7) // Căn giữa trừ cột Tên và Nội dung chi tiết
+                                if (i != 3 && i != 10) // Căn giữa trừ cột Tên và Nội dung chi tiết
                                 {
                                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                 }
                                 
-                                if (i == 7) // Warp text cho nội dung chi tiết
+                                if (i == 10) // Warp text cho nội dung chi tiết
                                 {
                                     cell.Style.Alignment.WrapText = true;
                                 }
                             }
 
-                            // Màu sắc cho Phép tiêu chuẩn, Đã nghỉ, Còn lại
+                            // Màu sắc cho các cột số liệu
                             worksheet.Cell(currentRow, 5).Style.Font.FontColor = XLColor.FromHtml("#2E7D32"); // Green
-                            worksheet.Cell(currentRow, 6).Style.Font.FontColor = XLColor.FromHtml("#E65100"); // Orange
-                            worksheet.Cell(currentRow, 8).Style.Font.FontColor = XLColor.FromHtml("#1B5E20"); // Dark Green
-                            worksheet.Cell(currentRow, 8).Style.Font.Bold = true;
+                            worksheet.Cell(currentRow, 6).Style.Font.FontColor = XLColor.FromHtml("#7B1FA2"); // Purple
+                            worksheet.Cell(currentRow, 7).Style.Font.FontColor = XLColor.FromHtml("#0288D1"); // Blue
+                            worksheet.Cell(currentRow, 8).Style.Font.FontColor = XLColor.FromHtml("#E65100"); // Orange
+                            worksheet.Cell(currentRow, 9).Style.Font.FontColor = XLColor.FromHtml("#1B5E20"); // Dark Green
+                            worksheet.Cell(currentRow, 9).Style.Font.Bold = true;
 
                             currentRow++;
                         }
@@ -330,8 +407,10 @@ namespace TaxPersonnelManagement.Views
                         worksheet.Column(4).Width = 20;
                         worksheet.Column(5).Width = 15;
                         worksheet.Column(6).Width = 15;
-                        worksheet.Column(7).Width = 60;
-                        worksheet.Column(8).Width = 15;
+                        worksheet.Column(7).Width = 15;
+                        worksheet.Column(8).Width = 12;
+                        worksheet.Column(9).Width = 15;
+                        worksheet.Column(10).Width = 60;
 
                         workbook.SaveAs(saveFileDialog.FileName);
                         var success = new SuccessWindow("Xuất báo cáo Excel thành công!", saveFileDialog.FileName);
@@ -354,6 +433,8 @@ namespace TaxPersonnelManagement.Views
         public string IdentityCardNumber { get; set; }
         public string FullName { get; set; }
         public int TotalTarget { get; set; }
+        public double TakenFromOldYear { get; set; }
+        public double TakenFromCurrentYear { get; set; }
         public double ActualTaken { get; set; }
         public string DetailedContent { get; set; }
         public double Remaining { get; set; }

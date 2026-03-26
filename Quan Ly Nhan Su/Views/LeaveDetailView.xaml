@@ -210,7 +210,7 @@
                         </DataGridTextColumn>
 
                         <!-- Phép tiêu chuẩn -->
-                        <DataGridTemplateColumn Header="Phép tiêu chuẩn" Width="1.1*">
+                        <DataGridTemplateColumn Header="Số ngày được nghỉ" Width="1.1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -221,8 +221,32 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Thực tế đã nghỉ -->
-                        <DataGridTemplateColumn Header="Thực tế đã nghỉ" Width="1.1*">
+                        <!-- Phép năm cũ (n-1) -->
+                        <DataGridTemplateColumn x:Name="colOldYear" Header="Nghỉ phép năm cũ" Width="1.1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="18" 
+                                                   Foreground="#7B1FA2" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Phép năm nay (n) -->
+                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="Nghỉ phép năm nay" Width="1.1*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="Bold" FontSize="18" 
+                                                   Foreground="#0288D1" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Thực tế đã nghỉ (Tổng) -->
+                        <DataGridTemplateColumn Header="Tổng nghỉ" Width="1.1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#FFF3E0" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
