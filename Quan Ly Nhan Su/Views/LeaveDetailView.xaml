@@ -37,22 +37,16 @@
                                FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
                                Foreground="{DynamicResource PrimaryHueMidBrush}"/>
 
-                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="Calendar" VerticalAlignment="Center" Foreground="Gray" Margin="0 0 5 0"/>
-                        <ComboBox x:Name="cboYear" Width="90" Height="32" Margin="0 0 15 0" SelectionChanged="CboYear_SelectionChanged"
-                                  FontSize="15" FontWeight="Medium" Foreground="#1976D2"
-                                  Background="#F5F5F5" BorderBrush="#BDBDBD" BorderThickness="1" Padding="10,4" VerticalContentAlignment="Center"
-                                  materialDesign:TextFieldAssist.DecorationVisibility="Hidden"/>
 
-                        <Button x:Name="btnExportExcel" Height="32" Click="BtnExportExcel_Click" 
+
+                        <Button x:Name="btnExportExcel" Grid.Column="1" Height="32" Click="BtnExportExcel_Click" 
                                 Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                                Style="{x:Null}" BorderThickness="0">
+                                Style="{x:Null}" BorderThickness="0" HorizontalAlignment="Right">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Xuất báo cáo Excel" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="13"/>
                             </StackPanel>
                         </Button>
-                    </StackPanel>
 
                     <!-- Search Bar -->
                     <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 15 0 0" 
@@ -151,7 +145,7 @@
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="FontSize" Value="15"/>
+                                    <Setter Property="FontSize" Value="14"/>
                                     <Setter Property="Foreground" Value="#616161"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -163,7 +157,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="17"/>
+                                    <Setter Property="FontSize" Value="15"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
                                     <Setter Property="Foreground" Value="#1565C0"/>
                                 </Style>
@@ -191,7 +185,8 @@
                                             </Ellipse>
                                         </Grid>
                                         <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
-                                                   FontWeight="Bold" FontSize="20" Foreground="#212121"/>
+                                                   FontWeight="Bold" FontSize="16" Foreground="#212121"
+                                                   TextWrapping="Wrap" MaxWidth="180"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -203,18 +198,18 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="16"/>
+                                    <Setter Property="FontSize" Value="14"/>
                                     <Setter Property="Foreground" Value="#424242"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
                         <!-- Phép tiêu chuẩn -->
-                        <DataGridTemplateColumn Header="Số ngày được nghỉ" Width="1.1*">
+                        <DataGridTemplateColumn Header="Số ngày được nghỉ phép" Width="1.1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="18" 
+                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#2E7D32" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -226,7 +221,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="18" 
+                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#7B1FA2" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -238,7 +233,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="Bold" FontSize="18" 
+                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#0288D1" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -246,11 +241,11 @@
                         </DataGridTemplateColumn>
 
                         <!-- Thực tế đã nghỉ (Tổng) -->
-                        <DataGridTemplateColumn Header="Tổng nghỉ" Width="1.1*">
+                        <DataGridTemplateColumn Header="Tổng" Width="1.1*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#FFF3E0" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding ActualTaken}" FontWeight="Bold" FontSize="18" 
+                                        <TextBlock Text="{Binding ActualTaken}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#E65100" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -273,7 +268,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="10" Padding="12,8" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding Remaining}" FontWeight="Bold" FontSize="20" 
+                                        <TextBlock Text="{Binding Remaining}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#1B5E20" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>

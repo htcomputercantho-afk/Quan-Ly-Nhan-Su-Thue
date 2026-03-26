@@ -26,38 +26,10 @@ namespace TaxPersonnelManagement.Views
         public LeaveDetailView()
         {
             InitializeComponent();
-            LoadYears();
+            LoadAllLeaveSummaries();
         }
 
-        private void LoadYears()
-        {
-            int currentYear = DateTime.Now.Year;
-            var years = new List<int>();
 
-            try
-            {
-                using (var db = new AppDbContext())
-                {
-                    var leafYears = db.LeaveHistories
-                        .Select(h => h.LeaveYear ?? h.StartDate.Year)
-                        .Distinct()
-                        .ToList();
-                    
-                    years.AddRange(leafYears);
-                }
-            }
-            catch (Exception ex)
-            {
-                App.DebugLog("Error loading leave years: " + ex.Message);
-            }
-
-            if (!years.Contains(currentYear)) years.Add(currentYear);
-            if (!years.Contains(currentYear - 1)) years.Add(currentYear - 1);
-
-            var distinctYears = years.Distinct().OrderByDescending(y => y).ToList();
-            cboYear.ItemsSource = distinctYears;
-            cboYear.SelectedItem = currentYear;
-        }
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -143,10 +115,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void CboYear_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            LoadAllLeaveSummaries();
-        }
+
 
         private void LoadAllLeaveSummaries()
         {
@@ -155,12 +124,12 @@ namespace TaxPersonnelManagement.Views
 
             try
             {
-                int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
+                int selectedYear = DateTime.Now.Year;
                 txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
                 
                 // Update DataGrid dynamic headers
-                colOldYear.Header = $"Nghỉ phép năm {selectedYear - 1}";
-                colCurrentYear.Header = $"Nghỉ phép năm {selectedYear}";
+                colOldYear.Header = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
+                colCurrentYear.Header = $"Số ngày phép nghỉ theo chế độ năm {selectedYear}";
 
                 using (var db = new AppDbContext())
                 {
@@ -211,7 +180,7 @@ namespace TaxPersonnelManagement.Views
                             TakenFromCurrentYear = takenFromCurrentYear,
                             ActualTaken = annualTaken,
                             DetailedContent = detailedContent,
-                            Remaining = totalAnnual - annualTaken,
+                            Remaining = totalAnnual - takenFromCurrentYear,
                             AvatarBase64 = p.AvatarBase64
                         });
                     }
@@ -254,7 +223,7 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
+            int selectedYear = DateTime.Now.Year;
             var saveFileDialog = new SaveFileDialog
             {
                 Filter = "Excel Files|*.xlsx",
