@@ -159,15 +159,21 @@ namespace TaxPersonnelManagement.Views
                             .OrderBy(h => h.StartDate)
                             .ToList();
                         
-                        var details = new List<string>();
+                        var detailLines = new List<LeaveDetailLine>();
                         for (int i = 0; i < histories.Count; i++)
                         {
                             var h = histories[i];
+                            bool isOldYear = (h.LeaveYear == prevYear);
                             string reason = h.UserReasonDisplay;
                             string note = string.IsNullOrWhiteSpace(reason) ? "" : $": {reason}";
-                            details.Add($"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {h.StartDate:dd/MM/yyyy} đến ngày {h.EndDate:dd/MM/yyyy}{note}");
+                            
+                            detailLines.Add(new LeaveDetailLine
+                            {
+                                MainContent = $"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {h.StartDate:dd/MM/yyyy} đến ngày {h.EndDate:dd/MM/yyyy}{note}",
+                                Suffix = isOldYear ? " - [NGHỈ PHÉP NĂM CŨ]" : ""
+                            });
                         }
-                        string detailedContent = string.Join("\n", details);
+                        string detailedContent = string.Join("\n", detailLines.Select(d => d.MainContent + d.Suffix));
 
                         results.Add(new LeaveSummaryItem
                         {
@@ -180,6 +186,7 @@ namespace TaxPersonnelManagement.Views
                             TakenFromCurrentYear = takenFromCurrentYear,
                             ActualTaken = annualTaken,
                             DetailedContent = detailedContent,
+                            DetailLines = detailLines,
                             Remaining = totalAnnual - takenFromCurrentYear,
                             AvatarBase64 = p.AvatarBase64
                         });
@@ -240,7 +247,7 @@ namespace TaxPersonnelManagement.Views
 
                         // 1. Tiêu đề báo cáo
                         string title = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
-                        var titleRange = worksheet.Range("A1:H1");
+                        var titleRange = worksheet.Range("A1:I1");
                         titleRange.Merge();
                         titleRange.Value = title;
                         titleRange.Style.Font.Bold = true;
@@ -251,9 +258,8 @@ namespace TaxPersonnelManagement.Views
                         worksheet.Row(1).Height = 40;
 
                         // 2. Tiêu đề cột
-                        // 2. Tiêu đề cột
                         // Row 2: Merged headers
-                        var entRange = worksheet.Range("E2:E3");
+                        var entRange = worksheet.Range("D2:D3");
                         entRange.Merge();
                         entRange.Value = "Số ngày được nghỉ phép";
                         entRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -263,7 +269,7 @@ namespace TaxPersonnelManagement.Views
                         entRange.Style.Font.FontColor = XLColor.White;
                         entRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
-                        var takenRange = worksheet.Range("F2:H2");
+                        var takenRange = worksheet.Range("E2:G2");
                         takenRange.Merge();
                         takenRange.Value = $"Số ngày đã nghỉ phép năm {selectedYear}";
                         takenRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -272,7 +278,7 @@ namespace TaxPersonnelManagement.Views
                         takenRange.Style.Font.FontColor = XLColor.White;
                         takenRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
-                        string[] row2Headers = { "STT", "Mã số cán bộ", "Họ và tên", "Số CCCD" };
+                        string[] row2Headers = { "STT", "Họ và tên", "Số CCCD" };
                         for (int i = 0; i < row2Headers.Length; i++)
                         {
                             var cell = worksheet.Range(worksheet.Cell(2, i + 1), worksheet.Cell(3, i + 1));
@@ -287,11 +293,11 @@ namespace TaxPersonnelManagement.Views
                         }
 
                         // Row 3: Sub-headers
-                        worksheet.Cell(3, 6).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
-                        worksheet.Cell(3, 7).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear}";
-                        worksheet.Cell(3, 8).Value = "Tổng";
+                        worksheet.Cell(3, 5).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
+                        worksheet.Cell(3, 6).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear}";
+                        worksheet.Cell(3, 7).Value = "Tổng";
                         
-                        var remRange = worksheet.Range("I2:I3");
+                        var remRange = worksheet.Range("H2:H3");
                         remRange.Merge();
                         remRange.Value = "Phép còn lại";
                         remRange.Style.Font.Bold = true;
@@ -301,7 +307,7 @@ namespace TaxPersonnelManagement.Views
                         remRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                         remRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
-                        var detailRange = worksheet.Range("J2:J3");
+                        var detailRange = worksheet.Range("I2:I3");
                         detailRange.Merge();
                         detailRange.Value = "Nội dung chi tiết";
                         detailRange.Style.Font.Bold = true;
@@ -311,7 +317,7 @@ namespace TaxPersonnelManagement.Views
                         detailRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                         detailRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
-                        for (int i = 6; i <= 8; i++)
+                        for (int i = 5; i <= 7; i++)
                         {
                             var cell = worksheet.Cell(3, i);
                             cell.Style.Font.Bold = true;
@@ -331,29 +337,47 @@ namespace TaxPersonnelManagement.Views
                         foreach (var item in _filteredSummaries)
                         {
                             worksheet.Cell(currentRow, 1).Value = item.STT;
-                            worksheet.Cell(currentRow, 2).Value = item.StaffId;
-                            worksheet.Cell(currentRow, 3).Value = item.FullName;
-                            worksheet.Cell(currentRow, 4).Value = "'" + item.IdentityCardNumber;
-                            worksheet.Cell(currentRow, 5).Value = item.TotalTarget;
-                            worksheet.Cell(currentRow, 6).Value = item.TakenFromOldYear;
-                            worksheet.Cell(currentRow, 7).Value = item.TakenFromCurrentYear;
-                            worksheet.Cell(currentRow, 8).Value = item.ActualTaken;
-                            worksheet.Cell(currentRow, 9).Value = item.Remaining;
-                            worksheet.Cell(currentRow, 10).Value = item.DetailedContent;
+                            worksheet.Cell(currentRow, 2).Value = item.FullName;
+                            worksheet.Cell(currentRow, 3).Value = "'" + item.IdentityCardNumber;
+                            worksheet.Cell(currentRow, 4).Value = item.TotalTarget;
+                            worksheet.Cell(currentRow, 5).Value = item.TakenFromOldYear;
+                            worksheet.Cell(currentRow, 6).Value = item.TakenFromCurrentYear;
+                            worksheet.Cell(currentRow, 7).Value = item.ActualTaken;
+                            worksheet.Cell(currentRow, 8).Value = item.Remaining;
+                            // RichText cho nội dung chi tiết
+                            var richText = worksheet.Cell(currentRow, 9).GetRichText();
+                            for (int i = 0; i < item.DetailLines.Count; i++)
+                            {
+                                var line = item.DetailLines[i];
+                                
+                                // Nội dung chính (không in đậm)
+                                richText.AddText(line.MainContent);
+                                
+                                // Hậu tố (in đậm nếu là năm cũ)
+                                if (!string.IsNullOrEmpty(line.Suffix))
+                                {
+                                    richText.AddText(line.Suffix).SetBold(true);
+                                }
+                                
+                                if (i < item.DetailLines.Count - 1)
+                                {
+                                    richText.AddNewLine();
+                                }
+                            }
 
                             // Định dạng dòng
-                            for (int i = 1; i <= 10; i++)
+                            for (int i = 1; i <= 9; i++)
                             {
                                 var cell = worksheet.Cell(currentRow, i);
                                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                                 cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                                 
-                                if (i != 3 && i != 10) // Căn giữa trừ cột Tên và Nội dung chi tiết
+                                if (i != 2 && i != 9) // Căn giữa trừ cột Tên và Nội dung chi tiết
                                 {
                                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                 }
                                 
-                                if (i == 10) // Warp text cho nội dung chi tiết
+                                if (i == 9) // Warp text cho nội dung chi tiết
                                 {
                                     cell.Style.Alignment.WrapText = true;
                                 }
@@ -371,16 +395,21 @@ namespace TaxPersonnelManagement.Views
                         }
 
                         // 4. Định dạng cột
-                        worksheet.Column(1).Width = 5;
-                        worksheet.Column(2).Width = 15;
-                        worksheet.Column(3).Width = 30;
-                        worksheet.Column(4).Width = 20;
-                        worksheet.Column(5).Width = 15;
-                        worksheet.Column(6).Width = 15;
-                        worksheet.Column(7).Width = 15;
-                        worksheet.Column(8).Width = 12;
-                        worksheet.Column(9).Width = 15;
-                        worksheet.Column(10).Width = 60;
+                        worksheet.Column(1).Width = 10;  // STT
+                        worksheet.Column(2).Width = 35;  // Họ và tên
+                        worksheet.Column(3).Width = 25;  // Số CCCD
+                        worksheet.Column(4).Width = 25;  // Số ngày được nghỉ phép
+                        worksheet.Column(5).Width = 25;  // Số ngày phép năm 2025
+                        worksheet.Column(6).Width = 25;  // Số ngày phép năm 2026
+                        worksheet.Column(7).Width = 15;  // Tổng
+                        worksheet.Column(8).Width = 15;  // Phép còn lại
+                        worksheet.Column(9).Width = 85;  // Nội dung chi tiết
+
+                        // Row heights & Wrap text for Headers
+                        worksheet.Row(2).Height = 35;
+                        worksheet.Row(2).Style.Alignment.WrapText = true;
+                        worksheet.Row(3).Height = 55;
+                        worksheet.Row(3).Style.Alignment.WrapText = true;
 
                         workbook.SaveAs(saveFileDialog.FileName);
                         var success = new SuccessWindow("Xuất báo cáo Excel thành công!", saveFileDialog.FileName);
@@ -396,6 +425,13 @@ namespace TaxPersonnelManagement.Views
         }
     }
 
+    public class LeaveDetailLine
+    {
+        public string MainContent { get; set; }
+        public string Suffix { get; set; } // "[NGHỈ PHÉP NĂM CŨ]"
+        public bool IsOldYear => !string.IsNullOrEmpty(Suffix);
+    }
+
     public class LeaveSummaryItem
     {
         public int STT { get; set; }
@@ -407,6 +443,7 @@ namespace TaxPersonnelManagement.Views
         public double TakenFromCurrentYear { get; set; }
         public double ActualTaken { get; set; }
         public string DetailedContent { get; set; }
+        public List<LeaveDetailLine> DetailLines { get; set; } = new List<LeaveDetailLine>();
         public double Remaining { get; set; }
         public string AvatarBase64 { get; set; }
     }

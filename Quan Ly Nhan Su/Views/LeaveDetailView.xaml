@@ -152,18 +152,7 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- Mã số cán bộ -->
-                        <DataGridTextColumn Header="Mã số cán bộ" Binding="{Binding StaffId}" Width="1.1*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="15"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="Foreground" Value="#1565C0"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <!-- Mã số cán bộ - REMOVED BY USER REQUEST -->
 
                         <!-- Avatar + Họ và tên -->
                         <DataGridTemplateColumn Header="Họ và tên" Width="2.2*">
@@ -257,9 +246,16 @@
                         <DataGridTemplateColumn Header="Nội dung chi tiết" Width="3.5*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding DetailedContent}" TextWrapping="Wrap" 
-                                               Padding="15,10" VerticalAlignment="Center" 
-                                               LineHeight="24" FontSize="16" Foreground="#424242"/>
+                                    <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock TextWrapping="Wrap" LineHeight="24" FontSize="16" Foreground="#424242">
+                                                    <Run Text="{Binding MainContent, Mode=OneWay}"/>
+                                                    <Run Text="{Binding Suffix, Mode=OneWay}" FontWeight="Bold" Foreground="#D32F2F"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
