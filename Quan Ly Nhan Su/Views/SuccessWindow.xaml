@@ -76,12 +76,9 @@
                     <Button x:Name="btnOpenFile" Click="OpenFile_Click" Height="40" Padding="18 0"
                             Margin="0 0 12 0" Cursor="Hand"
                             Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1.5"
-                            materialDesign:ButtonAssist.CornerRadius="20">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-                                <Setter Property="Foreground" Value="#2E7D32"/>
-                            </Style>
-                        </Button.Style>
+                            Foreground="#2E7D32"
+                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Style="{x:Null}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FileDocumentOutline" Width="18" Height="18" 
                                                      VerticalAlignment="Center" Margin="0 0 8 0"/>
@@ -92,12 +89,9 @@
                     <Button x:Name="btnOpenFolder" Click="OpenFolder_Click" Height="40" Padding="18 0"
                             Cursor="Hand"
                             Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1.5"
-                            materialDesign:ButtonAssist.CornerRadius="20">
-                        <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-                                <Setter Property="Foreground" Value="#1565C0"/>
-                            </Style>
-                        </Button.Style>
+                            Foreground="#1565C0"
+                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Style="{x:Null}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FolderOpenOutline" Width="18" Height="18" 
                                                      VerticalAlignment="Center" Margin="0 0 8 0"/>
@@ -110,22 +104,10 @@
                 <Button Content="Đóng" Click="Close_Click" 
                         Width="160" Height="44" FontSize="14" FontWeight="Bold"
                         Foreground="White" Cursor="Hand"
+                        Background="#1565C0" BorderBrush="#1565C0" BorderThickness="0"
                         materialDesign:ButtonAssist.CornerRadius="22"
-                        HorizontalAlignment="Center">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
-                            <Setter Property="Background">
-                                <Setter.Value>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#1565C0" Offset="0"/>
-                                        <GradientStop Color="#1E88E5" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="BorderThickness" Value="0"/>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                        HorizontalAlignment="Center"
+                        Style="{x:Null}"/>
             </StackPanel>
         </Grid>
     </Border>

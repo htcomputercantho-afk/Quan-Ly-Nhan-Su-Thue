@@ -126,32 +126,32 @@
                                   materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                   materialDesign:TextFieldAssist.UnderlineBrush="{x:Null}"/>
 
-                        <Button x:Name="btnBulkAdd" Height="32" Click="BtnBulkAdd_Click" Margin="0 5 10 5" 
+                        <Button x:Name="btnBulkAdd" Height="36" Click="BtnBulkAdd_Click" Margin="0 5 10 5" 
                                 Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White" Padding="15,0"
-                                Style="{x:Null}" BorderThickness="0">
+                                materialDesign:ButtonAssist.CornerRadius="18">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="CardsOutline" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Nhập hàng loạt" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="13"/>
+                                <materialDesign:PackIcon Kind="CardsOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Nhập hàng loạt" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnImportExcel" Height="32" Click="BtnImportExcel_Click" Margin="0 5 10 5" 
+                        <Button x:Name="btnImportExcel" Height="36" Click="BtnImportExcel_Click" Margin="0 5 10 5" 
                                 Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                                Style="{x:Null}" BorderThickness="0">
+                                materialDesign:ButtonAssist.CornerRadius="18">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border Background="White" CornerRadius="2" Padding="1" Margin="0 0 6 0">
                                     <TextBlock Text="x" Foreground="#1976D2" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Width="12" TextAlignment="Center"/>
                                 </Border>
-                                <TextBlock Text="Import Excel" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="13"/>
+                                <TextBlock Text="Import Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
                         
-                        <Button x:Name="btnSave" Height="32" Click="BtnSave_Click" Margin="0 5 10 5"
+                        <Button x:Name="btnSave" Height="36" Click="BtnSave_Click" Margin="0 5 10 5"
                                 Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White" Padding="15,0"
-                                Style="{x:Null}" BorderThickness="0">
+                                materialDesign:ButtonAssist.CornerRadius="18">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Lưu dữ liệu" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="13"/>
+                                <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Lưu dữ liệu" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
                     </WrapPanel>

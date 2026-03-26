@@ -39,12 +39,12 @@
 
 
 
-                        <Button x:Name="btnExportExcel" Grid.Column="1" Height="32" Click="BtnExportExcel_Click" 
+                        <Button x:Name="btnExportExcel" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
                                 Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                                Style="{x:Null}" BorderThickness="0" HorizontalAlignment="Right">
+                                materialDesign:ButtonAssist.CornerRadius="18" HorizontalAlignment="Right">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Xuất báo cáo Excel" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="13"/>
+                                <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
 
