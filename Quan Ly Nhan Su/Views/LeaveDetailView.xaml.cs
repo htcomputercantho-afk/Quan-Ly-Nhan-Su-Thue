@@ -173,6 +173,7 @@ namespace TaxPersonnelManagement.Views
 
                     foreach (var p in personnelList)
                     {
+                        int totalAnnual = CalculateTotalAnnualLeave(p);
                         int prevYear = selectedYear - 1;
                         double takenFromOldYear = p.LeaveHistories
                             .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear && h.LeaveYear == prevYear)
