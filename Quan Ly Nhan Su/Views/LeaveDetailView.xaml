@@ -49,16 +49,47 @@
                             </StackPanel>
                         </Button>
 
-                    <!-- Search Bar -->
-                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 15 0 0" 
-                            Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10 5">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" Foreground="Gray" VerticalAlignment="Center" Margin="5 0 10 0"/>
-                            <TextBox x:Name="txtSearch" Width="450" FontSize="15"
+                    <!-- Modern Search Bar -->
+                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 20 0 5" 
+                            Background="White" BorderBrush="#E0E0E0" BorderThickness="1.5" 
+                            CornerRadius="22" Padding="15 2" HorizontalAlignment="Left" Width="600"
+                            Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                        <Setter Property="Background" Value="#FAFAFA"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <materialDesign:PackIcon Kind="Magnify" Grid.Column="0" Width="24" Height="24" 
+                                                    Foreground="{DynamicResource PrimaryHueMidBrush}" 
+                                                    VerticalAlignment="Center" Margin="0 0 12 0"/>
+                            
+                            <TextBox x:Name="txtSearch" Grid.Column="1" FontSize="15"
                                      materialDesign:HintAssist.Hint="Tìm kiếm theo Tên, Mã số cán bộ hoặc CCCD..." 
+                                     materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
                                      BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
-                                     TextChanged="TxtSearch_TextChanged"/>
-                        </StackPanel>
+                                     TextChanged="TxtSearch_TextChanged"
+                                     CaretBrush="{DynamicResource PrimaryHueMidBrush}"/>
+
+                            <Button x:Name="btnClearSearch" Grid.Column="2" Width="30" Height="30" 
+                                    Style="{DynamicResource MaterialDesignToolButton}" 
+                                    Background="Transparent" BorderThickness="0"
+                                    Padding="0" Margin="0 0 5 0" Visibility="Collapsed"
+                                    Click="BtnClearSearch_Click">
+                                <materialDesign:PackIcon Kind="CloseCircle" Width="18" Height="18" Foreground="#9E9E9E"/>
+                            </Button>
+                        </Grid>
                     </Border>
                 </Grid>
             </Border>

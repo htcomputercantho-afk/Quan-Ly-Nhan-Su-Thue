@@ -90,10 +90,17 @@
                     <Button x:Name="btnLeaveDetail" Click="NavigateLeaveDetail" ToolTip="Chi tiết nghỉ phép">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="CalendarClock" Width="22" Height="22" VerticalAlignment="Center" Margin="0 0 15 0"/>
-                        <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
-                    </StackPanel>
-                </Button>
+                            <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
     
+                    <Button x:Name="btnEmulationReward" Click="NavigateEmulationReward" ToolTip="Thi đua khen thưởng">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon x:Name="iconEmulationReward" Kind="Medal" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtEmulationReward" Text="Thi đua khen thưởng" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
                     <Button x:Name="btnUsers" Click="NavigateUsers" ToolTip="Tài khoản">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon x:Name="iconUsers" Kind="AccountKey" Width="22" Height="22" Margin="0 0 15 0"/>
