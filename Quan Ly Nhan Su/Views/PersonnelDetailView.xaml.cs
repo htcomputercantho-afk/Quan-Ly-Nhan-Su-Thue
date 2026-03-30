@@ -1885,7 +1885,6 @@ namespace TaxPersonnelManagement.Views
 
             double annualTaken = 0;
             double sickTaken = 0;
-            double unpaidTaken = 0;
             
             // Maternity Logic
             string maternityDisplay = "0";

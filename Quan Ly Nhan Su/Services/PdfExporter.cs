@@ -209,7 +209,7 @@ namespace TaxPersonnelManagement.Services
                  {
                      c.Item().AlignCenter().Text("Đã nghỉ").FontSize(9).FontColor(Colors.Red.Darken1);
                      // Simple calc for used
-                     int used = 0; // Need logic passed in or calc here. For now 0 or sample.
+                     // Need logic passed in or calc here. For now 0 or sample.
                      // Assuming passed p has up-to-date data. Let's verify logic in View.
                      // We might calculate inside Export or pass a DTO. 
                      // For simplicity, just showing 0 if logic is complex.
