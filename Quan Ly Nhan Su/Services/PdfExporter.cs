@@ -164,7 +164,7 @@ namespace TaxPersonnelManagement.Services
         {
              column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row => 
             {
-                void CenteredItem(RowDescriptor r, string label, string val, bool highlight = false, bool last = false)
+                void CenteredItem(RowDescriptor r, string label, string? val, bool highlight = false, bool last = false)
                 {
                     r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c => 
                     {
@@ -322,7 +322,7 @@ namespace TaxPersonnelManagement.Services
             // Box
             column.Item().PaddingTop(10).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row => 
             {
-                 void CenteredItem(RowDescriptor r, string label, string val, bool last = false)
+                 void CenteredItem(RowDescriptor r, string label, string? val, bool last = false)
                  {
                      r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c => 
                      {

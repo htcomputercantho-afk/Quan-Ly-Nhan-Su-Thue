@@ -6,13 +6,13 @@ namespace TaxPersonnelManagement.Converters
 {
     public class MajorUniversityConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object?[]? values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (values == null || values.Length < 2)
                 return "---";
 
-            string major = values[0] as string;
-            string university = values[1] as string;
+            string? major = values[0] as string;
+            string? university = values[1] as string;
 
             bool hasMajor = !string.IsNullOrWhiteSpace(major);
             bool hasUni = !string.IsNullOrWhiteSpace(university);
@@ -29,9 +29,9 @@ namespace TaxPersonnelManagement.Converters
             return "---";
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object?[]? ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }

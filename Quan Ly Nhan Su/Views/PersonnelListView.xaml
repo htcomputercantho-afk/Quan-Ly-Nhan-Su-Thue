@@ -21,109 +21,99 @@
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <materialDesign:Card Margin="20" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1">
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <!-- Top Section -->
-            <StackPanel Grid.Row="0" Margin="0 0 0 10">
-                <!-- Dashboard / KPIs -->
-                <Grid Margin="0 0 0 20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/> <!-- Lọc -->
-                        <ColumnDefinition Width="*"/>    <!-- Thẻ KPI -->
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Filter Section -->
-                    <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="0 0 20 0">
-                        <ComboBox x:Name="cbDepartmentFilter" 
-                                  Width="280"
-                                  Height="40"
-                                  materialDesign:HintAssist.Hint="Lọc theo bộ phận"
-                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                  Background="White"
-                                  VerticalContentAlignment="Center"
-                                  Padding="10 0"
-                                  FontSize="14"
-                                  Foreground="#455A64"
-                                  SelectionChanged="cbDepartmentFilter_SelectionChanged">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                    <Setter Property="Padding" Value="10"/>
-                                    <Setter Property="MinHeight" Value="35"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                        </ComboBox>
-                    </StackPanel>
-
-                    <!-- KPIs Section - Wraps items aligned with the first card, now aligned to the right -->
-                    <WrapPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <!-- Card 1: Total -->
-                        <materialDesign:Card x:Name="cardTotal" Width="280" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#0078D4" Offset="0.0"/>
-                                        <GradientStop Color="#00B7C3" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock Text="TỔNG NHÂN SỰ" FontSize="14" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtTotalCount" Text="0" FontSize="28" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                        </materialDesign:Card>
-
-                        <!-- Card 2: Maternity -->
-                        <materialDesign:Card x:Name="cardMaternity" Width="280" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardMaternity_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#FF8C00" Offset="0.0"/>
-                                        <GradientStop Color="#FFC107" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock Text="NGHỈ THAI SẢN" FontSize="14" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="28" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                        </materialDesign:Card>
-
-                        <!-- Card 3: Sick -->
-                        <materialDesign:Card x:Name="cardSick" Width="280" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSick_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#D32F2F" Offset="0.0"/>
-                                        <GradientStop Color="#EF5350" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock Text="NGHỈ ỐM" FontSize="14" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtSickCount" Text="0" FontSize="28" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                        </materialDesign:Card>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <materialDesign:Card Margin="10" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" PreviewMouseWheel="Grid_PreviewMouseWheel">
+            <Grid Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+    
+                <!-- Top Section -->
+                <StackPanel Grid.Row="0" Margin="0 0 0 10">
+                    <!-- Dashboard / KPIs -->
+                    <WrapPanel Margin="0 0 0 20">
+                        <!-- Filter Section -->
+                        <StackPanel VerticalAlignment="Top" Margin="0 0 20 15">
+                            <ComboBox x:Name="cbDepartmentFilter" 
+                                      MinWidth="200" MaxWidth="300"
+                                      Height="40"
+                                      materialDesign:HintAssist.Hint="Lọc theo bộ phận"
+                                      Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                      Background="White"
+                                      VerticalContentAlignment="Center"
+                                      Padding="10 0"
+                                      FontSize="14"
+                                      Foreground="#455A64"
+                                      SelectionChanged="cbDepartmentFilter_SelectionChanged">
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                        <Setter Property="Padding" Value="10"/>
+                                        <Setter Property="MinHeight" Value="35"/>
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                            </ComboBox>
+                        </StackPanel>
+    
+                        <!-- KPIs Section -->
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                            <!-- Card 1: Total -->
+                            <materialDesign:Card x:Name="cardTotal" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
+                                <Grid>
+                                    <Grid.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#0078D4" Offset="0.0"/>
+                                            <GradientStop Color="#00B7C3" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Grid.Background>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                        <TextBlock Text="TỔNG NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                        <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                            </materialDesign:Card>
+    
+                            <!-- Card 2: Maternity -->
+                            <materialDesign:Card x:Name="cardMaternity" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardMaternity_Click">
+                                <Grid>
+                                    <Grid.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#FF8C00" Offset="0.0"/>
+                                            <GradientStop Color="#FFC107" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Grid.Background>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                        <TextBlock Text="NGHỈ THAI SẢN" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                        <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                            </materialDesign:Card>
+    
+                            <!-- Card 3: Sick -->
+                            <materialDesign:Card x:Name="cardSick" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSick_Click">
+                                <Grid>
+                                    <Grid.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#D32F2F" Offset="0.0"/>
+                                            <GradientStop Color="#EF5350" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Grid.Background>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                        <TextBlock Text="NGHỈ ỐM" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                        <TextBlock x:Name="txtSickCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+                            </materialDesign:Card>
+                        </WrapPanel>
                     </WrapPanel>
-                </Grid>
 
                 <!-- Actions Bar & Title -->
-                <Grid Margin="0 10 0 10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <StackPanel>
+                <WrapPanel Orientation="Horizontal" Margin="0 10 0 10">
+                    <StackPanel Margin="0 0 20 10">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountMultiple" Width="24" Height="24" Foreground="#1976D2" VerticalAlignment="Center" Margin="0 0 8 0"/>
                             <TextBlock Text="Danh sách nhân sự" FontSize="20" FontWeight="Bold" Foreground="#1976D2" VerticalAlignment="Center"/>
@@ -131,7 +121,7 @@
                         <TextBlock Text="Quản lý toàn bộ hồ sơ nhân viên" FontSize="12" Foreground="#78909C" Margin="32 2 0 0"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
                         <!-- Search Box -->
                         <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="280" Height="38" Margin="0 0 12 0">
                             <Grid>
@@ -175,7 +165,7 @@
                             </StackPanel>
                         </Button>
                     </StackPanel>
-                </Grid>
+                </WrapPanel>
             </StackPanel>
 
             <!-- DataGrid -->
@@ -185,9 +175,8 @@
                       HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                       Background="White" BorderThickness="0"
                       RowHeight="76"
-                      materialDesign:DataGridAssist.ColumnHeaderPadding="10 10 10 10"
-                      materialDesign:DataGridAssist.CellPadding="10"
-                      VerticalGridLinesBrush="Transparent" HorizontalGridLinesBrush="#EEEEEE">
+                      HorizontalGridLinesBrush="#EEEEEE"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#F5F5F5"/>
@@ -219,12 +208,19 @@
                         <Setter Property="Foreground" Value="#546E7A"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="FontSize" Value="15"/>
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </DataGrid.ColumnHeaderStyle>
 
                 <DataGrid.Columns>
                     <!-- STT -->
-                    <DataGridTemplateColumn Header="STT" Width="50">
+                    <DataGridTemplateColumn Header="STT" Width="Auto" MinWidth="60">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding STT}" 
@@ -235,7 +231,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- NAME INFO -->
-                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2.2*">
+                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2.2*" MinWidth="220">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -270,7 +266,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- INFO (DOB/Gender) -->
-                    <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="1.5*">
+                    <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="1.5*" MinWidth="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center">
@@ -288,7 +284,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- POSITION -->
-                    <DataGridTemplateColumn Header="VỊ TRÍ" Width="2*">
+                    <DataGridTemplateColumn Header="VỊ TRÍ" Width="2*" MinWidth="180">
                          <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center">
@@ -304,7 +300,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- CONTACT -->
-                    <DataGridTemplateColumn Header="LIÊN HỆ" Width="1.8*">
+                    <DataGridTemplateColumn Header="LIÊN HỆ" Width="1.8*" MinWidth="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center">
@@ -322,7 +318,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- ACTIONS -->
-                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="Auto">
+                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="Auto" MinWidth="150">
                          <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -366,5 +362,6 @@
             </Grid>
 
         </Grid>
-    </materialDesign:Card>
+        </materialDesign:Card>
+    </ScrollViewer>
 </UserControl>

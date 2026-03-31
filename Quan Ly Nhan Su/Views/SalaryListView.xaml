@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:TaxPersonnelManagement.Views"
+             xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
     <UserControl.Resources>
@@ -117,7 +118,7 @@
                       FrozenColumnCount="2"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto">
                 <DataGrid.Resources>
-                    <local:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+                    <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Setter Property="Background" Value="Transparent"/>

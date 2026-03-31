@@ -26,104 +26,106 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <StackPanel Grid.Row="0">
-                    <StackPanel.Resources>
-                         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                            <Setter Property="Height" Value="50"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                            <Setter Property="Padding" Value="25 0"/>
-                            <Setter Property="Margin" Value="10 5"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="10"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#33FFFFFF"/> <!-- Semi-transparent white hover -->
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Resources>
-                    
-                    <Button x:Name="btnLogoToggle" Click="btnToggleSidebar_Click" 
-                            Background="Transparent" BorderThickness="0" Height="70" Margin="0 10" 
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0"
-                            Cursor="Hand" ToolTip="Thu gọn/Phóng to menu"
-                            Style="{StaticResource {x:Type Button}}">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Image x:Name="imgLogo" Source="/icon.ico" Width="36" Height="36" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
-                            <TextBlock x:Name="txtLogo" Text="QUẢN LÝ NHÂN SỰ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Separator Background="White" Opacity="0.3" Margin="20 10 20 20"/>
-    
-                    <!-- Navigation Buttons (White on Blue) -->
-                    <Button x:Name="btnDashboard" Click="NavigateDashboard" ToolTip="Tổng quan">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconDashboard" Kind="ViewDashboard" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtOverview" Text="Tổng quan" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Button x:Name="btnPersonnel" Click="NavigatePersonnel" ToolTip="Nhân sự">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconPersonnel" Kind="AccountGroup" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtPersonnel" Text="Nhân sự" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Button x:Name="btnSalary" Click="NavigateSalary" ToolTip="Nâng lương">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconSalary" Kind="CashMultiple" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtSalary" Text="Nâng lương" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Button x:Name="btnAnnualIncome" Click="NavigateAnnualIncome" ToolTip="Tổng thu nhập năm">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconAnnualIncome" Kind="ChartLine" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtAnnualIncome" Text="Tổng thu nhập năm" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Button x:Name="btnLeaveDetail" Click="NavigateLeaveDetail" ToolTip="Chi tiết nghỉ phép">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="CalendarClock" Width="22" Height="22" VerticalAlignment="Center" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Button x:Name="btnEmulationReward" Click="NavigateEmulationReward" ToolTip="Thi đua khen thưởng">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconEmulationReward" Kind="Medal" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="txtEmulationReward" Text="Thi đua khen thưởng" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <StackPanel.Resources>
+                             <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Height" Value="50"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                <Setter Property="Padding" Value="25 0"/>
+                                <Setter Property="Margin" Value="10 5"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="10"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#33FFFFFF"/> <!-- Semi-transparent white hover -->
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Resources>
+                        
+                        <Button x:Name="btnLogoToggle" Click="btnToggleSidebar_Click" 
+                                Background="Transparent" BorderThickness="0" Height="70" Margin="0 10" 
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0"
+                                Cursor="Hand" ToolTip="Thu gọn/Phóng to menu"
+                                Style="{StaticResource {x:Type Button}}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Image x:Name="imgLogo" Source="/icon.ico" Width="36" Height="36" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
+                                <TextBlock x:Name="txtLogo" Text="QUẢN LÝ NHÂN SỰ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Separator Background="White" Opacity="0.3" Margin="20 10 20 20"/>
+        
+                        <!-- Navigation Buttons (White on Blue) -->
+                        <Button x:Name="btnDashboard" Click="NavigateDashboard" ToolTip="Tổng quan">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconDashboard" Kind="ViewDashboard" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtOverview" Text="Tổng quan" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Button x:Name="btnPersonnel" Click="NavigatePersonnel" ToolTip="Nhân sự">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconPersonnel" Kind="AccountGroup" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtPersonnel" Text="Nhân sự" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Button x:Name="btnSalary" Click="NavigateSalary" ToolTip="Nâng lương">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconSalary" Kind="CashMultiple" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtSalary" Text="Nâng lương" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Button x:Name="btnAnnualIncome" Click="NavigateAnnualIncome" ToolTip="Tổng thu nhập năm">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconAnnualIncome" Kind="ChartLine" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtAnnualIncome" Text="Tổng thu nhập năm" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Button x:Name="btnLeaveDetail" Click="NavigateLeaveDetail" ToolTip="Chi tiết nghỉ phép">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="CalendarClock" Width="22" Height="22" VerticalAlignment="Center" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Button x:Name="btnEmulationReward" Click="NavigateEmulationReward" ToolTip="Thi đua khen thưởng">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconEmulationReward" Kind="Medal" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtEmulationReward" Text="Thi đua khen thưởng" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="btnUsers" Click="NavigateUsers" ToolTip="Tài khoản">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconUsers" Kind="AccountKey" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtUsers" Text="Tài khoản" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-    
-                    <Button x:Name="btnBackupRestore" Click="NavigateBackupRestore" ToolTip="Sao lưu &amp; Phục hồi">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconBackupRestore" Kind="DatabaseCog" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtBackupRestore" Text="Sao lưu &amp; Phục hồi" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Separator Background="White" Margin="20" Opacity="0.3"/>
-                    
-                    <Button x:Name="btnLogout" Click="Logout_Click" Margin="10 20" ToolTip="Đăng xuất">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon x:Name="iconLogout" Kind="Logout" Width="22" Height="22" Margin="0 0 15 0"/>
-                            <TextBlock x:Name="txtLogout" Text="Đăng xuất" FontSize="15" FontWeight="SemiBold"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                        <Button x:Name="btnUsers" Click="NavigateUsers" ToolTip="Tài khoản">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconUsers" Kind="AccountKey" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtUsers" Text="Tài khoản" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+        
+                        <Button x:Name="btnBackupRestore" Click="NavigateBackupRestore" ToolTip="Sao lưu &amp; Phục hồi">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconBackupRestore" Kind="DatabaseCog" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtBackupRestore" Text="Sao lưu &amp; Phục hồi" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Separator Background="White" Margin="20" Opacity="0.3"/>
+                        
+                        <Button x:Name="btnLogout" Click="Logout_Click" Margin="10 20" ToolTip="Đăng xuất">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconLogout" Kind="Logout" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtLogout" Text="Đăng xuất" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
                 <TextBlock x:Name="txtCopyright" Grid.Row="1" Text="Copyright © 2026 Linhoang" Foreground="White" Opacity="0.6" FontSize="13" FontFamily="Segoe UI" FontWeight="Medium" HorizontalAlignment="Center" Margin="0 5 0 15"/>
             </Grid>
         </Border>
@@ -151,11 +153,9 @@
                 </Grid>
             </Border>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <Grid Margin="20">
-                    <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
-                </Grid>
-            </ScrollViewer>
+            <Grid Grid.Row="1" Margin="20">
+                <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+            </Grid>
         </Grid>
         </Grid>
     </Grid>

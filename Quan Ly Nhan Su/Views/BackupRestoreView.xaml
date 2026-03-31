@@ -30,9 +30,9 @@
             <!-- Cards Container -->
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" MinWidth="350"/>
                     <ColumnDefinition Width="30"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*" MinWidth="350"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Backup Card -->

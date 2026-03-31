@@ -4,9 +4,9 @@ namespace TaxPersonnelManagement.Views
 {
     public partial class SuccessWindow : Window
     {
-        public string FilePath { get; private set; }
+        public string? FilePath { get; private set; }
 
-        public SuccessWindow(string message = null, string filePath = null)
+        public SuccessWindow(string? message = null, string? filePath = null, bool showActions = true)
         {
             InitializeComponent();
             
@@ -18,7 +18,7 @@ namespace TaxPersonnelManagement.Views
             if (!string.IsNullOrEmpty(filePath))
             {
                 this.FilePath = filePath;
-                pnlActions.Visibility = Visibility.Visible;
+                pnlActions.Visibility = showActions ? Visibility.Visible : Visibility.Collapsed;
                 txtSubMessage.Visibility = Visibility.Visible;
                 txtSubMessage.Text = System.IO.Path.GetFileName(filePath);
             }
@@ -55,13 +55,16 @@ namespace TaxPersonnelManagement.Views
             {
                 if (!string.IsNullOrEmpty(FilePath) && System.IO.File.Exists(FilePath))
                 {
-                    string folder = System.IO.Path.GetDirectoryName(FilePath);
-                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    string? folder = System.IO.Path.GetDirectoryName(FilePath);
+                    if (!string.IsNullOrEmpty(folder))
                     {
-                        FileName = folder,
-                        UseShellExecute = true
-                    });
-                    this.Close();
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = folder,
+                            UseShellExecute = true
+                        });
+                        this.Close();
+                    }
                 }
             }
             catch (System.Exception ex)

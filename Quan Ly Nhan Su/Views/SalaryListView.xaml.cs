@@ -39,7 +39,7 @@ namespace TaxPersonnelManagement.Views
 
         public class FilterItem
         {
-            public string Label { get; set; }
+            public string Label { get; set; } = string.Empty;
             public int Value { get; set; }
             public FilterType Type { get; set; }
             public bool IsHeader { get; set; }
@@ -116,18 +116,18 @@ namespace TaxPersonnelManagement.Views
                         switch (selectedPeriod.Type)
                         {
                             case FilterType.Month:
-                                query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month == selectedPeriod.Value);
+                                query = query.Where(p => p.ExpectedSalaryIncreaseDate!.Value.Month == selectedPeriod.Value);
                                 break;
                             case FilterType.Quarter:
                                 int startMonth = (selectedPeriod.Value - 1) * 3 + 1;
                                 int endMonth = startMonth + 2;
-                                query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month >= startMonth && p.ExpectedSalaryIncreaseDate.Value.Month <= endMonth);
+                                query = query.Where(p => p.ExpectedSalaryIncreaseDate!.Value.Month >= startMonth && p.ExpectedSalaryIncreaseDate!.Value.Month <= endMonth);
                                 break;
                             case FilterType.HalfYear:
                                 if (selectedPeriod.Value == 1)
-                                    query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month >= 1 && p.ExpectedSalaryIncreaseDate.Value.Month <= 6);
+                                    query = query.Where(p => p.ExpectedSalaryIncreaseDate!.Value.Month >= 1 && p.ExpectedSalaryIncreaseDate!.Value.Month <= 6);
                                 else
-                                    query = query.Where(p => p.ExpectedSalaryIncreaseDate.Value.Month >= 7 && p.ExpectedSalaryIncreaseDate.Value.Month <= 12);
+                                    query = query.Where(p => p.ExpectedSalaryIncreaseDate!.Value.Month >= 7 && p.ExpectedSalaryIncreaseDate!.Value.Month <= 12);
                                 break;
                         }
                     }
@@ -364,32 +364,5 @@ namespace TaxPersonnelManagement.Views
         }
     }
 
-    public class Base64ToImageConverter : System.Windows.Data.IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            if (value is string base64String && !string.IsNullOrEmpty(base64String))
-            {
-                try
-                {
-                    byte[] binaryData = System.Convert.FromBase64String(base64String);
-                    System.Windows.Media.Imaging.BitmapImage bi = new System.Windows.Media.Imaging.BitmapImage();
-                    bi.BeginInit();
-                    bi.StreamSource = new System.IO.MemoryStream(binaryData);
-                    bi.EndInit();
-                    return bi;
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            return null;
-        }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }

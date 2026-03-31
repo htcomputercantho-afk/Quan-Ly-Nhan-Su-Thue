@@ -14,7 +14,7 @@ namespace TaxPersonnelManagement.Views
         public BackupRestoreView()
         {
             InitializeComponent();
-            _dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tax_personnel.db");
+            _dbPath = Path.Combine(System.AppContext.BaseDirectory, "tax_personnel.db");
             LoadDbInfo();
         }
 
@@ -134,10 +134,21 @@ namespace TaxPersonnelManagement.Views
                     File.Copy(_dbPath, autoBackupPath, overwrite: true);
                 }
 
+                // Clear all SQLite connection pools to release file locks
+                Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+
                 // Ghi đè CSDL hiện tại bằng file sao lưu
                 File.Copy(_selectedRestoreFile, _dbPath, overwrite: true);
 
-                var success = new SuccessWindow("Phục hồi thành công! Ứng dụng sẽ khởi động lại...", autoBackupPath);
+                // Xóa các file WAL và SHM nếu có, để tránh lỗi sai lệch dữ liệu do bộ nhớ đệm của SQLite
+                string walPath = _dbPath + "-wal";
+                string shmPath = _dbPath + "-shm";
+                if (File.Exists(walPath)) File.Delete(walPath);
+                if (File.Exists(shmPath)) File.Delete(shmPath);
+
+                var success = new SuccessWindow("Phục hồi dữ liệu thành công!\nỨng dụng sẽ tự động khởi động lại.", autoBackupPath, showActions: false);
                 success.ShowDialog();
 
                 // Khởi động lại ứng dụng

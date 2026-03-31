@@ -162,8 +162,8 @@
                     <TextBlock Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Text="*Chọn một công chức và click đúp vào ô để sửa dữ liệu" Foreground="Gray" FontStyle="Italic"/>
 
                     <!-- DataGrid -->
-                    <DataGrid x:Name="dgMonthlyIncome" BorderThickness="1" BorderBrush="#EEEEEE" Background="White"
-                              AlternatingRowBackground="#FAFAFA"
+                    <DataGrid x:Name="dgMonthlyIncome" Grid.Row="2" BorderThickness="1" BorderBrush="#EEEEEE" Background="White"
+                              AutoGenerateColumns="False" AlternatingRowBackground="#FAFAFA"
                               RowHeight="70"
                               FrozenColumnCount="1"
                               BeginningEdit="DgMonthlyIncome_BeginningEdit"

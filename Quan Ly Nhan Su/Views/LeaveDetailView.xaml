@@ -14,7 +14,7 @@
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Background="#F5F5F5" Margin="15">
+        <Grid Background="#F5F5F5" Margin="15" PreviewMouseWheel="Grid_PreviewMouseWheel">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header & Search -->
                 <RowDefinition Height="*"/>    <!-- DataGrid Container -->
@@ -110,7 +110,7 @@
                           RowHeight="NaN" MinRowHeight="50" ColumnWidth="*"
                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
                           AlternatingRowBackground="#F8FAFD" RowBackground="White"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           FontSize="14">
 
@@ -226,7 +226,7 @@
                         </DataGridTextColumn>
 
                         <!-- Phép tiêu chuẩn -->
-                        <DataGridTemplateColumn Header="Số ngày được nghỉ phép" Width="1.1*">
+                        <DataGridTemplateColumn Header="Số ngày được nghỉ phép" Width="1.1*" MinWidth="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -238,7 +238,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Phép năm cũ (n-1) -->
-                        <DataGridTemplateColumn x:Name="colOldYear" Header="Nghỉ phép năm cũ" Width="1.1*">
+                        <DataGridTemplateColumn x:Name="colOldYear" Header="Nghỉ phép năm cũ" Width="1.1*" MinWidth="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -250,7 +250,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Phép năm nay (n) -->
-                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="Nghỉ phép năm nay" Width="1.1*">
+                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="Nghỉ phép năm nay" Width="1.1*" MinWidth="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -274,7 +274,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Nội dung chi tiết -->
-                        <DataGridTemplateColumn Header="Nội dung chi tiết" Width="3.5*">
+                        <DataGridTemplateColumn Header="Nội dung chi tiết" Width="3.5*" MinWidth="250">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
@@ -322,6 +322,6 @@
                     </Grid>
                 </Grid>
             </Border>
-        </Grid>
+    </Grid>
     </ScrollViewer>
 </Page>

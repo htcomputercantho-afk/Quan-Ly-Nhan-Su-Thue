@@ -28,6 +28,19 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             LoadAllLeaveSummaries();
         }
+        
+        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                e.Handled = true;
+                var eventArg = new System.Windows.Input.MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+                eventArg.Source = sender;
+                var parent = ((Control)sender).Parent as UIElement;
+                parent?.RaiseEvent(eventArg);
+            }
+        }
 
 
 
@@ -188,9 +201,9 @@ namespace TaxPersonnelManagement.Views
                         results.Add(new LeaveSummaryItem
                         {
                             STT = index++,
-                            StaffId = p.StaffId,
-                            IdentityCardNumber = p.IdentityCardNumber,
-                            FullName = p.FullName,
+                            StaffId = p.StaffId ?? string.Empty,
+                            IdentityCardNumber = p.IdentityCardNumber ?? string.Empty,
+                            FullName = p.FullName ?? string.Empty,
                             TotalTarget = totalAnnual,
                             TakenFromOldYear = takenFromOldYear,
                             TakenFromCurrentYear = takenFromCurrentYear,
@@ -198,7 +211,7 @@ namespace TaxPersonnelManagement.Views
                             DetailedContent = detailedContent,
                             DetailLines = detailLines,
                             Remaining = totalAnnual - takenFromCurrentYear,
-                            AvatarBase64 = p.AvatarBase64
+                            AvatarBase64 = p.AvatarBase64 ?? string.Empty
                         });
                     }
 
@@ -437,24 +450,24 @@ namespace TaxPersonnelManagement.Views
 
     public class LeaveDetailLine
     {
-        public string MainContent { get; set; }
-        public string Suffix { get; set; } // "[NGHỈ PHÉP NĂM CŨ]"
+        public string MainContent { get; set; } = string.Empty;
+        public string Suffix { get; set; } = string.Empty; // "[NGHỈ PHÉP NĂM CŨ]"
         public bool IsOldYear => !string.IsNullOrEmpty(Suffix);
     }
 
     public class LeaveSummaryItem
     {
         public int STT { get; set; }
-        public string StaffId { get; set; }
-        public string IdentityCardNumber { get; set; }
-        public string FullName { get; set; }
+        public string StaffId { get; set; } = string.Empty;
+        public string IdentityCardNumber { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public int TotalTarget { get; set; }
         public double TakenFromOldYear { get; set; }
         public double TakenFromCurrentYear { get; set; }
         public double ActualTaken { get; set; }
-        public string DetailedContent { get; set; }
+        public string DetailedContent { get; set; } = string.Empty;
         public List<LeaveDetailLine> DetailLines { get; set; } = new List<LeaveDetailLine>();
         public double Remaining { get; set; }
-        public string AvatarBase64 { get; set; }
+        public string? AvatarBase64 { get; set; }
     }
 }

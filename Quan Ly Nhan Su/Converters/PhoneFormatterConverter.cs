@@ -7,7 +7,7 @@ namespace TaxPersonnelManagement.Converters
 {
     public class PhoneFormatterConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null) return "---";
             string phone = value.ToString() ?? "";
@@ -31,11 +31,11 @@ namespace TaxPersonnelManagement.Converters
             return formatted;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null) return null;
             // Strip dots when converting back (if used for two-way binding)
-            return new string(value.ToString()?.Where(char.IsDigit).ToArray());
+            return new string(value.ToString()?.Where(char.IsDigit).ToArray() ?? Array.Empty<char>());
         }
     }
 }

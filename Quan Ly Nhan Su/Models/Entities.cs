@@ -42,7 +42,7 @@ namespace TaxPersonnelManagement.Models
         public int STT { get; set; }
         public string? StaffId { get; set; } // Số hiệu cán bộ
         [Required]
-        public string? FullName { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
         public DateTime? DateOfBirth { get; set; }
         public string? Gender { get; set; } // Nam/Nữ
         public string? PhoneNumber { get; set; } // Số điện thoại

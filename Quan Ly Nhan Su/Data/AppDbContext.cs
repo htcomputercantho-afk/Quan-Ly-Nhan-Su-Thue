@@ -30,7 +30,7 @@ namespace TaxPersonnelManagement.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // Thiết lập đường dẫn tới file SQLite cục bộ
-            string dbPath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "tax_personnel.db");
+            string dbPath = Path.Combine(System.AppContext.BaseDirectory, "tax_personnel.db");
             optionsBuilder.UseSqlite($"Data Source={dbPath}");
         }
 

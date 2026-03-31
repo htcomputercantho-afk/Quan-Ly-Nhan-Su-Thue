@@ -200,7 +200,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
+        private void AdminOnly_Loaded(object? sender, RoutedEventArgs e)
         {
             if (App.CurrentUser?.Role == UserRole.Staff && sender is FrameworkElement element)
             {
@@ -275,7 +275,7 @@ namespace TaxPersonnelManagement.Views
         }
         
         
-        private void btnAddDepartment_Click(object sender, RoutedEventArgs e)
+        private void btnAddDepartment_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new AddDepartmentDialog(); // No args
             if (dialog.ShowDialog() == true)
@@ -290,7 +290,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnConfigSalary_Click(object sender, RoutedEventArgs e)
+        private void btnConfigSalary_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new SalaryConfigDialog();
             dialog.Owner = Window.GetWindow(this);
@@ -321,7 +321,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
         
-        private void btnAddPosition_Click(object sender, RoutedEventArgs e)
+        private void btnAddPosition_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new AddPositionDialog();
             if (dialog.ShowDialog() == true)
@@ -465,7 +465,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnSalaryDelayConfig_Click(object sender, RoutedEventArgs e)
+        private void btnSalaryDelayConfig_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new SalaryDelayConfigDialog();
             dialog.Owner = Window.GetWindow(this);
@@ -473,7 +473,7 @@ namespace TaxPersonnelManagement.Views
             LoadSalaryDelayReasons(); // Refresh after close
         }
 
-        private void cboRankCode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cboRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (cboRankCode.SelectedItem is Rank selectedRank)
             {
@@ -516,7 +516,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void cboSalaryStep_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cboSalaryStep_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (cboSalaryStep.SelectedItem is RankSalarySpec spec)
             {
@@ -525,7 +525,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnAddRank_Click(object sender, RoutedEventArgs e)
+        private void btnAddRank_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new AddRankDialog();
             if (dialog.ShowDialog() == true)
@@ -555,7 +555,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
         
-        private void btnAddDisciplineType_Click(object sender, RoutedEventArgs e)
+        private void btnAddDisciplineType_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new DisciplineConfigDialog();
             dialog.ShowDialog(); // Just show dialog, refresh data afterwards regardless of return value
@@ -566,7 +566,7 @@ namespace TaxPersonnelManagement.Views
         /// Xử lý sự kiện khi người dùng nhấn nút Lưu/Cập nhật.
         /// Thực hiện Validate dữ liệu và tiến hành Lưu mới hoặc Cập nhật bản ghi vào Cơ sở dữ liệu.
         /// </summary>
-        private async void btnSave_Click(object sender, RoutedEventArgs e)
+        private async void btnSave_Click(object? sender, RoutedEventArgs e)
         {
             // Kiểm tra tính hợp lệ của dữ liệu (Validation)
             if (string.IsNullOrWhiteSpace(txtName.Text))
@@ -822,7 +822,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnAvatar_Click(object sender, RoutedEventArgs e)
+        private void btnAvatar_Click(object? sender, RoutedEventArgs e)
         {
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
             {
@@ -854,7 +854,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnRemoveAvatar_Click(object sender, RoutedEventArgs e)
+        private void btnRemoveAvatar_Click(object? sender, RoutedEventArgs e)
         {
             imgAvatar.Fill = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F5F5F5"));
             iconAvatarPlaceholder.Visibility = Visibility.Visible;
@@ -931,7 +931,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnRefresh_Click(object sender, RoutedEventArgs e)
+        private void btnRefresh_Click(object? sender, RoutedEventArgs e)
         {
             _isRefreshing = true;
             try
@@ -1069,7 +1069,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void NumberValidationTextBox(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void NumberValidationTextBox(object? sender, System.Windows.Input.TextCompositionEventArgs e)
         {
             System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
@@ -1088,7 +1088,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void txtPhone_TextChanged(object sender, TextChangedEventArgs e)
+        private void txtPhone_TextChanged(object? sender, TextChangedEventArgs e)
         {
             if (_isFormatting || _isRefreshing) return;
 
@@ -1139,7 +1139,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void txtEmail_TextChanged(object sender, TextChangedEventArgs e)
+        private void txtEmail_TextChanged(object? sender, TextChangedEventArgs e)
         {
              if (string.IsNullOrEmpty(txtEmail.Text))
             {
@@ -1159,7 +1159,7 @@ namespace TaxPersonnelManagement.Views
                 lblEmailError.Visibility = Visibility.Visible;
             }
         }
-        private void DatePicker_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void DatePicker_PreviewKeyUp(object? sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.OriginalSource is TextBox textBox)
             {
@@ -1180,7 +1180,7 @@ namespace TaxPersonnelManagement.Views
                 }
             }
         }
-        private void OnPositionDateChanged(object sender, SelectionChangedEventArgs e)
+        private void OnPositionDateChanged(object? sender, SelectionChangedEventArgs e)
         {
             CalculateWorkDuration();
         }
@@ -1229,7 +1229,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void OnRetirementDateChanged(object sender, SelectionChangedEventArgs e)
+        private void OnRetirementDateChanged(object? sender, SelectionChangedEventArgs e)
         {
             CalculateRetirementInfo();
         }
@@ -1354,7 +1354,7 @@ namespace TaxPersonnelManagement.Views
         }
         
         // Tab 5: Leave Logic
-        private void btnAddLeave_Click(object sender, RoutedEventArgs e)
+        private void btnAddLeave_Click(object? sender, RoutedEventArgs e)
         {
             // Validate input
             if (cboLeaveType.SelectedIndex == -1)
@@ -1608,7 +1608,7 @@ namespace TaxPersonnelManagement.Views
             txtLeaveReason.Clear();
         }
 
-        private void OnLeaveDateChanged(object sender, SelectionChangedEventArgs e)
+        private void OnLeaveDateChanged(object? sender, SelectionChangedEventArgs e)
         {
             CalculateMaternityEndDate();
             CalculateMaternityEndDate();
@@ -1749,7 +1749,7 @@ namespace TaxPersonnelManagement.Views
 
         private LeaveHistory? _editingLeaveHistory = null;
 
-        private void dgLeaveHistory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void dgLeaveHistory_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             if (dgLeaveHistory.SelectedItem is LeaveHistory item)
             {
@@ -1758,7 +1758,7 @@ namespace TaxPersonnelManagement.Views
                 // Populate fields
                 foreach(ComboBoxItem cbi in cboLeaveType.Items)
                 {
-                    if (cbi.Content.ToString() == item.LeaveType)
+                    if (cbi.Content?.ToString() == item.LeaveType)
                     {
                         cboLeaveType.SelectedItem = cbi;
                         break;
@@ -1819,7 +1819,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void btnDeleteLeave_Click(object sender, RoutedEventArgs e)
+        private void btnDeleteLeave_Click(object? sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is int id)
             {
@@ -2037,12 +2037,12 @@ namespace TaxPersonnelManagement.Views
             dgLeaveHistory.ItemsSource = null;
             dgLeaveHistory.ItemsSource = _personnel.LeaveHistories;
         }
-        private void OnSalaryStructureChanged(object sender, RoutedEventArgs e)
+        private void OnSalaryStructureChanged(object? sender, RoutedEventArgs e)
         {
             CalculateExpectedSalaryDate();
         }
 
-        private void OnSalaryStructureChanged(object sender, SelectionChangedEventArgs e)
+        private void OnSalaryStructureChanged(object? sender, SelectionChangedEventArgs e)
         {
             CalculateExpectedSalaryDate();
         }
