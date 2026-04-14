@@ -23,7 +23,7 @@
                 <materialDesign:PackIcon Kind="DatabaseCog" Width="32" Height="32" Foreground="#1976D2" VerticalAlignment="Center" Margin="0 0 12 0"/>
                 <StackPanel>
                     <TextBlock Text="Sao lưu &amp; Phục hồi CSDL" FontSize="24" FontWeight="Bold" Foreground="#1976D2"/>
-                    <TextBlock Text="Quản lý sao lưu và phục hồi cơ sở dữ liệu hệ thống" FontSize="13" Foreground="#78909C" Margin="0 3 0 0"/>
+                    <TextBlock Text="Quản lý sao lưu và phục hồi cơ sở dữ liệu" FontSize="13" Foreground="#78909C" Margin="0 3 0 0"/>
                 </StackPanel>
             </StackPanel>
 
@@ -137,7 +137,7 @@
                                     <materialDesign:PackIcon Kind="AlertOutline" Width="20" Height="20" Foreground="#E65100" VerticalAlignment="Top" Margin="0 0 10 0"/>
                                     <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#BF360C">
                                         <Bold>Cảnh báo:</Bold> Phục hồi sẽ ghi đè toàn bộ CSDL hiện tại. 
-                                        Hệ thống sẽ tự động sao lưu CSDL hiện tại trước khi phục hồi.
+                                        Ứng dụng sẽ tự động sao lưu CSDL hiện tại trước khi phục hồi.
                                         Sau khi phục hồi, ứng dụng sẽ khởi động lại.
                                     </TextBlock>
                                 </StackPanel>

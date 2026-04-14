@@ -26,7 +26,7 @@ namespace TaxPersonnelManagement
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             DebugLog($"Unhandled Exception: {e.Exception.Message}\n{e.Exception.StackTrace}");
-            MessageBox.Show($"Lỗi không mong muốn: {e.Exception.Message}", "Lỗi Hệ Thống", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Lỗi không mong muốn: {e.Exception.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             e.Handled = true;
         }
 

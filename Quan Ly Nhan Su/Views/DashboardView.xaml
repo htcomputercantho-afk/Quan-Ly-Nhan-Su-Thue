@@ -13,7 +13,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Tổng quan hệ thống" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 25"/>
+        <TextBlock Text="Tổng quan" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 25"/>
 
         <views:PersonnelListView Grid.Row="1"/>
     </Grid>

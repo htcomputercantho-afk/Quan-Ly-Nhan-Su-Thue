@@ -30,7 +30,7 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                var warning = new WarningWindow("Lỗi hệ thống", "Lỗi tải dữ liệu tài khoản: " + ex.Message);
+                var warning = new WarningWindow("Lỗi", "Lỗi tải dữ liệu tài khoản: " + ex.Message);
                 warning.Owner = Window.GetWindow(this);
                 warning.ShowDialog();
             }
@@ -107,7 +107,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     if (userToDelete.Username.ToLower() == "admin")
                     {
-                        var warningMsg = new WarningWindow("Từ chối truy cập", "Không thể xóa tài khoản Quản trị viên hệ thống (admin).");
+                        var warningMsg = new WarningWindow("Từ chối truy cập", "Không thể xóa tài khoản Quản trị viên (admin).");
                         warningMsg.Owner = Window.GetWindow(this);
                         warningMsg.ShowDialog();
                         return;

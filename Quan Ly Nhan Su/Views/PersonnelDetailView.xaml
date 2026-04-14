@@ -1458,7 +1458,7 @@
                             <!-- Expected Date -->
                             <StackPanel Grid.Column="4">
                                 <TextBlock Text="Dự kiến lên lương" Style="{StaticResource ModernLabel}"/>
-                                <DatePicker x:Name="dpExpectedSalaryIncrease" Style="{StaticResource ModernDatePicker}" Foreground="#388E3C" FontWeight="Bold" PreviewKeyUp="DatePicker_PreviewKeyUp"/>
+                                <DatePicker x:Name="dpExpectedSalaryIncrease" Style="{StaticResource ModernDatePicker}" Foreground="#388E3C" FontWeight="Bold" PreviewKeyUp="DatePicker_PreviewKeyUp" DateValidationError="dpExpectedSalaryIncrease_DateValidationError"/>
                             </StackPanel>
                         </Grid>
 

@@ -37,7 +37,7 @@ namespace TaxPersonnelManagement.Views
                 var eventArg = new System.Windows.Input.MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
                 eventArg.RoutedEvent = UIElement.MouseWheelEvent;
                 eventArg.Source = sender;
-                var parent = ((Control)sender).Parent as UIElement;
+                var parent = ((FrameworkElement)sender).Parent as UIElement;
                 parent?.RaiseEvent(eventArg);
             }
         }

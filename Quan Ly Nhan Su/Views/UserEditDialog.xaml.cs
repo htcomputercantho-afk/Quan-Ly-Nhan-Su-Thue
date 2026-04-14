@@ -70,7 +70,7 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                var warning = new WarningWindow("Lỗi hệ thống", "Không thể tải dữ liệu: " + ex.Message);
+                var warning = new WarningWindow("Lỗi", "Không thể tải dữ liệu: " + ex.Message);
                 warning.Owner = this;
                 warning.ShowDialog();
             }
@@ -116,7 +116,7 @@ namespace TaxPersonnelManagement.Views
                         // Check duplicate username
                         if (db.Users.Any(u => u.Username.ToLower() == txtUsername.Text.ToLower()))
                         {
-                            var warning = new WarningWindow("Cảnh báo", "Tên đăng nhập đã tồn tại trong hệ thống.");
+                            var warning = new WarningWindow("Cảnh báo", "Tên đăng nhập đã tồn tại.");
                             warning.Owner = this;
                             warning.ShowDialog();
                             return;

@@ -378,6 +378,7 @@
                                         <Style TargetType="DataGridColumnHeader">
                                             <Setter Property="Background" Value="#F5F5F5"/>
                                             <Setter Property="FontWeight" Value="Bold"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                             <Setter Property="Padding" Value="10"/>
                                             <Setter Property="BorderThickness" Value="0 0 0 1"/>
                                             <Setter Property="BorderBrush" Value="#E0E0E0"/>
@@ -410,13 +411,14 @@
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="FontWeight" Value="Bold"/>
                                                     <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
                                         <DataGridTemplateColumn Header="Thời gian" Width="1.5*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock VerticalAlignment="Center">
+                                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
                                                         <Run Text="{Binding StartDate, StringFormat=dd/MM/yyyy}"/>
                                                         <Run Text=" - "/>
                                                         <Run Text="{Binding EndDate, StringFormat=dd/MM/yyyy}"/>
@@ -428,6 +430,7 @@
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>

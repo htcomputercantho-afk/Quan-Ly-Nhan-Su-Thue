@@ -1180,6 +1180,14 @@ namespace TaxPersonnelManagement.Views
                 }
             }
         }
+
+        private void dpExpectedSalaryIncrease_DateValidationError(object? sender, DatePickerDateValidationErrorEventArgs e)
+        {
+            var warning = new WarningWindow("Ngày vừa nhập không hợp lệ. Vui lòng nhập ngày theo định dạng dd/MM/yyyy (VD: 15/05/2026).", "Lỗi định dạng");
+            warning.Owner = Window.GetWindow(this);
+            warning.ShowDialog();
+            e.ThrowException = false;
+        }
         private void OnPositionDateChanged(object? sender, SelectionChangedEventArgs e)
         {
             CalculateWorkDuration();

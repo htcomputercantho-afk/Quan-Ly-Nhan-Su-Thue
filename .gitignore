@@ -42,3 +42,6 @@ user.config
 Quan Ly Nhan Su/user.config
 SingleApp/
 *.txt
+
+## Publish folders
+Publish/
