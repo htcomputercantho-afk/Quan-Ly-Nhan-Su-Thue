@@ -28,6 +28,8 @@ namespace TaxPersonnelManagement.Views
             try { LoadDisciplineTypes(); } catch { /* Ignore DB init errors */ }
             _personnel = personnel;
 
+            _isRefreshing = true; // NGĂN CHẶN TÍNH TOÁN TỰ ĐỘNG TRONG QUÁ TRÌNH NẠP DỮ LIỆU BAN ĐẦU
+
             // Load Metadata First
             LoadDepartments();
             LoadPositions();
@@ -158,7 +160,16 @@ namespace TaxPersonnelManagement.Views
             }
             
             // Initial Calculation to ensure consistency
-            CalculateExpectedSalaryDate();
+            if (_personnel == null || !dpExpectedSalaryIncrease.SelectedDate.HasValue) 
+            {
+                // Chỉ tự động tính ngày dự kiến lên lương nếu thêm mới
+                // hoặc ngày đã lưu bị rỗng
+                bool wasRefreshing = _isRefreshing;
+                _isRefreshing = false; // Tạm mở khóa để hàm cập nhật
+                CalculateExpectedSalaryDate();
+                _isRefreshing = wasRefreshing;
+            }
+
             CalculateAnnualLeave(DateTime.Now); // Force recalculation with valid _personnel
             RefreshLeaveHistoryGrid(); // Populate and clean leave history
             
@@ -175,6 +186,8 @@ namespace TaxPersonnelManagement.Views
             
             LoadLeaveYears();
             ApplyAuthorization();
+
+            _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
         }
 
         /// <summary>
