@@ -121,11 +121,25 @@ namespace TaxPersonnelManagement.Views
                                 })
                                 .ThenBy(p => {
                                     string pos = p.Position?.ToLower() ?? "";
-                                    if (pos.Contains("chi cục trưởng") && !pos.Contains("phó")) return 1;
-                                    if (pos.Contains("phó")) return 2;
-                                    if (pos.Contains("tổ trưởng") || pos.Contains("đội trưởng")) return 3;
-                                    return 4;
+                                    string dept3 = (p.Department ?? "").ToLower();
+
+                                    if (dept3.Contains("lãnh đạo"))
+                                    {
+                                        // 1. Trưởng Thuế cơ sở, 2. Quyền Trưởng Thuế cơ sở, 3. Phó Trưởng Thuế cơ sở
+                                        if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
+                                        if (pos.Contains("quyền")) return 2;
+                                        if (pos.Contains("phó")) return 3;
+                                    }
+                                    else
+                                    {
+                                        // 1. Tổ trưởng, 2. Phó Tổ trưởng, 3. Công chức
+                                        if (pos.Contains("tổ trưởng") && !pos.Contains("phó")) return 1;
+                                        if (pos.Contains("phó")) return 2;
+                                        if (pos.Contains("công chức")) return 3;
+                                    }
+                                    return 99;
                                 })
+                                .ThenBy(p => p.FullName)
                                 .ToList();
 
                 // Dashboard stats (always on full list)
