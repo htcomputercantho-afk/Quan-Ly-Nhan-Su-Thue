@@ -272,12 +272,17 @@ namespace TaxPersonnelManagement.Views
         {
             using (var context = new AppDbContext())
             {
-               // Load from Departments table + any legacy string departments in Personnel table
+               // Load from Departments table
                var dbDepts = context.Departments.Select(d => d.Name).ToList();
-               var distinctExisting = context.Personnel.Select(p => p.Department).Distinct().Where(d => !string.IsNullOrEmpty(d)).ToList();
                
-               var allDepts = dbDepts.Union(distinctExisting!).Where(x => !string.IsNullOrEmpty(x)).OrderBy(x => x).ToList();
-               
+               // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
+               // để tránh trường hợp ComboBox bị trống khi bộ phận đó đã bị xóa khỏi danh mục gốc.
+               if (_personnel != null && !string.IsNullOrEmpty(_personnel.Department) && !dbDepts.Contains(_personnel.Department))
+               {
+                   dbDepts.Add(_personnel.Department);
+               }
+
+               var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
                cboDepartment.ItemsSource = allDepts;
                 
                 if (_personnel != null)
@@ -321,10 +326,14 @@ namespace TaxPersonnelManagement.Views
             using (var context = new AppDbContext())
             {
                var dbPos = context.Positions.Select(p => p.Name).ToList();
-               var distinctExisting = context.Personnel.Select(p => p.Position).Distinct().Where(p => !string.IsNullOrEmpty(p)).ToList();
                
-               var allPos = dbPos.Union(distinctExisting!).Where(x => !string.IsNullOrEmpty(x)).OrderBy(x => x).ToList();
-               
+               // Thêm chức vụ hiện tại của nhân sự đang xem nếu chưa có trong danh mục chính
+               if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !dbPos.Contains(_personnel.Position))
+               {
+                   dbPos.Add(_personnel.Position);
+               }
+
+               var allPos = dbPos.Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
                cboPosition.ItemsSource = allPos;
                 
                 if (_personnel != null)
@@ -354,15 +363,11 @@ namespace TaxPersonnelManagement.Views
             using (var context = new AppDbContext())
             {
                 var dbRanks = context.Ranks.ToList();
-                var existingCodes = context.Personnel.Select(p => p.RankCode).Distinct().Where(c => !string.IsNullOrEmpty(c)).ToList();
-
-                // Add any missing codes as dummy Ranks
-                foreach (var code in existingCodes)
+                
+                // Nếu nhân sự đang xem có mã ngạch không tồn tại trong danh mục chính, thêm mã ngạch đó vào danh sách hiển thị
+                if (_personnel != null && !string.IsNullOrEmpty(_personnel.RankCode) && !dbRanks.Any(r => r.Code == _personnel.RankCode))
                 {
-                    if (!dbRanks.Any(r => r.Code == code))
-                    {
-                        dbRanks.Add(new Rank { Code = code!, Name = "" });
-                    }
+                    dbRanks.Add(new Rank { Code = _personnel.RankCode, Name = _personnel.RankName ?? "" });
                 }
 
                 cboRankCode.ItemsSource = dbRanks.OrderBy(r => r.Code).ToList();

@@ -62,14 +62,8 @@ namespace TaxPersonnelManagement.Views
         {
             using (var context = new AppDbContext())
             {
-                var dbDepts = context.Departments.Select(d => d.Name).ToList();
-                var usedDepts = context.Personnel
-                                   .Where(p => !string.IsNullOrEmpty(p.Department))
-                                   .Select(p => p.Department)
-                                   .Distinct()
-                                   .ToList();
-
-                var allDepts = dbDepts.Union(usedDepts!)
+                var allDepts = context.Departments
+                                      .Select(d => d.Name)
                                       .Where(x => !string.IsNullOrEmpty(x))
                                       .Distinct()
                                       .OrderBy(d => d)
