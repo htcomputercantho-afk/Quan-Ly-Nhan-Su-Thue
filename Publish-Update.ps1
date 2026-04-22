@@ -59,28 +59,21 @@ dotnet publish "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj" `
     --self-contained true `
     -p:PublishSingleFile=true `
     -p:IncludeNativeLibrariesForSelfContained=true `
-    -p:IncludeAllContentForSelfContained=true `
     -o $PublishDir
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Build thanh cong! Dang loc file va nen Zip..." -ForegroundColor Green
+    Write-Host "Build thanh cong! Dang nen file Zip..." -ForegroundColor Green
     $ZipFile = "QuanLyNhanSu_v$NewVersion.zip"
     if (Test-Path $ZipFile) { Remove-Item $ZipFile }
     
-    # CHI LAY NHUNG FILE CAN THIET (EXE, PDB va FONT)
-    $FilesToZip = @(
-        "$PublishDir\Quan_Ly_Nhan_Su.exe",
-        "$PublishDir\Quan_Ly_Nhan_Su.pdb",
-        "$PublishDir\LatoFont"
-    )
-    
-    Compress-Archive -Path $FilesToZip -DestinationPath $ZipFile -Force
+    # NEN TOAN BO THU MUC BAO GOM CA DLL DE DAM BAO APP CHAY DUOC 100%
+    Compress-Archive -Path "$PublishDir\*" -DestinationPath $ZipFile -Force
     
     Write-Host "=============================================" -ForegroundColor Green
     Write-Host "HOAN TAT QUY TRINH!" -ForegroundColor Green
     Write-Host "1. Code da duoc day len GitHub." -ForegroundColor White
-    Write-Host "2. File Zip 'SIEU SACH' da duoc tao tai: $ZipFile" -ForegroundColor Yellow
-    Write-Host "Dien mao file Zip: Chi co 1 file EXE (270MB), 1 file PDB va thu muc Font!" -ForegroundColor Green
+    Write-Host "2. File Zip 'CHUAN ON DINH' da duoc tao tai: $ZipFile" -ForegroundColor Yellow
+    Write-Host "Dien mao file Zip: Bao gom file EXE va cac file DLL loi cua he thong." -ForegroundColor Green
     Write-Host "=============================================" -ForegroundColor Green
 } else {
     Write-Host "Co loi trong qua trinh build local!" -ForegroundColor Red
