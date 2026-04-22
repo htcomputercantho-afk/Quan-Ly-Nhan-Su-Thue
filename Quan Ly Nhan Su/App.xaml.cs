@@ -34,6 +34,19 @@ namespace TaxPersonnelManagement
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             // Cấu hình Tự động cập nhật (Auto-Update)
+            // Đăng ký sự kiện để tự thiết kế giao diện thông báo
+            AutoUpdater.CheckForUpdateEvent += (args) =>
+            {
+                if (args.Error == null)
+                {
+                    if (args.IsUpdateAvailable)
+                    {
+                        var updateWindow = new UpdateNotificationWindow(args);
+                        updateWindow.ShowDialog();
+                    }
+                }
+            };
+
             // Thêm ?t=... để tránh bị lưu bộ nhớ đệm (Cache) của GitHub
             AutoUpdater.Start($"https://raw.githubusercontent.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/main/update.xml?t={System.DateTime.Now.Ticks}");
             
