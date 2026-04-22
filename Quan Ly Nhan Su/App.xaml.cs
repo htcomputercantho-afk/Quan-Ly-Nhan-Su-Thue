@@ -34,8 +34,8 @@ namespace TaxPersonnelManagement
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             // Cấu hình Tự động cập nhật (Auto-Update)
-            // Khởi chạy ngầm kiểm tra phiên bản mới mỗi khi mở ứng dụng
-            AutoUpdater.Start("https://raw.githubusercontent.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/main/update.xml");
+            // Thêm ?t=... để tránh bị lưu bộ nhớ đệm (Cache) của GitHub
+            AutoUpdater.Start($"https://raw.githubusercontent.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/main/update.xml?t={System.DateTime.Now.Ticks}");
             
             // Force Standard Vietnamese Culture (Ignore Local OS Overrides)
             var culture = new System.Globalization.CultureInfo("vi-VN", false);
