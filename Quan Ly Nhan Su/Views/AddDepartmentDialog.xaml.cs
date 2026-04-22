@@ -22,12 +22,33 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadDepartments()
         {
+            var deptOrder = new System.Collections.Generic.List<string> {
+                "Ban lãnh đạo",
+                "Tổ Hành chính, tổng hợp",
+                "Tổ Kiểm tra số 1",
+                "Tổ Kiểm tra số 2",
+                "Tổ Kiểm tra số 3",
+                "Tổ Nghiệp vụ, dự toán, pháp chế",
+                "Tổ Quản lý các khoản thu khác",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+            };
+
             using (var context = new AppDbContext())
             {
                 // Ensure table exists just in case (hacky migration)
                 try { context.Database.EnsureCreated(); } catch { }
                 
-                var list = context.Departments.OrderBy(d => d.Name).ToList();
+                var list = context.Departments.ToList()
+                                  .OrderBy(x => {
+                                      int idx = deptOrder.FindIndex(d => d.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
+                                      return idx == -1 ? 999 : idx;
+                                  })
+                                  .ThenBy(x => x.Name)
+                                  .ToList();
+
                 Departments = new ObservableCollection<Department>(list);
                 lstDepartments.ItemsSource = Departments;
             }
@@ -38,7 +59,7 @@ namespace TaxPersonnelManagement.Views
             var newDeptName = txtDepartmentName.Text.Trim();
             if (string.IsNullOrWhiteSpace(newDeptName))
             {
-                MessageBox.Show("Vui lòng nhập tên phòng ban!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                new WarningWindow("Vui lòng nhập tên phòng ban!", "Thông báo").ShowDialog();
                 return;
             }
 
@@ -48,7 +69,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     if (context.Departments.Any(d => d.Name == newDeptName))
                     {
-                        MessageBox.Show("Phòng ban này đã tồn tại!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        new WarningWindow("Phòng ban này đã tồn tại!", "Thông báo").ShowDialog();
                         return;
                     }
 

@@ -127,7 +127,7 @@
                                         
                                         <StackPanel VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Code}" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" FontSize="15" Margin="0 0 0 4"/>
-                                            <TextBlock Text="{Binding Name}" Foreground="#718096" FontSize="13"/>
+                                            <TextBlock Text="{Binding Name}" Foreground="#718096" FontSize="13" TextWrapping="Wrap"/>
                                         </StackPanel>
                                         
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

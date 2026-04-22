@@ -37,7 +37,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (string.IsNullOrWhiteSpace(txtCode.Text) || string.IsNullOrWhiteSpace(txtName.Text))
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ mã và tên ngạch!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                new WarningWindow("Vui lòng nhập đầy đủ mã và tên ngạch!", "Thông báo").ShowDialog();
                 return;
             }
 
@@ -48,7 +48,7 @@ namespace TaxPersonnelManagement.Views
                     // Check duplicate code
                     if (context.Ranks.Any(r => r.Code == txtCode.Text))
                     {
-                         MessageBox.Show("Mã ngạch này đã tồn tại!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                         new WarningWindow("Mã ngạch này đã tồn tại!", "Thông báo").ShowDialog();
                          return;
                     }
 

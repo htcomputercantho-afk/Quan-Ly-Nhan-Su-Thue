@@ -28,6 +28,12 @@ namespace TaxPersonnelManagement.Views
 
         private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
+            // Nếu ComboBox lọc đang mở, KHÔNG cướp sự kiện cuộn chuột để danh sách con tự cuộn
+            if (cbDepartmentFilter.IsDropDownOpen)
+            {
+                return;
+            }
+
             if (!e.Handled)
             {
                 e.Handled = true;
@@ -38,6 +44,7 @@ namespace TaxPersonnelManagement.Views
                 parent?.RaiseEvent(eventArg);
             }
         }
+
 
         /// <summary>
         /// Ẩn nút Thêm mới nếu người dùng không phải Admin.
@@ -60,13 +67,32 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadDepartments()
         {
+            var deptOrder = new System.Collections.Generic.List<string> {
+                "Ban lãnh đạo",
+                "Tổ Hành chính, tổng hợp",
+                "Tổ Kiểm tra số 1",
+                "Tổ Kiểm tra số 2",
+                "Tổ Kiểm tra số 3",
+                "Tổ Nghiệp vụ, dự toán, pháp chế",
+                "Tổ Quản lý các khoản thu khác",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+            };
+
             using (var context = new AppDbContext())
             {
                 var allDepts = context.Departments
                                       .Select(d => d.Name)
                                       .Where(x => !string.IsNullOrEmpty(x))
                                       .Distinct()
-                                      .OrderBy(d => d)
+                                      .ToList() // Chuyển về List để sắp xếp trong bộ nhớ
+                                      .OrderBy(x => {
+                                          int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
+                                          return idx == -1 ? 999 : idx;
+                                      })
+                                      .ThenBy(x => x)
                                       .ToList();
                 
                 allDepts.Insert(0, "-- Tất cả bộ phận --");

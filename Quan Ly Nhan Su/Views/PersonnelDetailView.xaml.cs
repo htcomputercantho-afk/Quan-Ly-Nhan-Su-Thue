@@ -15,6 +15,7 @@ namespace TaxPersonnelManagement.Views
         private bool _isAvatarChanged = false;
         private bool _isRefreshing = false;
         private bool _isFormatting = false;
+        private System.Collections.Generic.List<string> _allPositions = new System.Collections.Generic.List<string>();
 
         /// <summary>
         /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
@@ -270,25 +271,97 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadDepartments()
         {
+            var deptOrder = new System.Collections.Generic.List<string> {
+                "Ban lãnh đạo",
+                "Tổ Hành chính, tổng hợp",
+                "Tổ Kiểm tra số 1",
+                "Tổ Kiểm tra số 2",
+                "Tổ Kiểm tra số 3",
+                "Tổ Nghiệp vụ, dự toán, pháp chế",
+                "Tổ Quản lý các khoản thu khác",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+            };
+
             using (var context = new AppDbContext())
             {
                // Load from Departments table
                var dbDepts = context.Departments.Select(d => d.Name).ToList();
                
                // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
-               // để tránh trường hợp ComboBox bị trống khi bộ phận đó đã bị xóa khỏi danh mục gốc.
                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Department) && !dbDepts.Contains(_personnel.Department))
                {
                    dbDepts.Add(_personnel.Department);
                }
 
-               var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+               var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x))
+                                     .Distinct()
+                                     .OrderBy(x => {
+                                         int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
+                                         return idx == -1 ? 999 : idx;
+                                     })
+                                     .ThenBy(x => x)
+                                     .ToList();
+
                cboDepartment.ItemsSource = allDepts;
                 
                 if (_personnel != null)
                 {
                     SetComboBoxByContent(cboDepartment, _personnel.Department);
                 }
+            }
+        }
+
+        private void cboDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isRefreshing) return;
+            UpdatePositionFilter();
+        }
+
+        private void UpdatePositionFilter()
+        {
+            if (cboDepartment == null || cboPosition == null) return;
+
+            string selectedDept = "";
+            if (cboDepartment.SelectedItem != null)
+            {
+                selectedDept = cboDepartment.SelectedItem.ToString() ?? "";
+            }
+            else if (!string.IsNullOrEmpty(cboDepartment.Text))
+            {
+                selectedDept = cboDepartment.Text;
+            }
+
+            System.Collections.Generic.List<string> filtered;
+
+            if (selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase))
+            {
+                var leadershipPositions = new[] { "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở" };
+                filtered = _allPositions.Where(p => leadershipPositions.Any(lp => lp.Equals(p, StringComparison.OrdinalIgnoreCase))).ToList();
+            }
+            else if (selectedDept.ToUpper().Contains("TỔ"))
+            {
+                var unitPositions = new[] { "Tổ trưởng", "Phó Tổ trưởng", "Công chức" };
+                filtered = _allPositions.Where(p => unitPositions.Any(up => up.Equals(p, StringComparison.OrdinalIgnoreCase))).ToList();
+            }
+            else
+            {
+                filtered = _allPositions;
+            }
+
+            var currentPos = cboPosition.SelectedItem?.ToString() ?? (_personnel?.Position);
+            cboPosition.ItemsSource = filtered;
+            
+            if (!string.IsNullOrEmpty(currentPos) && filtered.Any(f => f.Equals(currentPos, StringComparison.OrdinalIgnoreCase)))
+            {
+                SetComboBoxByContent(cboPosition, currentPos);
+            }
+            else if (filtered.Count > 0)
+            {
+                // Optionally clear or set to first if current not valid for new dept
+                // But usually we just let it be empty so user can pick
             }
         }
         
@@ -323,6 +396,15 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadPositions()
         {
+            var posOrder = new System.Collections.Generic.List<string> {
+                "Trưởng Thuế cơ sở",
+                "Quyền Trưởng Thuế cơ sở",
+                "Phó Trưởng Thuế cơ sở",
+                "Tổ trưởng",
+                "Phó Tổ trưởng",
+                "Công chức"
+            };
+
             using (var context = new AppDbContext())
             {
                var dbPos = context.Positions.Select(p => p.Name).ToList();
@@ -333,13 +415,16 @@ namespace TaxPersonnelManagement.Views
                    dbPos.Add(_personnel.Position);
                }
 
-               var allPos = dbPos.Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
-               cboPosition.ItemsSource = allPos;
-                
-                if (_personnel != null)
-                {
-                    SetComboBoxByContent(cboPosition, _personnel.Position);
-                }
+               _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x))
+                                 .Distinct()
+                                 .OrderBy(x => {
+                                     int idx = posOrder.FindIndex(p => p.Equals(x, StringComparison.OrdinalIgnoreCase));
+                                     return idx == -1 ? 999 : idx;
+                                 })
+                                 .ThenBy(x => x)
+                                 .ToList();
+
+               UpdatePositionFilter();
             }
         }
         

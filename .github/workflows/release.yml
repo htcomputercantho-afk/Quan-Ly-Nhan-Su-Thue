@@ -1,0 +1,38 @@
+name: Build and Release WPF App
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger trên các tag bắt đầu bằng v (ví dụ: v1.0.1.0)
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x' # Sửa nếu bạn đang dùng .NET 6 hoặc 7
+
+    - name: Restore dependencies
+      run: dotnet restore "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj"
+
+    - name: Build and Publish
+      run: dotnet publish "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj" -c Release -r win-x64 --self-contained false -o publish_output
+
+    - name: Create Zip Archive
+      run: Compress-Archive -Path publish_output\* -DestinationPath QuanLyNhanSu_${{ github.ref_name }}.zip
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: QuanLyNhanSu_${{ github.ref_name }}.zip
+        name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

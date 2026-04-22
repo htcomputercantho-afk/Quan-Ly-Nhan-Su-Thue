@@ -514,7 +514,8 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <ComboBox x:Name="cboDepartment" 
-                                                          Style="{StaticResource ModernComboBox}"/>
+                                                          Style="{StaticResource ModernComboBox}"
+                                                          SelectionChanged="cboDepartment_SelectionChanged"/>
                                                 <TextBlock Text="-- Chọn bộ phận --" IsHitTestVisible="False" VerticalAlignment="Center" Margin="11 0" Foreground="Gray" Opacity="0.7" Grid.Column="0">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">

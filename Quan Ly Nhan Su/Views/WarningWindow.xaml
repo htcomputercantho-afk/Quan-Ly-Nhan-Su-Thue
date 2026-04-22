@@ -6,29 +6,45 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="True"
+        Topmost="True"
         Background="Transparent">
     
-    <Border Background="White" CornerRadius="15" BorderBrush="#FFC107" BorderThickness="1" Margin="20">
+    <Border Background="White" CornerRadius="20" Margin="20">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="20" ShadowDepth="5" Opacity="0.2"/>
+            <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.2" Color="Black"/>
         </Border.Effect>
-        <Grid Margin="20">
+        <Grid Margin="0">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <materialDesign:PackIcon Kind="AlertCircle" Width="50" Height="50" Foreground="#FFC107" HorizontalAlignment="Center" Margin="0 0 0 15"/>
-                <TextBlock x:Name="txtTitle" Text="Cảnh Báo" FontSize="20" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0 0 0 10"/>
-                <TextBlock x:Name="txtMessage" Text="Nội dung cảnh báo..." FontSize="14" Foreground="#555" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center"/>
+            <!-- Top Indicator Bar -->
+            <Border Grid.Row="0" Height="6" Background="#ED8936" CornerRadius="20 20 0 0"/>
+
+            <StackPanel Grid.Row="1" Margin="30 25 30 10" VerticalAlignment="Center">
+                <Border Width="70" Height="70" CornerRadius="35" Background="#FFF5F0" HorizontalAlignment="Center" Margin="0 0 0 20">
+                    <materialDesign:PackIcon Kind="AlertCircleOutline" Width="40" Height="40" Foreground="#DD6B20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                
+                <TextBlock x:Name="txtTitle" Text="Cảnh Báo" FontSize="22" FontWeight="Bold" Foreground="#2D3748" HorizontalAlignment="Center" Margin="0 0 0 12"/>
+                <TextBlock x:Name="txtMessage" Text="Nội dung cảnh báo..." FontSize="15" Foreground="#4A5568" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="22"/>
             </StackPanel>
             
-            <Button Grid.Row="1" Content="Đóng" Click="Close_Click" Margin="0 20 0 0" 
-                    Width="100" Height="35"
-                    Style="{StaticResource PremiumButtonStyle}" 
-                    Background="#FFC107" BorderBrush="#FFC107" Foreground="White"
-                    HorizontalAlignment="Center"/>
+            <Border Grid.Row="2" Background="#F7FAFC" CornerRadius="0 0 20 20" Padding="0 20">
+                <Button Content="ĐÃ HIỂU" Click="Close_Click" 
+                        Width="140" Height="45"
+                        materialDesign:ButtonAssist.CornerRadius="10"
+                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                        Background="#ED8936" BorderBrush="#ED8936" Foreground="White"
+                        FontSize="14" FontWeight="Bold"
+                        HorizontalAlignment="Center">
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.1" Color="#ED8936"/>
+                    </Button.Effect>
+                </Button>
+            </Border>
         </Grid>
     </Border>
 </Window>

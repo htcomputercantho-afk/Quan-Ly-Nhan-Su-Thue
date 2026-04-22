@@ -22,12 +22,28 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadPositions()
         {
+            var posOrder = new System.Collections.Generic.List<string> {
+                "Trưởng Thuế cơ sở",
+                "Quyền Trưởng Thuế cơ sở",
+                "Phó Trưởng Thuế cơ sở",
+                "Tổ trưởng",
+                "Phó Tổ trưởng",
+                "Công chức"
+            };
+
             using (var context = new AppDbContext())
             {
                 // Ensure table exists just in case
                 try { context.Database.EnsureCreated(); } catch { }
                 
-                var list = context.Positions.OrderBy(p => p.Name).ToList();
+                var list = context.Positions.ToList()
+                                  .OrderBy(x => {
+                                      int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
+                                      return idx == -1 ? 999 : idx;
+                                  })
+                                  .ThenBy(x => x.Name)
+                                  .ToList();
+
                 Positions = new ObservableCollection<Position>(list);
                 lstPositions.ItemsSource = Positions;
             }
@@ -40,7 +56,7 @@ namespace TaxPersonnelManagement.Views
             var newName = txtPositionName.Text.Trim();
             if (string.IsNullOrWhiteSpace(newName))
             {
-                MessageBox.Show("Vui lòng nhập tên chức vụ!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                new WarningWindow("Vui lòng nhập tên chức vụ!", "Thông báo").ShowDialog();
                 return;
             }
 
@@ -50,7 +66,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     if (context.Positions.Any(d => d.Name == newName))
                     {
-                        MessageBox.Show("Chức vụ này đã tồn tại!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        new WarningWindow("Chức vụ này đã tồn tại!", "Thông báo").ShowDialog();
                         return;
                     }
 
