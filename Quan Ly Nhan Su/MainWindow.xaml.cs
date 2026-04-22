@@ -29,6 +29,13 @@ namespace TaxPersonnelManagement
 
             // Điều hướng mặc định tới màn hình Tổng quan (Dashboard) khi mở app
             NavigateDashboard(null, null);
+            SetVersionInfo();
+        }
+
+        private void SetVersionInfo()
+        {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            txtVersion.Text = $"Version {version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
         }
 
         // For Designer support
@@ -154,6 +161,7 @@ namespace TaxPersonnelManagement
                 txtBackupRestore.Visibility = Visibility.Visible;
                 txtLogout.Visibility = Visibility.Visible;
                 txtCopyright.Visibility = Visibility.Visible;
+                txtVersion.Visibility = Visibility.Visible;
 
                 imgLogo.Margin = new Thickness(0, 0, 10, 0);
 
@@ -183,6 +191,7 @@ namespace TaxPersonnelManagement
                 txtBackupRestore.Visibility = Visibility.Collapsed;
                 txtLogout.Visibility = Visibility.Collapsed;
                 txtCopyright.Visibility = Visibility.Collapsed;
+                txtVersion.Visibility = Visibility.Collapsed;
 
                 imgLogo.Margin = new Thickness(0);
 

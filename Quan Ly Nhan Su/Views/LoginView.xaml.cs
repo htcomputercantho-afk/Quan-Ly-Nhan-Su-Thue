@@ -16,6 +16,13 @@ namespace TaxPersonnelManagement.Views
         {
             InitializeComponent();
             LoadCredentials();
+            SetVersionInfo();
+        }
+
+        private void SetVersionInfo()
+        {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            txtVersion.Text = $"Phiên bản {version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
         }
 
         private class SavedCredentials

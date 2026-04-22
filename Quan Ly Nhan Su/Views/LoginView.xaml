@@ -52,7 +52,8 @@
                     
                     <!-- Secondary Action Button -->
                     <Button x:Name="btnExit" Content="THOÁT" Margin="0 15 0 0" Click="btnExit_Click" Style="{DynamicResource PremiumOutlineButtonStyle}" BorderThickness="0"/>
-                    <TextBlock Text="Copyright © 2026 Linhoang" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.7" FontSize="11" FontWeight="SemiBold" FontFamily="Segoe UI" HorizontalAlignment="Center" Margin="0 25 0 0"/>
+                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.7" FontSize="11" FontWeight="SemiBold" FontFamily="Segoe UI" HorizontalAlignment="Center" Margin="0 25 0 0"/>
+                    <TextBlock x:Name="txtVersion" Text="Phiên bản 1.0.0.0" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.5" FontSize="10" HorizontalAlignment="Center" Margin="0 2 0 0"/>
                 </StackPanel>
 
         </Border>

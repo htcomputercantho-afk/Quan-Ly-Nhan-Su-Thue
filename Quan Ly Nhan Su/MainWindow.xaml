@@ -126,7 +126,10 @@
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
-                <TextBlock x:Name="txtCopyright" Grid.Row="1" Text="Copyright © 2026 Linhoang" Foreground="White" Opacity="0.6" FontSize="13" FontFamily="Segoe UI" FontWeight="Medium" HorizontalAlignment="Center" Margin="0 5 0 15"/>
+                <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="White" Opacity="0.6" FontSize="13" FontFamily="Segoe UI" FontWeight="Medium" HorizontalAlignment="Center" Margin="0 5 0 0"/>
+                    <TextBlock x:Name="txtVersion" Text="Version 1.0.0.0" Foreground="White" Opacity="0.4" FontSize="11" HorizontalAlignment="Center" Margin="0 2 0 15"/>
+                </StackPanel>
             </Grid>
         </Border>
 
