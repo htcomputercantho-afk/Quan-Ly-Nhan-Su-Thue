@@ -19,7 +19,7 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Border Grid.Row="0" Background="{StaticResource PrimaryHueMidBrush}" CornerRadius="16,16,0,0" Padding="20,15">
+            <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="16,16,0,0" Padding="20,15">
                 <StackPanel Orientation="Horizontal">
                     <md:PackIcon Kind="Update" Foreground="White" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBlock Text="PHÁT HIỆN BẢN CẬP NHẬT MỚI" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
@@ -44,7 +44,7 @@
                             <TextBlock x:Name="txtCurrentVersion" Text="1.0.1.2" FontSize="18" FontWeight="Bold" Foreground="#333"/>
                         </StackPanel>
 
-                        <md:PackIcon Grid.Column="1" Kind="ArrowRightBold" Foreground="{StaticResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
+                        <md:PackIcon Grid.Column="1" Kind="ArrowRightBold" Foreground="{DynamicResource PrimaryHueMidBrush}" Width="24" Height="24" VerticalAlignment="Center"/>
 
                         <StackPanel Grid.Column="2" HorizontalAlignment="Center">
                             <TextBlock Text="Bản mới" FontSize="12" Foreground="Gray" HorizontalAlignment="Center"/>
@@ -64,10 +64,10 @@
             <!-- Footer Buttons -->
             <Border Grid.Row="2" Background="#FAFAFA" CornerRadius="0,0,16,16" Padding="20,15">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="btnLater" Content="ĐỂ SAU" Style="{StaticResource MaterialDesignFlatButton}" 
+                    <Button x:Name="btnLater" Content="ĐỂ SAU" Style="{DynamicResource MaterialDesignFlatButton}" 
                             Margin="0,0,10,0" Click="btnLater_Click"/>
                     
-                    <Button x:Name="btnUpdate" Content="CẬP NHẬT NGAY" Style="{StaticResource MaterialDesignRaisedButton}" 
+                    <Button x:Name="btnUpdate" Content="CẬP NHẬT NGAY" Style="{DynamicResource MaterialDesignRaisedButton}" 
                             Background="#2E7D32" BorderBrush="#2E7D32" Click="btnUpdate_Click">
                         <Button.Resources>
                             <Style TargetType="md:PackIcon">
