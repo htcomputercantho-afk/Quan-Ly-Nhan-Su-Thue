@@ -41,16 +41,41 @@ $xmlContent = @"
 Set-Content -Path $xmlPath -Value $xmlContent -Encoding UTF8
 
 # 3. Git Add, Commit, Tag, Push
-Write-Host "3. Day source code va tag len GitHub de kich hoat Auto Build..."
+Write-Host "3. Day source code va tag len GitHub..." -ForegroundColor Cyan
 git add .
 git commit -m "Release v$NewVersion"
-git tag "v$NewVersion"
 git push origin main
+git tag "v$NewVersion"
 git push origin "v$NewVersion"
 
-Write-Host "=============================================" -ForegroundColor Green
-Write-Host "HOAN TAT! GitHub Actions dang chay tren server..." -ForegroundColor Green
-Write-Host "Ban co the vao tab Actions tren GitHub de xem qua trinh Build & Zip tu dong." -ForegroundColor Green
-Write-Host "Ung dung se tu dong tai ban $NewVersion nay!" -ForegroundColor Green
-Write-Host "=============================================" -ForegroundColor Green
+# 4. Build ban 'Sieu Sach' tai local (De phong GitHub build ra file rac)
+Write-Host "4. Dang build ban 'Sieu Sach' (Single File) tai local..." -ForegroundColor Yellow
+$PublishDir = "publish_local"
+if (Test-Path $PublishDir) { Remove-Item -Recurse -Force $PublishDir }
+
+dotnet publish "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj" `
+    -c Release `
+    -r win-x64 `
+    --self-contained true `
+    -p:PublishSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfContained=true `
+    -p:IncludeAllContentForSelfContained=true `
+    -o $PublishDir
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Build thanh cong! Dang nen file Zip..." -ForegroundColor Green
+    $ZipFile = "QuanLyNhanSu_v$NewVersion.zip"
+    if (Test-Path $ZipFile) { Remove-Item $ZipFile }
+    Compress-Archive -Path "$PublishDir\*" -DestinationPath $ZipFile
+    
+    Write-Host "=============================================" -ForegroundColor Green
+    Write-Host "HOAN TAT QUY TRINH!" -ForegroundColor Green
+    Write-Host "1. Code da duoc day len GitHub." -ForegroundColor White
+    Write-Host "2. File Zip 'Sieu Sach' da duoc tao tai: $ZipFile" -ForegroundColor Yellow
+    Write-Host "LUU Y: Ban nen lay file Zip nay upload de vao Release tren GitHub de dam bao nguoi dung tai ve chi co dung 1 file EXE duy nhat!" -ForegroundColor Magenta
+    Write-Host "=============================================" -ForegroundColor Green
+} else {
+    Write-Host "Co loi trong qua trinh build local!" -ForegroundColor Red
+}
+
 Pause
