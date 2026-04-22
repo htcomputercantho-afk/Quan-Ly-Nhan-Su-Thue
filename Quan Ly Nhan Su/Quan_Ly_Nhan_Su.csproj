@@ -8,6 +8,12 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Quan_Ly_Nhan_Su</AssemblyName>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Version>1.0.1.2</Version>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,5 +36,6 @@
   </ItemGroup>
 
 </Project>
+
 
 
