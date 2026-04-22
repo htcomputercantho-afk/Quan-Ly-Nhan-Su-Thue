@@ -43,5 +43,9 @@ Quan Ly Nhan Su/user.config
 SingleApp/
 *.txt
 
-## Publish folders
 Publish/
+publish_output/
+publish_output_test/
+*.zip
+test_zip/
+
