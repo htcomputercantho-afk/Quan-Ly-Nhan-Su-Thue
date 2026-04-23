@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Quan_Ly_Nhan_Su</AssemblyName>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>1.0.1.14</Version>
+    <Version>1.0.1.15</Version>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -37,4 +37,5 @@
   </ItemGroup>
 
 </Project>
+
 
