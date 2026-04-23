@@ -41,42 +41,18 @@ $xmlContent = @"
 Set-Content -Path $xmlPath -Value $xmlContent -Encoding UTF8
 
 # 3. Git Add, Commit, Tag, Push
-Write-Host "3. Day source code va tag len GitHub..." -ForegroundColor Cyan
+Write-Host "3. Dang day code va tag len GitHub de tu dong Build..." -ForegroundColor Cyan
 git add .
 git commit -m "Release v$NewVersion"
 git push origin main
 git tag "v$NewVersion"
 git push origin "v$NewVersion"
 
-# 4. Build ban 'Sieu Sach' tai local (De phong GitHub build ra file rac)
-Write-Host "4. Dang build ban 'Sieu Sach' (Single File) tai local..." -ForegroundColor Yellow
-$PublishDir = "publish_local"
-if (Test-Path $PublishDir) { Remove-Item -Recurse -Force $PublishDir }
-
-dotnet publish "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj" `
-    -c Release `
-    -r win-x64 `
-    --self-contained true `
-    -p:PublishSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfContained=true `
-    -o $PublishDir
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Build thanh cong! Dang nen file Zip..." -ForegroundColor Green
-    $ZipFile = "QuanLyNhanSu_v$NewVersion.zip"
-    if (Test-Path $ZipFile) { Remove-Item $ZipFile }
-    
-    # NEN TOAN BO THU MUC BAO GOM CA DLL DE DAM BAO APP CHAY DUOC 100%
-    Compress-Archive -Path "$PublishDir\*" -DestinationPath $ZipFile -Force
-    
-    Write-Host "=============================================" -ForegroundColor Green
-    Write-Host "HOAN TAT QUY TRINH!" -ForegroundColor Green
-    Write-Host "1. Code da duoc day len GitHub." -ForegroundColor White
-    Write-Host "2. File Zip 'CHUAN ON DINH' da duoc tao tai: $ZipFile" -ForegroundColor Yellow
-    Write-Host "Dien mao file Zip: Bao gom file EXE va cac file DLL loi cua he thong." -ForegroundColor Green
-    Write-Host "=============================================" -ForegroundColor Green
-} else {
-    Write-Host "Co loi trong qua trinh build local!" -ForegroundColor Red
-}
+Write-Host "=============================================" -ForegroundColor Green
+Write-Host "HOAN TAT QUY TRINH!" -ForegroundColor Green
+Write-Host "1. Code da duoc day len GitHub." -ForegroundColor White
+Write-Host "2. GitHub Actions dang tu dong build ban 'Single EXE' tai tab Actions." -ForegroundColor Yellow
+Write-Host "3. Sau vai phut, ban se thay file ZIP san sang trong phan Release!" -ForegroundColor Green
+Write-Host "=============================================" -ForegroundColor Green
 
 Pause
