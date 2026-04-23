@@ -24,10 +24,10 @@ jobs:
       run: dotnet restore "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj"
 
     - name: Build and Publish
-      run: dotnet publish "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj" -c Release -r win-x64
+      run: dotnet publish "Quan Ly Nhan Su\Quan_Ly_Nhan_Su.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -p:DebugSymbols=false -o publish_output
 
     - name: Create Zip Archive
-      run: Compress-Archive -Path "Quan Ly Nhan Su\bin\Release\net8.0-windows\win-x64\publish\*" -DestinationPath QuanLyNhanSu_${{ github.ref_name }}.zip
+      run: Compress-Archive -Path "publish_output\*" -DestinationPath QuanLyNhanSu_${{ github.ref_name }}.zip
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
