@@ -34,7 +34,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "=============================================" -ForegroundColor Green
     
     # Mo thu muc build sau khi xong de ban kiem tra ngay
-    ii $OutDir
+    Invoke-Item $OutDir
 } else {
     Write-Host "Build that bai! Vui long kiem tra lai code." -ForegroundColor Red
 }
