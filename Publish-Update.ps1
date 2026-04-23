@@ -21,6 +21,10 @@ $xmlPath = "update.xml"
 $repoOwner = "htcomputercantho-afk"
 $repoName = "Quan-Ly-Nhan-Su-Thue"
 
+# 0. Don dep file rac truoc khi push
+Write-Host "0. Dang don dep file rac va thu muc build..." -ForegroundColor Yellow
+Remove-Item -Recurse -Force Build_Result_Local, Build_Result_Final, publish_local, publish_ultimate, *.zip -ErrorAction SilentlyContinue
+
 # 1. Cap nhat file .csproj
 Write-Host "1. Cap nhat phien ban trong .csproj..."
 $csprojContent = Get-Content $csprojPath -Raw
