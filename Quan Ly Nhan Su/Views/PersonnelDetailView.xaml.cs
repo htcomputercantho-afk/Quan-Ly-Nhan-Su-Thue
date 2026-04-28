@@ -1634,6 +1634,19 @@ namespace TaxPersonnelManagement.Views
                     _editingLeaveHistory.LeaveYear = null;
                 }
 
+                // Generate System Note Breakdown (ONLY if reason involves abroad)
+                bool isAbroad = !string.IsNullOrEmpty(reason) && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"));
+                if (end.HasValue && isAbroad)
+                {
+                    _editingLeaveHistory.SystemNote = GetLeaveBreakdownNote(start, end.Value, type);
+                }
+                else
+                {
+                    _editingLeaveHistory.SystemNote = null;
+                }
+
+
+
                 // Reset Edit Mode
                 _editingLeaveHistory = null;
                 dgLeaveHistory.SelectedItem = null;
@@ -1686,8 +1699,11 @@ namespace TaxPersonnelManagement.Views
                                 DurationDays = takenFromOld,
                                 Reason = reason + $"|SYS:Ưu tiên trừ phép tồn năm {previousYear}|LINK:{linkId}",
                                 PersonnelId = _personnel != null ? _personnel.Id : 0,
-                                LeaveYear = previousYear
+                                LeaveYear = previousYear,
+                                SystemNote = (reason != null && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, start.AddDays(takenFromOld - 1), type) : null
                             };
+
+
                             if (_personnel == null) _personnel = new Personnel();
                             if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
                             _personnel.LeaveHistories.Add(itemOld);
@@ -1704,8 +1720,11 @@ namespace TaxPersonnelManagement.Views
                                 DurationDays = takenFromCurrent,
                                 Reason = reason + $"|SYS:Trừ tiếp vào phép tồn năm {currentYear}|LINK:{linkId}",
                                 PersonnelId = _personnel != null ? _personnel.Id : 0,
-                                LeaveYear = currentYear
+                                LeaveYear = currentYear,
+                                SystemNote = (reason != null && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, end.Value, type) : null
                             };
+
+
                              if (_personnel == null) _personnel = new Personnel();
                             if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
                             _personnel.LeaveHistories.Add(itemCurrent);
@@ -1744,8 +1763,11 @@ namespace TaxPersonnelManagement.Views
                     DurationDays = duration,
                     Reason = reason,
                     PersonnelId = _personnel != null ? _personnel.Id : 0,
-                    LeaveYear = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() == "Phép năm" ? (int?)cboLeaveYear.SelectedItem : null
+                    LeaveYear = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() == "Phép năm" ? (int?)cboLeaveYear.SelectedItem : null,
+                    SystemNote = (end.HasValue && !string.IsNullOrEmpty(reason) && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, end.Value, type) : null
                 };
+
+
                 
                 if (_personnel == null) _personnel = new Personnel();
                 if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
@@ -1898,15 +1920,68 @@ namespace TaxPersonnelManagement.Views
         private double CalculateWorkingDays(DateTime start, DateTime end)
         {
             double days = 0;
-            for (var date = start; date <= end; date = date.AddDays(1))
+            using (var context = new AppDbContext())
             {
-                if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
+                var holidays = context.PublicHolidays
+                                      .Where(h => h.Date >= start.Date && h.Date <= end.Date)
+                                      .Select(h => h.Date.Date)
+                                      .ToList();
+
+                for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
                 {
+                    // Exclude weekends
+                    if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                        continue;
+
+                    // Exclude public holidays
+                    if (holidays.Contains(date))
+                        continue;
+
                     days++;
                 }
             }
             return days;
         }
+
+        private string GetLeaveBreakdownNote(DateTime start, DateTime end, string leaveType)
+        {
+            int totalDays = (int)(end.Date - start.Date).TotalDays + 1;
+            int weekends = 0;
+            int holidaysCount = 0;
+            int workDays = 0;
+
+            using (var context = new AppDbContext())
+            {
+                var holidaysList = context.PublicHolidays
+                                          .Where(h => h.Date >= start.Date && h.Date <= end.Date)
+                                          .Select(h => h.Date.Date)
+                                          .ToList();
+
+                for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
+                {
+                    bool isWeekend = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+                    bool isHoliday = holidaysList.Contains(date);
+
+                    if (isWeekend)
+                    {
+                        weekends++;
+                    }
+                    else if (isHoliday)
+                    {
+                        holidaysCount++;
+                    }
+                    else
+                    {
+                        workDays++;
+                    }
+                }
+            }
+
+            string typeName = leaveType == "Phép năm" ? "nghỉ phép năm" : "ngày nghỉ";
+            return $"Nghỉ {totalDays:00} ngày, trong đó: {weekends:00} ngày thứ 7, chủ nhật; {holidaysCount:00} ngày nghỉ lễ; {workDays:00} {typeName}";
+        }
+
+
 
         private LeaveHistory? _editingLeaveHistory = null;
 

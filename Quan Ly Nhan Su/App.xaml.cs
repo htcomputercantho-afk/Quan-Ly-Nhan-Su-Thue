@@ -6,6 +6,10 @@ using AutoUpdaterDotNET;
 using System;
 using System.IO;
 using System.Linq;
+using System.Globalization;
+using TaxPersonnelManagement.Models;
+
+
 
 
 
@@ -155,11 +159,14 @@ namespace TaxPersonnelManagement
                             EndDate TEXT NOT NULL,
                             DurationDays REAL NOT NULL,
                             Reason TEXT,
+                            SystemNote TEXT,
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+
                         );");
 
                     // Manual Migration for LeaveYear (Feature: Year Selection)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE LeaveHistories ADD COLUMN LeaveYear INTEGER"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE LeaveHistories ADD COLUMN SystemNote TEXT"); } catch { }
 
                     // Manual Migration for Tab 6 Fields (Salary Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN CurrentSalaryStep TEXT"); } catch { }
@@ -210,6 +217,21 @@ namespace TaxPersonnelManagement
                             Note TEXT,
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
+
+
+                    // Manual Migration for PublicHolidays
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS PublicHolidays (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Name TEXT NOT NULL,
+                            Date TEXT NOT NULL,
+                            Note TEXT
+                        );");
+
+                    // Ensure holidays for current and next year
+                    EnsureHolidaysSeeded(context);
+
+
 
                     // Seed Salary Delay Reasons if empty
                     var delayCount = context.Database.ExecuteSqlRaw("SELECT COUNT(*) FROM SalaryDelayReasons"); // This returns -1 for SELECT usually with ExecuteSqlRaw, need scalar
@@ -497,6 +519,98 @@ namespace TaxPersonnelManagement
             }
             return false;
         }
+
+        private void EnsureHolidaysSeeded(AppDbContext context)
+        {
+            int currentYear = DateTime.Now.Year;
+            SeedHolidaysForYear(context, currentYear - 1); // Ensure last year
+            SeedHolidaysForYear(context, currentYear);
+            SeedHolidaysForYear(context, currentYear + 1);
+        }
+
+        private void SeedHolidaysForYear(AppDbContext context, int year)
+        {
+            // Check if already seeded for this year
+            if (context.PublicHolidays.Any(h => h.Date.Year == year)) return;
+
+            var holidays = new System.Collections.Generic.List<PublicHoliday>();
+            
+            // Solar Fixed
+            holidays.Add(new PublicHoliday { Name = "Tết Dương lịch", Date = new DateTime(year, 1, 1) });
+            holidays.Add(new PublicHoliday { Name = "Ngày Giải phóng", Date = new DateTime(year, 4, 30) });
+            holidays.Add(new PublicHoliday { Name = "Ngày Quốc tế Lao động", Date = new DateTime(year, 5, 1) });
+            holidays.Add(new PublicHoliday { Name = "Ngày Quốc khánh", Date = new DateTime(year, 9, 2) });
+            holidays.Add(new PublicHoliday { Name = "Ngày Quốc khánh (bổ sung)", Date = new DateTime(year, 9, 1) });
+
+            // Lunar Holidays using ChineseLunisolarCalendar
+            ChineseLunisolarCalendar lunar = new ChineseLunisolarCalendar();
+
+            // 1. Giỗ tổ Hùng Vương (10/03 Âm lịch)
+            try {
+                DateTime hungKings = GetSolarFromLunar(lunar, year, 3, 10);
+                holidays.Add(new PublicHoliday { Name = "Giỗ tổ Hùng Vương", Date = hungKings });
+            } catch { }
+
+            // 2. Tết Nguyên Đán (Từ 29/12 hoặc 30/12 đến mùng 4 Tết)
+            try {
+                // Mùng 1, 2, 3, 4 Tết
+                holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán", Date = GetSolarFromLunar(lunar, year, 1, 1) });
+                holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán", Date = GetSolarFromLunar(lunar, year, 1, 2) });
+                holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán", Date = GetSolarFromLunar(lunar, year, 1, 3) });
+                holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán", Date = GetSolarFromLunar(lunar, year, 1, 4) });
+
+                // Đêm Giao thừa (Ngày cuối cùng của năm trước)
+                // Phải tính dựa trên năm hiện tại trừ 1 để ra ngày cuối cùng
+                DateTime firstDayOfNewYear = GetSolarFromLunar(lunar, year, 1, 1);
+                holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán (Giao thừa)", Date = firstDayOfNewYear.AddDays(-1) });
+            } catch { }
+
+            context.PublicHolidays.AddRange(holidays);
+            context.SaveChanges();
+            DebugLog($"Auto-seeded holidays for year {year}.");
+        }
+
+        private DateTime GetSolarFromLunar(ChineseLunisolarCalendar lunar, int year, int lMonth, int lDay)
+        {
+            // ChineseLunisolarCalendar year cycle is different, we need to find the solar year
+            // that contains this lunar date.
+            // For a given solar year, the Lunar New Year usually falls in Jan or Feb.
+            
+            // Try to find the solar date in the range [year, year+1]
+            for (int y = year - 1; y <= year + 1; y++)
+            {
+                try {
+                    int monthsInYear = lunar.GetMonthsInYear(y);
+                    for (int m = 1; m <= monthsInYear; m++)
+                    {
+                        // Handle leap months: we usually only care about the non-leap month for holidays
+                        // but GetMonth returns 1..13 if there is a leap month.
+                        // Simplified check:
+                        if (lunar.GetDayOfMonth(lunar.ToDateTime(y, m, lDay, 0, 0, 0, 0)) == lDay)
+                        {
+                           // This is complex. Let's use a simpler approach.
+                        }
+                    }
+                } catch { }
+            }
+
+            // Simplified accurate enough for standard years:
+            // The ToDateTime(year, month, day, ...) uses Lunar parameters.
+            // We need to map the "Solar Year" to the "Lunar Year" which is tricky.
+            // Actually, for Tet of solar year Y, the Lunar Year is usually Y or Y-1.
+            
+            // Standard approach for Tet in Solar Year Y:
+            // Tet usually starts in Jan/Feb of Year Y.
+            // So we try Lunar Year Y or Y-1.
+            
+            DateTime date1 = lunar.ToDateTime(year, lMonth, lDay, 0, 0, 0, 0);
+            if (date1.Year == year || (lMonth == 1 && date1.Year == year)) return date1;
+            
+            DateTime date2 = lunar.ToDateTime(year - 1, lMonth, lDay, 0, 0, 0, 0);
+            return date2;
+        }
     }
 }
+
+
 

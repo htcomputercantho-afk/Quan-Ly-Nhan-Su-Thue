@@ -829,7 +829,7 @@
 
                                         <StackPanel Grid.Column="4">
                                             <TextBlock Text="Năm giữ vị trí công tác" Style="{StaticResource ModernLabel}"/>
-                                            <TextBox x:Name="txtPositionYear" IsReadOnly="True" Background="#FAFAFA" Style="{StaticResource ModernTextBox}" FontWeight="Bold"/>
+                                            <TextBox x:Name="txtPositionYear" Style="{StaticResource ModernTextBox}" FontWeight="Bold"/>
                                         </StackPanel>
                                     </Grid>
 

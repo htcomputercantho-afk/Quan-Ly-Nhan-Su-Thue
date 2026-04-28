@@ -219,6 +219,8 @@ namespace TaxPersonnelManagement.Models
 
         public double DurationDays { get; set; }
         public string? Reason { get; set; }
+        public string? SystemNote { get; set; } // Ghi chú hệ thống (chi tiết ngày nghỉ)
+
         
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public int STT { get; set; }
@@ -261,34 +263,40 @@ namespace TaxPersonnelManagement.Models
 
                 // If NO sys message exists AND it's NOT Annual Leave ("Phép năm"), 
                 // calculate and display "X tháng Y ngày"
-                if (LeaveType != "Phép năm")
+                if (LeaveType == "Phép năm")
                 {
-                    DateTime start = StartDate.Date;
-                    
-                    if (!EndDate.HasValue)
-                    {
-                        return "Đang nghỉ (Chưa xác định ngày kết thúc)";
-                    }
+                    return SystemNote ?? "";
+                }
 
-                    DateTime end = EndDate.Value.Date;
-                    if (start <= end)
-                    {
-                        int months = 0;
-                        DateTime tempDate = start;
-                        while (tempDate.AddMonths(1) <= end)
-                        {
-                            months++;
-                            tempDate = tempDate.AddMonths(1);
-                        }
-                        int days = (end - tempDate).Days + 1; // +1 to make it inclusive
+                DateTime start = StartDate.Date;
+                
+                if (!EndDate.HasValue)
+                {
+                    return "Đang nghỉ (Chưa xác định ngày kết thúc)";
+                }
 
-                        if (months > 0 && days > 0)
-                            return $"{months} tháng {days} ngày";
-                        else if (months > 0)
-                            return $"{months} tháng";
-                        else if (days > 0)
-                            return $"{days} ngày";
+                DateTime end = EndDate.Value.Date;
+                if (start <= end)
+                {
+                    int months = 0;
+                    DateTime tempDate = start;
+                    while (tempDate.AddMonths(1) <= end)
+                    {
+                        months++;
+                        tempDate = tempDate.AddMonths(1);
                     }
+                    int days = (end - tempDate).Days + 1; // +1 to make it inclusive
+
+                    string basic = "";
+                    if (months > 0 && days > 0) basic = $"{months} tháng {days} ngày";
+                    else if (months > 0) basic = $"{months} tháng";
+                    else if (days > 0) basic = $"{days} ngày";
+
+                    if (!string.IsNullOrEmpty(SystemNote))
+                    {
+                        return string.IsNullOrEmpty(basic) ? SystemNote : $"{basic} - {SystemNote}";
+                    }
+                    return basic;
                 }
 
 
@@ -344,4 +352,18 @@ namespace TaxPersonnelManagement.Models
         public decimal Amount { get; set; }
         public string? Note { get; set; }
     }
+
+    /// <summary>
+
+    /// Lớp lưu trữ thông tin ngày nghỉ lễ, Tết.
+    /// Dùng để loại trừ khi tính số ngày nghỉ phép.
+    /// </summary>
+    public class PublicHoliday
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string? Note { get; set; }
+    }
 }
+

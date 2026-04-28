@@ -22,6 +22,8 @@ namespace TaxPersonnelManagement.Data
         public DbSet<SalaryDelayReason> SalaryDelayReasons { get; set; } // Bảng danh mục lý do chậm nâng lương
         public DbSet<DisciplineType> DisciplineTypes { get; set; }       // Bảng danh mục các loại kỷ luật
         public DbSet<IncomeRecord> IncomeRecords { get; set; }           // Bảng ghi nhận tổng thu nhập hàng tháng/năm
+        public DbSet<PublicHoliday> PublicHolidays { get; set; }         // Bảng danh mục ngày nghỉ lễ
+
 
         /// <summary>
         /// Phương thức cấu hình cơ sở dữ liệu khi ứng dụng khởi chạy.
