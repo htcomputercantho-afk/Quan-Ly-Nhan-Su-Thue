@@ -1074,8 +1074,10 @@
                                         <TextBlock Text="3. Đến ngày" Style="{StaticResource ModernLabel}"/>
                                         <DatePicker x:Name="dpLeaveEndDate" Style="{StaticResource ModernDatePicker}" 
                                                     PreviewKeyUp="DatePicker_PreviewKeyUp"
-                                                    SelectedDateChanged="OnLeaveDateChanged"/>
+                                                    SelectedDateChanged="OnLeaveDateChanged"
+                                                    materialDesign:TextFieldAssist.HasClearButton="True"/>
                                     </StackPanel>
+
 
                                     <!-- Row 2 Input & Button -->
                                     <Grid Grid.Row="2" Grid.ColumnSpan="5">

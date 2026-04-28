@@ -215,7 +215,8 @@ namespace TaxPersonnelManagement.Models
         public string LeaveType { get; set; } = string.Empty; // Nghỉ phép, Ốm, Thai sản...
         public int? LeaveYear { get; set; } // Năm nghỉ phép (cho Phép năm)
         public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
         public double DurationDays { get; set; }
         public string? Reason { get; set; }
         
@@ -263,7 +264,13 @@ namespace TaxPersonnelManagement.Models
                 if (LeaveType != "Phép năm")
                 {
                     DateTime start = StartDate.Date;
-                    DateTime end = EndDate.Date;
+                    
+                    if (!EndDate.HasValue)
+                    {
+                        return "Đang nghỉ (Chưa xác định ngày kết thúc)";
+                    }
+
+                    DateTime end = EndDate.Value.Date;
                     if (start <= end)
                     {
                         int months = 0;
@@ -283,6 +290,7 @@ namespace TaxPersonnelManagement.Models
                             return $"{days} ngày";
                     }
                 }
+
 
                 return ""; // Default empty
             }

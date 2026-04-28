@@ -30,10 +30,14 @@ namespace TaxPersonnelManagement.Views
 
         private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
+            // Tự động sao lưu dữ liệu trước khi thực hiện cập nhật
+            App.PerformBackup("auto_update");
+
             if (AutoUpdater.DownloadUpdate(_args))
             {
                 Application.Current.Shutdown();
             }
         }
+
     }
 }

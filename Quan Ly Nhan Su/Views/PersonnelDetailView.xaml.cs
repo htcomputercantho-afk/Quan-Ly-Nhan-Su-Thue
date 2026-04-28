@@ -921,6 +921,7 @@ namespace TaxPersonnelManagement.Views
 
             if (Application.Current.MainWindow is MainWindow mw)
             {
+                mw.ClearPersonnelCache();
                 mw.NavigateToDashboard();
             }
         }
@@ -1473,20 +1474,32 @@ namespace TaxPersonnelManagement.Views
                 new WarningWindow("Vui lòng chọn loại nghỉ phép!", "Thiếu thông tin").ShowDialog();
                 return;
             }
-            if (dpLeaveStartDate.SelectedDate == null || dpLeaveEndDate.SelectedDate == null)
+            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+
+            // Validate dates
+            if (dpLeaveStartDate.SelectedDate == null)
             {
-                new WarningWindow("Vui lòng nhập đầy đủ ngày bắt đầu và kết thúc!", "Thiếu thông tin").ShowDialog();
+                new WarningWindow("Vui lòng nhập ngày bắt đầu!", "Thiếu thông tin").ShowDialog();
                 return;
             }
-            if (dpLeaveEndDate.SelectedDate < dpLeaveStartDate.SelectedDate)
+
+            // End date is mandatory for Annual Leave ("Phép năm")
+            if (type == "Phép năm" && dpLeaveEndDate.SelectedDate == null)
+            {
+                new WarningWindow("Vui lòng nhập ngày kết thúc cho Phép năm!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            if (dpLeaveEndDate.SelectedDate != null && dpLeaveEndDate.SelectedDate < dpLeaveStartDate.SelectedDate)
             {
                 new WarningWindow("Ngày kết thúc không thể nhỏ hơn ngày bắt đầu!", "Lỗi thời gian").ShowDialog();
                 return;
             }
 
-            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+
             var start = dpLeaveStartDate.SelectedDate.Value;
-            var end = dpLeaveEndDate.SelectedDate.Value;
+            DateTime? end = dpLeaveEndDate.SelectedDate;
+
 
             // Check for overlap
             if (_personnel != null && _personnel.LeaveHistories != null)
@@ -1496,12 +1509,44 @@ namespace TaxPersonnelManagement.Views
                     // Skip self if editing
                     if (_editingLeaveHistory != null && history == _editingLeaveHistory) continue;
 
-                    if (start <= history.EndDate && end >= history.StartDate)
+                    // Handle overlap with ongoing or closed leaves
+                    bool isOverlap = false;
+                    
+                    if (history.EndDate.HasValue)
                     {
-                        var msg = $"Khoảng thời gian này đã trùng với đợt nghỉ phép: {history.LeaveType} \n(Từ {history.StartDate:dd/MM/yyyy} đến {history.EndDate:dd/MM/yyyy}).\nVui lòng kiểm tra lại!";
+                        if (end.HasValue)
+                        {
+                             // Case: Both have end dates
+                             isOverlap = (start <= history.EndDate.Value && end.Value >= history.StartDate);
+                        }
+                        else
+                        {
+                             // Case: New is ongoing
+                             isOverlap = (start <= history.EndDate.Value);
+                        }
+                    }
+                    else
+                    {
+                        // Existing is ongoing
+                        if (end.HasValue)
+                        {
+                            isOverlap = (end.Value >= history.StartDate);
+                        }
+                        else
+                        {
+                            // Both ongoing
+                            isOverlap = true;
+                        }
+                    }
+
+                    if (isOverlap)
+                    {
+                        string historyEndStr = history.EndDate.HasValue ? history.EndDate.Value.ToString("dd/MM/yyyy") : "Đang nghỉ";
+                        var msg = $"Khoảng thời gian này đã trùng với đợt nghỉ phép: {history.LeaveType} \n(Từ {history.StartDate:dd/MM/yyyy} đến {historyEndStr}).\nVui lòng kiểm tra lại!";
                         new WarningWindow(msg, "Trùng lịch nghỉ").ShowDialog();
                         return;
                     }
+
                 }
             }
             
@@ -1515,12 +1560,17 @@ namespace TaxPersonnelManagement.Views
                 // Fallback if empty or invalid, though UpdateLeaveDuration should handle this
                 if (type == "Phép năm")
                 {
-                    duration = CalculateWorkingDays(start, end);
+                    // end is guaranteed non-null here due to validation above
+                    duration = CalculateWorkingDays(start, end!.Value);
                 }
                 else
                 {
-                    duration = (end - start).TotalDays + 1;
+                    if (end.HasValue)
+                        duration = (end.Value - start).TotalDays + 1;
+                    else
+                        duration = 0; // Unknown duration for ongoing leave
                 }
+
             }
 
             // --- VALIDATION START: Check Balance ---

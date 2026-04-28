@@ -26,9 +26,10 @@ namespace TaxPersonnelManagement.Views
             {
                 var now = DateTime.Now;
                 // Calculate used leave for the current year
-                used = p.LeaveHistories
+                used = (int)p.LeaveHistories
                         .Where(h => h.StartDate.Year == now.Year)
-                        .Sum(h => (h.EndDate - h.StartDate).Days + 1);
+                        .Sum(h => h.DurationDays);
+
             }
             txtUsedLeave.Text = used.ToString();
 

@@ -7,6 +7,8 @@ namespace TaxPersonnelManagement
     public partial class MainWindow : Window
     {
         private User? _currentUser;
+        private PersonnelDetailView? _personnelDetailCache;
+
 
         /// <summary>
         /// Khởi tạo cửa sổ chính sau khi đăng nhập thành công.
@@ -65,15 +67,37 @@ namespace TaxPersonnelManagement
         public void NavigateToPersonnelDetail(Personnel? p, int activeTab = 0)
         {
             UpdateMenuState(btnPersonnel);
-            MainFrame.Navigate(new PersonnelDetailView(p, activeTab));
+            
+            // Nếu là thêm mới, sử dụng cache nếu có
+            if (p == null)
+            {
+                if (_personnelDetailCache == null)
+                {
+                    _personnelDetailCache = new PersonnelDetailView(null, activeTab);
+                }
+                MainFrame.Navigate(_personnelDetailCache);
+            }
+            else
+            {
+                // Nếu là chỉnh sửa nhân sự cụ thể, tạo view mới (hoặc có thể cache theo ID nếu cần, 
+                // nhưng hiện tại ưu tiên fix cho phần "Thêm mới" như yêu cầu)
+                _personnelDetailCache = new PersonnelDetailView(p, activeTab);
+                MainFrame.Navigate(_personnelDetailCache);
+            }
         }
+
+        public void ClearPersonnelCache()
+        {
+            _personnelDetailCache = null;
+        }
+
 
         private void NavigatePersonnel(object sender, RoutedEventArgs e)
         {
-            UpdateMenuState(btnPersonnel);
-            MainFrame.Navigate(new PersonnelDetailView(null));
+            NavigateToPersonnelDetail(null);
             // Note: Users should use "Overview" to see the list.
         }
+
 
         private void NavigateSalary(object sender, RoutedEventArgs e)
         {

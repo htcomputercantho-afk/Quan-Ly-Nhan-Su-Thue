@@ -3,6 +3,11 @@ using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Views;
 using Microsoft.EntityFrameworkCore;
 using AutoUpdaterDotNET;
+using System;
+using System.IO;
+using System.Linq;
+
+
 
 namespace TaxPersonnelManagement
 {
@@ -89,6 +94,13 @@ namespace TaxPersonnelManagement
                 {
                     DebugLog("Ensuring Database Created...");
                     context.Database.EnsureCreated();
+
+                    // Detect if migration is pending and perform auto-backup
+                    if (IsSchemaUpdatePending(context))
+                    {
+                        PerformBackup("before_migration");
+                    }
+
                     
                     // Manual Migration for Departments table
                     context.Database.ExecuteSqlRaw(@"
@@ -233,7 +245,64 @@ namespace TaxPersonnelManagement
                          context.Database.CloseConnection();
                     }
 
+                    // Manual Migration for Nullable EndDate in LeaveHistories
+                    bool needLeaveDateFix = false;
+                    using (var command = context.Database.GetDbConnection().CreateCommand())
+                    {
+                         command.CommandText = "PRAGMA table_info(LeaveHistories)";
+                         context.Database.OpenConnection();
+                         using (var result = command.ExecuteReader())
+                         {
+                             while (result.Read())
+                             {
+                                 if (result["name"].ToString() == "EndDate" && Convert.ToInt32(result["notnull"]) == 1)
+                                 {
+                                     needLeaveDateFix = true;
+                                     break;
+                                 }
+                             }
+                         }
+                         context.Database.CloseConnection();
+                    }
+
+                    if (needLeaveDateFix)
+                    {
+                        DebugLog("Migrating LeaveHistories table to allow nullable EndDate...");
+                        using (var transaction = context.Database.BeginTransaction())
+                        {
+                            try
+                            {
+                                context.Database.ExecuteSqlRaw("ALTER TABLE LeaveHistories RENAME TO LeaveHistories_Old");
+                                context.Database.ExecuteSqlRaw(@"
+                                    CREATE TABLE LeaveHistories (
+                                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        PersonnelId INTEGER NOT NULL,
+                                        LeaveType TEXT NOT NULL,
+                                        StartDate TEXT NOT NULL,
+                                        EndDate TEXT, -- NULLABLE NOW
+                                        DurationDays REAL NOT NULL,
+                                        Reason TEXT,
+                                        LeaveYear INTEGER,
+                                        FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                                    );");
+                                context.Database.ExecuteSqlRaw(@"
+                                    INSERT INTO LeaveHistories (Id, PersonnelId, LeaveType, StartDate, EndDate, DurationDays, Reason, LeaveYear)
+                                    SELECT Id, PersonnelId, LeaveType, StartDate, EndDate, DurationDays, Reason, LeaveYear FROM LeaveHistories_Old");
+                                context.Database.ExecuteSqlRaw("DROP TABLE LeaveHistories_Old");
+                                transaction.Commit();
+                                DebugLog("LeaveHistories Migration Successful.");
+                            }
+                            catch (Exception ex)
+                            {
+                                transaction.Rollback();
+                                DebugLog("LeaveHistories Migration Failed: " + ex.Message);
+                                throw;
+                            }
+                        }
+                    }
+
                     if (needDateFix)
+
                     {
                         DebugLog("Migrating Personnel table to allow nullable dates...");
                         using (var transaction = context.Database.BeginTransaction())
@@ -337,5 +406,97 @@ namespace TaxPersonnelManagement
             }
             catch { }
         }
+
+        /// <summary>
+        /// Thực hiện sao lưu cơ sở dữ liệu vào thư mục backup.
+        /// </summary>
+        /// <param name="reason">Lý do sao lưu để gắn vào tên file.</param>
+        public static void PerformBackup(string reason = "manual")
+        {
+            try
+            {
+                string dbPath = Path.Combine(System.AppContext.BaseDirectory, "tax_personnel.db");
+                if (!File.Exists(dbPath))
+                {
+                    DebugLog($"Backup skipped: DB file not found at {dbPath}");
+                    return;
+                }
+
+                string backupDir = Path.Combine(System.AppContext.BaseDirectory, "backup");
+                if (!Directory.Exists(backupDir))
+                {
+                    Directory.CreateDirectory(backupDir);
+                }
+
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string backupPath = Path.Combine(backupDir, $"tax_personnel_{reason}_{timestamp}.db");
+
+                File.Copy(dbPath, backupPath, true);
+                DebugLog($"Backup successful: {backupPath} (Reason: {reason})");
+
+                // Tự động dọn dẹp: Chỉ giữ lại 5 bản sao lưu gần nhất
+                try
+                {
+                    int maxBackups = 5;
+                    var directory = new DirectoryInfo(backupDir);
+                    var files = directory.GetFiles("tax_personnel_*.db")
+                                         .OrderByDescending(f => f.CreationTime)
+                                         .ToList();
+
+                    if (files.Count > maxBackups)
+                    {
+                        for (int i = maxBackups; i < files.Count; i++)
+                        {
+                            files[i].Delete();
+                            DebugLog($"Auto-cleanup: Deleted old backup {files[i].Name}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    DebugLog($"Auto-cleanup failed: {ex.Message}");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                DebugLog($"Backup failed: {ex.Message}");
+            }
+        }
+
+        private bool IsSchemaUpdatePending(AppDbContext context)
+        {
+            try
+            {
+                using (var command = context.Database.GetDbConnection().CreateCommand())
+                {
+                    // 1. Kiểm tra cột EndDate trong LeaveHistories (đã đổi thành nullable chưa?)
+                    command.CommandText = "PRAGMA table_info(LeaveHistories)";
+                    context.Database.OpenConnection();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (reader["name"].ToString() == "EndDate" && Convert.ToInt32(reader["notnull"]) == 1)
+                                return true;
+                        }
+                    }
+                    context.Database.CloseConnection();
+
+                    // 2. Kiểm tra xem bảng IncomeRecords đã tồn tại chưa
+                    command.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name='IncomeRecords'";
+                    context.Database.OpenConnection();
+                    var result = command.ExecuteScalar();
+                    context.Database.CloseConnection();
+                    if (result == null) return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLog($"CheckSchemaUpdate failed: {ex.Message}");
+            }
+            return false;
+        }
     }
 }
+
