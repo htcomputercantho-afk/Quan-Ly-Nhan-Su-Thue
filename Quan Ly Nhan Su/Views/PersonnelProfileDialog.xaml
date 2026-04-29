@@ -521,7 +521,7 @@
                                         <Border Grid.Column="4" Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
                                             <StackPanel>
                                                 <TextBlock Text="Năm giữ vị trí công tác:" Foreground="#78909C" FontSize="12" TextWrapping="Wrap"/>
-                                                <TextBlock Text="{Binding PositionYear}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                                <TextBlock Text="{Binding DisplayPositionYear}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>

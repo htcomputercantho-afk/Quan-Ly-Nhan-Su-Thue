@@ -829,7 +829,9 @@
 
                                         <StackPanel Grid.Column="4">
                                             <TextBlock Text="Năm giữ vị trí công tác" Style="{StaticResource ModernLabel}"/>
-                                            <TextBox x:Name="txtPositionYear" Style="{StaticResource ModernTextBox}" FontWeight="Bold"/>
+                                            <DatePicker x:Name="dpPositionYear" 
+                                                        Style="{StaticResource ModernDatePicker}"
+                                                        materialDesign:TextFieldAssist.HasClearButton="True"/>
                                         </StackPanel>
                                     </Grid>
 

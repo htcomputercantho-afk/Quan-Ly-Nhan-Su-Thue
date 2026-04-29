@@ -15,11 +15,38 @@ namespace TaxPersonnelManagement.Views
             txtCurrentVersion.Text = args.InstalledVersion.ToString();
             txtNewVersion.Text = args.CurrentVersion.ToString();
             
-            if (!string.IsNullOrEmpty(args.ChangelogURL))
+            this.Loaded += UpdateNotificationWindow_Loaded;
+        }
+
+        private async void UpdateNotificationWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_args.ChangelogURL))
             {
-                // In a real app, you might fetch and show changelog, 
-                // for now we use the description from XML or a default message
-                txtChangelog.Text = "Hệ thống đã sẵn sàng bản cập nhật mới với nhiều cải tiến về giao diện và hiệu năng. Vui lòng cập nhật để có trải nghiệm tốt nhất.";
+                try 
+                {
+                    txtChangelog.Text = "Đang tải thông tin bản cập nhật...";
+                    using var client = new System.Net.Http.HttpClient();
+                    string url = _args.ChangelogURL;
+                    if (!url.Contains("?")) url += $"?t={System.DateTime.Now.Ticks}";
+                    
+                    var changelogText = await client.GetStringAsync(url);
+                    if (!string.IsNullOrWhiteSpace(changelogText))
+                    {
+                        txtChangelog.Text = changelogText;
+                    }
+                    else
+                    {
+                        txtChangelog.Text = "Không có thông tin chi tiết cho bản cập nhật này.";
+                    }
+                }
+                catch 
+                {
+                    txtChangelog.Text = "Hệ thống đã sẵn sàng bản cập nhật mới với nhiều cải tiến. Vui lòng cập nhật để trải nghiệm.";
+                }
+            }
+            else
+            {
+                txtChangelog.Text = "Hệ thống đã sẵn sàng bản cập nhật mới với nhiều cải tiến.";
             }
         }
 

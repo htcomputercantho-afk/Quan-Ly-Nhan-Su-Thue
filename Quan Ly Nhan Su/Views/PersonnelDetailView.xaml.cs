@@ -83,15 +83,19 @@ namespace TaxPersonnelManagement.Views
                 SetComboBoxByContent(cboStateManagement, _personnel.StateManagementLevel);
                 SetComboBoxByContent(cboPoliticalTheory, _personnel.PoliticalTheoryLevel);
                 txtITSkill.Text = _personnel.ITSkillLevel;
-                // Duplicate txtITSkill removed
+
                 txtLanguageSkill.Text = _personnel.LanguageSkillLevel;
 
                 // Tab 2
                 dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
                 dpPositionCalculationDate.SelectedDate = _personnel.PositionCalculationDate;
-                txtPositionYear.Text = _personnel.PositionYear;
+                if (DateTime.TryParseExact(_personnel.PositionYear, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate)) {
+                    dpPositionYear.SelectedDate = parsedDate;
+                } else {
+                    dpPositionYear.SelectedDate = DateTime.Now;
+                }
                 txtDetailedWorkHistory.Text = _personnel.DetailedWorkHistory;
-                // Duplicate txtDetailedWorkHistory removed
+
                 CalculateWorkDuration();
 
                 // Tab 3
@@ -734,7 +738,7 @@ namespace TaxPersonnelManagement.Views
                         // Tab 2
                         PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
                         PositionCalculationDate = dpPositionCalculationDate.SelectedDate,
-                        PositionYear = txtPositionYear.Text,
+                        PositionYear = (dpPositionYear.SelectedDate.HasValue && dpPositionYear.SelectedDate.Value.Date == DateTime.Now.Date) ? "" : dpPositionYear.SelectedDate?.ToString("dd/MM/yyyy"),
                         DetailedWorkHistory = txtDetailedWorkHistory.Text,
 
                         // Tab 3
@@ -834,7 +838,7 @@ namespace TaxPersonnelManagement.Views
                         // Tab 2
                         existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
                         existingP.PositionCalculationDate = dpPositionCalculationDate.SelectedDate;
-                        existingP.PositionYear = txtPositionYear.Text;
+                        existingP.PositionYear = (dpPositionYear.SelectedDate.HasValue && dpPositionYear.SelectedDate.Value.Date == DateTime.Now.Date) ? "" : dpPositionYear.SelectedDate?.ToString("dd/MM/yyyy");
                         existingP.DetailedWorkHistory = txtDetailedWorkHistory.Text;
 
                         // Tab 3
@@ -1088,7 +1092,7 @@ namespace TaxPersonnelManagement.Views
             // Tab 2
             dpPositionDecisionDate.SelectedDate = null;
             dpPositionCalculationDate.SelectedDate = null;
-            txtPositionYear.Clear();
+            dpPositionYear.SelectedDate = DateTime.Now;
             txtDetailedWorkHistory.Clear();
             txtYearsWorked.Clear();
             txtYearsWorked.Clear();
@@ -1312,7 +1316,6 @@ namespace TaxPersonnelManagement.Views
                 {
                     txtYearsWorked.Text = "0";
                     txtMonthsWorked.Text = "0";
-                    txtPositionYear.Text = "0 năm 0 tháng";
                     return;
                 }
 
@@ -1331,13 +1334,11 @@ namespace TaxPersonnelManagement.Views
 
                 txtYearsWorked.Text = years.ToString();
                 txtMonthsWorked.Text = months.ToString();
-                txtPositionYear.Text = $"{years} năm {months} tháng";
             }
             else
             {
                 txtYearsWorked.Clear();
                 txtMonthsWorked.Clear();
-                txtPositionYear.Clear();
             }
         }
 

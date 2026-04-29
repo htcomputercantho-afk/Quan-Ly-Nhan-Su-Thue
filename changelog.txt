@@ -1,0 +1,4 @@
+- Cấu trúc lại ô "Năm giữ vị trí công tác" thành ô chọn ngày (DatePicker).
+- Tự động hiển thị ngày hiện tại khi mở hồ sơ nhân sự.
+- Tối ưu hóa hệ thống: Tự động cập nhật ngày tháng hiện tại trên View danh sách và file PDF xuất ra mà không cần cập nhật thủ công hàng ngày.
+- Dọn dẹp code rác và tối ưu hóa hiệu năng hệ thống.

@@ -31,6 +31,15 @@ $csprojContent = Get-Content $csprojPath -Raw
 $csprojContent = $csprojContent -replace '<Version>.*?</Version>', "<Version>$NewVersion</Version>"
 Set-Content -Path $csprojPath -Value $csprojContent -Encoding UTF8
 
+# 1.5. Chuan bi Changelog
+Write-Host "1.5. Chuan bi noi dung cap nhat (Changelog)..." -ForegroundColor Yellow
+if (-not (Test-Path "changelog.txt")) {
+    Set-Content -Path "changelog.txt" -Value "- Cập nhật hệ thống" -Encoding UTF8
+}
+Write-Host ">> Notepad se duoc mo de ban nhap chi tiet noi dung thay doi."
+Write-Host ">> Vui long luu file (Ctrl+S) va dong Notepad khi hoan tat." -ForegroundColor Cyan
+Start-Process notepad "changelog.txt" -Wait
+
 # 2. Cap nhat file update.xml
 Write-Host "2. Cap nhat thong tin trong update.xml..."
 $xmlContent = @"
@@ -38,7 +47,7 @@ $xmlContent = @"
 <item>
     <version>$NewVersion</version>
     <url>https://github.com/$repoOwner/$repoName/releases/download/v$NewVersion/QuanLyNhanSu_v$NewVersion.zip</url>
-    <changelog>https://github.com/$repoOwner/$repoName/releases</changelog>
+    <changelog>https://raw.githubusercontent.com/$repoOwner/$repoName/main/changelog.txt</changelog>
     <mandatory>true</mandatory>
 </item>
 "@

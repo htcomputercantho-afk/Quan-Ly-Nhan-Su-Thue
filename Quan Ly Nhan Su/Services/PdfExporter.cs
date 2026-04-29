@@ -333,7 +333,7 @@ namespace TaxPersonnelManagement.Services
 
                  CenteredItem(row, "Số năm công tác tính đến thời điểm hiện tại", wYears.ToString());
                  CenteredItem(row, "Số tháng công tác tính đến thời điểm hiện tại", wMonths.ToString());
-                 CenteredItem(row, "Năm giữ vị trí công tác", p.PositionYear ?? "---", true);
+                 CenteredItem(row, "Năm giữ vị trí công tác", p.DisplayPositionYear, true);
             });
 
             // Retirement Stats

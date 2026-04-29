@@ -66,7 +66,19 @@ namespace TaxPersonnelManagement.Models
         // Tab 2: Position History Info
         public DateTime? PositionDecisionDate { get; set; } // Thời gian công tác tính theo QĐ gần nhất
         public DateTime? PositionCalculationDate { get; set; } // Thời điểm tính thời gian công tác
-        public string? PositionYear { get; set; } // Năm giữ vị trí công tác
+        public string? PositionYear { get; set; } // Năm giữ vị trí công tác (Raw DB value)
+        
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string DisplayPositionYear 
+        {
+            get 
+            {
+                if (string.IsNullOrEmpty(PositionYear) || PositionYear.Contains("năm"))
+                    return DateTime.Now.ToString("dd/MM/yyyy");
+                return PositionYear;
+            }
+        }
+        
         public string? DetailedWorkHistory { get; set; } // Quá trình công tác chi tiết
 
         // Tab 3: Retirement Info
