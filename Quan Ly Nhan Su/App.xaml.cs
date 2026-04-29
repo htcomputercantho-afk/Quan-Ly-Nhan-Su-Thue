@@ -305,11 +305,12 @@ namespace TaxPersonnelManagement
                                         DurationDays REAL NOT NULL,
                                         Reason TEXT,
                                         LeaveYear INTEGER,
+                                        SystemNote TEXT,
                                         FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                                     );");
                                 context.Database.ExecuteSqlRaw(@"
-                                    INSERT INTO LeaveHistories (Id, PersonnelId, LeaveType, StartDate, EndDate, DurationDays, Reason, LeaveYear)
-                                    SELECT Id, PersonnelId, LeaveType, StartDate, EndDate, DurationDays, Reason, LeaveYear FROM LeaveHistories_Old");
+                                    INSERT INTO LeaveHistories (Id, PersonnelId, LeaveType, StartDate, EndDate, DurationDays, Reason, LeaveYear, SystemNote)
+                                    SELECT Id, PersonnelId, LeaveType, StartDate, EndDate, DurationDays, Reason, LeaveYear, SystemNote FROM LeaveHistories_Old");
                                 context.Database.ExecuteSqlRaw("DROP TABLE LeaveHistories_Old");
                                 transaction.Commit();
                                 DebugLog("LeaveHistories Migration Successful.");
@@ -365,24 +366,57 @@ namespace TaxPersonnelManagement
                                         PoliticalTheoryLevel TEXT,
                                         ITSkillLevel TEXT,
                                         LanguageSkillLevel TEXT,
-                                        AvatarBase64 TEXT
+                                        AvatarBase64 TEXT,
+                                        TotalAnnualLeaveDays INTEGER DEFAULT 12,
+                                        CurrentSalaryStep TEXT,
+                                        CurrentSalaryCoefficient REAL DEFAULT 0,
+                                        ExceedFramePercent REAL DEFAULT 0,
+                                        PositionAllowance TEXT,
+                                        SalaryReservationDeadline TEXT,
+                                        NextSalaryStepDate TEXT,
+                                        SalaryIncreaseDelayType TEXT,
+                                        ExpectedSalaryIncreaseDate TEXT,
+                                        SalaryHistoryLog TEXT,
+                                        EmulationTitles TEXT,
+                                        RewardForms TEXT,
+                                        DisciplineType TEXT,
+                                        DisciplineDecisionNumber TEXT,
+                                        DisciplineDecisionDate TEXT,
+                                        DisciplineReason TEXT,
+                                        PositionDecisionDate TEXT,
+                                        PositionCalculationDate TEXT,
+                                        PositionYear TEXT,
+                                        DetailedWorkHistory TEXT,
+                                        RetirementDate TEXT,
+                                        PartyEntryDate TEXT,
+                                        PartyOfficialDate TEXT
                                     )");
 
                                 // 3. Copy Data
-                                // Map columns matching names. We assume AvatarBase64 exists in Old if we ran the previous migration step.
-                                // If AvatarBase64 was just added, it might be null, which is fine.
                                 context.Database.ExecuteSqlRaw(@"
                                     INSERT INTO Personnel (
                                         Id, StaffId, FullName, DateOfBirth, Gender, PhoneNumber, IdentityCardNumber, IdentityCardPlace,
                                         SocialSecurityNumber, Email, BirthPlace, Ethnicity, Religion, Department, Position,
                                         RankCode, RankName, TaxAuthorityStartDate, StartDate, Status, EducationLevel, Major,
-                                        University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64
+                                        University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64,
+                                        TotalAnnualLeaveDays, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
+                                        PositionAllowance, SalaryReservationDeadline, NextSalaryStepDate, SalaryIncreaseDelayType,
+                                        ExpectedSalaryIncreaseDate, SalaryHistoryLog, EmulationTitles, RewardForms,
+                                        DisciplineType, DisciplineDecisionNumber, DisciplineDecisionDate, DisciplineReason,
+                                        PositionDecisionDate, PositionCalculationDate, PositionYear, DetailedWorkHistory,
+                                        RetirementDate, PartyEntryDate, PartyOfficialDate
                                     )
                                     SELECT 
                                         Id, StaffId, FullName, DateOfBirth, Gender, PhoneNumber, IdentityCardNumber, IdentityCardPlace,
                                         SocialSecurityNumber, Email, BirthPlace, Ethnicity, Religion, Department, Position,
                                         RankCode, RankName, TaxAuthorityStartDate, StartDate, Status, EducationLevel, Major,
-                                        University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64
+                                        University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64,
+                                        TotalAnnualLeaveDays, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
+                                        PositionAllowance, SalaryReservationDeadline, NextSalaryStepDate, SalaryIncreaseDelayType,
+                                        ExpectedSalaryIncreaseDate, SalaryHistoryLog, EmulationTitles, RewardForms,
+                                        DisciplineType, DisciplineDecisionNumber, DisciplineDecisionDate, DisciplineReason,
+                                        PositionDecisionDate, PositionCalculationDate, PositionYear, DetailedWorkHistory,
+                                        RetirementDate, PartyEntryDate, PartyOfficialDate
                                     FROM Personnel_Old");
 
                                 // 4. Drop Old Table
@@ -395,9 +429,6 @@ namespace TaxPersonnelManagement
                             {
                                 transaction.Rollback();
                                 DebugLog("Migration Failed: " + ex.Message);
-                                // If failed, maybe try to revert rename? Or let it crash so user knows.
-                                // If Rename happened but Create/Copy failed, we are in trouble. 
-                                // Ideally, Transaction handles it. SQLite supports DDL transactions.
                                 throw; 
                             }
                         }
