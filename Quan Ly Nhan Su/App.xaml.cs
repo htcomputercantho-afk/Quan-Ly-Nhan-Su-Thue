@@ -202,16 +202,31 @@ namespace TaxPersonnelManagement
                             EndDate TEXT,
                             SalaryCalculationDate TEXT,
                             Coefficient TEXT,
-                            Percentage REAL NOT NULL DEFAULT 100,
+                            Percentage REAL NOT NULL DEFAULT 0,
                             DecisionNumber TEXT,
                             DecisionDate TEXT,
                             Note TEXT,
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
 
+                    // Auto-migrate SalaryRecords columns (for users updating from older versions)
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN DecisionNumber TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN EndDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN Percentage REAL DEFAULT 0"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN SalaryCalculationDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN StartDate TEXT"); } catch { }
+                    // Remove old columns that no longer exist (SQLite does not support DROP COLUMN in older versions, skip gracefully)
+
                     // Manual Migration for Tab 7 Fields (Reward Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN EmulationTitles TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN RewardForms TEXT"); } catch { }
+
+                    // Manual Migration for DisciplineTypes table
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS DisciplineTypes (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Name TEXT NOT NULL
+                        );");
 
                     // Manual Migration for Tab 8 Fields (Discipline Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN DisciplineType TEXT"); } catch { }
