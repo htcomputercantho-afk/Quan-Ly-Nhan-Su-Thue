@@ -63,12 +63,20 @@ namespace TaxPersonnelManagement.Views
         {
             if (_allSummaries == null) return;
 
-            string keyword = txtSearch.Text.Trim().ToLower();
-            _filteredSummaries = _allSummaries.Where(s => 
-                (s.FullName != null && s.FullName.ToLower().Contains(keyword)) ||
-                (s.StaffId != null && s.StaffId.ToLower().Contains(keyword)) ||
-                (s.IdentityCardNumber != null && s.IdentityCardNumber.ToLower().Contains(keyword))
-            ).ToList();
+            string rawKeyword = txtSearch.Text.Trim();
+            if (string.IsNullOrEmpty(rawKeyword))
+            {
+                _filteredSummaries = _allSummaries.ToList();
+            }
+            else
+            {
+                string[] keywords = RemoveSign(rawKeyword.ToLower()).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                _filteredSummaries = _allSummaries.Where(s => 
+                {
+                    string searchTarget = RemoveSign($"{s.FullName} {s.StaffId} {s.IdentityCardNumber} {s.DetailedContent}".ToLower());
+                    return keywords.All(k => searchTarget.Contains(k));
+                }).ToList();
+            }
 
             // Re-assign STT for the entire filtered list
             for (int i = 0; i < _filteredSummaries.Count; i++)
@@ -78,6 +86,30 @@ namespace TaxPersonnelManagement.Views
 
             _currentPage = 1;
             ApplyPagination();
+        }
+
+        private string RemoveSign(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+            
+            // Normalize to Form D (decomposed) to separate base characters from accents
+            string normalizedString = text.Normalize(System.Text.NormalizationForm.FormD);
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+
+            foreach (char c in normalizedString)
+            {
+                System.Globalization.UnicodeCategory unicodeCategory = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            // Convert back to Form C and replace specific characters like 'đ'
+            string result = stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC);
+            result = result.Replace('đ', 'd').Replace('Đ', 'D');
+            
+            return result;
         }
 
         private void ApplyPagination()

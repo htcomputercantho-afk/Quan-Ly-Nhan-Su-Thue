@@ -38,7 +38,7 @@ namespace TaxPersonnelManagement.Services
                         
                         p.RankCode = GetValue(row.Cell(7));        // Cột G: Mã ngạch
                         p.RankName = GetValue(row.Cell(8));        // Cột H: Ngạch công chức
-                        p.Position = GetValue(row.Cell(9));        // Cột I: Chức vụ
+                        p.Position = GetValue(row.Cell(9)) ?? "Công chức"; // Cột I: Chức vụ (Mặc định nếu trống)
                         p.Gender = GetValue(row.Cell(10));         // Cột J: Giới tính
                         p.DateOfBirth = GetDate(row.Cell(11));     // Cột K: Ngày sinh
                         
