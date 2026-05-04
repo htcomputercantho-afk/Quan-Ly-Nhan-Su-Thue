@@ -115,6 +115,17 @@ namespace TaxPersonnelManagement.Views
                  txtNoLeaveHistory.Visibility = Visibility.Visible;
                  dgLeaveHistory.Visibility = Visibility.Collapsed;
              }
+
+             if (p.SalaryRecords != null && p.SalaryRecords.Count > 0)
+             {
+                 txtNoSalaryHistory.Visibility = Visibility.Collapsed;
+                 dgSalaryHistory.Visibility = Visibility.Visible;
+             }
+             else
+             {
+                 txtNoSalaryHistory.Visibility = Visibility.Visible;
+                 dgSalaryHistory.Visibility = Visibility.Collapsed;
+             }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

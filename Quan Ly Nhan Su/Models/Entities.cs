@@ -66,16 +66,36 @@ namespace TaxPersonnelManagement.Models
         // Tab 2: Position History Info
         public DateTime? PositionDecisionDate { get; set; } // Thời gian công tác tính theo QĐ gần nhất
         public DateTime? PositionCalculationDate { get; set; } // Thời điểm tính thời gian công tác
-        public string? PositionYear { get; set; } // Năm giữ vị trí công tác (Raw DB value)
         
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string DisplayPositionYear 
+        public DateTime DisplayPositionCalculationDate => DateTime.Now;
+        
+        public string? PositionYear { get; set; } // Năm giữ vị trí công tác
+        
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string CalculatedPositionYear
         {
-            get 
+            get
             {
-                if (string.IsNullOrEmpty(PositionYear) || PositionYear.Contains("năm"))
-                    return DateTime.Now.ToString("dd/MM/yyyy");
-                return PositionYear;
+                if (!PositionDecisionDate.HasValue) return PositionYear ?? "";
+                
+                DateTime startDate = PositionDecisionDate.Value;
+                DateTime endDate = DateTime.Now;
+                
+                if (endDate < startDate) return "0 năm 0 tháng";
+                
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+                
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+                
+                return $"{years} năm {months} tháng";
             }
         }
         
@@ -113,7 +133,8 @@ namespace TaxPersonnelManagement.Models
         public DateTime? NextSalaryStepDate { get; set; } // Thời điểm tính bậc lương lần sau
         public string? SalaryIncreaseDelayType { get; set; } // Lùi thời gian nâng lương
         public DateTime? ExpectedSalaryIncreaseDate { get; set; } // Dự kiến lên lương
-        public string? SalaryHistoryLog { get; set; } // Diễn biến quá trình lương
+        public string? SalaryHistoryLog { get; set; }
+        public virtual ICollection<SalaryRecord>? SalaryRecords { get; set; }
 
         // Tab 7: Reward Info
         public string? EmulationTitles { get; set; } // Danh hiệu thi đua
@@ -126,7 +147,7 @@ namespace TaxPersonnelManagement.Models
         public string? DisciplineReason { get; set; } // Nội dung / Lý do kỷ luật
 
         // Navigation
-        public List<SalaryRecord> SalaryRecords { get; set; } = new List<SalaryRecord>();
+
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public string SalaryIncreaseStatus
@@ -206,14 +227,17 @@ namespace TaxPersonnelManagement.Models
         [Key]
         public int Id { get; set; }
         public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
-        public Personnel? Personnel { get; set; }
+        public virtual Personnel? Personnel { get; set; }
         
-        public string SalaryLevel { get; set; } = string.Empty; // Ngạch/Bậc lương
-        public decimal Coefficient { get; set; } // Hệ số lương áp dụng
-        public DateTime DecisionDate { get; set; } // Ngày ký quyết định
-        public DateTime EffectiveDate { get; set; } // Ngày bắt đầu hưởng lương mới
-        public DateTime NextIncreaseDate { get; set; } // Ngày nâng lương dự kiến tiếp theo
-        public string? Note { get; set; } // Ghi chú thêm
+        public DateTime? StartDate { get; set; } // Thời gian bắt đầu
+        public DateTime? EndDate { get; set; } // Thời gian kết thúc
+        public DateTime? SalaryCalculationDate { get; set; } // Mốc xét lương từ
+        public string? Coefficient { get; set; } // Hệ số
+        public double Percentage { get; set; } = 100; // Phần trăm được hưởng (Default 100%)
+        public string? DecisionNumber { get; set; } // Số VB/QĐ
+        public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
+        
+        public string? Note { get; set; } // Ghi chú thêm (Legacy/Extra)
     }
 
     public class LeaveHistory

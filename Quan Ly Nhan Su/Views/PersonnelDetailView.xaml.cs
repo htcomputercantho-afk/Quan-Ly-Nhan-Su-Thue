@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-using MaterialDesignThemes.Wpf;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using MaterialDesignThemes.Wpf;
+using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
-using Microsoft.EntityFrameworkCore;
 namespace TaxPersonnelManagement.Views
 {
     public partial class PersonnelDetailView : UserControl
@@ -15,7 +18,7 @@ namespace TaxPersonnelManagement.Views
         private bool _isAvatarChanged = false;
         private bool _isRefreshing = false;
         private bool _isFormatting = false;
-        private System.Collections.Generic.List<string> _allPositions = new System.Collections.Generic.List<string>();
+        private List<string> _allPositions = new List<string>();
 
         /// <summary>
         /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
@@ -24,6 +27,7 @@ namespace TaxPersonnelManagement.Views
         public PersonnelDetailView(Personnel? personnel, int activeTab = 0)
         {
             InitializeComponent();
+            dpPositionCalculationDate.SelectedDate = DateTime.Now;
             if (activeTab > 0) tcPersonnelDetails.SelectedIndex = activeTab;
             try { LoadSalaryDelayReasons(); } catch { /* Ignore DB init errors */ }
             try { LoadDisciplineTypes(); } catch { /* Ignore DB init errors */ }
@@ -43,7 +47,7 @@ namespace TaxPersonnelManagement.Views
                 txtName.Text = _personnel.FullName;
                 SetComboBoxByContent(cboGender, _personnel.Gender);
                 dpDOB.SelectedDate = _personnel.DateOfBirth;
-                txtPhone.Text = _personnel.PhoneNumber;
+                txtPhone.Text = FormatPhoneNumber(_personnel.PhoneNumber);
                 txtIdentityNumber.Text = _personnel.IdentityCardNumber;
                 txtIdentityPlace.Text = _personnel.IdentityCardPlace;
                 txtEmail.Text = _personnel.Email;
@@ -88,12 +92,8 @@ namespace TaxPersonnelManagement.Views
 
                 // Tab 2
                 dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
-                dpPositionCalculationDate.SelectedDate = _personnel.PositionCalculationDate;
-                if (DateTime.TryParseExact(_personnel.PositionYear, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate)) {
-                    dpPositionYear.SelectedDate = parsedDate;
-                } else {
-                    dpPositionYear.SelectedDate = DateTime.Now;
-                }
+                dpPositionCalculationDate.SelectedDate = DateTime.Now;
+                txtPositionYear.Text = _personnel.PositionYear;
                 txtDetailedWorkHistory.Text = _personnel.DetailedWorkHistory;
 
                 CalculateWorkDuration();
@@ -120,7 +120,9 @@ namespace TaxPersonnelManagement.Views
                     cboSalaryDelay.SelectedIndex = 0; // Default to first item ("-- Không lùi --")
 
                 dpExpectedSalaryIncrease.SelectedDate = _personnel.ExpectedSalaryIncreaseDate;
-                txtSalaryHistoryLog.Text = _personnel.SalaryHistoryLog;
+                // Load Salary Records
+                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+                RefreshSalaryHistoryGrid();
 
                 // Tab 5: Leave Info
                 // txtTotalAnnualLeave.Text = _personnel.TotalAnnualLeaveDays.ToString(); // Handled by CalculateAnnualLeave
@@ -153,6 +155,10 @@ namespace TaxPersonnelManagement.Views
                     }
                     catch { /* Ignore invalid image data */ }
                 }
+            }
+            else
+            {
+                txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
             }
             
             if (_personnel != null)
@@ -629,6 +635,7 @@ namespace TaxPersonnelManagement.Views
             {
                 // Auto-fill coefficient
                 txtSalaryCoefficient.Text = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+                txtSalaryHistCoeff.Text = txtSalaryCoefficient.Text;
             }
         }
 
@@ -684,7 +691,7 @@ namespace TaxPersonnelManagement.Views
 
             // Phone Validation
             string phoneDigits = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
-            if (!string.IsNullOrEmpty(txtPhone.Text) && (phoneDigits.Length != 10 || !txtPhone.Text.StartsWith("0")))
+            if (!string.IsNullOrEmpty(txtPhone.Text) && (phoneDigits.Length != 10 || !phoneDigits.StartsWith("0")))
             {
                  MessageBox.Show("Số điện thoại không hợp lệ! (Phải bắt đầu bằng số 0 và có 10 chữ số)", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                  return;
@@ -708,7 +715,7 @@ namespace TaxPersonnelManagement.Views
                         FullName = txtName.Text,
                         Gender = cboGender.Text,
                         DateOfBirth = dpDOB.SelectedDate,
-                        PhoneNumber = txtPhone.Text,
+                        PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray()),
                         IdentityCardNumber = txtIdentityNumber.Text,
                         IdentityCardPlace = txtIdentityPlace.Text,
                         Email = txtEmail.Text,
@@ -737,8 +744,8 @@ namespace TaxPersonnelManagement.Views
                         
                         // Tab 2
                         PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
-                        PositionCalculationDate = dpPositionCalculationDate.SelectedDate,
-                        PositionYear = (dpPositionYear.SelectedDate.HasValue && dpPositionYear.SelectedDate.Value.Date == DateTime.Now.Date) ? "" : dpPositionYear.SelectedDate?.ToString("dd/MM/yyyy"),
+                        PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate,
+                        PositionYear = txtPositionYear.Text,
                         DetailedWorkHistory = txtDetailedWorkHistory.Text,
 
                         // Tab 3
@@ -757,7 +764,8 @@ namespace TaxPersonnelManagement.Views
                         NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate,
                         SalaryIncreaseDelayType = cboSalaryDelay.Text,
                         ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate,
-                        SalaryHistoryLog = txtSalaryHistoryLog.Text,
+                        SalaryHistoryLog = string.Join("\n", _personnel?.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? Enumerable.Empty<string>()), // Legacy fallback
+                        SalaryRecords = _personnel?.SalaryRecords,
 
                         // Tab 7
                         EmulationTitles = txtEmulationTitles.Text,
@@ -796,7 +804,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     // Update
                     // Update
-                    var existingP = context.Personnel.Include("LeaveHistories").FirstOrDefault(p => p.Id == _personnel.Id);
+                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").FirstOrDefault(p => p.Id == _personnel.Id);
                     if (existingP != null)
                     {
                         existingP.StaffId = txtStaffId.Text;
@@ -807,7 +815,7 @@ namespace TaxPersonnelManagement.Views
                         
                         existingP.Gender = cboGender.Text;
                         existingP.DateOfBirth = dpDOB.SelectedDate;
-                        existingP.PhoneNumber = txtPhone.Text;
+                        existingP.PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
                         existingP.IdentityCardNumber = txtIdentityNumber.Text;
                         existingP.IdentityCardPlace = txtIdentityPlace.Text;
                         existingP.Email = txtEmail.Text;
@@ -837,8 +845,8 @@ namespace TaxPersonnelManagement.Views
 
                         // Tab 2
                         existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
-                        existingP.PositionCalculationDate = dpPositionCalculationDate.SelectedDate;
-                        existingP.PositionYear = (dpPositionYear.SelectedDate.HasValue && dpPositionYear.SelectedDate.Value.Date == DateTime.Now.Date) ? "" : dpPositionYear.SelectedDate?.ToString("dd/MM/yyyy");
+                        existingP.PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate;
+                        existingP.PositionYear = txtPositionYear.Text;
                         existingP.DetailedWorkHistory = txtDetailedWorkHistory.Text;
 
                         // Tab 3
@@ -857,7 +865,48 @@ namespace TaxPersonnelManagement.Views
                         existingP.NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate;
                         existingP.SalaryIncreaseDelayType = cboSalaryDelay.Text;
                         existingP.ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate;
-                        existingP.SalaryHistoryLog = txtSalaryHistoryLog.Text;
+                        
+                        // Handle Salary Records Sync
+                        if (existingP.SalaryRecords == null) existingP.SalaryRecords = new List<SalaryRecord>();
+                        if (_personnel.SalaryRecords != null)
+                        {
+                            // 1. Identify IDs to keep
+                            var currentSalaryIds = _personnel.SalaryRecords.Select(s => s.Id).Where(id => id != 0).ToList();
+                            
+                            // 2. Remove deleted
+                            var toDeleteSalary = existingP.SalaryRecords.Where(s => !currentSalaryIds.Contains(s.Id)).ToList();
+                            foreach(var item in toDeleteSalary)
+                            {
+                                context.SalaryRecords.Remove(item);
+                            }
+
+                            // 3. Add new
+                            var toAddSalary = _personnel.SalaryRecords.Where(s => s.Id == 0).ToList();
+                            foreach(var item in toAddSalary)
+                            {
+                                item.PersonnelId = existingP.Id;
+                                context.SalaryRecords.Add(item);
+                            }
+                            
+                            // 4. Update existing
+                            var toUpdateSalary = _personnel.SalaryRecords.Where(s => s.Id != 0).ToList();
+                            foreach(var item in toUpdateSalary)
+                            {
+                                var dbItem = existingP.SalaryRecords.FirstOrDefault(x => x.Id == item.Id);
+                                if (dbItem != null)
+                                {
+                                    dbItem.StartDate = item.StartDate;
+                                    dbItem.EndDate = item.EndDate;
+                                    dbItem.SalaryCalculationDate = item.SalaryCalculationDate;
+                                    dbItem.Coefficient = item.Coefficient;
+                                    dbItem.Percentage = item.Percentage;
+                                    dbItem.DecisionNumber = item.DecisionNumber;
+                                    dbItem.DecisionDate = item.DecisionDate;
+                                }
+                            }
+                        }
+                        
+                        existingP.SalaryHistoryLog = string.Join("\n", existingP.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? new List<string>());
                     
                         // Tab 7
                         existingP.EmulationTitles = txtEmulationTitles.Text;
@@ -916,7 +965,20 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
                 }
-                context.SaveChanges();
+                try
+                {
+                    context.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    string errorMsg = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        errorMsg += "\nInner Error: " + ex.InnerException.Message;
+                    }
+                    MessageBox.Show("Lỗi khi lưu dữ liệu:\n" + errorMsg, "Lỗi Database", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
                 // Show Custom Success Window
                 var successWindow = new SuccessWindow();
                 successWindow.Owner = Application.Current.MainWindow; // Set owner to center over main window
@@ -1061,7 +1123,7 @@ namespace TaxPersonnelManagement.Views
             dpDOB.SelectedDate = null;
             txtPhone.Clear();
             txtIdentityNumber.Clear();
-            txtIdentityPlace.Clear();
+            txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
             txtEmail.Clear();
             txtSocialInsurance.Clear();
             txtBirthPlace.Clear();
@@ -1091,8 +1153,8 @@ namespace TaxPersonnelManagement.Views
 
             // Tab 2
             dpPositionDecisionDate.SelectedDate = null;
-            dpPositionCalculationDate.SelectedDate = null;
-            dpPositionYear.SelectedDate = DateTime.Now;
+            dpPositionCalculationDate.SelectedDate = DateTime.Now;
+            txtPositionYear.Clear();
             txtDetailedWorkHistory.Clear();
             txtYearsWorked.Clear();
             txtYearsWorked.Clear();
@@ -1119,7 +1181,19 @@ namespace TaxPersonnelManagement.Views
             cboSalaryDelay.SelectedIndex = -1;
             cboSalaryDelay.Text = "";
             dpExpectedSalaryIncrease.SelectedDate = null;
-            txtSalaryHistoryLog.Clear();
+            // Tab 6
+            if (_personnel == null) _personnel = new Personnel();
+            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+            _personnel.SalaryRecords.Clear();
+            RefreshSalaryHistoryGrid();
+            
+            dpSalaryHistStart.SelectedDate = null;
+            dpSalaryHistEnd.SelectedDate = null;
+            dpSalaryHistCalc.SelectedDate = null;
+            txtSalaryHistCoeff.Clear();
+            txtSalaryHistPercent.Text = "100";
+            txtSalaryHistDecisionNo.Clear();
+            dpSalaryHistDecisionDate.SelectedDate = null;
 
             // Tab 5
             // Tab 5
@@ -1177,75 +1251,6 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void NumberValidationTextBox(object? sender, System.Windows.Input.TextCompositionEventArgs e)
-        {
-            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private void txtPhone_TextChanged(object? sender, TextChangedEventArgs e)
-        {
-            if (_isFormatting || _isRefreshing) return;
-
-            _isFormatting = true;
-            try
-            {
-                string text = txtPhone.Text;
-                string digits = new string(text.Where(char.IsDigit).ToArray());
-
-                // Giới hạn 10 số
-                if (digits.Length > 10) digits = digits.Substring(0, 10);
-
-                // Định dạng: 0XXX.XXX.XXX
-                string formatted = "";
-                if (digits.Length > 0)
-                {
-                    formatted = digits.Substring(0, Math.Min(4, digits.Length));
-                    if (digits.Length > 4)
-                    {
-                        formatted += "." + digits.Substring(4, Math.Min(3, digits.Length - 4));
-                        if (digits.Length > 7)
-                        {
-                            formatted += "." + digits.Substring(7, Math.Min(3, digits.Length - 7));
-                        }
-                    }
-                }
-
-                if (text != formatted)
-                {
-                    txtPhone.Text = formatted;
-                    txtPhone.CaretIndex = formatted.Length;
-                }
-
-                // Hiển thị lỗi nếu không bắt đầu bằng 0
-                if (digits.Length > 0 && !digits.StartsWith("0"))
-                {
-                    lblPhoneError.Text = "SĐT phải bắt đầu bằng số 0";
-                    lblPhoneError.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    lblPhoneError.Visibility = Visibility.Collapsed;
-                }
-            }
-            finally
-            {
-                _isFormatting = false;
-            }
-        }
 
         private void txtEmail_TextChanged(object? sender, TextChangedEventArgs e)
         {
@@ -1311,11 +1316,11 @@ namespace TaxPersonnelManagement.Views
                 DateTime startDate = dpPositionDecisionDate.SelectedDate.Value;
                 DateTime endDate = dpPositionCalculationDate.SelectedDate ?? DateTime.Now;
 
-                // If endDate comes before startDate
                 if (endDate < startDate)
                 {
                     txtYearsWorked.Text = "0";
                     txtMonthsWorked.Text = "0";
+                    txtPositionYear.Text = "0 năm 0 tháng";
                     return;
                 }
 
@@ -1334,11 +1339,13 @@ namespace TaxPersonnelManagement.Views
 
                 txtYearsWorked.Text = years.ToString();
                 txtMonthsWorked.Text = months.ToString();
+                txtPositionYear.Text = $"{years} năm {months} tháng";
             }
             else
             {
                 txtYearsWorked.Clear();
                 txtMonthsWorked.Clear();
+                txtPositionYear.Clear();
             }
         }
 
@@ -1426,47 +1433,101 @@ namespace TaxPersonnelManagement.Views
             UpdateLeaveStatistics(totalLeave); // Pass calculated total explicitly
         }
         
-        // ... (Skipping unrelated methods if any between) ... 
-
-        // Important: UpdateLeaveStatistics is further down.
-        // Since replace_file_content cannot skip large chunks easily without context, 
-        // I will do TWO separate replaces or one big one if close.
-        // They are far apart (Lines 1142 vs 1464).
-        // I will split this into two calls.
-        
-        // Changing strategy: Only update CalculateAnnualLeave in this call.
-        
-
         private string CalculateDetailedDateDifference(DateTime startDate, DateTime endDate)
         {
             if (startDate > endDate) return "0 năm 0 tháng 0 ngày";
-
             DateTime tempDate = startDate;
-            int years = 0;
-            int months = 0;
-            int days = 0;
-
-            // Count Years
-            while (tempDate.AddYears(1) <= endDate)
-            {
-                years++;
-                tempDate = tempDate.AddYears(1);
-            }
-
-            // Count Months
-            while (tempDate.AddMonths(1) <= endDate)
-            {
-                months++;
-                tempDate = tempDate.AddMonths(1);
-            }
-
-            // Count Days
+            int years = 0, months = 0, days = 0;
+            while (tempDate.AddYears(1) <= endDate) { years++; tempDate = tempDate.AddYears(1); }
+            while (tempDate.AddMonths(1) <= endDate) { months++; tempDate = tempDate.AddMonths(1); }
             days = (endDate - tempDate).Days;
-
             return $"{years} năm {months} tháng {days} ngày";
         }
-        
-        // Tab 5: Leave Logic
+
+        private void RefreshSalaryHistoryGrid()
+        {
+            if (_personnel == null) return;
+            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+            dgSalaryHistory.ItemsSource = null;
+            dgSalaryHistory.ItemsSource = _personnel.SalaryRecords.OrderByDescending(s => s.StartDate).ToList();
+        }
+
+        private void btnAddSalaryHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (dpSalaryHistStart.SelectedDate == null)
+            {
+                new WarningWindow("Vui lòng chọn ngày bắt đầu hưởng lương.", "Thông báo").ShowDialog();
+                return;
+            }
+            var newItem = new SalaryRecord
+            {
+                StartDate = dpSalaryHistStart.SelectedDate,
+                EndDate = dpSalaryHistEnd.SelectedDate,
+                SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
+                Coefficient = txtSalaryHistCoeff.Text,
+                Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                DecisionNumber = txtSalaryHistDecisionNo.Text,
+                DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
+                PersonnelId = _personnel != null ? _personnel.Id : 0
+            };
+            if (_personnel == null) _personnel = new Personnel();
+            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+            _personnel.SalaryRecords.Add(newItem);
+            RefreshSalaryHistoryGrid();
+            dpSalaryHistStart.SelectedDate = null;
+            dpSalaryHistEnd.SelectedDate = null;
+            dpSalaryHistCalc.SelectedDate = null;
+            txtSalaryHistCoeff.Clear();
+            txtSalaryHistPercent.Text = "100";
+            txtSalaryHistDecisionNo.Clear();
+            dpSalaryHistDecisionDate.SelectedDate = null;
+        }
+
+        private void dgSalaryHistory_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var dep = (DependencyObject)e.OriginalSource;
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep is DataGridRow row)
+            {
+                var item = row.DataContext as SalaryRecord;
+                if (item == null) return;
+
+                // Load data back to form
+                dpSalaryHistStart.SelectedDate = item.StartDate;
+                dpSalaryHistEnd.SelectedDate = item.EndDate;
+                dpSalaryHistCalc.SelectedDate = item.SalaryCalculationDate;
+                txtSalaryHistCoeff.Text = item.Coefficient;
+                txtSalaryHistPercent.Text = item.Percentage.ToString();
+                txtSalaryHistDecisionNo.Text = item.DecisionNumber;
+                dpSalaryHistDecisionDate.SelectedDate = item.DecisionDate;
+
+                // Remove from list so user can re-add after editing
+                if (_personnel?.SalaryRecords != null)
+                {
+                    _personnel.SalaryRecords.Remove(item);
+                    RefreshSalaryHistoryGrid();
+                }
+            }
+        }
+
+        private void btnDeleteSalaryHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as FrameworkElement)?.DataContext as SalaryRecord;
+            if (item != null && _personnel?.SalaryRecords != null)
+            {
+                var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng quá trình lương này không?");
+                if (confirm.ShowDialog() == true)
+                {
+                    _personnel.SalaryRecords.Remove(item);
+                    RefreshSalaryHistoryGrid();
+                }
+            }
+        }
+
         private void btnAddLeave_Click(object? sender, RoutedEventArgs e)
         {
             // Validate input
@@ -1722,7 +1783,7 @@ namespace TaxPersonnelManagement.Views
                                 Reason = reason + $"|SYS:Trừ tiếp vào phép tồn năm {currentYear}|LINK:{linkId}",
                                 PersonnelId = _personnel != null ? _personnel.Id : 0,
                                 LeaveYear = currentYear,
-                                SystemNote = (reason != null && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, end.Value, type) : null
+                                SystemNote = (reason != null && end.HasValue && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, end.Value, type) : null
                             };
 
 
@@ -1776,7 +1837,7 @@ namespace TaxPersonnelManagement.Views
                 _personnel.LeaveHistories.Add(newItem);
             }
             
-            // Refresh Grid
+            _isRefreshing = false;
             // Refresh Grid
             RefreshLeaveHistoryGrid();
 
@@ -2367,6 +2428,107 @@ namespace TaxPersonnelManagement.Views
             if (dpExpectedSalaryIncrease.SelectedDate != expectedDate)
             {
                 dpExpectedSalaryIncrease.SelectedDate = expectedDate;
+            }
+        }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void txtPhone_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isRefreshing || _isFormatting) return;
+
+            _isFormatting = true;
+            try
+            {
+                int caretIndex = txtPhone.CaretIndex;
+                string originalText = txtPhone.Text;
+                string digits = new string(originalText.Where(char.IsDigit).ToArray());
+                
+                // Limit to 10 digits
+                if (digits.Length > 10) digits = digits.Substring(0, 10);
+                
+                string formatted = FormatPhoneNumber(digits);
+                
+                if (txtPhone.Text != formatted)
+                {
+                    txtPhone.Text = formatted;
+                    
+                    // Restore caret position
+                    int digitsBefore = originalText.Substring(0, Math.Min(caretIndex, originalText.Length)).Count(char.IsDigit);
+                    int newCaretIndex = 0;
+                    int digitCount = 0;
+                    while (newCaretIndex < formatted.Length && digitCount < digitsBefore)
+                    {
+                        if (char.IsDigit(formatted[newCaretIndex])) digitCount++;
+                        newCaretIndex++;
+                    }
+                    
+                    if (newCaretIndex < formatted.Length && formatted[newCaretIndex] == '.')
+                    {
+                         if (e.Changes.Any(c => c.AddedLength > 0))
+                             newCaretIndex++;
+                    }
+
+                    txtPhone.CaretIndex = Math.Min(newCaretIndex, formatted.Length);
+                }
+
+                // Error validation logic
+                if (digits.Length > 0 && !digits.StartsWith("0"))
+                {
+                    lblPhoneError.Text = "SĐT phải bắt đầu bằng số 0";
+                    lblPhoneError.Visibility = Visibility.Visible;
+                }
+                else if (digits.Length > 0 && digits.Length < 10)
+                {
+                    lblPhoneError.Text = "SĐT phải có 10 chữ số";
+                    lblPhoneError.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    lblPhoneError.Visibility = Visibility.Collapsed;
+                }
+            }
+            finally
+            {
+                _isFormatting = false;
+            }
+        }
+
+        private string FormatPhoneNumber(string? digits)
+        {
+            if (string.IsNullOrEmpty(digits)) return "";
+            
+            // Clean non-digits first
+            digits = new string(digits.Where(char.IsDigit).ToArray());
+            
+            if (digits.Length == 0) return "";
+            
+            string formatted = digits.Substring(0, Math.Min(4, digits.Length));
+            if (digits.Length > 4)
+            {
+                formatted += "." + digits.Substring(4, Math.Min(3, digits.Length - 4));
+                if (digits.Length > 7)
+                {
+                    formatted += "." + digits.Substring(7, Math.Min(3, digits.Length - 7));
+                }
+            }
+            return formatted;
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
             }
         }
     }

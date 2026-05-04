@@ -1,10 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
-using System.Collections.ObjectModel;
-using Microsoft.EntityFrameworkCore;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -20,15 +22,24 @@ namespace TaxPersonnelManagement.Views
 
         public PersonnelListView()
         {
-            InitializeComponent();
-            ApplyAuthorization();
-            LoadDepartments();
-            LoadData();
+            try
+            {
+                InitializeComponent();
+                ApplyAuthorization();
+                LoadDepartments();
+                LoadData();
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+                if (ex.InnerException != null) msg += "\nInner: " + ex.InnerException.Message;
+                MessageBox.Show("Lỗi khởi tạo PersonnelListView:\n" + msg, "Lỗi Debug", MessageBoxButton.OK, MessageBoxImage.Error);
+                throw;
+            }
         }
 
         private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
-            // Nếu ComboBox lọc đang mở, KHÔNG cướp sự kiện cuộn chuột để danh sách con tự cuộn
             if (cbDepartmentFilter.IsDropDownOpen)
             {
                 return;
@@ -45,15 +56,12 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-
-        /// <summary>
-        /// Ẩn nút Thêm mới nếu người dùng không phải Admin.
-        /// </summary>
         private void ApplyAuthorization()
         {
             if (App.CurrentUser?.Role == UserRole.Staff)
             {
                 btnAdd.Visibility = Visibility.Collapsed;
+                btnImportExcel.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -87,7 +95,7 @@ namespace TaxPersonnelManagement.Views
                                       .Select(d => d.Name)
                                       .Where(x => !string.IsNullOrEmpty(x))
                                       .Distinct()
-                                      .ToList() // Chuyển về List để sắp xếp trong bộ nhớ
+                                      .ToList()
                                       .OrderBy(x => {
                                           int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
                                           return idx == -1 ? 999 : idx;
@@ -105,7 +113,10 @@ namespace TaxPersonnelManagement.Views
         {
             using (var context = new AppDbContext())
             {
-                var query = context.Personnel.Include("LeaveHistories").AsQueryable();
+                var query = context.Personnel
+                                   .Include(p => p.LeaveHistories)
+                                   .Include(p => p.SalaryRecords)
+                                   .AsQueryable();
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -145,14 +156,12 @@ namespace TaxPersonnelManagement.Views
 
                                     if (dept3.Contains("lãnh đạo"))
                                     {
-                                        // 1. Trưởng Thuế cơ sở, 2. Quyền Trưởng Thuế cơ sở, 3. Phó Trưởng Thuế cơ sở
                                         if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
                                         if (pos.Contains("quyền")) return 2;
                                         if (pos.Contains("phó")) return 3;
                                     }
                                     else
                                     {
-                                        // 1. Tổ trưởng, 2. Phó Tổ trưởng, 3. Công chức
                                         if (pos.Contains("tổ trưởng") && !pos.Contains("phó")) return 1;
                                         if (pos.Contains("phó")) return 2;
                                         if (pos.Contains("công chức")) return 3;
@@ -162,7 +171,6 @@ namespace TaxPersonnelManagement.Views
                                 .ThenBy(p => p.FullName)
                                 .ToList();
 
-                // Dashboard stats (always on full list)
                 txtTotalCount.Text = list.Count.ToString();
 
                 var now = DateTime.Now.Date;
@@ -174,10 +182,9 @@ namespace TaxPersonnelManagement.Views
 
                 int sick = list.Count(p => p.LeaveHistories != null && 
                                            p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) && 
-                                                                     l.StartDate <= now && l.EndDate >= now));
+                                                                      l.StartDate <= now && l.EndDate >= now));
                 txtSickCount.Text = sick.ToString();
 
-                // Apply card filter
                 var displayList = list.AsEnumerable();
                 if (_currentCardFilter == "Maternity")
                 {
@@ -211,7 +218,6 @@ namespace TaxPersonnelManagement.Views
                 .Take(PageSize)
                 .ToList();
 
-            // Re-number STT across pages
             int startIndex = (_currentPage - 1) * PageSize;
             for (int i = 0; i < pageItems.Count; i++)
             {
@@ -220,7 +226,6 @@ namespace TaxPersonnelManagement.Views
 
             dgPersonnel.ItemsSource = pageItems;
 
-            // Update footer
             if (totalItems == 0)
             {
                 txtPagingInfo.Text = "Không có dữ liệu";
@@ -261,10 +266,6 @@ namespace TaxPersonnelManagement.Views
             LoadData(txtSearch.Text);
         }
 
-        /// <summary>
-        /// Cập nhật hiệu ứng trực quan của các thẻ Dashboard.
-        /// Thẻ đang được chọn sẽ sáng (Opacity = 1.0), các thẻ khác sẽ mờ (Opacity = 0.6).
-        /// </summary>
         private void UpdateCardVisuals()
         {
             cardTotal.Opacity = _currentCardFilter == "All" ? 1.0 : 0.6;
@@ -272,7 +273,6 @@ namespace TaxPersonnelManagement.Views
             cardSick.Opacity = _currentCardFilter == "Sick" ? 1.0 : 0.6;
         }
 
-        /// <summary>Bấm thẻ "Tổng nhân sự" → hiển thị toàn bộ danh sách.</summary>
         private void cardTotal_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _currentCardFilter = "All";
@@ -280,7 +280,6 @@ namespace TaxPersonnelManagement.Views
             LoadData(txtSearch.Text);
         }
 
-        /// <summary>Bấm thẻ "Nghỉ thai sản" → chỉ hiển thị công chức đang nghỉ thai sản.</summary>
         private void cardMaternity_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _currentCardFilter = "Maternity";
@@ -288,7 +287,6 @@ namespace TaxPersonnelManagement.Views
             LoadData(txtSearch.Text);
         }
 
-        /// <summary>Bấm thẻ "Nghỉ ốm" → chỉ hiển thị công chức đang nghỉ ốm.</summary>
         private void cardSick_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _currentCardFilter = "Sick";
@@ -301,7 +299,6 @@ namespace TaxPersonnelManagement.Views
             LoadData(txtSearch.Text);
         }
 
-        /// <summary>Thêm mới công chức → mở trang chi tiết với hồ sơ trống.</summary>
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
              if (Application.Current.MainWindow is MainWindow mw)
@@ -310,14 +307,13 @@ namespace TaxPersonnelManagement.Views
              }
         }
 
-        /// <summary>Chỉnh sửa hồ sơ công chức → mở trang chi tiết với dữ liệu hiện có.</summary>
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is int id)
             {
                 using (var context = new AppDbContext())
                 {
-                    var p = context.Personnel.Include("LeaveHistories").FirstOrDefault(x => x.Id == id);
+                    var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
                     if (p != null)
                     {
                         if (Application.Current.MainWindow is MainWindow mw)
@@ -329,7 +325,6 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        /// <summary>Xóa công chức sau khi xác nhận.</summary>
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is int id)
@@ -352,33 +347,26 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        /// <summary>Xem hồ sơ công chức dạng popup (profile dialog).</summary>
         private void btnView_Click(object sender, RoutedEventArgs e)
         {
              if (sender is Button btn && btn.Tag is int id)
              {
-                 using (var context = new AppDbContext())
-                 {
-                     var p = context.Personnel.Include("LeaveHistories").FirstOrDefault(x => x.Id == id);
-                     if (p != null)
-                     {
-                         var dialog = new PersonnelProfileDialog(p);
-                         dialog.ShowDialog();
-                     }
-                 }
+                  using (var context = new AppDbContext())
+                  {
+                      var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
+                      if (p != null)
+                      {
+                          var dialog = new PersonnelProfileDialog(p);
+                          dialog.ShowDialog();
+                      }
+                  }
              }
         }
 
-        /// <summary>
-        /// Xuất danh sách nhân sự ra file Excel.
-        /// Tên file tự động thay đổi theo bộ lọc thẻ Dashboard đang chọn (Thai sản / Ốm / Tất cả).
-        /// Dữ liệu xuất ra chính là dữ liệu đang hiển thị trên bảng (đã qua lọc).
-        /// </summary>
         private void btnExportExcel_Click(object sender, RoutedEventArgs e)
         {
              if (_fullFilteredList != null && _fullFilteredList.Any())
              {
-                  // Tên file tự động theo bộ lọc: NghiThaiSan / NghiOm / NhanSu_Full
                   var dlg = new Microsoft.Win32.SaveFileDialog();
                   dlg.FileName = _currentCardFilter switch
                   {
@@ -394,9 +382,9 @@ namespace TaxPersonnelManagement.Views
                       try 
                       {
                           TaxPersonnelManagement.Services.ExcelExporter.Export(_fullFilteredList, dlg.FileName);
-                                                    var success = new SuccessWindow("Xuất Excel thành công!", dlg.FileName);
-                           if (Window.GetWindow(this) is Window parent) success.Owner = parent;
-                           success.ShowDialog();
+                          var success = new SuccessWindow("Xuất Excel thành công!", null, dlg.FileName, true);
+                          if (Window.GetWindow(this) is Window parent) success.Owner = parent;
+                          success.ShowDialog();
                       }
                       catch (Exception ex)
                       {
@@ -404,6 +392,94 @@ namespace TaxPersonnelManagement.Views
                       }
                   }
              }
+        }
+
+        private async void btnImportExcel_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog();
+            dlg.DefaultExt = ".xlsx";
+            dlg.Filter = "Excel Documents (.xlsx)|*.xlsx";
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    // Hiện hiệu ứng loading
+                    LoadingOverlay.Visibility = Visibility.Visible;
+
+                    // Đọc file Excel ở luồng nền (background thread)
+                    var importedData = await Task.Run(() => TaxPersonnelManagement.Services.ExcelImporter.Import(dlg.FileName));
+
+                    // Ẩn hiệu ứng loading
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                    if (importedData != null && importedData.Any())
+                    {
+                        // Lấy danh sách CCCD đã tồn tại trong DB để kiểm tra trùng
+                        List<string> existingIds;
+                        using (var context = new AppDbContext())
+                        {
+                            existingIds = context.Personnel
+                                .Where(p => !string.IsNullOrEmpty(p.IdentityCardNumber))
+                                .Select(p => p.IdentityCardNumber!)
+                                .ToList();
+                        }
+
+                        // Lọc những người chưa có trong DB (dựa trên CCCD)
+                        var newData = importedData.Where(p => 
+                            string.IsNullOrEmpty(p.IdentityCardNumber) || 
+                            !existingIds.Contains(p.IdentityCardNumber)
+                        ).ToList();
+
+                        int skippedCount = importedData.Count - newData.Count;
+
+                        if (newData.Count == 0)
+                        {
+                            var info = new SuccessWindow($"Toàn bộ {importedData.Count} người trong file đã có trong hệ thống.", "Không có dữ liệu mới");
+                            if (Window.GetWindow(this) is Window p1) info.Owner = p1;
+                            info.ShowDialog();
+                            return;
+                        }
+
+                        var confirmMsg = $"Tìm thấy {importedData.Count} nhân sự. Trong đó:\n" +
+                                        $"- {newData.Count} nhân sự mới\n" +
+                                        $"- {skippedCount} nhân sự đã tồn tại (sẽ bỏ qua)\n\n" +
+                                        "Bạn có muốn tiếp tục nhập không?";
+
+                        var confirmDialog = new ConfirmDialog(confirmMsg);
+                        if (confirmDialog.ShowDialog() == true)
+                        {
+                            LoadingOverlay.Visibility = Visibility.Visible;
+                            
+                            await Task.Run(() => {
+                                using (var context = new AppDbContext())
+                                {
+                                    context.Personnel.AddRange(newData);
+                                    context.SaveChanges();
+                                }
+                            });
+
+                            LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                            LoadData();
+                            LoadDepartments();
+
+                            var success = new SuccessWindow($"Đã nhập thành công {newData.Count} nhân sự mới!", skippedCount > 0 ? $"Đã bỏ qua {skippedCount} người trùng." : "");
+                            if (Window.GetWindow(this) is Window parent) success.Owner = parent;
+                            success.ShowDialog();
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("Không tìm thấy dữ liệu hợp lệ trong file Excel.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                    MessageBox.Show("Lỗi nhập Excel: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }

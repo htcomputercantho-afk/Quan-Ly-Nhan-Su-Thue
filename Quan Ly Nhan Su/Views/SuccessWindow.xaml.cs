@@ -6,7 +6,7 @@ namespace TaxPersonnelManagement.Views
     {
         public string? FilePath { get; private set; }
 
-        public SuccessWindow(string? message = null, string? filePath = null, bool showActions = true)
+        public SuccessWindow(string? message = null, string? subMessage = null, string? filePath = null, bool showActions = false)
         {
             InitializeComponent();
             
@@ -15,12 +15,22 @@ namespace TaxPersonnelManagement.Views
                 txtMessage.Text = message;
             }
 
+            if (!string.IsNullOrEmpty(subMessage))
+            {
+                txtSubMessage.Visibility = Visibility.Visible;
+                txtSubMessage.Text = subMessage;
+            }
+
             if (!string.IsNullOrEmpty(filePath))
             {
                 this.FilePath = filePath;
                 pnlActions.Visibility = showActions ? Visibility.Visible : Visibility.Collapsed;
-                txtSubMessage.Visibility = Visibility.Visible;
-                txtSubMessage.Text = System.IO.Path.GetFileName(filePath);
+                
+                if (string.IsNullOrEmpty(subMessage))
+                {
+                    txtSubMessage.Visibility = Visibility.Visible;
+                    txtSubMessage.Text = System.IO.Path.GetFileName(filePath);
+                }
             }
         }
 

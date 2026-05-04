@@ -164,7 +164,7 @@ namespace TaxPersonnelManagement.Views
                         workbook.SaveAs(saveFileDialog.FileName);
                         
                         // Thông báo thành công giống các menu khác
-                        var success = new SuccessWindow("Xuất danh sách thi đua khen thưởng thành công!", saveFileDialog.FileName);
+                        var success = new SuccessWindow("Xuất danh sách thi đua khen thưởng thành công!", null, saveFileDialog.FileName, true);
                         if (Window.GetWindow(this) is Window parent) success.Owner = parent;
                         success.ShowDialog();
                     }

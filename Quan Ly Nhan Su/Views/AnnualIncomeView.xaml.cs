@@ -446,7 +446,7 @@ namespace TaxPersonnelManagement.Views
                             lvPersonnel.SelectedItem = temp;
                         }
 
-                        var successDialog = new SuccessWindow($"Import thành công!\n\n- Đã cập nhật lương cho {successCount} công chức.\n- Không tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.", openFileDialog.FileName);
+                        var successDialog = new SuccessWindow($"Import thành công!", $"Đã cập nhật lương cho {successCount} công chức.\nKhông tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.");
                         successDialog.ShowDialog();
                     }
                 }

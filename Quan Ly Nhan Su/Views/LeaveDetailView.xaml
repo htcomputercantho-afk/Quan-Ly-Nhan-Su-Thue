@@ -108,7 +108,8 @@
                           IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
                           BorderThickness="0" Background="White"
                           RowHeight="NaN" MinRowHeight="50" ColumnWidth="*"
-                          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                          GridLinesVisibility="None" 
+                          SpellCheck.IsEnabled="False"
                           AlternatingRowBackground="#F8FAFD" RowBackground="White"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
@@ -280,7 +281,7 @@
                                     <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock TextWrapping="Wrap" LineHeight="24" FontSize="16" Foreground="#424242">
+                                                <TextBlock TextWrapping="Wrap" LineHeight="26" FontSize="16" Foreground="#424242" SpellCheck.IsEnabled="False">
                                                     <Run Text="{Binding MainContent, Mode=OneWay}"/>
                                                     <Run Text="{Binding Suffix, Mode=OneWay}" FontWeight="Bold" Foreground="#D32F2F"/>
                                                 </TextBlock>

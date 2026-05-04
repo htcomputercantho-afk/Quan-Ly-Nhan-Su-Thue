@@ -435,7 +435,7 @@ namespace TaxPersonnelManagement.Views
                         worksheet.Row(3).Style.Alignment.WrapText = true;
 
                         workbook.SaveAs(saveFileDialog.FileName);
-                        var success = new SuccessWindow("Xuất báo cáo Excel thành công!", saveFileDialog.FileName);
+                        var success = new SuccessWindow("Xuất báo cáo Excel thành công!", null, saveFileDialog.FileName, true);
                         if (Window.GetWindow(this) is Window parent) success.Owner = parent;
                         success.ShowDialog();
                     }

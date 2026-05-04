@@ -185,10 +185,58 @@ namespace TaxPersonnelManagement.Services
                 row.RelativeItem().Column(c => LabelValue(c, "Thời hạn bảo lưu:", p.SalaryReservationDeadline?.ToString("dd/MM/yyyy")));
             });
 
-             column.Item().PaddingTop(5).Row(row => 
+            column.Item().PaddingTop(5).Row(row => 
             {
                 row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", p.NextSalaryStepDate?.ToString("dd/MM/yyyy")));
                 row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", p.ExpectedSalaryIncreaseDate?.ToString("dd/MM/yyyy")));
+            });
+
+            // Salary History Table - Keep title + table together to prevent page break between them
+            column.Item().PaddingTop(15).ShowEntire().Column(salarySection =>
+            {
+                salarySection.Item().PaddingBottom(8).Text("DIỄN BIẼN QUÁ TRÌNH LƯƠNG").Bold().FontColor("#B71C1C").FontSize(12);
+                salarySection.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        columns.RelativeColumn(1.2f); // Start
+                        columns.RelativeColumn(1.2f); // End
+                        columns.RelativeColumn(1.2f); // Calc
+                        columns.ConstantColumn(50);   // Coeff
+                        columns.ConstantColumn(50);   // %
+                        columns.RelativeColumn(1.5f); // Decision No
+                        columns.RelativeColumn(1.2f); // Decision Date
+                    });
+
+                    table.Header(header =>
+                    {
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Thời gian bắt đầu").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Thời gian kết thúc").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Mốc xét lương từ").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Hệ số").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("%").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Số VB/QĐ").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Ngày ký QĐ").Bold().FontSize(9).FontColor(Colors.White);
+                    });
+
+                    if (p.SalaryRecords != null && p.SalaryRecords.Count > 0)
+                    {
+                        foreach (var h in p.SalaryRecords.OrderByDescending(s => s.StartDate))
+                        {
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.StartDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.EndDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SalaryCalculationDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Coefficient ?? "").FontSize(9).Bold();
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{h.Percentage}%").FontSize(9);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionNumber ?? "").FontSize(9);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
+                        }
+                    }
+                    else 
+                    {
+                        table.Cell().ColumnSpan(7).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử lương").Italic().FontColor(Colors.Grey.Medium);
+                    }
+                });
             });
         }
         
@@ -293,7 +341,7 @@ namespace TaxPersonnelManagement.Services
             });
              column.Item().PaddingTop(5).Row(row => {
                  row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tính theo QĐ gần nhất:", p.PositionDecisionDate?.ToString("dd/MM/yyyy")));
-                 row.RelativeItem().Column(c => LabelValue(c, "Thời điểm tính thời gian công tác:", p.PositionCalculationDate?.ToString("dd/MM/yyyy")));
+                 row.RelativeItem().Column(c => LabelValue(c, "Thời điểm tính thời gian công tác:", p.DisplayPositionCalculationDate.ToString("dd/MM/yyyy")));
             });
             
             // Calculated Stats
@@ -333,7 +381,7 @@ namespace TaxPersonnelManagement.Services
 
                  CenteredItem(row, "Số năm công tác tính đến thời điểm hiện tại", wYears.ToString());
                  CenteredItem(row, "Số tháng công tác tính đến thời điểm hiện tại", wMonths.ToString());
-                 CenteredItem(row, "Năm giữ vị trí công tác", p.DisplayPositionYear, true);
+                 CenteredItem(row, "Năm giữ vị trí công tác", p.CalculatedPositionYear, true);
             });
 
             // Retirement Stats

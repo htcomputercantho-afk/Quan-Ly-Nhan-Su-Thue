@@ -1,4 +1,16 @@
-- Cấu trúc lại ô "Năm giữ vị trí công tác" thành ô chọn ngày (DatePicker).
-- Tự động hiển thị ngày hiện tại khi mở hồ sơ nhân sự.
-- Tối ưu hóa hệ thống: Tự động cập nhật ngày tháng hiện tại trên View danh sách và file PDF xuất ra mà không cần cập nhật thủ công hàng ngày.
-- Dọn dẹp code rác và tối ưu hóa hiệu năng hệ thống.
+## v2.x — 2026-05-04 (Cập nhật mới nhất)
+- [Tính năng] Nhập dữ liệu nhân sự từ file Excel (DS.xlsx) hàng loạt.
+- [Tính năng] Kiểm tra trùng lặp theo số CCCD/CMND khi nhập Excel (bỏ qua người đã có).
+- [Tính năng] Tự động định dạng số điện thoại theo chuẩn 0XXX.XXX.XXX khi nhập liệu.
+- [Tính năng] Hiệu ứng Loading khi thực hiện tác vụ đọc file tốn thời gian.
+- [Cải tiến] Thông báo thành công phân biệt rõ giữa loại Import và Xuất file.
+- [Cải tiến] Bảng Chi tiết phép năm: Bỏ đường kẻ lưới và tắt kiểm tra chính tả để UI gọn gàng hơn.
+- [Cải tiến] Trường "Nơi cấp CCCD" luôn mặc định là "Cục Cảnh sát..." khi nhập Excel.
+- [Cải tiến] Import Excel: Chức vụ trống hiển thị rỗng (không phải "0").
+- [Cải tiến] Ánh xạ đúng cột F và AJ trong file Excel cho "TGCT tại cơ quan Thuế" và "Thời gian CT theo QĐ".
+- [Sửa lỗi] Lưu điện thoại vào DB chỉ lưu chữ số thuần (không có dấu chấm).
+
+## v1.x — Lịch sử trước đó
+- Khôi phục tính năng tính toán "X năm Y tháng" cho ô "Năm giữ vị trí công tác".
+- Chuyển tính năng tự động nhảy ngày hiện tại sang ô "Thời điểm tính thời gian công tác".
+- Tự động hóa: Giờ đây thời điểm tính sẽ tự trôi theo ngày hiện tại mà không cần phải bấm lưu thủ công, giúp các báo cáo luôn lấy mốc thời gian mới nhất.

@@ -313,7 +313,7 @@ namespace TaxPersonnelManagement.Views
                             worksheet.Cell(row, 4).Value = item.RankCode;
                             worksheet.Cell(row, 5).Value = item.CurrentSalaryStep;
                             worksheet.Cell(row, 6).Value = item.CurrentSalaryCoefficient;
-                            worksheet.Cell(row, 7).Value = item.ExceedFramePercent;
+                            worksheet.Cell(row, 7).Value = item.ExceedFramePercent > 0 ? $"{item.ExceedFramePercent}%" : "";
                             
                              if (item.NextSalaryStepDate.HasValue)
                                 worksheet.Cell(row, 8).Value = item.NextSalaryStepDate.Value;
@@ -351,7 +351,7 @@ namespace TaxPersonnelManagement.Views
                         nameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
 
                         workbook.SaveAs(saveFileDialog.FileName);
-                        var success = new SuccessWindow("Xuất danh sách lương thành công!", saveFileDialog.FileName);
+                        var success = new SuccessWindow("Xuất danh sách lương thành công!", null, saveFileDialog.FileName, true);
                         if (Window.GetWindow(this) is Window parent) success.Owner = parent;
                         success.ShowDialog();
                     }

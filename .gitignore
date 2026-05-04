@@ -38,3 +38,8 @@ Desktop.ini
 SingleApp/
 *.log
 user.config
+
+## AI / Dev workspace - không commit lên Git
+brain/
+fix_db.py
+DS.xlsx

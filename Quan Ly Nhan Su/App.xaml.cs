@@ -99,6 +99,21 @@ namespace TaxPersonnelManagement
                     DebugLog("Ensuring Database Created...");
                     context.Database.EnsureCreated();
 
+                    // Update existing records with default Identity Place if empty
+                    var emptyIdentityPersonnel = context.Personnel
+                        .Where(p => string.IsNullOrEmpty(p.IdentityCardPlace) || p.IdentityCardPlace == "---")
+                        .ToList();
+                    
+                    if (emptyIdentityPersonnel.Any())
+                    {
+                        foreach (var p in emptyIdentityPersonnel)
+                        {
+                            p.IdentityCardPlace = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
+                        }
+                        context.SaveChanges();
+                        DebugLog($"Updated {emptyIdentityPersonnel.Count} personnel records with default Identity Place.");
+                    }
+
                     // Detect if migration is pending and perform auto-backup
                     if (IsSchemaUpdatePending(context))
                     {
@@ -178,6 +193,21 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN SalaryIncreaseDelayType TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN ExpectedSalaryIncreaseDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN SalaryHistoryLog TEXT"); } catch { }
+                    
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS SalaryRecords (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            PersonnelId INTEGER NOT NULL,
+                            StartDate TEXT,
+                            EndDate TEXT,
+                            SalaryCalculationDate TEXT,
+                            Coefficient TEXT,
+                            Percentage REAL NOT NULL DEFAULT 100,
+                            DecisionNumber TEXT,
+                            DecisionDate TEXT,
+                            Note TEXT,
+                            FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                        );");
 
                     // Manual Migration for Tab 7 Fields (Reward Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN EmulationTitles TEXT"); } catch { }

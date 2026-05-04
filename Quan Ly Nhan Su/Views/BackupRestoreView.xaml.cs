@@ -69,7 +69,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     File.Copy(_dbPath, dlg.FileName, overwrite: true);
 
-                    var success = new SuccessWindow("Sao lưu thành công!", dlg.FileName);
+                    var success = new SuccessWindow("Sao lưu thành công!", null, dlg.FileName, true);
                     success.ShowDialog();
                 }
             }
@@ -148,7 +148,7 @@ namespace TaxPersonnelManagement.Views
                 if (File.Exists(walPath)) File.Delete(walPath);
                 if (File.Exists(shmPath)) File.Delete(shmPath);
 
-                var success = new SuccessWindow("Phục hồi dữ liệu thành công!\nỨng dụng sẽ tự động khởi động lại.", autoBackupPath, showActions: false);
+                var success = new SuccessWindow("Phục hồi dữ liệu thành công!\nỨng dụng sẽ tự động khởi động lại.", null, autoBackupPath, showActions: false);
                 success.ShowDialog();
 
                 // Khởi động lại ứng dụng

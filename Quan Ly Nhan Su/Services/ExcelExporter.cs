@@ -102,7 +102,7 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 29).Value = p.CurrentSalaryCoefficient;
 
                     worksheet.Cell(row, 30).Value = p.PositionAllowance;
-                    worksheet.Cell(row, 31).Value = p.ExceedFramePercent;
+                    worksheet.Cell(row, 31).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
 
                     worksheet.Cell(row, 32).Value = p.EmulationTitles;
                     worksheet.Cell(row, 33).Value = p.RewardForms;

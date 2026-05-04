@@ -29,6 +29,21 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+
+                <!-- Loading Overlay -->
+                <Grid x:Name="LoadingOverlay" Grid.RowSpan="3" Visibility="Collapsed" Panel.ZIndex="1000" Margin="-20">
+                    <Border Background="Black" Opacity="0.15"/>
+                    <materialDesign:Card UniformCornerRadius="10" Width="220" Height="140" materialDesign:ElevationAssist.Elevation="Dp6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                         Value="0" IsIndeterminate="True" 
+                                         Width="40" Height="40" 
+                                         Foreground="#1976D2" Margin="0 0 0 15"/>
+                            <TextBlock Text="Đang xử lý dữ liệu..." FontSize="14" FontWeight="SemiBold" Foreground="#455A64" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Vui lòng chờ trong giây lát" FontSize="11" Foreground="#78909C" HorizontalAlignment="Center" Margin="0 5 0 0"/>
+                        </StackPanel>
+                    </materialDesign:Card>
+                </Grid>
     
                 <!-- Top Section -->
                 <StackPanel Grid.Row="0" Margin="0 0 0 10">
@@ -149,6 +164,19 @@
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Plus" Width="20" Height="20" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Thêm Mới" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="White"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Import Excel Button -->
+                        <Button x:Name="btnImportExcel" Click="btnImportExcel_Click" 
+                                Height="36"
+                                Background="#EF6C00" BorderThickness="0" Margin="0 0 12 0"
+                                Style="{DynamicResource MaterialDesignRaisedButton}"
+                                materialDesign:ButtonAssist.CornerRadius="18"
+                                ToolTip="Nhập danh sách từ file Excel">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileImport" Width="20" Height="20" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Nhập Excel" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="White"/>
                             </StackPanel>
                         </Button>
 

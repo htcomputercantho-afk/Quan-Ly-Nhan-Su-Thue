@@ -230,7 +230,7 @@
                     <DataGridTextColumn Header="MÃ NGẠCH" Binding="{Binding RankCode}" Width="110" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     <DataGridTextColumn Header="BẬC LƯƠNG" Binding="{Binding CurrentSalaryStep}" Width="110" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     <DataGridTextColumn Header="HỆ SỐ LƯƠNG" Binding="{Binding CurrentSalaryCoefficient}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
-                    <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent}" Width="140" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="140" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
                     <DataGridTextColumn Header="THỜI ĐIỂM&#x0a;TÍNH BẬC LƯƠNG&#x0a;LẦN SAU" Binding="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy}" Width="200" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
