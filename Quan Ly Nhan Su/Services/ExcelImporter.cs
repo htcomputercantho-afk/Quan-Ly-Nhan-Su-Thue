@@ -29,7 +29,7 @@ namespace TaxPersonnelManagement.Services
                         var p = new Personnel();
                         
                         // Ánh xạ theo cấu trúc file DS.xlsx (Bắt đầu từ cột B là STT)
-                        p.StaffId = GetFormattedString(row.Cell(3));         // Cột C: Mã NV
+                        p.StaffId = GetFormattedString(row.Cell(37));        // Cột AK: Số hiệu công chức
                         p.FullName = GetValue(row.Cell(4)) ?? "";  // Cột D: Tên NV
                         p.Department = GetValue(row.Cell(5));      // Cột E: Bộ phận
                         
