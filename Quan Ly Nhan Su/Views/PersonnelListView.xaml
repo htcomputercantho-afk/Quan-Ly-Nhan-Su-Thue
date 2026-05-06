@@ -216,7 +216,7 @@
                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="FontSize" Value="15"/>
+                        <Setter Property="FontSize" Value="16"/>
                         <Setter Property="VerticalContentAlignment" Value="Center"/>
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -235,11 +235,12 @@
                         <Setter Property="FontWeight" Value="SemiBold"/>
                         <Setter Property="Foreground" Value="#546E7A"/>
                         <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="FontSize" Value="15"/>
+                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
                         <Setter Property="ContentTemplate">
                             <Setter.Value>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" />
                                 </DataTemplate>
                             </Setter.Value>
                         </Setter>
@@ -253,7 +254,7 @@
                             <DataTemplate>
                                 <TextBlock Text="{Binding STT}" 
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontWeight="SemiBold" FontSize="15" Foreground="#546E7A"/>
+                                           FontWeight="SemiBold" FontSize="16" Foreground="#546E7A"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -262,7 +263,7 @@
                     <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2.2*" MinWidth="220">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20 0 0 0">
                                     <!-- Avatar -->
                                     <Grid Width="45" Height="45" Margin="0 0 14 0" Effect="{DynamicResource MaterialDesignShadowDepth1}">
                                         <!-- Fallback: Initials -->
@@ -280,13 +281,13 @@
                                         </Border>
                                     </Grid>
                                     
-                                    <!-- Name/ID -->
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="#263238" FontSize="18" Margin="0 0 0 2"/>
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Barcode" Width="14" Height="14" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="0 0 4 0"/>
-                                            <TextBlock Text="{Binding StaffId}" FontSize="15" Foreground="#78909C"/>
-                                        </StackPanel>
+                                     <!-- Name/ID -->
+                                     <StackPanel VerticalAlignment="Center">
+                                         <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="#263238" FontSize="19" Margin="0 0 0 2"/>
+                                         <StackPanel Orientation="Horizontal">
+                                             <materialDesign:PackIcon Kind="Barcode" Width="14" Height="14" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                             <TextBlock Text="{Binding StaffId}" FontSize="16" Foreground="#78909C"/>
+                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
@@ -297,32 +298,32 @@
                     <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="1.5*" MinWidth="140">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
-                                        <materialDesign:PackIcon Kind="CalendarBlank" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}" FontSize="16" Foreground="#455A64"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="GenderMaleFemale" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Gender}" FontSize="16" Foreground="#455A64"/>
-                                    </StackPanel>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15 0 0 0">
+                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                                         <materialDesign:PackIcon Kind="CalendarBlank" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                         <TextBlock Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}" FontSize="17" Foreground="#455A64"/>
+                                     </StackPanel>
+                                     <StackPanel Orientation="Horizontal">
+                                         <materialDesign:PackIcon Kind="GenderMaleFemale" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                         <TextBlock Text="{Binding Gender}" FontSize="17" Foreground="#455A64"/>
+                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
                     <!-- POSITION -->
-                    <DataGridTemplateColumn Header="VỊ TRÍ" Width="2*" MinWidth="180">
+                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="2*" MinWidth="180">
                          <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20 0 0 0">
                                     <!-- Department Tag -->
                                     <Border Background="#E3F2FD" CornerRadius="6" Padding="10 4" HorizontalAlignment="Left" Margin="0 0 0 6">
                                          <TextBlock Text="{Binding Department}" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
                                     </Border>
-                                    <!-- Position -->
-                                    <TextBlock Text="{Binding Position}" FontWeight="Medium" Foreground="#37474F" FontSize="16"/>
-                                </StackPanel>
+                                     <!-- Position -->
+                                     <TextBlock Text="{Binding Position}" FontWeight="Medium" Foreground="#37474F" FontSize="17" HorizontalAlignment="Left"/>
+                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -331,15 +332,15 @@
                     <DataGridTemplateColumn Header="LIÊN HỆ" Width="1.8*" MinWidth="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
-                                        <materialDesign:PackIcon Kind="Phone" Width="15" Height="15" Foreground="#43A047" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding PhoneNumber, Converter={StaticResource PhoneFormatterConverter}}" FontSize="16" FontWeight="Medium" Foreground="#2E7D32"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="Email" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Email}" FontSize="15" Foreground="#546E7A"/>
-                                    </StackPanel>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15 0 0 0">
+                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                                         <materialDesign:PackIcon Kind="Phone" Width="15" Height="15" Foreground="#43A047" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                         <TextBlock Text="{Binding PhoneNumber, Converter={StaticResource PhoneFormatterConverter}}" FontSize="17" FontWeight="Medium" Foreground="#2E7D32"/>
+                                     </StackPanel>
+                                     <StackPanel Orientation="Horizontal">
+                                         <materialDesign:PackIcon Kind="Email" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                         <TextBlock Text="{Binding Email}" FontSize="16" Foreground="#546E7A"/>
+                                     </StackPanel>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -349,7 +350,7 @@
                     <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="Auto" MinWidth="150">
                          <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <Button x:Name="btnView" Click="btnView_Click" Tag="{Binding Id}"
                                             Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xem chi tiết" 
                                             Width="32" Height="32" Margin="0 0 8 0" Background="#E1F5FE" BorderBrush="#E1F5FE" Foreground="#0288D1" materialDesign:ElevationAssist.Elevation="Dp0">

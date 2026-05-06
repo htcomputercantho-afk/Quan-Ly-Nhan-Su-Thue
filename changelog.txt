@@ -1,23 +1,20 @@
-## v1.0.2.2 — 2026-05-04 (Hotfix & Search Improvement)
-- [Tính năng] Tìm kiếm thông minh (Google-style): Cho phép tìm kiếm theo từ khóa không cần đúng thứ tự trong Bảng tổng hợp nghỉ phép (Tìm được cả lý do nghỉ như "đi nước ngoài").
-- [Cải tiến] Tìm kiếm tiếng Việt: Tự động chuẩn hóa Unicode và tìm kiếm không phân biệt dấu (accent-insensitive).
-- [Sửa lỗi] Import Excel: Chuyển "Số hiệu cán bộ" sang lấy từ cột AK (Số hiệu công chức).
-- [Sửa lỗi] Import Excel: Nếu cột "Chức vụ" trống, tự động mặc định là "Công chức".
-- [Sửa lỗi] Database: Tự động cập nhật cấu trúc bảng SalaryRecords cho người dùng nâng cấp từ phiên bản cũ (fix lỗi "no such column: DecisionNumber").
+## v1.0.2.3 — 2026-05-06
+- [Sửa lỗi] Việt hóa lịch (CN, T2-T7): Hiển thị đúng tên thứ theo chuẩn Tiếng Việt.
+- [Cải tiến] Xuất Excel: Tên file & tiêu đề báo cáo tự động cập nhật theo "Thời điểm tính".
+- [Giao diện] Thông báo: Dùng SuccessWindow hiện đại thay cho MessageBox cũ.
+- [Tối ưu] Bỏ cột "Chức vụ" trong Excel theo yêu cầu.
 
-## v1.0.2.0 - v1.0.2.1 (Cập nhật lớn)
-- [Tính năng] Nhập dữ liệu nhân sự từ file Excel (DS.xlsx) hàng loạt.
-- [Tính năng] Kiểm tra trùng lặp theo số CCCD/CMND khi nhập Excel (bỏ qua người đã có).
-- [Tính năng] Tự động định dạng số điện thoại theo chuẩn 0XXX.XXX.XXX khi nhập liệu.
-- [Tính năng] Hiệu ứng Loading khi thực hiện tác vụ đọc file tốn thời gian.
-- [Cải tiến] Thông báo thành công phân biệt rõ giữa loại Import và Xuất file.
-- [Cải tiến] Bảng Chi tiết phép năm: Bỏ đường kẻ lưới và tắt kiểm tra chính tả để UI gọn gàng hơn.
-- [Cải tiến] Trường "Nơi cấp CCCD" luôn mặc định là "Cục Cảnh sát..." khi nhập Excel.
-- [Cải tiến] Import Excel: Chức vụ trống hiển thị rỗng (không phải "0").
-- [Cải tiến] Ánh xạ đúng cột F và AJ trong file Excel cho "TGCT tại cơ quan Thuế" và "Thời gian CT theo QĐ".
-- [Sửa lỗi] Lưu điện thoại vào DB chỉ lưu chữ số thuần (không có dấu chấm).
+## v1.0.2.2 — 2026-05-04
+- [Tính năng] Tìm kiếm thông minh (Google-style) không dấu & không cần đúng thứ tự.
+- [Sửa lỗi] Import Excel: Chức vụ trống mặc định là "Công chức"; Sửa cột Số hiệu cán bộ.
+- [Sửa lỗi] Database: Tự động cập nhật cấu hình cho bản cũ.
 
-## v1.x — Lịch sử trước đó
-- Khôi phục tính năng tính toán "X năm Y tháng" cho ô "Năm giữ vị trí công tác".
-- Chuyển tính năng tự động nhảy ngày hiện tại sang ô "Thời điểm tính thời gian công tác".
-- Tự động hóa: Giờ đây thời điểm tính sẽ tự trôi theo ngày hiện tại mà không cần phải bấm lưu thủ công, giúp các báo cáo luôn lấy mốc thời gian mới nhất.
+## v1.0.2.1 — 2026-05-03
+- [Tính năng] Nhập nhân sự hàng loạt từ Excel; Kiểm tra trùng lặp CCCD.
+- [Tính năng] Tự động định dạng SĐT (0XXX.XXX.XXX) & Nơi cấp CCCD.
+- [Giao diện] Thêm hiệu ứng Loading; Bỏ đường lưới bảng Chi tiết phép.
+- [Sửa lỗi] Ánh xạ cột Excel (F, AJ) & Chuẩn hóa lưu SĐT vào DB.
+
+## v1.x — Trước đó
+- Khôi phục tính năng "X năm Y tháng" cho thâm niên.
+- Tự động nhảy ngày hiện tại cho "Thời điểm tính".

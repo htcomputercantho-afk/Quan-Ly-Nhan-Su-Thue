@@ -7,7 +7,8 @@
       mc:Ignorable="d" 
       d:DesignHeight="700" d:DesignWidth="1000"
       Title="Chi tiết phép năm"
-      xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters">
+      xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
+      Language="vi-VN">
     
     <Page.Resources>
         <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
@@ -207,7 +208,7 @@
                                             </Ellipse>
                                         </Grid>
                                         <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
-                                                   FontWeight="Bold" FontSize="16" Foreground="#212121"
+                                                   FontWeight="Bold" FontSize="18" Foreground="#212121"
                                                    TextWrapping="Wrap" MaxWidth="180"/>
                                     </StackPanel>
                                 </DataTemplate>
@@ -220,7 +221,7 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="FontSize" Value="16"/>
                                     <Setter Property="Foreground" Value="#424242"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -231,7 +232,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="16" 
+                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="18" 
                                                    Foreground="#2E7D32" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -243,7 +244,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="16" 
+                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="18" 
                                                    Foreground="#7B1FA2" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -255,7 +256,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="Bold" FontSize="16" 
+                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="Bold" FontSize="18" 
                                                    Foreground="#0288D1" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -267,7 +268,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#FFF3E0" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding ActualTaken}" FontWeight="Bold" FontSize="16" 
+                                        <TextBlock Text="{Binding ActualTaken}" FontWeight="Bold" FontSize="18" 
                                                    Foreground="#E65100" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -281,7 +282,7 @@
                                     <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock TextWrapping="Wrap" LineHeight="26" FontSize="16" Foreground="#424242" SpellCheck.IsEnabled="False">
+                                                <TextBlock TextWrapping="Wrap" LineHeight="28" FontSize="18" Foreground="#424242" SpellCheck.IsEnabled="False">
                                                     <Run Text="{Binding MainContent, Mode=OneWay}"/>
                                                     <Run Text="{Binding Suffix, Mode=OneWay}" FontWeight="Bold" Foreground="#D32F2F"/>
                                                 </TextBlock>
@@ -297,7 +298,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="10" Padding="12,8" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding Remaining}" FontWeight="Bold" FontSize="16" 
+                                        <TextBlock Text="{Binding Remaining}" FontWeight="Bold" FontSize="18" 
                                                    Foreground="#1B5E20" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>

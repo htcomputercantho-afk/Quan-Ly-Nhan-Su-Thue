@@ -19,6 +19,7 @@ namespace TaxPersonnelManagement.Views
         private bool _isRefreshing = false;
         private bool _isFormatting = false;
         private List<string> _allPositions = new List<string>();
+        private SalaryRecord? _editingSalaryRecord;
 
         /// <summary>
         /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
@@ -465,9 +466,16 @@ namespace TaxPersonnelManagement.Views
                     dbRanks.Add(new Rank { Code = _personnel.RankCode, Name = _personnel.RankName ?? "" });
                 }
 
-                cboRankCode.ItemsSource = dbRanks.OrderBy(r => r.Code).ToList();
+                var sortedRanks = dbRanks.OrderBy(r => r.Code).ToList();
+                
+                cboRankCode.ItemsSource = sortedRanks;
                 cboRankCode.DisplayMemberPath = "Code";
                 cboRankCode.SelectedValuePath = "Code";
+
+                // Also populate the history input section
+                cboSalaryHistRankCode.ItemsSource = sortedRanks;
+                cboSalaryHistRankCode.DisplayMemberPath = "Code";
+                cboSalaryHistRankCode.SelectedValuePath = "Code";
 
                 if (_personnel != null)
                 {
@@ -593,8 +601,6 @@ namespace TaxPersonnelManagement.Views
                 if (!string.IsNullOrEmpty(selectedRank.Name)) 
                     txtRankName.Text = selectedRank.Name;
                 
-                // Debug
-                // MessageBox.Show($"Rank Selected: {selectedRank.Code}");
                 LoadSalarySteps(selectedRank.Code);
             }
             else
@@ -604,6 +610,40 @@ namespace TaxPersonnelManagement.Views
                 txtRankName.Text = "";
             }
             CalculateExpectedSalaryDate();
+        }
+
+        private void cboSalaryHistRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (cboSalaryHistRankCode.SelectedItem is Rank selectedRank)
+            {
+                LoadSalaryHistSteps(selectedRank.Code);
+            }
+            else
+            {
+                cboSalaryHistStep.ItemsSource = null;
+            }
+        }
+
+        private void LoadSalaryHistSteps(string rankCode)
+        {
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                    var steps = context.RankSalarySpecs
+                                       .Where(s => s.RankCode == rankCode)
+                                       .OrderBy(s => s.SalaryStep)
+                                       .ToList();
+
+                    cboSalaryHistStep.ItemsSource = steps;
+                    cboSalaryHistStep.DisplayMemberPath = "SalaryStep";
+                    cboSalaryHistStep.SelectedValuePath = "SalaryStep"; 
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading salary hist steps: {ex.Message}");
+            }
         }
 
         private void LoadSalarySteps(string rankCode)
@@ -633,9 +673,23 @@ namespace TaxPersonnelManagement.Views
         {
             if (cboSalaryStep.SelectedItem is RankSalarySpec spec)
             {
-                // Auto-fill coefficient
-                txtSalaryCoefficient.Text = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
-                txtSalaryHistCoeff.Text = txtSalaryCoefficient.Text;
+                // Auto-fill fields for both main salary info and history input
+                string coeffStr = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+                txtSalaryCoefficient.Text = coeffStr;
+                
+                // Keep the original behavior but only for the MAIN tab info
+                // We won't auto-fill the history section here as it might be confusing 
+                // if the user is editing the main info but NOT adding history yet.
+                // However, the user asked to make it like the select in Tab 1, 
+                // so we handle the history section's ComboBoxes separately.
+            }
+        }
+
+        private void cboSalaryHistStep_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (cboSalaryHistStep.SelectedItem is RankSalarySpec spec)
+            {
+                txtSalaryHistCoeff.Text = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
             }
         }
 
@@ -1454,29 +1508,55 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddSalaryHistory_Click(object sender, RoutedEventArgs e)
         {
-            if (dpSalaryHistStart.SelectedDate == null)
+            if (dpSalaryHistStart.SelectedDate == null && string.IsNullOrEmpty(cboSalaryHistRankCode.Text))
             {
-                new WarningWindow("Vui lòng chọn ngày bắt đầu hưởng lương.", "Thông báo").ShowDialog();
-                return;
+                return; // Don't add empty
             }
-            var newItem = new SalaryRecord
+
+            if (_editingSalaryRecord != null)
             {
-                StartDate = dpSalaryHistStart.SelectedDate,
-                EndDate = dpSalaryHistEnd.SelectedDate,
-                SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
-                Coefficient = txtSalaryHistCoeff.Text,
-                Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
-                DecisionNumber = txtSalaryHistDecisionNo.Text,
-                DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
-                PersonnelId = _personnel != null ? _personnel.Id : 0
-            };
-            if (_personnel == null) _personnel = new Personnel();
-            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
-            _personnel.SalaryRecords.Add(newItem);
+                // UPDATE existing record
+                _editingSalaryRecord.StartDate = dpSalaryHistStart.SelectedDate;
+                _editingSalaryRecord.EndDate = dpSalaryHistEnd.SelectedDate;
+                _editingSalaryRecord.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
+                _editingSalaryRecord.RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "";
+                _editingSalaryRecord.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
+                _editingSalaryRecord.Coefficient = txtSalaryHistCoeff.Text;
+                _editingSalaryRecord.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
+                _editingSalaryRecord.DecisionNumber = txtSalaryHistDecisionNo.Text;
+                _editingSalaryRecord.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
+                
+                _editingSalaryRecord = null; // Clear editing state
+            }
+            else
+            {
+                // ADD new record
+                var newItem = new SalaryRecord
+                {
+                    StartDate = dpSalaryHistStart.SelectedDate,
+                    EndDate = dpSalaryHistEnd.SelectedDate,
+                    SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
+                    RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "",
+                    SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
+                    Coefficient = txtSalaryHistCoeff.Text,
+                    Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                    DecisionNumber = txtSalaryHistDecisionNo.Text,
+                    DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
+                    PersonnelId = _personnel != null ? _personnel.Id : 0
+                };
+                if (_personnel == null) _personnel = new Personnel();
+                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+                _personnel.SalaryRecords.Add(newItem);
+            }
+
             RefreshSalaryHistoryGrid();
+            
+            // Clear inputs
             dpSalaryHistStart.SelectedDate = null;
             dpSalaryHistEnd.SelectedDate = null;
             dpSalaryHistCalc.SelectedDate = null;
+            cboSalaryHistRankCode.SelectedIndex = -1;
+            cboSalaryHistStep.ItemsSource = null;
             txtSalaryHistCoeff.Clear();
             txtSalaryHistPercent.Text = "100";
             txtSalaryHistDecisionNo.Clear();
@@ -1500,17 +1580,19 @@ namespace TaxPersonnelManagement.Views
                 dpSalaryHistStart.SelectedDate = item.StartDate;
                 dpSalaryHistEnd.SelectedDate = item.EndDate;
                 dpSalaryHistCalc.SelectedDate = item.SalaryCalculationDate;
+                cboSalaryHistRankCode.SelectedValue = item.RankCode;
+                if (!string.IsNullOrEmpty(item.RankCode))
+                {
+                    LoadSalaryHistSteps(item.RankCode);
+                    cboSalaryHistStep.SelectedValue = item.SalaryStep;
+                }
                 txtSalaryHistCoeff.Text = item.Coefficient;
                 txtSalaryHistPercent.Text = item.Percentage.ToString();
                 txtSalaryHistDecisionNo.Text = item.DecisionNumber;
                 dpSalaryHistDecisionDate.SelectedDate = item.DecisionDate;
 
-                // Remove from list so user can re-add after editing
-                if (_personnel?.SalaryRecords != null)
-                {
-                    _personnel.SalaryRecords.Remove(item);
-                    RefreshSalaryHistoryGrid();
-                }
+                // Set as editing so we don't duplicate on save
+                _editingSalaryRecord = item;
             }
         }
 

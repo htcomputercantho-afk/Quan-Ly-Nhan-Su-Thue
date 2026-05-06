@@ -199,42 +199,48 @@ namespace TaxPersonnelManagement.Services
                 {
                     table.ColumnsDefinition(columns =>
                     {
+                        columns.RelativeColumn(1.0f); // RankCode
+                        columns.RelativeColumn(1.0f); // SalaryStep
+                        columns.ConstantColumn(35);   // Coeff
+                        columns.ConstantColumn(30);   // %
                         columns.RelativeColumn(1.2f); // Start
                         columns.RelativeColumn(1.2f); // End
                         columns.RelativeColumn(1.2f); // Calc
-                        columns.ConstantColumn(50);   // Coeff
-                        columns.ConstantColumn(50);   // %
                         columns.RelativeColumn(1.5f); // Decision No
                         columns.RelativeColumn(1.2f); // Decision Date
                     });
 
                     table.Header(header =>
                     {
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Thời gian bắt đầu").Bold().FontSize(9).FontColor(Colors.White);
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Thời gian kết thúc").Bold().FontSize(9).FontColor(Colors.White);
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Mốc xét lương từ").Bold().FontSize(9).FontColor(Colors.White);
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Hệ số").Bold().FontSize(9).FontColor(Colors.White);
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("%").Bold().FontSize(9).FontColor(Colors.White);
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Số VB/QĐ").Bold().FontSize(9).FontColor(Colors.White);
-                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Ngày ký QĐ").Bold().FontSize(9).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Mã ngạch").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Bậc lương").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Hệ số").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("%").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Bắt đầu").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Kết thúc").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Mốc tính").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Số VB/QĐ").Bold().FontSize(8).FontColor(Colors.White);
+                        header.Cell().Background("#B71C1C").Padding(5).AlignCenter().Text("Ngày ký QĐ").Bold().FontSize(8).FontColor(Colors.White);
                     });
 
                     if (p.SalaryRecords != null && p.SalaryRecords.Count > 0)
                     {
                         foreach (var h in p.SalaryRecords.OrderByDescending(s => s.StartDate))
                         {
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.StartDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.EndDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SalaryCalculationDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Coefficient ?? "").FontSize(9).Bold();
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{h.Percentage}%").FontSize(9);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionNumber ?? "").FontSize(9);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "").FontSize(9);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.RankCode ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SalaryStep ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Coefficient ?? "").FontSize(8).Bold();
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{h.Percentage}%").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.StartDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.EndDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SalaryCalculationDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionNumber ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
                         }
                     }
                     else 
                     {
-                        table.Cell().ColumnSpan(7).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử lương").Italic().FontColor(Colors.Grey.Medium);
+                        table.Cell().ColumnSpan(9).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử lương").Italic().FontColor(Colors.Grey.Medium);
                     }
                 });
             });

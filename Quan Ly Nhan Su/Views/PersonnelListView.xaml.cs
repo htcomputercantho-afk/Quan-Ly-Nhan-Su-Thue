@@ -177,12 +177,12 @@ namespace TaxPersonnelManagement.Views
                 
                 int maternity = list.Count(p => p.LeaveHistories != null && 
                                                 p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") && 
-                                                                          l.StartDate <= now && l.EndDate >= now));
+                                                                          l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtMaternityCount.Text = maternity.ToString();
 
                 int sick = list.Count(p => p.LeaveHistories != null && 
                                            p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) && 
-                                                                      l.StartDate <= now && l.EndDate >= now));
+                                                                      l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtSickCount.Text = sick.ToString();
 
                 var displayList = list.AsEnumerable();
@@ -190,13 +190,13 @@ namespace TaxPersonnelManagement.Views
                 {
                     displayList = displayList.Where(p => p.LeaveHistories != null && 
                                                     p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") && 
-                                                                              l.StartDate <= now && l.EndDate >= now));
+                                                                              l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
                 else if (_currentCardFilter == "Sick")
                 {
                     displayList = displayList.Where(p => p.LeaveHistories != null && 
                                                     p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) && 
-                                                                              l.StartDate <= now && l.EndDate >= now));
+                                                                              l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
 
                 _fullFilteredList = displayList.ToList();

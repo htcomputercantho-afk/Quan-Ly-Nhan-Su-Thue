@@ -6,6 +6,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:TaxPersonnelManagement.Views"
              xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
+             Language="vi-VN"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
     <UserControl.Resources>
@@ -121,12 +122,14 @@
                     <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="14"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="Padding" Value="10"/>
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                     </Style>
                     <Style TargetType="DataGridCell">
                         <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                        <Setter Property="FontSize" Value="15"/>
                         <Setter Property="Padding" Value="4"/>
                         <Setter Property="Template">
                             <Setter.Value>
@@ -148,10 +151,12 @@
                          <Setter Property="HorizontalAlignment" Value="Center"/>
                          <Setter Property="VerticalAlignment" Value="Center"/>
                          <Setter Property="TextWrapping" Value="Wrap"/>
+                         <Setter Property="FontSize" Value="15"/>
                     </Style>
 
                     <Style x:Key="WrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                          <Setter Property="MinHeight" Value="80"/>
+                         <Setter Property="FontSize" Value="14"/>
                          <Setter Property="ContentTemplate">
                              <Setter.Value>
                                  <DataTemplate>
@@ -220,8 +225,26 @@
                                             </Ellipse.Style>
                                         </Ellipse>
                                     </Grid>
-                                    <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="Wrap" FontSize="15"/>
                                 </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="200" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border x:Name="brdDept" Background="#E8EAF6" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,4">
+                                    <TextBlock Text="{Binding Department}" FontSize="14" FontWeight="SemiBold" Foreground="#3949AB" TextWrapping="Wrap"/>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Department}" Value="{x:Null}">
+                                        <Setter TargetName="brdDept" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Department}" Value="">
+                                        <Setter TargetName="brdDept" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -229,7 +252,26 @@
                     <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     <DataGridTextColumn Header="MÃ NGẠCH" Binding="{Binding RankCode}" Width="110" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     <DataGridTextColumn Header="BẬC LƯƠNG" Binding="{Binding CurrentSalaryStep}" Width="110" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
-                    <DataGridTextColumn Header="HỆ SỐ LƯƠNG" Binding="{Binding CurrentSalaryCoefficient}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    
+                    <DataGridTemplateColumn Header="HỆ SỐ LƯƠNG" Width="130" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border x:Name="brdCoef" Background="#E3F2FD" CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                    <TextBlock Text="{Binding CurrentSalaryCoefficient}" FontWeight="SemiBold" FontSize="15" 
+                                               Foreground="#1565C0" HorizontalAlignment="Center"/>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentSalaryCoefficient}" Value="0">
+                                        <Setter TargetName="brdCoef" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding CurrentSalaryCoefficient}" Value="{x:Null}">
+                                        <Setter TargetName="brdCoef" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
                     <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="140" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
                     <DataGridTextColumn Header="THỜI ĐIỂM&#x0a;TÍNH BẬC LƯƠNG&#x0a;LẦN SAU" Binding="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy}" Width="200" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
@@ -239,9 +281,15 @@
                     <DataGridTemplateColumn Header="DỰ KIẾN&#x0a;LÊN LƯƠNG" Width="180" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy}" 
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontWeight="Bold" Foreground="#FF8C00" TextWrapping="Wrap"/>
+                                <Border x:Name="brdExpectedDate" Background="#FFF3E0" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                    <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy}" 
+                                               FontWeight="Bold" Foreground="#E65100" FontSize="15"/>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding ExpectedSalaryIncreaseDate}" Value="{x:Null}">
+                                        <Setter TargetName="brdExpectedDate" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

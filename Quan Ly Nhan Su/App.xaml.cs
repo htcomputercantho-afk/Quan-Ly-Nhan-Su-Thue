@@ -64,8 +64,15 @@ namespace TaxPersonnelManagement
             culture.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
             culture.DateTimeFormat.DateSeparator = "/";
             
+            // Explicitly set abbreviated day names to avoid single-letter truncation
+            culture.DateTimeFormat.AbbreviatedDayNames = new string[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
+            culture.DateTimeFormat.ShortestDayNames = new string[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
+            
             System.Threading.Thread.CurrentThread.CurrentCulture = culture;
             System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
+
             FrameworkElement.LanguageProperty.OverrideMetadata(
                 typeof(FrameworkElement),
                 new FrameworkPropertyMetadata(
@@ -194,6 +201,57 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN ExpectedSalaryIncreaseDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN SalaryHistoryLog TEXT"); } catch { }
                     
+                    // Auto-migrate SalaryRecords (Robust way to remove NOT NULL constraints from old columns)
+                    bool needsMigration = false;
+                    try 
+                    { 
+                        // Kiểm tra xem có cột lỗi không
+                        context.Database.ExecuteSqlRaw("SELECT SalaryLevel FROM SalaryRecords LIMIT 1"); 
+                        needsMigration = true;
+                    } catch { 
+                        try {
+                            context.Database.ExecuteSqlRaw("SELECT SalaryLevel_Old FROM SalaryRecords LIMIT 1");
+                            needsMigration = true;
+                        } catch { }
+                    }
+
+                    if (needsMigration)
+                    {
+                        try {
+                            context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords RENAME TO SalaryRecords_Backup");
+                            
+                            // Tạo bảng mới với cấu trúc chuẩn
+                            context.Database.ExecuteSqlRaw(@"
+                                CREATE TABLE SalaryRecords (
+                                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    PersonnelId INTEGER NOT NULL,
+                                    StartDate TEXT,
+                                    EndDate TEXT,
+                                    SalaryCalculationDate TEXT,
+                                    RankCode TEXT,
+                                    SalaryStep TEXT,
+                                    Coefficient TEXT,
+                                    Percentage REAL NOT NULL DEFAULT 0,
+                                    DecisionNumber TEXT,
+                                    DecisionDate TEXT,
+                                    Note TEXT,
+                                    FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                                );");
+
+                            // Chép dữ liệu cũ sang (Bỏ qua cột SalaryLevel lỗi)
+                            // Lưu ý: Dùng try-catch bên trong nếu có cột nào đó ở bản cực cũ không khớp
+                            try {
+                                context.Database.ExecuteSqlRaw(@"
+                                    INSERT INTO SalaryRecords (Id, PersonnelId, StartDate, EndDate, SalaryCalculationDate, RankCode, SalaryStep, Coefficient, DecisionNumber, DecisionDate, Note)
+                                    SELECT Id, PersonnelId, StartDate, EndDate, SalaryCalculationDate, RankCode, SalaryStep, Coefficient, DecisionNumber, DecisionDate, Note 
+                                    FROM SalaryRecords_Backup;");
+                            } catch { }
+
+                            context.Database.ExecuteSqlRaw("DROP TABLE SalaryRecords_Backup");
+                        } catch { }
+                    }
+
+                    // Đảm bảo bảng luôn tồn tại (nếu chưa có)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS SalaryRecords (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -201,6 +259,8 @@ namespace TaxPersonnelManagement
                             StartDate TEXT,
                             EndDate TEXT,
                             SalaryCalculationDate TEXT,
+                            RankCode TEXT,
+                            SalaryStep TEXT,
                             Coefficient TEXT,
                             Percentage REAL NOT NULL DEFAULT 0,
                             DecisionNumber TEXT,
@@ -209,7 +269,9 @@ namespace TaxPersonnelManagement
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
 
-                    // Auto-migrate SalaryRecords columns (for users updating from older versions)
+                    // Các lệnh ALTER bổ sung để đảm bảo đủ cột cho các bản version trung gian
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN RankCode TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN SalaryStep TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN DecisionNumber TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN EndDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN Percentage REAL DEFAULT 0"); } catch { }

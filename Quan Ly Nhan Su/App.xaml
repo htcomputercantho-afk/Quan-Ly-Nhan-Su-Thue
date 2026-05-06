@@ -48,6 +48,11 @@
                 <Setter Property="FontSize" Value="15"/>
             </Style>
 
+            <!-- Global Calendar Localization Fix -->
+            <Style TargetType="{x:Type Calendar}" BasedOn="{StaticResource {x:Type Calendar}}">
+                <Setter Property="Language" Value="vi-VN"/>
+            </Style>
+
             <!-- 3. Overriding Material Brushes to enforce our Palette -->
             <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="#0078D4"/>
             <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="#C7E0F4"/>

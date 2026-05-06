@@ -188,8 +188,46 @@ namespace TaxPersonnelManagement.Views
 
                 using (var db = new AppDbContext())
                 {
+                    var deptOrder = new List<string> {
+                        "Ban lãnh đạo",
+                        "Tổ Hành chính, tổng hợp",
+                        "Tổ Kiểm tra số 1",
+                        "Tổ Kiểm tra số 2",
+                        "Tổ Kiểm tra số 3",
+                        "Tổ Nghiệp vụ, dự toán, pháp chế",
+                        "Tổ Quản lý các khoản thu khác",
+                        "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                        "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                        "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                        "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+                    };
+
                     var personnelList = db.Personnel.Include(p => p.LeaveHistories)
-                                          .OrderBy(p => p.FullName)
+                                          .AsEnumerable()
+                                          .OrderBy(p => {
+                                              string dept = (p.Department ?? "").Trim();
+                                              int index = deptOrder.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
+                                              return index == -1 ? 999 : index;
+                                          })
+                                          .ThenBy(p => {
+                                              string pos = p.Position?.ToLower() ?? "";
+                                              string dept3 = (p.Department ?? "").ToLower();
+
+                                              if (dept3.Contains("lãnh đạo"))
+                                              {
+                                                  if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
+                                                  if (pos.Contains("quyền")) return 2;
+                                                  if (pos.Contains("phó")) return 3;
+                                              }
+                                              else
+                                              {
+                                                  if (pos.Contains("tổ trưởng") && !pos.Contains("phó")) return 1;
+                                                  if (pos.Contains("phó")) return 2;
+                                                  if (pos.Contains("công chức")) return 3;
+                                              }
+                                              return 99;
+                                          })
+                                          .ThenBy(p => p.FullName)
                                           .ToList();
                     
                     var results = new List<LeaveSummaryItem>();

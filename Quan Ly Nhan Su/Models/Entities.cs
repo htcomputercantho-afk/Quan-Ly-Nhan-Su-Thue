@@ -232,6 +232,8 @@ namespace TaxPersonnelManagement.Models
         public DateTime? StartDate { get; set; } // Thời gian bắt đầu
         public DateTime? EndDate { get; set; } // Thời gian kết thúc
         public DateTime? SalaryCalculationDate { get; set; } // Mốc xét lương từ
+        public string? RankCode { get; set; } // Mã ngạch
+        public string? SalaryStep { get; set; } // Bậc lương
         public string? Coefficient { get; set; } // Hệ số
         public double Percentage { get; set; } = 100; // Phần trăm được hưởng (Default 100%)
         public string? DecisionNumber { get; set; } // Số VB/QĐ
