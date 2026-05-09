@@ -52,9 +52,15 @@ namespace TaxPersonnelManagement.Helpers
             if (d is DatePicker dp)
             {
                 if ((bool)e.NewValue)
+                {
                     dp.DateValidationError += DatePicker_DateValidationError;
+                    dp.PreviewKeyUp += DatePicker_PreviewKeyUp;
+                }
                 else
+                {
                     dp.DateValidationError -= DatePicker_DateValidationError;
+                    dp.PreviewKeyUp -= DatePicker_PreviewKeyUp;
+                }
             }
         }
 
@@ -105,6 +111,27 @@ namespace TaxPersonnelManagement.Helpers
                             textBox.Text = dt.ToString("dd/MM/yyyy");
                         }
                     }));
+                }
+            }
+        }
+
+        private static void DatePicker_PreviewKeyUp(object? sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.OriginalSource is TextBox textBox)
+            {
+                // Only process numeric keys
+                bool isNumeric = (e.Key >= System.Windows.Input.Key.D0 && e.Key <= System.Windows.Input.Key.D9) ||
+                                 (e.Key >= System.Windows.Input.Key.NumPad0 && e.Key <= System.Windows.Input.Key.NumPad9);
+
+                if (isNumeric)
+                {
+                    string text = textBox.Text;
+                    // If length is exactly 2 (e.g. "12") or 5 (e.g. "12/04"), append "/" safely
+                    if ((text.Length == 2 || text.Length == 5) && !text.EndsWith("/"))
+                    {
+                        textBox.Text = text + "/";
+                        textBox.CaretIndex = textBox.Text.Length; // Move caret to end
+                    }
                 }
             }
         }

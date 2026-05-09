@@ -1328,27 +1328,6 @@ namespace TaxPersonnelManagement.Views
                 lblEmailError.Visibility = Visibility.Visible;
             }
         }
-        private void DatePicker_PreviewKeyUp(object? sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.OriginalSource is TextBox textBox)
-            {
-                // Only process numeric keys to avoid duplicating slashes or messing up manual input
-                bool isNumeric = (e.Key >= System.Windows.Input.Key.D0 && e.Key <= System.Windows.Input.Key.D9) ||
-                                 (e.Key >= System.Windows.Input.Key.NumPad0 && e.Key <= System.Windows.Input.Key.NumPad9);
-
-                if (isNumeric)
-                {
-                    string text = textBox.Text;
-                    
-                    // If length is exactly 2 (e.g. "12") or 5 (e.g. "12/04"), append "/" safely
-                    if ((text.Length == 2 || text.Length == 5) && !text.EndsWith("/"))
-                    {
-                        textBox.Text = text + "/";
-                        textBox.CaretIndex = textBox.Text.Length; // Move caret to end
-                    }
-                }
-            }
-        }
 
         private void dpExpectedSalaryIncrease_DateValidationError(object? sender, DatePickerDateValidationErrorEventArgs e)
         {

@@ -6,7 +6,8 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:TaxPersonnelManagement.Views"
              xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
-             Language="vi-VN"
+             xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
+        Language="vi-VN"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
     <UserControl.Resources>

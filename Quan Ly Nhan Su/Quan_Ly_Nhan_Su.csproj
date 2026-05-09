@@ -1,52 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <AssemblyName>Quan_Ly_Nhan_Su</AssemblyName>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>1.0.3.0</Version>
-
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishReadyToRun>true</PublishReadyToRun>
-    <IncludeNativeLibrariesForSelfContained>true</IncludeNativeLibrariesForSelfContained>
-    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
-    <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="ExcelDataReader" Version="3.8.0" />
-    <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.2" />
-    <PackageReference Include="QuestPDF" Version="2025.12.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="icon.ico" />
-  </ItemGroup>
-
-</Project>
-
-
-
-
-
-
-
-
-
-
-
-
+ 
+   <PropertyGroup>
+     <OutputType>WinExe</OutputType>
+     <TargetFramework>net8.0-windows</TargetFramework>
+     <Nullable>enable</Nullable>
+     <ImplicitUsings>enable</ImplicitUsings>
+     <UseWPF>true</UseWPF>
+     <AssemblyName>Quan_Ly_Nhan_Su</AssemblyName>
+     <ApplicationIcon>icon.ico</ApplicationIcon>
+     <Version>1.0.3.1</Version>
+ 
+     <PublishSingleFile>true</PublishSingleFile>
+     <SelfContained>true</SelfContained>
+     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+     <PublishReadyToRun>true</PublishReadyToRun>
+     <IncludeNativeLibrariesForSelfContained>true</IncludeNativeLibrariesForSelfContained>
+     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+     <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
+     <PackageReference Include="ClosedXML" Version="0.105.0" />
+     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
+     <PackageReference Include="ExcelDataReader.DataSet" Version="3.8.0" />
+     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+       <PrivateAssets>all</PrivateAssets>
+     </PackageReference>
+     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.2" />
+     <PackageReference Include="QuestPDF" Version="2025.12.3" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+     <Resource Include="icon.ico" />
+   </ItemGroup>
+ 
+ </Project>

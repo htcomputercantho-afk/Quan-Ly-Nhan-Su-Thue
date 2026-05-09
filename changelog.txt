@@ -1,3 +1,7 @@
+## v1.0.3.1 — 2026-05-09
+- [Tối ưu] Nhập liệu ngày tháng: Tự động phân tách ngày/tháng/năm (thêm dấu "/") ngay khi đang gõ phím cho tất cả các ô chọn ngày trên hệ thống.
+- [Kỹ thuật] Tinh gọn Code: Chuyển đổi toàn bộ logic xử lý ngày tháng sang DatePickerHelper dùng chung, giúp code sạch và dễ bảo trì hơn.
+
 ## v1.0.3.0 — 2026-05-09
 - [Hiệu năng] Xử lý bất đồng bộ (Async): Chuyển đổi các tác vụ nặng (Excel/PDF) sang chạy nền, giúp ứng dụng không bị treo/đơ khi xử lý dữ liệu lớn.
 - [Giao diện] Trạng thái chờ: Tích hợp LoadingOverlay (vòng xoay chuyên nghiệp) cho tất cả thao tác Nhập/Xuất Excel và PDF.
