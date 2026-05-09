@@ -1,3 +1,6 @@
+## v1.0.3.2 — 2026-05-09
+- [Sửa lỗi] Khắc phục lỗi hiển thị sai font chữ (lỗi encoding) ở màn hình Chi tiết nhân sự.
+
 ## v1.0.3.1 — 2026-05-09
 - [Tối ưu] Nhập liệu ngày tháng: Tự động phân tách ngày/tháng/năm (thêm dấu "/") ngay khi đang gõ phím cho tất cả các ô chọn ngày trên hệ thống.
 - [Kỹ thuật] Tinh gọn Code: Chuyển đổi toàn bộ logic xử lý ngày tháng sang DatePickerHelper dùng chung, giúp code sạch và dễ bảo trì hơn.

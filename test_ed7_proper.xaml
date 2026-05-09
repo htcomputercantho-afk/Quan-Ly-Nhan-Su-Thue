@@ -445,7 +445,7 @@
                                                 <DatePicker x:Name="dpDOB" 
                                                             Style="{StaticResource ModernDatePicker}" 
                                                             materialDesign:TextFieldAssist.HasClearButton="False"
-                                                            helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                                            PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                         </StackPanel>
                                         <StackPanel Grid.Row="1" Grid.Column="4" Margin="0 0 0 15">
                                             <TextBlock Text="Số điện thoại" Style="{StaticResource ModernLabel}"/>
@@ -621,7 +621,7 @@
                                                 <DatePicker x:Name="dpStartDate" 
                                                             Style="{StaticResource ModernDatePicker}"
                                                             SelectedDateChanged="OnRetirementDateChanged"
-                                                            helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                                            PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
@@ -805,14 +805,14 @@
                                         <TextBlock Text="Thời gian công tác theo QĐ gần nhất" Style="{StaticResource ModernLabel}"/>
                                         <DatePicker x:Name="dpPositionDecisionDate" SelectedDateChanged="OnPositionDateChanged" 
                                                     Style="{StaticResource ModernDatePicker}" 
-                                                    helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                    PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                     materialDesign:TextFieldAssist.HasClearButton="True"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0 0 0 15">
                                         <TextBlock Text="Thời điểm tính thời gian công tác" Style="{StaticResource ModernLabel}"/>
                                         <DatePicker x:Name="dpPositionCalculationDate" SelectedDateChanged="OnPositionDateChanged" 
                                                     Style="{StaticResource ModernDatePicker}"
-                                                    helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                    PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                     materialDesign:TextFieldAssist.HasClearButton="True"/>
                                     </StackPanel>
 
@@ -893,7 +893,7 @@
                                     <DatePicker x:Name="dpRetirementDate"
                                                 Style="{StaticResource ModernDatePicker}"
                                                 SelectedDateChanged="OnRetirementDateChanged"
-                                                helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                 materialDesign:TextFieldAssist.HasClearButton="True"/>
                                 </StackPanel>
 
@@ -946,7 +946,7 @@
                                     <TextBlock Text="Ngày vào Đảng" Style="{StaticResource ModernLabel}"/>
                                     <DatePicker x:Name="dpPartyEntryDate" 
                                                 Style="{StaticResource ModernDatePicker}" 
-                                                helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                 materialDesign:TextFieldAssist.HasClearButton="True"/>
                                 </StackPanel>
 
@@ -955,7 +955,7 @@
                                     <TextBlock Text="Ngày chính thức" Style="{StaticResource ModernLabel}"/>
                                     <DatePicker x:Name="dpPartyOfficialDate" 
                                                 Style="{StaticResource ModernDatePicker}" 
-                                                helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                 materialDesign:TextFieldAssist.HasClearButton="True"/>
                                 </StackPanel>
                             </Grid>
@@ -1076,13 +1076,13 @@
                                     <StackPanel Grid.Row="0" Grid.Column="2">
                                         <TextBlock Text="2. Từ ngày" Style="{StaticResource ModernLabel}"/>
                                         <DatePicker x:Name="dpLeaveStartDate" Style="{StaticResource ModernDatePicker}" 
-                                                    helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                    PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                     SelectedDateChanged="OnLeaveDateChanged"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="4">
                                         <TextBlock Text="3. Đến ngày" Style="{StaticResource ModernLabel}"/>
                                         <DatePicker x:Name="dpLeaveEndDate" Style="{StaticResource ModernDatePicker}" 
-                                                    helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                    PreviewKeyUp="DatePicker_PreviewKeyUp"
                                                     SelectedDateChanged="OnLeaveDateChanged"
                                                     materialDesign:TextFieldAssist.HasClearButton="True"/>
                                     </StackPanel>
@@ -1422,7 +1422,7 @@
                             <!-- Reservation Deadline -->
                             <StackPanel Grid.Column="4">
                                 <TextBlock Text="Thời hạn bảo lưu" Style="{StaticResource ModernLabel}"/>
-                                <DatePicker x:Name="dpSalaryReservation" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                <DatePicker x:Name="dpSalaryReservation" Style="{StaticResource ModernDatePicker}" PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                             </StackPanel>
                         </Grid>
 
@@ -1440,7 +1440,7 @@
                             <!-- Next Calc Date -->
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Thời điểm tính bậc lương lần sau" Style="{StaticResource ModernLabel}"/>
-                                <DatePicker x:Name="dpNextSalaryStepDate" Style="{StaticResource ModernDatePicker}" Foreground="{DynamicResource PrimaryHueMidBrush}" helpers:DatePickerHelper.EnableSmartDateEntry="True" SelectedDateChanged="OnSalaryStructureChanged"/>
+                                <DatePicker x:Name="dpNextSalaryStepDate" Style="{StaticResource ModernDatePicker}" Foreground="{DynamicResource PrimaryHueMidBrush}" PreviewKeyUp="DatePicker_PreviewKeyUp" SelectedDateChanged="OnSalaryStructureChanged"/>
                             </StackPanel>
 
                             <!-- Delay -->
@@ -1470,7 +1470,7 @@
                             <!-- Expected Date -->
                             <StackPanel Grid.Column="4">
                                 <TextBlock Text="Dự kiến lên lương" Style="{StaticResource ModernLabel}"/>
-                                <DatePicker x:Name="dpExpectedSalaryIncrease" Style="{StaticResource ModernDatePicker}" Foreground="#388E3C" FontWeight="Bold" helpers:DatePickerHelper.EnableSmartDateEntry="True" DateValidationError="dpExpectedSalaryIncrease_DateValidationError"/>
+                                <DatePicker x:Name="dpExpectedSalaryIncrease" Style="{StaticResource ModernDatePicker}" Foreground="#388E3C" FontWeight="Bold" PreviewKeyUp="DatePicker_PreviewKeyUp" DateValidationError="dpExpectedSalaryIncrease_DateValidationError"/>
                             </StackPanel>
                         </Grid>
 
@@ -1529,15 +1529,15 @@
                                     <!-- Group 2: Dates -->
                                     <StackPanel Grid.Column="4" Margin="3">
                                         <TextBlock Text="Bắt đầu" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
-                                        <DatePicker x:Name="dpSalaryHistStart" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                        <DatePicker x:Name="dpSalaryHistStart" Style="{StaticResource ModernDatePicker}" PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="5" Margin="3">
                                         <TextBlock Text="Kết thúc" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
-                                        <DatePicker x:Name="dpSalaryHistEnd" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                        <DatePicker x:Name="dpSalaryHistEnd" Style="{StaticResource ModernDatePicker}" PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="6" Margin="3">
                                         <TextBlock Text="Mốc xét" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
-                                        <DatePicker x:Name="dpSalaryHistCalc" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                        <DatePicker x:Name="dpSalaryHistCalc" Style="{StaticResource ModernDatePicker}" PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                     </StackPanel>
 
                                     <!-- Group 3: Decision -->
@@ -1547,7 +1547,7 @@
                                     </StackPanel>
                                     <StackPanel Grid.Column="8" Margin="3">
                                         <TextBlock Text="Ngày ký QĐ" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
-                                        <DatePicker x:Name="dpSalaryHistDecisionDate" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                        <DatePicker x:Name="dpSalaryHistDecisionDate" Style="{StaticResource ModernDatePicker}" PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                     </StackPanel>
 
                                     <Button Grid.Column="9" x:Name="btnAddSalaryHistory" Click="btnAddSalaryHistory_Click" 
@@ -1803,7 +1803,7 @@
                                     <StackPanel Grid.Column="3" Margin="0 0 0 0">
                                         <TextBlock Text="Ngày ký QĐ" Foreground="Gray" FontSize="11" Margin="2 0 0 2"/>
                                         <DatePicker x:Name="dpDisciplineDate" materialDesign:HintAssist.Hint="dd/mm/yyyy" Style="{StaticResource ModernDatePicker}"
-                                                    helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                                    PreviewKeyUp="DatePicker_PreviewKeyUp"/>
                                     </StackPanel>
                                 </Grid>
 
