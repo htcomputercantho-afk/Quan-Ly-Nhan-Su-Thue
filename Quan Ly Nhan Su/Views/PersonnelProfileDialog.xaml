@@ -27,6 +27,21 @@
                 <RowDefinition Height="60"/> <!-- Footer -->
             </Grid.RowDefinitions>
 
+            <!-- Loading Overlay -->
+            <Grid x:Name="LoadingOverlay" Grid.RowSpan="3" Visibility="Collapsed" Panel.ZIndex="1000">
+                <Border Background="Black" Opacity="0.15"/>
+                <materialDesign:Card UniformCornerRadius="10" Width="220" Height="140" materialDesign:ElevationAssist.Elevation="Dp6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" 
+                                     Value="0" IsIndeterminate="True" 
+                                     Width="40" Height="40" 
+                                     Foreground="#1976D2" Margin="0 0 0 15"/>
+                        <TextBlock Text="Đang xử lý dữ liệu..." FontSize="14" FontWeight="SemiBold" Foreground="#455A64" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Vui lòng chờ trong giây lát" FontSize="11" Foreground="#78909C" HorizontalAlignment="Center" Margin="0 5 0 0"/>
+                    </StackPanel>
+                </materialDesign:Card>
+            </Grid>
+
             <!-- Header -->
             <Grid Grid.Row="0" Background="#1565C0" MouseDown="Header_MouseDown">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 0">
@@ -111,7 +126,9 @@
                 </Border>
 
                 <!-- RIGHT CONTENT -->
-                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="20">
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="20" 
+                              ScrollViewer.CanContentScroll="False" 
+                              PanningMode="VerticalOnly">
                     <StackPanel>
                         <!-- 1. GENERAL INFO -->
                         <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
@@ -339,6 +356,8 @@
                                           RowBackground="White" AlternatingRowBackground="#FAFAFA"
                                           HorizontalGridLinesBrush="#EEEEEE" VerticalGridLinesBrush="Transparent"
                                           Margin="15" ScrollViewer.CanContentScroll="False"
+                                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                                           EnableRowVirtualization="False" EnableColumnVirtualization="False">
                                     <DataGrid.ColumnHeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
@@ -498,6 +517,8 @@
                                           RowBackground="White" AlternatingRowBackground="#FAFAFA"
                                           HorizontalGridLinesBrush="#EEEEEE" VerticalGridLinesBrush="Transparent"
                                           Margin="15 0 15 15" ScrollViewer.CanContentScroll="False"
+                                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                          PreviewMouseWheel="DataGrid_PreviewMouseWheel"
                                           EnableRowVirtualization="False" EnableColumnVirtualization="False">
                                     <DataGrid.ColumnHeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
@@ -516,7 +537,7 @@
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="DataGridCell">
                                                         <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
-                                                            <ContentPresenter VerticalAlignment="Stretch"/>
+                                                            <ContentPresenter VerticalAlignment="Center"/>
                                                         </Border>
                                                     </ControlTemplate>
                                                 </Setter.Value>
@@ -531,16 +552,17 @@
                                         </Style>
                                     </DataGrid.CellStyle>
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Loại" Binding="{Binding LeaveType}" Width="1.5*">
+                                        <DataGridTextColumn Header="Loại" Binding="{Binding LeaveType}" Width="130">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="FontWeight" Value="Bold"/>
                                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                                    <Setter Property="Padding" Value="5 0"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTemplateColumn Header="Thời gian" Width="1.5*">
+                                        <DataGridTemplateColumn Header="Thời gian" Width="200">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -551,7 +573,7 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="Số ngày" Binding="{Binding DurationDays, StringFormat={}{0} ngày}" Width="1*">
+                                        <DataGridTextColumn Header="Số ngày" Binding="{Binding DurationDays, StringFormat={}{0} ngày}" Width="100">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -559,12 +581,23 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTemplateColumn Header="Ghi chú" Width="2*">
+                                        <DataGridTextColumn Header="Lí do" Binding="{Binding UserReasonDisplay}" Width="1.2*">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                                    <Setter Property="FontStyle" Value="Italic"/>
+                                                    <Setter Property="Foreground" Value="#455A64"/>
+                                                    <Setter Property="Padding" Value="5 0"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTemplateColumn Header="Ghi chú hệ thống" Width="2*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap">
-                                                        <Run Text="{Binding DurationDays, Converter={StaticResource DaysToMonthsDaysConverter}, StringFormat=({0})}" Foreground="#1976D2"/>
-                                                        <Run Text="{Binding UserReasonDisplay, StringFormat=' - \{0\}', Mode=OneWay}" Foreground="#90A4AE" FontStyle="Italic"/>
+                                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap" Margin="10 5">
+                                                        <Run Text="{Binding SystemMessageDisplay, Mode=OneWay}" Foreground="#D32F2F" FontWeight="SemiBold"/>
                                                     </TextBlock>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>

@@ -853,6 +853,7 @@ namespace TaxPersonnelManagement.Views
                     }
 
                     context.Personnel.Add(newP);
+                    _personnel = newP;
                 }
                 else
                 {
@@ -1041,8 +1042,9 @@ namespace TaxPersonnelManagement.Views
 
             if (Application.Current.MainWindow is MainWindow mw)
             {
+                int? targetId = _personnel?.Id;
                 mw.ClearPersonnelCache();
-                mw.NavigateToDashboard();
+                mw.NavigateToDashboard(targetId);
             }
         }
 
@@ -2263,7 +2265,8 @@ namespace TaxPersonnelManagement.Views
             
             var histories = _personnel?.LeaveHistories ?? new List<LeaveHistory>();
 
-            double annualTaken = 0;
+            double annualTakenCurrentYear = 0;
+            double annualTakenOldYear = 0;
             double sickTaken = 0;
             
             // Maternity Logic
@@ -2301,14 +2304,23 @@ namespace TaxPersonnelManagement.Views
                     totalUnpaidTakenAllYears += item.DurationDays;
                 }
 
-                // Logic: Count if LeaveYear matches, OR if LeaveYear is null and StartDate.Year matches
-                int itemYear = item.LeaveYear ?? item.StartDate.Year;
-
-                if (itemYear == yearToCalculate)
+                // We want to process all leaves that were TAKEN in this year
+                if (item.StartDate.Year == yearToCalculate)
                 {
-                    if (item.LeaveType == "Phép năm") annualTaken += item.DurationDays;
+                    if (item.LeaveType == "Phép năm")
+                    {
+                        // Check if it's from old year quota
+                        // It's old year if LeaveYear is explicitly set to a previous year
+                        if (item.LeaveYear.HasValue && item.LeaveYear.Value < yearToCalculate)
+                        {
+                            annualTakenOldYear += item.DurationDays;
+                        }
+                        else
+                        {
+                            annualTakenCurrentYear += item.DurationDays;
+                        }
+                    }
                     else if (item.LeaveType == "Nghỉ ốm") sickTaken += item.DurationDays;
-                    // We still track year-specific unpaid leave if needed, but the UI should show the total for salary delay accuracy
                 }
             }
 
@@ -2327,8 +2339,8 @@ namespace TaxPersonnelManagement.Views
             }
 
             // Bind
-            txtAnnualLeaveTaken.Text = annualTaken.ToString();
-            txtAnnualLeaveRemaining.Text = (totalAnnual - annualTaken).ToString();
+            txtAnnualLeaveTaken.Text = (annualTakenCurrentYear + annualTakenOldYear).ToString();
+            txtAnnualLeaveRemaining.Text = (totalAnnual - annualTakenCurrentYear).ToString();
             txtSickLeaveTaken.Text = sickTaken.ToString();
             txtUnpaidLeaveTaken.Text = totalUnpaidTakenAllYears.ToString();
             txtMaternityLeaveTaken.Text = maternityDisplay;
@@ -2375,8 +2387,14 @@ namespace TaxPersonnelManagement.Views
             // int currentYear = DateTime.Now.Year;
             // _personnel.LeaveHistories.RemoveAll(x => x.EndDate.Year < currentYear);
 
-            // Sort by StartDate
-            var sortedList = _personnel.LeaveHistories.OrderBy(x => x.StartDate).ToList();
+            // Sort by Custom LeaveType Order then StartDate Descending
+            var sortedList = _personnel.LeaveHistories
+                                .OrderBy(x => x.LeaveType == "Phép năm" ? 1 :
+                                             x.LeaveType == "Nghỉ ốm" ? 2 :
+                                             x.LeaveType == "Không lương" ? 3 :
+                                             x.LeaveType == "Thai sản" ? 4 : 5)
+                                .ThenByDescending(x => x.StartDate)
+                                .ToList();
 
             // Set ShowDeleteButton logic
             var processedLinkIds = new HashSet<string>();

@@ -293,17 +293,39 @@ namespace TaxPersonnelManagement.Models
                     }
                 }
 
-                // If a sys message exists, prioritize it.
+                // If a sys message exists (e.g. "Ưu tiên trừ phép tồn"), combine it with SystemNote if available
                 if (!string.IsNullOrEmpty(sysMsg))
                 {
+                    if (!string.IsNullOrEmpty(SystemNote))
+                    {
+                        return $"{sysMsg}\n{SystemNote}";
+                    }
                     return sysMsg;
                 }
 
-                // If NO sys message exists AND it's NOT Annual Leave ("Phép năm"), 
-                // calculate and display "X tháng Y ngày"
+                // If it's Annual Leave, check for year prefix
                 if (LeaveType == "Phép năm")
                 {
-                    return SystemNote ?? "";
+                    string yearPrefix = "";
+                    if (LeaveYear.HasValue && LeaveYear.Value < StartDate.Year)
+                    {
+                        yearPrefix = $"Phép năm {LeaveYear.Value}: ";
+                    }
+                    
+                    // Combine with sysMsg (if any from Split) and SystemNote
+                    string finalMsg = yearPrefix;
+                    // If we have a sysMsg from the Split (like "Ưu tiên trừ phép tồn"), 
+                    // and it's NOT just the year prefix we already handled:
+                    if (!string.IsNullOrEmpty(sysMsg) && !sysMsg.Contains("năm") ) 
+                    {
+                        finalMsg += sysMsg + "\n";
+                    }
+
+                    if (!string.IsNullOrEmpty(SystemNote))
+                    {
+                        return $"{finalMsg}{SystemNote}";
+                    }
+                    return finalMsg.Trim();
                 }
 
                 DateTime start = StartDate.Date;

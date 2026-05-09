@@ -20,6 +20,8 @@ namespace TaxPersonnelManagement.Views
         private const int PageSize = 20;
         private int _totalPages = 1;
 
+        public int? TargetPersonnelId { get; set; }
+
         public PersonnelListView()
         {
             try
@@ -38,23 +40,6 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-        {
-            if (cbDepartmentFilter.IsDropDownOpen)
-            {
-                return;
-            }
-
-            if (!e.Handled)
-            {
-                e.Handled = true;
-                var eventArg = new System.Windows.Input.MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
-                eventArg.Source = sender;
-                var parent = ((FrameworkElement)sender).Parent as UIElement;
-                parent?.RaiseEvent(eventArg);
-            }
-        }
 
         private void ApplyAuthorization()
         {
@@ -109,7 +94,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void LoadData(string search = "")
+        public void LoadData(string search = "")
         {
             using (var context = new AppDbContext())
             {
@@ -200,7 +185,20 @@ namespace TaxPersonnelManagement.Views
                 }
 
                 _fullFilteredList = displayList.ToList();
-                _currentPage = 1;
+                
+                if (TargetPersonnelId.HasValue)
+                {
+                    int index = _fullFilteredList.FindIndex(p => p.Id == TargetPersonnelId.Value);
+                    if (index != -1)
+                    {
+                        _currentPage = (index / PageSize) + 1;
+                    }
+                }
+                else
+                {
+                    _currentPage = 1;
+                }
+
                 ApplyPagination();
             }
         }
@@ -226,6 +224,21 @@ namespace TaxPersonnelManagement.Views
 
             dgPersonnel.ItemsSource = pageItems;
 
+            // Handle Target Selection and Scroll
+            if (TargetPersonnelId.HasValue)
+            {
+                var targetItem = pageItems.FirstOrDefault(p => p.Id == TargetPersonnelId.Value);
+                if (targetItem != null)
+                {
+                    // Use Dispatcher to ensure the DataGrid has loaded the items
+                    Dispatcher.BeginInvoke(new Action(() => {
+                        dgPersonnel.SelectedItem = targetItem;
+                        dgPersonnel.ScrollIntoView(targetItem);
+                        TargetPersonnelId = null; // Reset after focusing
+                    }), System.Windows.Threading.DispatcherPriority.Background);
+                }
+            }
+
             if (totalItems == 0)
             {
                 txtPagingInfo.Text = "Không có dữ liệu";
@@ -241,6 +254,12 @@ namespace TaxPersonnelManagement.Views
 
             btnPrevPage.IsEnabled = _currentPage > 1;
             btnNextPage.IsEnabled = _currentPage < _totalPages;
+
+            // Scroll DataGrid to top on page change
+            if (pageItems.Count > 0)
+            {
+                dgPersonnel.ScrollIntoView(pageItems[0]);
+            }
         }
 
         private void btnPrevPage_Click(object sender, RoutedEventArgs e)
@@ -363,35 +382,42 @@ namespace TaxPersonnelManagement.Views
              }
         }
 
-        private void btnExportExcel_Click(object sender, RoutedEventArgs e)
+        private async void btnExportExcel_Click(object sender, RoutedEventArgs e)
         {
-             if (_fullFilteredList != null && _fullFilteredList.Any())
-             {
-                  var dlg = new Microsoft.Win32.SaveFileDialog();
-                  dlg.FileName = _currentCardFilter switch
-                  {
-                      "Maternity" => $"DanhSach_NghiThaiSan_{DateTime.Now:yyyyMMdd}",
-                      "Sick" => $"DanhSach_NghiOm_{DateTime.Now:yyyyMMdd}",
-                      _ => $"DanhSach_NhanSu_Full_{DateTime.Now:yyyyMMdd}"
-                  };
-                  dlg.DefaultExt = ".xlsx";
-                  dlg.Filter = "Excel Documents (.xlsx)|*.xlsx";
+            if (_fullFilteredList != null && _fullFilteredList.Any())
+            {
+                var dlg = new Microsoft.Win32.SaveFileDialog();
+                dlg.FileName = _currentCardFilter switch
+                {
+                    "Maternity" => $"DanhSach_NghiThaiSan_{DateTime.Now:yyyyMMdd}",
+                    "Sick" => $"DanhSach_NghiOm_{DateTime.Now:yyyyMMdd}",
+                    _ => $"DanhSach_NhanSu_Full_{DateTime.Now:yyyyMMdd}"
+                };
+                dlg.DefaultExt = ".xlsx";
+                dlg.Filter = "Excel Documents (.xlsx)|*.xlsx";
 
-                  if (dlg.ShowDialog() == true)
-                  {
-                      try 
-                      {
-                          TaxPersonnelManagement.Services.ExcelExporter.Export(_fullFilteredList, dlg.FileName);
-                          var success = new SuccessWindow("Xuất Excel thành công!", null, dlg.FileName, true);
-                          if (Window.GetWindow(this) is Window parent) success.Owner = parent;
-                          success.ShowDialog();
-                      }
-                      catch (Exception ex)
-                      {
-                          MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                      }
-                  }
-             }
+                if (dlg.ShowDialog() == true)
+                {
+                    string filePath = dlg.FileName;
+                    LoadingOverlay.Visibility = Visibility.Visible;
+                    try
+                    {
+                        await Task.Run(() => {
+                            TaxPersonnelManagement.Services.ExcelExporter.Export(_fullFilteredList, filePath);
+                        });
+                        
+                        LoadingOverlay.Visibility = Visibility.Collapsed;
+                        var success = new SuccessWindow("Xuất Excel thành công!", null, filePath, true);
+                        if (Window.GetWindow(this) is Window parent) success.Owner = parent;
+                        success.ShowDialog();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoadingOverlay.Visibility = Visibility.Collapsed;
+                        MessageBox.Show("Lỗi xuất Excel: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
         }
 
         private async void btnImportExcel_Click(object sender, RoutedEventArgs e)
@@ -480,6 +506,26 @@ namespace TaxPersonnelManagement.Views
                     MessageBox.Show("Lỗi nhập Excel: " + ex.Message, "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        /// <summary>
+        /// Dynamically adjusts the HỌ VÀ TÊN column width so it fills leftover space
+        /// on large screens (no blank filler column), while reverting to MinWidth on small
+        /// screens so WPF's built-in horizontal scrollbar handles overflow.
+        /// </summary>
+        private void dgPersonnel_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (dgPersonnel.Columns.Count < 2) return;
+
+            // Total width of all fixed columns: STT + THÔNG TIN + BỘ PHẬN + LIÊN HỆ + HÀNH ĐỘNG
+            const double fixedColumnsTotal = 60 + 200 + 250 + 300 + 140; // = 950
+            const double nameMinWidth = 280;
+            const double scrollBarBuffer = 20; // account for vertical scrollbar
+
+            double available = dgPersonnel.ActualWidth - scrollBarBuffer;
+            double nameWidth = Math.Max(nameMinWidth, available - fixedColumnsTotal);
+
+            dgPersonnel.Columns[1].Width = new DataGridLength(nameWidth);
         }
     }
 }

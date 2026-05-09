@@ -13,6 +13,7 @@ using Microsoft.Win32;
 using ExcelDataReader;
 using System.Text.RegularExpressions;
 using System.Data;
+using ClosedXML.Excel;
 namespace TaxPersonnelManagement.Views
 {
     public partial class AnnualIncomeView : Page
@@ -271,7 +272,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
         
-        private void BtnImportExcel_Click(object sender, RoutedEventArgs e)
+        private async void BtnImportExcel_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
             {
@@ -283,6 +284,8 @@ namespace TaxPersonnelManagement.Views
             {
                 try
                 {
+                    LoadingOverlay.Visibility = Visibility.Visible;
+                    
                     // Configure text encoding for ExcelDataReader (required for .NET Core)
                     System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
@@ -293,165 +296,176 @@ namespace TaxPersonnelManagement.Views
                     int amountIndex = -1;
                     var importedData = new List<(string cccd, decimal amount)>();
 
-                    using (var stream = File.Open(openFileDialog.FileName, FileMode.Open, FileAccess.Read))
-                    {
-                        using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    string filePath = openFileDialog.FileName;
+
+                    await Task.Run(() => {
+                        using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
                         {
-                            var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
+                            using (var reader = ExcelReaderFactory.CreateReader(stream))
                             {
-                                ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                                var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
                                 {
-                                    UseHeaderRow = false // We read raw rows because headers are spread out
-                                }
-                            });
+                                    ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                                    {
+                                        UseHeaderRow = false // We read raw rows because headers are spread out
+                                    }
+                                });
 
-                            if (dataSet.Tables.Count == 0) return;
-                            
-                            // We need to find the correct table in case it's not the first one (e.g. TH vs T01)
-                            DataTable? targetTable = null;
-                            
-                            foreach (DataTable table in dataSet.Tables)
-                            {
-                                // 1. Find the header row containing our key identifying strings
-                                for (int i = 0; i < Math.Min(10, table.Rows.Count); i++)
+                                if (dataSet.Tables.Count == 0) return;
+                                
+                                // We need to find the correct table in case it's not the first one (e.g. TH vs T01)
+                                DataTable? targetTable = null;
+                                
+                                foreach (DataTable table in dataSet.Tables)
                                 {
-                                    string rowString = string.Join(" ", table.Rows[i].ItemArray).ToUpper();
-                                    
-                                    if (rowString.Contains("BẢNG THANH TOÁN TIỀN LƯƠNG"))
+                                    // 1. Find the header row containing our key identifying strings
+                                    for (int i = 0; i < Math.Min(10, table.Rows.Count); i++)
                                     {
-                                        incomeType = "Lương";
-                                        cccdIndex = 4; // Column E
-                                        amountIndex = 55; // Column BD
-                                    }
-                                    else if (rowString.Contains("BẢNG THANH TOÁN TIỀN LÀM THÊM GIỜ") || rowString.Contains("TIỀN CHI LÀM THÊM GIỜ"))
-                                    {
-                                        incomeType = "Làm thêm giờ";
-                                        cccdIndex = 2;   // Column C
-                                        amountIndex = 28; // Column AC
-                                    }
-
-                                    // Try to match "THÁNG 01/2026" or similar anywhere in the top 10 rows
-                                    var match = Regex.Match(rowString, @"THÁNG\s*(\d{1,2})\s*/\s*(\d{4})");
-                                    if (match.Success)
-                                    {
-                                        detectedMonth = int.Parse(match.Groups[1].Value);
-                                        detectedYear = int.Parse(match.Groups[2].Value);
-                                    }
-
-                                    if (!string.IsNullOrEmpty(incomeType) && detectedMonth > 0 && detectedYear > 0)
-                                    {
-                                        targetTable = table;
-                                        break;
-                                    }
-                                }
-                                if (targetTable != null) break;
-                            }
-
-                            if (targetTable == null || detectedMonth == 0 || detectedYear == 0)
-                            {
-                                var warning = new WarningWindow("Không thể tự động nhận diện loại file hoặc Tháng/Năm từ tiêu đề. Vui lòng kiểm tra lại định dạng file.", "Lỗi Import");
-                                warning.ShowDialog();
-                                return;
-                            }
-
-                            // Confirm with user
-                            var confirmDialog = new ConfirmDialog($"Phần mềm nhận diện bảng thu nhập này là [{incomeType}] thuộc Tháng {detectedMonth} năm {detectedYear}.\n\nBạn có muốn Import dữ liệu vào tháng này không?");
-                            if (confirmDialog.ShowDialog() != true) return;
-
-                            // 2. Iterate through rows to find data
-                            for (int r = 0; r < targetTable.Rows.Count; r++)
-                            {
-                                var row = targetTable.Rows[r];
-                                // Ensure row has enough columns
-                                if (row.ItemArray.Length > Math.Max(cccdIndex, amountIndex))
-                                {
-                                    string cccdStr = row[cccdIndex]?.ToString()?.Trim() ?? "";
-                                    string amountStr = row[amountIndex]?.ToString()?.Trim() ?? ""; 
-
-                                    // Simple heuristic: if CCCD column is a long string of digits, it's a CCCD
-                                    if (!string.IsNullOrEmpty(cccdStr) && Regex.IsMatch(cccdStr, @"^\d{9,12}$"))
-                                    {
-                                        if (decimal.TryParse(amountStr, out decimal amount) && amount > 0)
+                                        string rowString = string.Join(" ", table.Rows[i].ItemArray).ToUpper();
+                                        
+                                        if (rowString.Contains("BẢNG THANH TOÁN TIỀN LƯƠNG"))
                                         {
-                                            importedData.Add((cccdStr, amount));
+                                            incomeType = "Lương";
+                                            cccdIndex = 4; // Column E
+                                            amountIndex = 55; // Column BD
+                                        }
+                                        else if (rowString.Contains("BẢNG THANH TOÁN TIỀN LÀM THÊM GIỜ") || rowString.Contains("TIỀN CHI LÀM THÊM GIỜ"))
+                                        {
+                                            incomeType = "Làm thêm giờ";
+                                            cccdIndex = 2;   // Column C
+                                            amountIndex = 28; // Column AC
+                                        }
+
+                                        // Try to match "THÁNG 01/2026" or similar anywhere in the top 10 rows
+                                        var match = Regex.Match(rowString, @"THÁNG\s*(\d{1,2})\s*/\s*(\d{4})");
+                                        if (match.Success)
+                                        {
+                                            detectedMonth = int.Parse(match.Groups[1].Value);
+                                            detectedYear = int.Parse(match.Groups[2].Value);
+                                        }
+
+                                        if (!string.IsNullOrEmpty(incomeType) && detectedMonth > 0 && detectedYear > 0)
+                                        {
+                                            targetTable = table;
+                                            break;
+                                        }
+                                    }
+                                    if (targetTable != null) break;
+                                }
+
+                                if (targetTable != null)
+                                {
+                                    // 2. Iterate through rows to find data
+                                    for (int r = 0; r < targetTable.Rows.Count; r++)
+                                    {
+                                        var row = targetTable.Rows[r];
+                                        // Ensure row has enough columns
+                                        if (row.ItemArray.Length > Math.Max(cccdIndex, amountIndex))
+                                        {
+                                            string cccdStr = row[cccdIndex]?.ToString()?.Trim() ?? "";
+                                            string amountStr = row[amountIndex]?.ToString()?.Trim() ?? ""; 
+
+                                            // Simple heuristic: if CCCD column is a long string of digits, it's a CCCD
+                                            if (!string.IsNullOrEmpty(cccdStr) && Regex.IsMatch(cccdStr, @"^\d{9,12}$"))
+                                            {
+                                                if (decimal.TryParse(amountStr, out decimal amount) && amount > 0)
+                                                {
+                                                    importedData.Add((cccdStr, amount));
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
+                    });
+
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
 
                     if (importedData.Count == 0)
                     {
-                        var warning = new WarningWindow("Không tìm thấy dữ liệu hợp lệ trong file Excel. Vui lòng kiểm tra cấu trúc cột.", "Lỗi Import");
+                        var warning = new WarningWindow("Không tìm thấy dữ liệu hợp lệ trong file Excel hoặc không nhận diện được loại file. Vui lòng kiểm tra cấu trúc cột.", "Lỗi Import");
                         warning.ShowDialog();
                         return;
                     }
 
+                    // Confirm with user
+                    var confirmDialog = new ConfirmDialog($"Phần mềm nhận diện bảng thu nhập này là [{incomeType}] thuộc Tháng {detectedMonth} năm {detectedYear}.\n\nBạn có muốn Import dữ liệu vào tháng này không?");
+                    if (confirmDialog.ShowDialog() != true) return;
+
+                    LoadingOverlay.Visibility = Visibility.Visible;
+
                     // 3. Save to database
-                    using (var db = new AppDbContext())
-                    {
-                        int successCount = 0;
-                        int notFoundCount = 0;
-
-                        foreach (var data in importedData)
+                    await Task.Run(() => {
+                        using (var db = new AppDbContext())
                         {
-                            var person = db.Personnel.FirstOrDefault(p => p.IdentityCardNumber == data.cccd);
-                            if (person != null)
-                            {
-                                // Remove existing record for this month/year/type
-                                var existing = db.IncomeRecords.FirstOrDefault(r => 
-                                    r.PersonnelId == person.Id && 
-                                    r.Year == detectedYear && 
-                                    r.Month == detectedMonth &&
-                                    r.IncomeType == incomeType);
+                            int successCount = 0;
+                            int notFoundCount = 0;
 
-                                if (existing != null)
+                            foreach (var data in importedData)
+                            {
+                                var person = db.Personnel.FirstOrDefault(p => p.IdentityCardNumber == data.cccd);
+                                if (person != null)
                                 {
-                                    db.IncomeRecords.Remove(existing);
+                                    // Remove existing record for this month/year/type
+                                    var existing = db.IncomeRecords.FirstOrDefault(r => 
+                                        r.PersonnelId == person.Id && 
+                                        r.Year == detectedYear && 
+                                        r.Month == detectedMonth &&
+                                        r.IncomeType == incomeType);
+
+                                    if (existing != null)
+                                    {
+                                        db.IncomeRecords.Remove(existing);
+                                    }
+
+                                    // Add new record
+                                    db.IncomeRecords.Add(new IncomeRecord
+                                    {
+                                        PersonnelId = person.Id,
+                                        Year = detectedYear,
+                                        Month = detectedMonth,
+                                        IncomeType = incomeType,
+                                        Amount = data.amount,
+                                        Note = incomeType == "Lương" ? "Import từ file Bảng lương" : "Import từ file Làm thêm giờ"
+                                    });
+                                    successCount++;
+                                }
+                                else
+                                {
+                                    notFoundCount++;
+                                }
+                            }
+
+                            db.SaveChanges();
+                            
+                            // Return results to UI thread
+                            Dispatcher.Invoke(() => {
+                                // Change selected year in combo box to imported year if different, to show results instantly
+                                if ((int)(cboYear.SelectedItem ?? 0) != detectedYear)
+                                {
+                                    LoadYears();
+                                    cboYear.SelectedItem = detectedYear;
+                                }
+                                
+                                // Force refresh grid if a user is selected
+                                if (lvPersonnel.SelectedItem != null)
+                                {
+                                    var temp = lvPersonnel.SelectedItem;
+                                    lvPersonnel.SelectedItem = null;
+                                    lvPersonnel.SelectedItem = temp;
                                 }
 
-                                // Add new record
-                                db.IncomeRecords.Add(new IncomeRecord
-                                {
-                                    PersonnelId = person.Id,
-                                    Year = detectedYear,
-                                    Month = detectedMonth,
-                                    IncomeType = incomeType,
-                                    Amount = data.amount,
-                                    Note = incomeType == "Lương" ? "Import từ file Bảng lương" : "Import từ file Làm thêm giờ"
-                                });
-                                successCount++;
-                            }
-                            else
-                            {
-                                notFoundCount++;
-                            }
+                                LoadingOverlay.Visibility = Visibility.Collapsed;
+                                var successDialog = new SuccessWindow($"Import thành công!", $"Đã cập nhật lương cho {successCount} công chức.\nKhông tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.");
+                                successDialog.ShowDialog();
+                            });
                         }
-
-                        db.SaveChanges();
-
-                        // Change selected year in combo box to imported year if different, to show results instantly
-                        if ((int)(cboYear.SelectedItem ?? 0) != detectedYear)
-                        {
-                            LoadYears();
-                            cboYear.SelectedItem = detectedYear;
-                        }
-                        
-                        // Force refresh grid if a user is selected
-                        if (lvPersonnel.SelectedItem != null)
-                        {
-                            var temp = lvPersonnel.SelectedItem;
-                            lvPersonnel.SelectedItem = null;
-                            lvPersonnel.SelectedItem = temp;
-                        }
-
-                        var successDialog = new SuccessWindow($"Import thành công!", $"Đã cập nhật lương cho {successCount} công chức.\nKhông tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.");
-                        successDialog.ShowDialog();
-                    }
+                    });
                 }
                 catch (Exception ex)
                 {
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
                     var errorDialog = new WarningWindow("Lỗi khi đọc file Excel: " + ex.Message, "Lỗi");
                     errorDialog.ShowDialog();
                 }
@@ -467,6 +481,107 @@ namespace TaxPersonnelManagement.Views
                 // Refresh data
                 LoadYears();
                 GenerateDummyData();
+            }
+        }
+
+        private async void BtnExportExcel_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
+            
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                FileName = $"Bao_Cao_Thu_Nhap_{selectedYear}.xlsx",
+                Title = "Lưu báo cáo thu nhập năm"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                string filePath = saveFileDialog.FileName;
+                LoadingOverlay.Visibility = Visibility.Visible;
+                
+                try
+                {
+                    await Task.Run(() => {
+                        using (var db = new AppDbContext())
+                        {
+                            var personnelList = db.Personnel.OrderBy(p => p.FullName).ToList();
+                            var allRecords = db.IncomeRecords.Where(r => r.Year == selectedYear).ToList();
+
+                            using (var workbook = new XLWorkbook())
+                            {
+                                var worksheet = workbook.Worksheets.Add("Thu Nhập Năm " + selectedYear);
+
+                                // Header row
+                                worksheet.Cell(1, 1).Value = "BÁO CÁO TỔNG HỢP THU NHẬP NĂM " + selectedYear;
+                                worksheet.Range(1, 1, 1, 6).Merge().Style.Font.SetBold().Font.SetFontSize(16).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                                var headers = new[] { "Họ và tên", "CCCD", "Lương (VNĐ)", "Làm thêm giờ (VNĐ)", "Thu nhập khác (VNĐ)", "Tổng cộng (VNĐ)" };
+                                for (int i = 0; i < headers.Length; i++)
+                                {
+                                    var cell = worksheet.Cell(3, i + 1);
+                                    cell.Value = headers[i];
+                                    cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1976D2");
+                                    cell.Style.Font.FontColor = XLColor.White;
+                                    cell.Style.Font.Bold = true;
+                                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                }
+
+                                int row = 4;
+                                foreach (var person in personnelList)
+                                {
+                                    var personRecords = allRecords.Where(r => r.PersonnelId == person.Id).ToList();
+                                    decimal salary = personRecords.Where(r => r.IncomeType == "Lương").Sum(r => r.Amount);
+                                    decimal overtime = personRecords.Where(r => r.IncomeType == "Làm thêm giờ").Sum(r => r.Amount);
+                                    decimal other = personRecords.Where(r => r.IncomeType == "Thu nhập khác").Sum(r => r.Amount);
+                                    decimal total = salary + overtime + other;
+
+                                    worksheet.Cell(row, 1).Value = person.FullName;
+                                    worksheet.Cell(row, 2).Value = "'" + person.IdentityCardNumber; // Force string to avoid scientific notation
+                                    worksheet.Cell(row, 3).Value = salary;
+                                    worksheet.Cell(row, 4).Value = overtime;
+                                    worksheet.Cell(row, 5).Value = other;
+                                    worksheet.Cell(row, 6).Value = total;
+
+                                    // Formatting numbers
+                                    worksheet.Range(row, 3, row, 6).Style.NumberFormat.Format = "#,##0";
+                                    worksheet.Range(row, 1, row, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                    
+                                    row++;
+                                }
+
+                                // Footer: Grand Total
+                                worksheet.Cell(row, 1).Value = "TỔNG CỘNG";
+                                worksheet.Range(row, 1, row, 2).Merge().Style.Font.Bold = true;
+                                worksheet.Cell(row, 3).FormulaA1 = $"=SUM(C4:C{row - 1})";
+                                worksheet.Cell(row, 4).FormulaA1 = $"=SUM(D4:D{row - 1})";
+                                worksheet.Cell(row, 5).FormulaA1 = $"=SUM(E4:E{row - 1})";
+                                worksheet.Cell(row, 6).FormulaA1 = $"=SUM(F4:F{row - 1})";
+                                worksheet.Range(row, 1, row, 6).Style.Font.Bold = true;
+                                worksheet.Range(row, 3, row, 6).Style.NumberFormat.Format = "#,##0";
+                                worksheet.Range(row, 1, row, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                                // Auto-fit columns
+                                worksheet.Columns().AdjustToContents();
+                                worksheet.Column(2).Width = 20; // Fix CCCD column width
+
+                                workbook.SaveAs(filePath);
+                            }
+                        }
+                    });
+
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                    var successDialog = new SuccessWindow("Xuất báo cáo Excel thành công!", null, filePath, true);
+                    if (Window.GetWindow(this) is Window parent) successDialog.Owner = parent;
+                    successDialog.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                    var warning = new WarningWindow("Lỗi khi xuất Excel", ex.Message);
+                    warning.ShowDialog();
+                }
             }
         }
     }

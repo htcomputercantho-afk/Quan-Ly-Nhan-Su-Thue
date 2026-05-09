@@ -20,21 +20,34 @@ namespace TaxPersonnelManagement.Views
 
         private void CalculateStatistics(Personnel p)
         {
-            // 1. Leave Logic (Simple Approximation for Demo)
-            int used = 0;
+            // 1. Leave Logic
+            double annualTakenCurrentYear = 0;
+            double annualTakenOldYear = 0;
+            int currentYear = DateTime.Now.Year;
+
             if (p.LeaveHistories != null)
             {
-                var now = DateTime.Now;
-                // Calculate used leave for the current year
-                used = (int)p.LeaveHistories
-                        .Where(h => h.StartDate.Year == now.Year)
-                        .Sum(h => h.DurationDays);
-
+                foreach(var item in p.LeaveHistories)
+                {
+                    // We only care about Phép năm taken this year
+                    if (item.StartDate.Year == currentYear && item.LeaveType == "Phép năm")
+                    {
+                        if (item.LeaveYear.HasValue && item.LeaveYear.Value < currentYear)
+                        {
+                            annualTakenOldYear += item.DurationDays;
+                        }
+                        else
+                        {
+                            annualTakenCurrentYear += item.DurationDays;
+                        }
+                    }
+                }
             }
-            txtUsedLeave.Text = used.ToString();
+
+            txtUsedLeave.Text = (annualTakenCurrentYear + annualTakenOldYear).ToString();
 
             int total = p.TotalAnnualLeaveDays;
-            int remaining = total - used;
+            int remaining = total - (int)annualTakenCurrentYear;
             if (remaining < 0) remaining = 0;
             txtRemainingLeave.Text = remaining.ToString();
 
@@ -143,22 +156,28 @@ namespace TaxPersonnelManagement.Views
             if (e.ChangedButton == MouseButton.Left)
                 this.DragMove();
         }
-        private void btnExportPdf_Click(object sender, RoutedEventArgs e)
+        private async void btnExportPdf_Click(object sender, RoutedEventArgs e)
         {
             var p = this.DataContext as Personnel;
             if (p == null) return;
 
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.FileName = $"HoSo_{p.StaffId}_{p.FullName}.pdf"; // Safe formatting needed but ok for now
+            dlg.FileName = $"HoSo_{p.StaffId}_{p.FullName}.pdf"; 
             dlg.DefaultExt = ".pdf";
             dlg.Filter = "PDF Documents (.pdf)|*.pdf";
 
             if (dlg.ShowDialog() == true)
             {
+                string filePath = dlg.FileName;
+                LoadingOverlay.Visibility = Visibility.Visible;
+                
                 try
                 {
-                    TaxPersonnelManagement.Services.PdfExporter.Export(p, dlg.FileName);
+                    await Task.Run(() => {
+                        TaxPersonnelManagement.Services.PdfExporter.Export(p, filePath);
+                    });
                     
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
                     var success = new SuccessWindow("Xuất file PDF thành công!");
                     success.Owner = this;
                     success.ShowDialog();
@@ -166,13 +185,29 @@ namespace TaxPersonnelManagement.Views
                     try 
                     {
                         var process = new System.Diagnostics.Process();
-                        process.StartInfo = new System.Diagnostics.ProcessStartInfo(dlg.FileName) { UseShellExecute = true };
+                        process.StartInfo = new System.Diagnostics.ProcessStartInfo(filePath) { UseShellExecute = true };
                         process.Start();
                     } catch {}
                 }
                 catch (Exception ex)
                 {
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
                     MessageBox.Show($"Lỗi khi xuất file: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                e.Handled = true;
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+                eventArg.Source = sender;
+                var parent = ((FrameworkElement)sender).Parent as UIElement;
+                if (parent != null)
+                {
+                    parent.RaiseEvent(eventArg);
                 }
             }
         }

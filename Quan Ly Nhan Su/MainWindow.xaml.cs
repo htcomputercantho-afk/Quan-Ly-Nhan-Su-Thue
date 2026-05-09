@@ -49,10 +49,10 @@ namespace TaxPersonnelManagement
         /// <summary>
         /// Điều hướng tới màn hình Tổng quan
         /// </summary>
-        public void NavigateToDashboard()
+        public void NavigateToDashboard(int? targetPersonnelId = null)
         {
             UpdateMenuState(btnDashboard); // Cập nhật trạng thái hiển thị của nút menu
-            MainFrame.Navigate(new DashboardView()); // Tải nội dung View vào Frame chính
+            MainFrame.Navigate(new DashboardView(targetPersonnelId)); // Tải nội dung View vào Frame chính
         }
 
         private void NavigateDashboard(object? sender, RoutedEventArgs? e)

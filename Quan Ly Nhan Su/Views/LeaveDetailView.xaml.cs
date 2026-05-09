@@ -150,6 +150,12 @@ namespace TaxPersonnelManagement.Views
 
             btnPrevPage.IsEnabled = _currentPage > 1;
             btnNextPage.IsEnabled = _currentPage < _totalPages;
+
+            // Scroll to top
+            if (pageItems.Count > 0)
+            {
+                dgLeaveSummary.ScrollIntoView(pageItems[0]);
+            }
         }
 
         private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
@@ -263,7 +269,7 @@ namespace TaxPersonnelManagement.Views
                             detailLines.Add(new LeaveDetailLine
                             {
                                 MainContent = $"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {h.StartDate:dd/MM/yyyy} đến ngày {h.EndDate:dd/MM/yyyy}{note}",
-                                Suffix = isOldYear ? " - [NGHỈ PHÉP NĂM CŨ]" : ""
+                                Suffix = $" - [NGHỈ PHÉP NĂM {h.LeaveYear ?? h.StartDate.Year}]"
                             });
                         }
                         string detailedContent = string.Join("\n", detailLines.Select(d => d.MainContent + d.Suffix));
@@ -515,6 +521,26 @@ namespace TaxPersonnelManagement.Views
                     MessageBox.Show($"Lỗi khi xuất Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        /// <summary>
+        /// Dynamically adjusts the Họ và tên column to fill leftover space on large screens.
+        /// On small screens, reverts to MinWidth so horizontal scrollbar can appear.
+        /// Fixed columns total: STT(70) + CCCD(180) + PhépTC(150) + NămCũ(150) + NămNay(150) + Tổng(130) + NộiDung(400) + PhépCòn(170) = 1400
+        /// </summary>
+        private void dgLeaveSummary_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (dgLeaveSummary.Columns.Count < 2) return;
+
+            const double fixedColumnsTotal = 70 + 180 + 150 + 150 + 150 + 130 + 400 + 170; // = 1400
+            const double nameMinWidth = 300;
+            const double scrollBarBuffer = 20;
+
+            double available = dgLeaveSummary.ActualWidth - scrollBarBuffer;
+            double nameWidth = Math.Max(nameMinWidth, available - fixedColumnsTotal);
+
+            // Họ và tên is column index 1 (after STT at index 0)
+            dgLeaveSummary.Columns[1].Width = new DataGridLength(nameWidth);
         }
     }
 

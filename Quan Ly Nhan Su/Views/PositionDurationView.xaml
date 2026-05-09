@@ -74,6 +74,7 @@
                     <DatePicker x:Name="dpCalculationDate" Width="180"
                                 Language="vi-VN"
                                 helpers:DatePickerHelper.FixCalendarLocale="True"
+                                helpers:DatePickerHelper.EnableSmartDateEntry="True"
                                 Style="{DynamicResource MaterialDesignOutlinedDatePicker}"
                                 Background="White" Padding="10"
                                 VerticalAlignment="Center"

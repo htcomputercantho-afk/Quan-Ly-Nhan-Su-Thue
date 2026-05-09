@@ -21,110 +21,109 @@
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <materialDesign:Card Margin="10" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" PreviewMouseWheel="Grid_PreviewMouseWheel">
-            <Grid Margin="20">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-                <!-- Loading Overlay -->
-                <Grid x:Name="LoadingOverlay" Grid.RowSpan="3" Visibility="Collapsed" Panel.ZIndex="1000" Margin="-20">
-                    <Border Background="Black" Opacity="0.15"/>
-                    <materialDesign:Card UniformCornerRadius="10" Width="220" Height="140" materialDesign:ElevationAssist.Elevation="Dp6" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
-                                         Value="0" IsIndeterminate="True" 
-                                         Width="40" Height="40" 
-                                         Foreground="#1976D2" Margin="0 0 0 15"/>
-                            <TextBlock Text="Đang xử lý dữ liệu..." FontSize="14" FontWeight="SemiBold" Foreground="#455A64" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Vui lòng chờ trong giây lát" FontSize="11" Foreground="#78909C" HorizontalAlignment="Center" Margin="0 5 0 0"/>
-                        </StackPanel>
-                    </materialDesign:Card>
-                </Grid>
-    
-                <!-- Top Section -->
-                <StackPanel Grid.Row="0" Margin="0 0 0 10">
-                    <!-- Dashboard / KPIs -->
-                    <WrapPanel Margin="0 0 0 20">
-                        <!-- Filter Section -->
-                        <StackPanel VerticalAlignment="Top" Margin="0 0 20 15">
-                            <ComboBox x:Name="cbDepartmentFilter" 
-                                      MinWidth="200" MaxWidth="300"
-                                      Height="40"
-                                      materialDesign:HintAssist.Hint="Lọc theo bộ phận"
-                                      Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                      Background="White"
-                                      VerticalContentAlignment="Center"
-                                      Padding="10 0"
-                                      FontSize="14"
-                                      Foreground="#455A64"
-                                      SelectionChanged="cbDepartmentFilter_SelectionChanged">
-                                <ComboBox.ItemContainerStyle>
-                                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                        <Setter Property="Padding" Value="10"/>
-                                        <Setter Property="MinHeight" Value="35"/>
-                                    </Style>
-                                </ComboBox.ItemContainerStyle>
-                            </ComboBox>
-                        </StackPanel>
-    
-                        <!-- KPIs Section -->
-                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                            <!-- Card 1: Total -->
-                            <materialDesign:Card x:Name="cardTotal" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
-                                <Grid>
-                                    <Grid.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="#0078D4" Offset="0.0"/>
-                                            <GradientStop Color="#00B7C3" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Grid.Background>
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                        <TextBlock Text="TỔNG NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                        <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
-                            </materialDesign:Card>
-    
-                            <!-- Card 2: Maternity -->
-                            <materialDesign:Card x:Name="cardMaternity" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardMaternity_Click">
-                                <Grid>
-                                    <Grid.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="#FF8C00" Offset="0.0"/>
-                                            <GradientStop Color="#FFC107" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Grid.Background>
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                        <TextBlock Text="NGHỈ THAI SẢN" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                        <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
-                            </materialDesign:Card>
-    
-                            <!-- Card 3: Sick -->
-                            <materialDesign:Card x:Name="cardSick" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSick_Click">
-                                <Grid>
-                                    <Grid.Background>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                            <GradientStop Color="#D32F2F" Offset="0.0"/>
-                                            <GradientStop Color="#EF5350" Offset="1.0"/>
-                                        </LinearGradientBrush>
-                                    </Grid.Background>
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <materialDesign:PackIcon Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                        <TextBlock Text="NGHỈ ỐM" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                        <TextBlock x:Name="txtSickCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
-                            </materialDesign:Card>
-                        </WrapPanel>
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Grid.RowSpan="3" Visibility="Collapsed" Panel.ZIndex="1000">
+            <Border Background="Black" Opacity="0.15"/>
+            <materialDesign:Card UniformCornerRadius="10" Width="220" Height="140" materialDesign:ElevationAssist.Elevation="Dp6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" 
+                                 Value="0" IsIndeterminate="True" 
+                                 Width="40" Height="40" 
+                                 Foreground="#1976D2" Margin="0 0 0 15"/>
+                    <TextBlock Text="Đang xừ lý dữ liệu..." FontSize="14" FontWeight="SemiBold" Foreground="#455A64" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Vui lòng chờ trong giây lát" FontSize="11" Foreground="#78909C" HorizontalAlignment="Center" Margin="0 5 0 0"/>
+                </StackPanel>
+            </materialDesign:Card>
+        </Grid>
+
+        <!-- Top Section (Card bao phần header + KPIs + toolbar) -->
+        <materialDesign:Card Grid.Row="0" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10">
+            <StackPanel Margin="20">
+                <!-- Dashboard / KPIs -->
+                <WrapPanel Margin="0 0 0 20">
+                    <!-- Filter Section -->
+                    <StackPanel VerticalAlignment="Top" Margin="0 0 20 15">
+                        <ComboBox x:Name="cbDepartmentFilter" 
+                                  MinWidth="200" MaxWidth="300"
+                                  Height="40"
+                                  materialDesign:HintAssist.Hint="Lọc theo bộ phận"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White"
+                                  VerticalContentAlignment="Center"
+                                  Padding="10 0"
+                                  FontSize="14"
+                                  Foreground="#455A64"
+                                  SelectionChanged="cbDepartmentFilter_SelectionChanged">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                    <Setter Property="Padding" Value="10"/>
+                                    <Setter Property="MinHeight" Value="35"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- KPIs Section -->
+                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                        <!-- Card 1: Total -->
+                        <materialDesign:Card x:Name="cardTotal" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
+                            <Grid>
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#0078D4" Offset="0.0"/>
+                                        <GradientStop Color="#00B7C3" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock Text="TỔNG NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </materialDesign:Card>
+
+                        <!-- Card 2: Maternity -->
+                        <materialDesign:Card x:Name="cardMaternity" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardMaternity_Click">
+                            <Grid>
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#FF8C00" Offset="0.0"/>
+                                        <GradientStop Color="#FFC107" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock Text="NGHỈ THAI SẢN" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </materialDesign:Card>
+
+                        <!-- Card 3: Sick -->
+                        <materialDesign:Card x:Name="cardSick" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSick_Click">
+                            <Grid>
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#D32F2F" Offset="0.0"/>
+                                        <GradientStop Color="#EF5350" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock Text="NGHỈ ỐM" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="txtSickCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                        </materialDesign:Card>
                     </WrapPanel>
+                </WrapPanel>
 
                 <!-- Actions Bar & Title -->
                 <WrapPanel Orientation="Horizontal" Margin="0 10 0 10">
@@ -195,17 +194,22 @@
                     </StackPanel>
                 </WrapPanel>
             </StackPanel>
+        </materialDesign:Card>
 
-            <!-- DataGrid -->
-            <!-- DataGrid -->
-            <DataGrid x:Name="dgPersonnel" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False" 
+        <!-- DataGrid -->
+        <materialDesign:Card Grid.Row="1" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10">
+            <DataGrid x:Name="dgPersonnel"
+                      AutoGenerateColumns="False" CanUserAddRows="False"
                       SelectionMode="Single" SelectionUnit="FullRow" IsReadOnly="True"
                       HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                       Background="White" BorderThickness="0"
-                      RowHeight="76"
+                      MinRowHeight="64" ColumnHeaderHeight="50"
                       HorizontalGridLinesBrush="#EEEEEE"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      SizeChanged="dgPersonnel_SizeChanged"
+                      FrozenColumnCount="2">
+
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#F5F5F5"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F5F5F5"/>
@@ -216,15 +220,15 @@
                     <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontSize" Value="14"/>
                         <Setter Property="VerticalContentAlignment" Value="Center"/>
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="#F5F5F5"/>
+                                <Setter Property="Background" Value="#E3F2FD"/>
                                 <Setter Property="BorderBrush" Value="Transparent"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FAFAFA"/>
+                                <Setter Property="Background" Value="#F5F9FF"/>
                             </Trigger>
                         </Style.Triggers>
                     </Style>
@@ -232,15 +236,19 @@
 
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="Foreground" Value="#546E7A"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="MinHeight" Value="50"/>
+                        <Setter Property="Padding" Value="10,8"/>
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="BorderBrush" Value="#1565C0"/>
+                        <Setter Property="BorderThickness" Value="0,0,1,0"/>
                         <Setter Property="ContentTemplate">
                             <Setter.Value>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18"/>
                                 </DataTemplate>
                             </Setter.Value>
                         </Setter>
@@ -248,149 +256,182 @@
                 </DataGrid.ColumnHeaderStyle>
 
                 <DataGrid.Columns>
-                    <!-- STT -->
-                    <DataGridTemplateColumn Header="STT" Width="Auto" MinWidth="60">
+                    <!-- COT 1: STT -->
+                    <DataGridTemplateColumn Header="STT" Width="60">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding STT}" 
+                                <TextBlock Text="{Binding STT}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           FontWeight="SemiBold" FontSize="16" Foreground="#546E7A"/>
+                                           FontWeight="SemiBold" FontSize="14" Foreground="#546E7A"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- NAME INFO -->
-                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2.2*" MinWidth="220">
+                    <!-- COT 2: HỌ VÀ TÊN — chiều rộng quản lý bởi code-behind -->
+                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="280">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20 0 0 0">
-                                    <!-- Avatar -->
-                                    <Grid Width="45" Height="45" Margin="0 0 14 0" Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                                        <!-- Fallback: Initials -->
-                                        <Border CornerRadius="30" Background="#1976D2">
-                                            <TextBlock Text="{Binding FullName, Converter={StaticResource NameToInitialsConverter}}" 
-                                                       Foreground="White" FontWeight="Bold" FontSize="20" 
+                                <Grid Margin="12,0,8,0" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Avatar circle -->
+                                    <Grid Width="42" Height="42" Margin="0,0,12,0">
+                                        <Border CornerRadius="21" Background="#1976D2">
+                                            <TextBlock Text="{Binding FullName, Converter={StaticResource NameToInitialsConverter}}"
+                                                       Foreground="White" FontWeight="Bold" FontSize="17"
                                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
-                                        
-                                        <!-- Overlay: Avatar Image -->
-                                        <Border CornerRadius="30">
+                                        <Border CornerRadius="21">
                                             <Border.Background>
                                                 <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
                                             </Border.Background>
                                         </Border>
                                     </Grid>
-                                    
-                                     <!-- Name/ID -->
-                                     <StackPanel VerticalAlignment="Center">
-                                         <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="#263238" FontSize="19" Margin="0 0 0 2"/>
-                                         <StackPanel Orientation="Horizontal">
-                                             <materialDesign:PackIcon Kind="Barcode" Width="14" Height="14" Foreground="#B0BEC5" VerticalAlignment="Center" Margin="0 0 4 0"/>
-                                             <TextBlock Text="{Binding StaffId}" FontSize="16" Foreground="#78909C"/>
-                                         </StackPanel>
+                                    <!-- Name + StaffId -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="#263238"
+                                                   FontSize="15" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <materialDesign:PackIcon Kind="Barcode" Width="13" Height="13"
+                                                                     Foreground="#B0BEC5" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding StaffId}" FontSize="12" Foreground="#78909C" VerticalAlignment="Center"/>
+                                        </Grid>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- INFO (DOB/Gender) -->
-                    <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="1.5*" MinWidth="140">
+                    <!-- COT 3: THÔNG TIN CƠ BẢN — fixed 200 -->
+                    <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="200">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15 0 0 0">
-                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
-                                         <materialDesign:PackIcon Kind="CalendarBlank" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                         <TextBlock Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}" FontSize="17" Foreground="#455A64"/>
-                                     </StackPanel>
-                                     <StackPanel Orientation="Horizontal">
-                                         <materialDesign:PackIcon Kind="GenderMaleFemale" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                         <TextBlock Text="{Binding Gender}" FontSize="17" Foreground="#455A64"/>
-                                     </StackPanel>
+                                <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Kind="CalendarBlank" Width="14" Height="14"
+                                                                 Foreground="#78909C" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}"
+                                                   FontSize="13" Foreground="#455A64" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Kind="GenderMaleFemale" Width="14" Height="14"
+                                                                 Foreground="#78909C" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Gender}" FontSize="13" Foreground="#455A64" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- POSITION -->
-                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="2*" MinWidth="180">
-                         <DataGridTemplateColumn.CellTemplate>
+                    <!-- COT 4: BỘ PHẬN — fixed 250 -->
+                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="250">
+                        <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20 0 0 0">
-                                    <!-- Department Tag -->
-                                    <Border Background="#E3F2FD" CornerRadius="6" Padding="10 4" HorizontalAlignment="Left" Margin="0 0 0 6">
-                                         <TextBlock Text="{Binding Department}" FontSize="14" FontWeight="SemiBold" Foreground="#1565C0"/>
+                                <StackPanel VerticalAlignment="Center" Margin="12,0,8,0">
+                                    <Border Background="#E3F2FD" CornerRadius="5" Padding="8,3"
+                                            HorizontalAlignment="Left" Margin="0,0,0,5">
+                                        <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold"
+                                                   Foreground="#1565C0" TextWrapping="Wrap"/>
                                     </Border>
-                                     <!-- Position -->
-                                     <TextBlock Text="{Binding Position}" FontWeight="Medium" Foreground="#37474F" FontSize="17" HorizontalAlignment="Left"/>
-                                 </StackPanel>
+                                    <TextBlock Text="{Binding Position}" FontSize="13" Foreground="#37474F"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- CONTACT -->
-                    <DataGridTemplateColumn Header="LIÊN HỆ" Width="1.8*" MinWidth="180">
+                    <!-- COT 5: LIÊN HỆ — fixed 300 -->
+                    <DataGridTemplateColumn Header="LIÊN HỆ" Width="300">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Left" Margin="15 0 0 0">
-                                     <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
-                                         <materialDesign:PackIcon Kind="Phone" Width="15" Height="15" Foreground="#43A047" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                         <TextBlock Text="{Binding PhoneNumber, Converter={StaticResource PhoneFormatterConverter}}" FontSize="17" FontWeight="Medium" Foreground="#2E7D32"/>
-                                     </StackPanel>
-                                     <StackPanel Orientation="Horizontal">
-                                         <materialDesign:PackIcon Kind="Email" Width="15" Height="15" Foreground="#78909C" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                         <TextBlock Text="{Binding Email}" FontSize="16" Foreground="#546E7A"/>
-                                     </StackPanel>
+                                <StackPanel VerticalAlignment="Center" Margin="10,0,8,0">
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Kind="Phone" Width="14" Height="14"
+                                                                 Foreground="#43A047" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding PhoneNumber, Converter={StaticResource PhoneFormatterConverter}}"
+                                                   FontSize="14" FontWeight="Medium" Foreground="#2E7D32" VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Kind="Email" Width="14" Height="14"
+                                                                 Foreground="#78909C" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Email}" FontSize="13" Foreground="#546E7A"
+                                                   TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- ACTIONS -->
-                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="Auto" MinWidth="150">
-                         <DataGridTemplateColumn.CellTemplate>
+                    <!-- COT 6: HÀNH ĐỘNG — cố định 140px -->
+                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="140">
+                        <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0">
                                     <Button x:Name="btnView" Click="btnView_Click" Tag="{Binding Id}"
-                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xem chi tiết" 
-                                            Width="32" Height="32" Margin="0 0 8 0" Background="#E1F5FE" BorderBrush="#E1F5FE" Foreground="#0288D1" materialDesign:ElevationAssist.Elevation="Dp0">
-                                        <materialDesign:PackIcon Kind="Eye" Width="16" Height="16"/>
+                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xem chi tiết"
+                                            Width="30" Height="30" Margin="0,0,5,0"
+                                            Background="#E1F5FE" BorderBrush="#E1F5FE" Foreground="#0288D1"
+                                            materialDesign:ElevationAssist.Elevation="Dp0">
+                                        <materialDesign:PackIcon Kind="Eye" Width="15" Height="15"/>
                                     </Button>
-                                    
                                     <Button x:Name="btnEdit" Click="btnEdit_Click" Tag="{Binding Id}" Loaded="AdminOnly_Loaded"
-                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Chỉnh sửa" 
-                                            Width="32" Height="32" Margin="0 0 8 0" Background="#E8EAF6" BorderBrush="#E8EAF6" Foreground="#3949AB" materialDesign:ElevationAssist.Elevation="Dp0">
-                                        <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16"/>
+                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Chỉnh sửa"
+                                            Width="30" Height="30" Margin="0,0,5,0"
+                                            Background="#E8EAF6" BorderBrush="#E8EAF6" Foreground="#3949AB"
+                                            materialDesign:ElevationAssist.Elevation="Dp0">
+                                        <materialDesign:PackIcon Kind="Pencil" Width="15" Height="15"/>
                                     </Button>
-                                    
                                     <Button x:Name="btnDelete" Click="btnDelete_Click" Tag="{Binding Id}" Loaded="AdminOnly_Loaded"
-                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xóa" 
-                                            Width="32" Height="32" Background="#FFEBEE" BorderBrush="#FFEBEE" Foreground="#D32F2F" materialDesign:ElevationAssist.Elevation="Dp0">
-                                        <materialDesign:PackIcon Kind="Delete" Width="16" Height="16"/>
+                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xóa"
+                                            Width="30" Height="30"
+                                            Background="#FFEBEE" BorderBrush="#FFEBEE" Foreground="#D32F2F"
+                                            materialDesign:ElevationAssist.Elevation="Dp0">
+                                        <materialDesign:PackIcon Kind="Delete" Width="15" Height="15"/>
                                     </Button>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+
                 </DataGrid.Columns>
             </DataGrid>
-
-
-            <!-- Footer Pagination -->
-            <Grid Grid.Row="2" Margin="0 10 0 0">
-                <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 nhân viên" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                     <Button x:Name="btnPrevPage" Click="btnPrevPage_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">
-                        <materialDesign:PackIcon Kind="ChevronLeft" Foreground="#607D8B"/>
-                    </Button>
-                    <TextBlock x:Name="txtPageInfo" Text="1 / 1" VerticalAlignment="Center" Margin="10 0" FontWeight="Bold" Foreground="#455A64"/>
-                     <Button x:Name="btnNextPage" Click="btnNextPage_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30">
-                        <materialDesign:PackIcon Kind="ChevronRight" Foreground="#607D8B"/>
-                    </Button>
-                </StackPanel>
-            </Grid>
-
-        </Grid>
         </materialDesign:Card>
-    </ScrollViewer>
+
+        <!-- Footer Pagination -->
+        <Grid Grid.Row="2" Margin="0 10 0 0">
+            <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 nhân viên" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="btnPrevPage" Click="btnPrevPage_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">
+                    <materialDesign:PackIcon Kind="ChevronLeft" Foreground="#607D8B"/>
+                </Button>
+                <TextBlock x:Name="txtPageInfo" Text="1 / 1" VerticalAlignment="Center" Margin="10 0" FontWeight="Bold" Foreground="#455A64"/>
+                <Button x:Name="btnNextPage" Click="btnNextPage_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30">
+                    <materialDesign:PackIcon Kind="ChevronRight" Foreground="#607D8B"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+    </Grid>
 </UserControl>

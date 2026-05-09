@@ -14,8 +14,7 @@
         <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Background="#F5F5F5" Margin="15" PreviewMouseWheel="Grid_PreviewMouseWheel">
+    <Grid Background="#F5F5F5" Margin="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header & Search -->
                 <RowDefinition Height="*"/>    <!-- DataGrid Container -->
@@ -23,37 +22,36 @@
 
             <!-- Top Header & Controls -->
             <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="20" Margin="0 0 0 15" Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock x:Name="txtHeaderTitle" Grid.Row="0" Grid.Column="0" 
-                               Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
-                               FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
-                               Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-
-
+                        <TextBlock x:Name="txtHeaderTitle" Grid.Column="0" 
+                                   Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
+                                   FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
+                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                   TextWrapping="Wrap" Margin="0 0 20 0"/>
 
                         <Button x:Name="btnExportExcel" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
                                 Style="{DynamicResource MaterialDesignRaisedButton}"
                                 Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18" HorizontalAlignment="Right">
+                                materialDesign:ButtonAssist.CornerRadius="18" HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
+                    </Grid>
 
                     <!-- Modern Search Bar -->
-                    <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 20 0 5" 
+                    <Border Margin="0 20 0 5" 
                             Background="White" BorderBrush="#E0E0E0" BorderThickness="1.5" 
-                            CornerRadius="22" Padding="15 2" HorizontalAlignment="Left" Width="600"
+                            CornerRadius="22" Padding="15 2" HorizontalAlignment="Left" 
+                            Width="600" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=StackPanel}}"
                             Effect="{DynamicResource MaterialDesignShadowDepth1}">
                         <Border.Style>
                             <Style TargetType="Border">
@@ -92,7 +90,7 @@
                             </Button>
                         </Grid>
                     </Border>
-                </Grid>
+                </StackPanel>
             </Border>
 
             <!-- Main DataGrid Container -->
@@ -108,13 +106,15 @@
                 <DataGrid x:Name="dgLeaveSummary" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
                           IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
                           BorderThickness="0" Background="White"
-                          RowHeight="NaN" MinRowHeight="50" ColumnWidth="*"
+                          RowHeight="NaN" MinRowHeight="50" ColumnHeaderHeight="75"
                           GridLinesVisibility="None" 
                           SpellCheck.IsEnabled="False"
                           AlternatingRowBackground="#F8FAFD" RowBackground="White"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          FontSize="14">
+                          FontSize="13"
+                          SizeChanged="dgLeaveSummary_SizeChanged"
+                          FrozenColumnCount="2">
 
                     <!-- Header Style: Nền xanh đậm, chữ trắng -->
                     <DataGrid.ColumnHeaderStyle>
@@ -173,7 +173,7 @@
 
                     <DataGrid.Columns>
                         <!-- STT -->
-                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="60">
+                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="70">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -188,7 +188,7 @@
                         <!-- Mã số cán bộ - REMOVED BY USER REQUEST -->
 
                         <!-- Avatar + Họ và tên -->
-                        <DataGridTemplateColumn Header="Họ và tên" Width="2.2*">
+                        <DataGridTemplateColumn Header="Họ và tên" Width="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,10">
@@ -208,7 +208,7 @@
                                             </Ellipse>
                                         </Grid>
                                         <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
-                                                   FontWeight="Bold" FontSize="18" Foreground="#212121"
+                                                   FontWeight="Bold" FontSize="15" Foreground="#212121"
                                                    TextWrapping="Wrap" MaxWidth="180"/>
                                     </StackPanel>
                                 </DataTemplate>
@@ -216,23 +216,23 @@
                         </DataGridTemplateColumn>
 
                         <!-- Số CCCD -->
-                        <DataGridTextColumn Header="Số CCCD" Binding="{Binding IdentityCardNumber}" Width="1.4*">
+                        <DataGridTextColumn Header="Số CCCD" Binding="{Binding IdentityCardNumber}" Width="180">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="16"/>
+                                    <Setter Property="FontSize" Value="14"/>
                                     <Setter Property="Foreground" Value="#424242"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
                         <!-- Phép tiêu chuẩn -->
-                        <DataGridTemplateColumn Header="Số ngày được nghỉ phép" Width="1.1*" MinWidth="110">
+                        <DataGridTemplateColumn Header="Phép tiêu chuẩn" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="18" 
+                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#2E7D32" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -240,11 +240,11 @@
                         </DataGridTemplateColumn>
 
                         <!-- Phép năm cũ (n-1) -->
-                        <DataGridTemplateColumn x:Name="colOldYear" Header="Nghỉ phép năm cũ" Width="1.1*" MinWidth="110">
+                        <DataGridTemplateColumn x:Name="colOldYear" Header="Phép năm cũ" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="18" 
+                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="16" 
                                                    Foreground="#7B1FA2" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -252,7 +252,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Phép năm nay (n) -->
-                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="Nghỉ phép năm nay" Width="1.1*" MinWidth="110">
+                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="Phép năm nay" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -264,7 +264,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Thực tế đã nghỉ (Tổng) -->
-                        <DataGridTemplateColumn Header="Tổng" Width="1.1*">
+                        <DataGridTemplateColumn Header="Tổng" Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#FFF3E0" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -276,13 +276,13 @@
                         </DataGridTemplateColumn>
 
                         <!-- Nội dung chi tiết -->
-                        <DataGridTemplateColumn Header="Nội dung chi tiết" Width="3.5*" MinWidth="250">
+                        <DataGridTemplateColumn Header="Nội dung chi tiết" Width="400">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock TextWrapping="Wrap" LineHeight="28" FontSize="18" Foreground="#424242" SpellCheck.IsEnabled="False">
+                                                <TextBlock TextWrapping="Wrap" LineHeight="24" FontSize="14" Foreground="#424242" SpellCheck.IsEnabled="False">
                                                     <Run Text="{Binding MainContent, Mode=OneWay}"/>
                                                     <Run Text="{Binding Suffix, Mode=OneWay}" FontWeight="Bold" Foreground="#D32F2F"/>
                                                 </TextBlock>
@@ -294,7 +294,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Số phép còn lại -->
-                        <DataGridTemplateColumn Header="Phép còn lại" Width="1.2*">
+                        <DataGridTemplateColumn Header="Phép còn lại" Width="170">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="10" Padding="12,8" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -325,5 +325,4 @@
                 </Grid>
             </Border>
     </Grid>
-    </ScrollViewer>
 </Page>

@@ -1,3 +1,11 @@
+## v1.0.3.0 — 2026-05-09
+- [Hiệu năng] Xử lý bất đồng bộ (Async): Chuyển đổi các tác vụ nặng (Excel/PDF) sang chạy nền, giúp ứng dụng không bị treo/đơ khi xử lý dữ liệu lớn.
+- [Giao diện] Trạng thái chờ: Tích hợp LoadingOverlay (vòng xoay chuyên nghiệp) cho tất cả thao tác Nhập/Xuất Excel và PDF.
+- [Tối ưu] Cuộn chuột: Xử lý mượt mà (Scroll Bubbling) cho phép lăn chuột xuyên suốt các bảng dữ liệu trong hồ sơ chi tiết.
+- [Tính năng] Xuất Excel: Cập nhật cấu hình 6 cột chuẩn (Họ tên, CCCD, Lương, Làm thêm giờ, Thu nhập khác, Tổng cộng) và căn chỉnh tiêu đề báo cáo.
+- [Sửa lỗi] XAML: Khắc phục lỗi tài nguyên (StaticResource) gây lỗi ứng dụng tại trang Tổng thu nhập.
+- [Kỹ thuật] Clean Code: Xử lý 100% cảnh báo (Warnings) khi build và dọn dẹp mã nguồn dư thừa để đóng gói sản phẩm.
+
 ## v1.0.2.3 — 2026-05-06
 - [Sửa lỗi] Việt hóa lịch (CN, T2-T7): Hiển thị đúng tên thứ theo chuẩn Tiếng Việt.
 - [Cải tiến] Xuất Excel: Tên file & tiêu đề báo cáo tự động cập nhật theo "Thời điểm tính".

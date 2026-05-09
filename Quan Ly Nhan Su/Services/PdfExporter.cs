@@ -162,7 +162,61 @@ namespace TaxPersonnelManagement.Services
 
         static void ComposeSalary(ColumnDescriptor column, Personnel p)
         {
-             column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row => 
+            // 1. Calculate Salary Dates matching UI logic
+            DateTime? nextCalcDate = p.NextSalaryStepDate;
+            
+            // If p.NextSalaryStepDate is null, try to get it from the latest SalaryRecord
+            if (!nextCalcDate.HasValue && p.SalaryRecords != null && p.SalaryRecords.Count > 0)
+            {
+                nextCalcDate = p.SalaryRecords.OrderByDescending(s => s.StartDate).FirstOrDefault()?.SalaryCalculationDate;
+            }
+
+            DateTime? expectedDate = null;
+            if (nextCalcDate.HasValue)
+            {
+                DateTime baseDate = nextCalcDate.Value;
+                int periodYears = 3;
+
+                // Check Exceed Frame
+                if (p.ExceedFramePercent > 0)
+                {
+                    periodYears = 1;
+                }
+                else
+                {
+                    // Check Rank Code
+                    string rc = p.RankCode?.Trim() ?? "";
+                    if (rc == "06.039-1" || rc == "01.011" || rc == "01.009")
+                    {
+                        periodYears = 2;
+                    }
+                }
+
+                DateTime calcDate = baseDate.AddYears(periodYears);
+
+                // Delay from Disciplinary Action
+                string delayType = p.SalaryIncreaseDelayType ?? "";
+                if (delayType.Contains("3 tháng")) calcDate = calcDate.AddMonths(3);
+                else if (delayType.Contains("6 tháng")) calcDate = calcDate.AddMonths(6);
+                else if (delayType.Contains("12 tháng")) calcDate = calcDate.AddMonths(12);
+
+                // Delay from Unpaid Leave
+                if (p.LeaveHistories != null)
+                {
+                    double unpaidDays = p.LeaveHistories
+                        .Where(h => h.LeaveType == "Không lương")
+                        .Sum(h => h.DurationDays);
+                    
+                    if (unpaidDays > 0)
+                    {
+                        calcDate = calcDate.AddDays(unpaidDays);
+                    }
+                }
+
+                expectedDate = calcDate;
+            }
+
+            column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row => 
             {
                 void CenteredItem(RowDescriptor r, string label, string? val, bool highlight = false, bool last = false)
                 {
@@ -187,8 +241,8 @@ namespace TaxPersonnelManagement.Services
 
             column.Item().PaddingTop(5).Row(row => 
             {
-                row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", p.NextSalaryStepDate?.ToString("dd/MM/yyyy")));
-                row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", p.ExpectedSalaryIncreaseDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", nextCalcDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", expectedDate?.ToString("dd/MM/yyyy")));
             });
 
             // Salary History Table - Keep title + table together to prevent page break between them
@@ -248,6 +302,29 @@ namespace TaxPersonnelManagement.Services
         
         static void ComposeLeave(ColumnDescriptor column, Personnel p)
         {
+            // 1. Calculate stats matching UI logic
+            double annualTakenCurrentYear = 0;
+            double annualTakenOldYear = 0;
+            int currentYear = DateTime.Now.Year;
+
+            if (p.LeaveHistories != null)
+            {
+                foreach(var item in p.LeaveHistories)
+                {
+                    if (item.StartDate.Year == currentYear && item.LeaveType == "Phép năm")
+                    {
+                        if (item.LeaveYear.HasValue && item.LeaveYear.Value < currentYear)
+                            annualTakenOldYear += item.DurationDays;
+                        else
+                            annualTakenCurrentYear += item.DurationDays;
+                    }
+                }
+            }
+
+            int used = (int)(annualTakenCurrentYear + annualTakenOldYear);
+            int remaining = p.TotalAnnualLeaveDays - (int)annualTakenCurrentYear;
+            if (remaining < 0) remaining = 0;
+
             // Stats
             column.Item().PaddingBottom(10).Row(row => 
             {
@@ -262,20 +339,15 @@ namespace TaxPersonnelManagement.Services
                  row.RelativeItem().Background("#FFEBEE").Padding(10).Column(c => 
                  {
                      c.Item().AlignCenter().Text("Đã nghỉ").FontSize(9).FontColor(Colors.Red.Darken1);
-                     // Simple calc for used
-                     // Need logic passed in or calc here. For now 0 or sample.
-                     // Assuming passed p has up-to-date data. Let's verify logic in View.
-                     // We might calculate inside Export or pass a DTO. 
-                     // For simplicity, just showing 0 if logic is complex.
-                     c.Item().AlignCenter().Text("0").FontSize(14).Bold().FontColor(Colors.Red.Darken1); 
+                     c.Item().AlignCenter().Text(used.ToString()).FontSize(14).Bold().FontColor(Colors.Red.Darken1); 
                  });
-
+                 
                  row.Spacing(10);
-
+                 
                  row.RelativeItem().Background("#E8F5E9").Padding(10).Column(c => 
                  {
                      c.Item().AlignCenter().Text("Còn lại").FontSize(9).FontColor(Colors.Green.Darken1);
-                     c.Item().AlignCenter().Text(p.TotalAnnualLeaveDays.ToString()).FontSize(14).Bold().FontColor(Colors.Green.Darken1);
+                     c.Item().AlignCenter().Text(remaining.ToString()).FontSize(14).Bold().FontColor(Colors.Green.Darken1);
                  });
             });
 
@@ -284,57 +356,37 @@ namespace TaxPersonnelManagement.Services
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
-                    columns.RelativeColumn();
+                    columns.ConstantColumn(80);   // Loại
+                    columns.ConstantColumn(120);  // Thời gian
+                    columns.ConstantColumn(60);   // Số ngày
+                    columns.RelativeColumn(1.5f); // Lí do
+                    columns.RelativeColumn(2.5f); // Ghi chú hệ thống
                 });
 
                 table.Header(header =>
                 {
-                    header.Cell().Background("#EEEEEE").Padding(5).Text("Loại").Bold().FontSize(10);
-                    header.Cell().Background("#EEEEEE").Padding(5).Text("Thời gian").Bold().FontSize(10);
-                    header.Cell().Background("#EEEEEE").Padding(5).Text("Số ngày").Bold().FontSize(10);
-                    header.Cell().Background("#EEEEEE").Padding(5).Text("Ghi chú").Bold().FontSize(10);
+                    header.Cell().Background("#EEEEEE").Padding(5).AlignCenter().Text("Loại").Bold().FontSize(9);
+                    header.Cell().Background("#EEEEEE").Padding(5).AlignCenter().Text("Thời gian").Bold().FontSize(9);
+                    header.Cell().Background("#EEEEEE").Padding(5).AlignCenter().Text("Số ngày").Bold().FontSize(9);
+                    header.Cell().Background("#EEEEEE").Padding(5).AlignCenter().Text("Lí do").Bold().FontSize(9);
+                    header.Cell().Background("#EEEEEE").Padding(5).AlignCenter().Text("Ghi chú hệ thống").Bold().FontSize(9);
                 });
 
                 if (p.LeaveHistories != null)
                 {
-                    string FormatDurationToMonthsDays(double dValue)
-                    {
-                        if (dValue >= 30)
-                        {
-                            int m = (int)(dValue / 30);
-                            double d = dValue % 30;
-                            if (d > 0)
-                            {
-                                string dayStr = d == Math.Floor(d) ? ((int)d).ToString() : d.ToString("0.#");
-                                return $"{m} tháng {dayStr} ngày";
-                            }
-                            return $"{m} tháng";
-                        }
-                        return $"{(dValue == Math.Floor(dValue) ? ((int)dValue).ToString() : dValue.ToString("0.#"))} ngày";
-                    }
-
                     foreach (var h in p.LeaveHistories)
                     {
-                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text(h.LeaveType).Bold();
-                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text($"{h.StartDate:dd/MM} - {h.EndDate:dd/MM}");
-                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text(h.DurationDays.ToString() + " ngày");
-                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).Text(t => 
-                        {
-                            t.Span($"({FormatDurationToMonthsDays(h.DurationDays)})").FontColor(Colors.Blue.Darken2);
-                            if (!string.IsNullOrWhiteSpace(h.Reason))
-                            {
-                                t.Span($" - {h.Reason}");
-                            }
-                        });
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.LeaveType).FontSize(8).Bold();
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{h.StartDate:dd/MM/yyyy} - {h.EndDate:dd/MM/yyyy}").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DurationDays.ToString() + " ngày").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.UserReasonDisplay).FontSize(8).Italic().FontColor("#455A64");
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SystemMessageDisplay).FontSize(8).FontColor("#D32F2F");
                     }
                 }
                 
                 if (p.LeaveHistories == null || p.LeaveHistories.Count == 0)
                 {
-                     table.Cell().ColumnSpan(4).Padding(10).AlignCenter().Text("Chưa có dữ liệu").Italic().FontColor(Colors.Grey.Medium);
+                     table.Cell().ColumnSpan(5).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử nghỉ").Italic().FontColor(Colors.Grey.Medium);
                 }
             });
         }

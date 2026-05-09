@@ -21,6 +21,17 @@ namespace TaxPersonnelManagement.Helpers
         public static bool GetFixCalendarLocale(DependencyObject obj) => (bool)obj.GetValue(FixCalendarLocaleProperty);
         public static void SetFixCalendarLocale(DependencyObject obj, bool value) => obj.SetValue(FixCalendarLocaleProperty, value);
 
+        // Attached Property for Smart Date Entry (typing 10102026 -> 10/10/2026)
+        public static readonly DependencyProperty EnableSmartDateEntryProperty =
+            DependencyProperty.RegisterAttached(
+                "EnableSmartDateEntry",
+                typeof(bool),
+                typeof(DatePickerHelper),
+                new PropertyMetadata(false, OnEnableSmartDateEntryChanged));
+
+        public static bool GetEnableSmartDateEntry(DependencyObject obj) => (bool)obj.GetValue(EnableSmartDateEntryProperty);
+        public static void SetEnableSmartDateEntry(DependencyObject obj, bool value) => obj.SetValue(EnableSmartDateEntryProperty, value);
+
         private static void OnFixCalendarLocaleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is DatePicker dp)
@@ -36,7 +47,69 @@ namespace TaxPersonnelManagement.Helpers
             }
         }
 
-        private static void DatePicker_CalendarOpened(object sender, RoutedEventArgs e)
+        private static void OnEnableSmartDateEntryChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is DatePicker dp)
+            {
+                if ((bool)e.NewValue)
+                    dp.DateValidationError += DatePicker_DateValidationError;
+                else
+                    dp.DateValidationError -= DatePicker_DateValidationError;
+            }
+        }
+
+        private static void DatePicker_DateValidationError(object? sender, DatePickerDateValidationErrorEventArgs e)
+        {
+            if (sender is DatePicker dp)
+            {
+                string input = e.Text;
+                if (string.IsNullOrEmpty(input)) return;
+
+                // Remove common separators to extract digits
+                string digits = new string(input.Where(char.IsDigit).ToArray());
+
+                DateTime dt;
+                bool success = false;
+
+                // Try common numeric-only formats
+                if (digits.Length == 8)
+                {
+                    success = DateTime.TryParseExact(digits, "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+                else if (digits.Length == 6)
+                {
+                    success = DateTime.TryParseExact(digits, "ddMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+                else if (digits.Length == 4)
+                {
+                    // Assume ddMM of current year
+                    success = DateTime.TryParseExact(digits + DateTime.Now.Year.ToString(), "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+                else
+                {
+                    // Try standard parsing as fallback
+                    success = DateTime.TryParse(input, out dt);
+                }
+
+                if (success)
+                {
+                    dp.SelectedDate = dt;
+                    e.ThrowException = false;
+
+                    // Force update the text box to the formatted date
+                    dp.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
+                    {
+                        var textBox = FindVisualChildren<DatePickerTextBox>(dp).FirstOrDefault();
+                        if (textBox != null)
+                        {
+                            textBox.Text = dt.ToString("dd/MM/yyyy");
+                        }
+                    }));
+                }
+            }
+        }
+
+        private static void DatePicker_CalendarOpened(object? sender, RoutedEventArgs e)
         {
             if (sender is DatePicker dp)
             {

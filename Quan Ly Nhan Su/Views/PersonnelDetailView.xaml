@@ -93,6 +93,7 @@
         <Style x:Key="ModernDatePicker" TargetType="DatePicker">
             <Setter Property="Language" Value="vi-VN"/>
             <Setter Property="helpers:DatePickerHelper.FixCalendarLocale" Value="True"/>
+            <Setter Property="helpers:DatePickerHelper.EnableSmartDateEntry" Value="True"/>
             <Setter Property="Height" Value="35"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -1254,7 +1255,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Loại nghỉ" Binding="{Binding LeaveType}" Width="*" MinWidth="80" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
+                                    <DataGridTextColumn Header="Loại nghỉ" Binding="{Binding LeaveType}" Width="130" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -1263,7 +1264,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Từ ngày" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="*" MinWidth="85" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
+                                    <DataGridTextColumn Header="Từ ngày" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -1272,7 +1273,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Đến ngày" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="*" MinWidth="85" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
+                                    <DataGridTextColumn Header="Đến ngày" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -1290,7 +1291,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTemplateColumn Header="Lý do" Width="*">
+                                    <DataGridTemplateColumn Header="Lý do" Width="1.5*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding UserReasonDisplay}" 
@@ -1303,7 +1304,7 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Header="Ghi chú hệ thống" Width="*" MinWidth="140">
+                                    <DataGridTemplateColumn Header="Ghi chú hệ thống" Width="2.5*" MinWidth="150">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding SystemMessageDisplay}" 

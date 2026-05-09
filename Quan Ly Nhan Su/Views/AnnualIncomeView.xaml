@@ -14,6 +14,21 @@
             <ColumnDefinition Width="*"/> <!-- Main Content -->
         </Grid.ColumnDefinitions>
 
+        <!-- Loading Overlay -->
+        <Grid x:Name="LoadingOverlay" Grid.ColumnSpan="2" Visibility="Collapsed" Panel.ZIndex="1000">
+            <Border Background="Black" Opacity="0.15"/>
+            <materialDesign:Card UniformCornerRadius="10" Width="220" Height="140" materialDesign:ElevationAssist.Elevation="Dp6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" 
+                                 Value="0" IsIndeterminate="True" 
+                                 Width="40" Height="40" 
+                                 Foreground="#1976D2" Margin="0 0 0 15"/>
+                    <TextBlock Text="Đang xử lý dữ liệu..." FontSize="14" FontWeight="SemiBold" Foreground="#455A64" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Vui lòng chờ trong giây lát" FontSize="11" Foreground="#78909C" HorizontalAlignment="Center" Margin="0 5 0 0"/>
+                </StackPanel>
+            </materialDesign:Card>
+        </Grid>
+
         <!-- Left Sidebar: Personnel List -->
         <Border Grid.Column="0" Background="White" Margin="0 0 10 0" CornerRadius="8" Effect="{DynamicResource MaterialDesignShadowDepth1}">
             <Grid>
@@ -147,6 +162,16 @@
                             </StackPanel>
                         </Button>
                         
+                        <Button x:Name="btnExportExcel" Height="36" Click="BtnExportExcel_Click" Margin="0 5 10 5"
+                                Style="{DynamicResource MaterialDesignRaisedButton}"
+                                Background="#0277BD" BorderBrush="#0277BD" Foreground="White" Padding="15,0"
+                                materialDesign:ButtonAssist.CornerRadius="18">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+
                         <Button x:Name="btnSave" Height="36" Click="BtnSave_Click" Margin="0 5 10 5"
                                 Style="{DynamicResource MaterialDesignRaisedButton}"
                                 Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White" Padding="15,0"
