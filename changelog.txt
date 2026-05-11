@@ -1,5 +1,13 @@
-## v1.0.3.3 — 2026-05-11
-- [Sửa lỗi] Bảng dữ liệu: Khắc phục lỗi cột Số thứ tự (STT) bị reset lại từ 1 khi chuyển sang trang tiếp theo ở màn hình "Thời gian giữ vị trí công tác" và "Theo dõi nâng lương".
+## v1.1.0 — 2026-05-11
+- [Giao diện] Tối ưu hóa hiển thị đa độ phân giải: 
+    + Tự động thích ứng tốt trên cả màn hình nhỏ (1366x768) và màn hình Full HD.
+    + Khắc phục triệt để lỗi nhảy dòng (wrap) ở các tiêu đề bảng dữ liệu (STT, Tháng, Ngày sinh...).
+    + Tối ưu cơ chế ghim cột (Frozen Columns) giúp cuộn ngang mượt mà và không bị lệch layout.
+- [Cập nhật] Nâng cấp hệ thống thông báo cập nhật mới:
+    + Thiết kế lại cửa sổ thông báo hiện đại, diện tích hiển thị nội dung thay đổi lớn và dễ đọc hơn.
+    + Tích hợp tính năng tự động sao lưu dữ liệu hệ thống trước khi thực hiện cập nhật để đảm bảo an toàn tuyệt đối.
+- [Sửa lỗi] Bảng dữ liệu: Khắc phục lỗi cột Số thứ tự (STT) bị reset lại từ 1 khi chuyển trang ở màn hình "Theo dõi nâng lương".
+- [Tối ưu] Hiệu suất: Tinh chỉnh lại các Style XAML dùng chung, giúp ứng dụng khởi động và phản hồi nhanh hơn.
 
 ## v1.0.3.2 — 2026-05-09
 - [Sửa lỗi] Khắc phục lỗi hiển thị sai font chữ (lỗi encoding) ở màn hình Chi tiết nhân sự.

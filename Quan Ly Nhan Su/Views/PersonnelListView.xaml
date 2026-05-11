@@ -14,14 +14,92 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            
+
             <converters:NameToInitialsConverter x:Key="NameToInitialsConverter"/>
             <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
             <converters:PhoneFormatterConverter x:Key="PhoneFormatterConverter"/>
+
+            <!-- ===== STYLE: ContextMenu action đẹp ===== -->
+            <Style x:Key="ActionContextMenuStyle" TargetType="ContextMenu">
+                <Setter Property="Padding" Value="4"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#E0E7FF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="#90A4AE" BlurRadius="16" ShadowDepth="4" Opacity="0.25" Direction="270"/>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ContextMenu">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="10"
+                                    Padding="{TemplateBinding Padding}">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#90A4AE" BlurRadius="18" ShadowDepth="4" Opacity="0.22" Direction="270"/>
+                                </Border.Effect>
+                                <StackPanel IsItemsHost="True"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- STYLE: từng dòng menu item đẹp -->
+            <Style x:Key="ActionMenuItemStyle" TargetType="MenuItem">
+                <Setter Property="Height" Value="38"/>
+                <Setter Property="Padding" Value="10,0"/>
+                <Setter Property="Margin" Value="0,2"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                            <Border x:Name="brd" CornerRadius="6" Background="Transparent" Padding="10,0">
+                                <Grid VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="28"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0" ContentSource="Icon"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <ContentPresenter Grid.Column="1" ContentSource="Header"
+                                                      VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="brd" Property="Background" Value="#EEF2FF"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- STYLE: Separator trong menu -->
+            <Style x:Key="ActionSeparatorStyle" TargetType="Separator">
+                <Setter Property="Margin" Value="8,2"/>
+                <Setter Property="Background" Value="#EDE9FE"/>
+            </Style>
+
+            <!-- STYLE: 3 nút icon (Xem/Sửa/Xóa) hiển trên Full HD -->
+            <Style x:Key="ActionBtnView" TargetType="Button" BasedOn="{StaticResource MaterialDesignIconForegroundButton}">
+                <Setter Property="Width" Value="32"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Padding" Value="2"/>
+                <Setter Property="Margin" Value="1,0"/>
+                <Setter Property="ToolTipService.InitialShowDelay" Value="300"/>
+            </Style>
+
         </ResourceDictionary>
     </UserControl.Resources>
     
-    <Grid Margin="10">
+    <Grid Margin="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -45,9 +123,9 @@
 
         <!-- Top Section (Card bao phần header + KPIs + toolbar) -->
         <materialDesign:Card Grid.Row="0" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10">
-            <StackPanel Margin="20">
+            <StackPanel x:Name="spTopContent" Margin="15 18 15 10">
                 <!-- Dashboard / KPIs -->
-                <WrapPanel Margin="0 0 0 20">
+                <WrapPanel x:Name="wpKPIRow" Margin="0 0 0 10">
                     <!-- Filter Section -->
                     <StackPanel VerticalAlignment="Top" Margin="0 0 20 15">
                         <ComboBox x:Name="cbDepartmentFilter" 
@@ -82,11 +160,21 @@
                                     </LinearGradientBrush>
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock Text="TỔNG NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <materialDesign:PackIcon x:Name="iconTotal" Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock x:Name="lblTotal" Text="TỔNG NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
+                            <materialDesign:Card.Style>
+                                <Style TargetType="materialDesign:Card">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                            <Setter Property="Height" Value="65"/>
+                                            <Setter Property="Width" Value="200"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:Card.Style>
                         </materialDesign:Card>
 
                         <!-- Card 2: Maternity -->
@@ -99,11 +187,21 @@
                                     </LinearGradientBrush>
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock Text="NGHỈ THAI SẢN" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <materialDesign:PackIcon x:Name="iconMaternity" Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock x:Name="lblMaternity" Text="NGHỈ THAI SẢN" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
+                            <materialDesign:Card.Style>
+                                <Style TargetType="materialDesign:Card">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                            <Setter Property="Height" Value="65"/>
+                                            <Setter Property="Width" Value="200"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:Card.Style>
                         </materialDesign:Card>
 
                         <!-- Card 3: Sick -->
@@ -116,23 +214,33 @@
                                     </LinearGradientBrush>
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock Text="NGHỈ ỐM" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <materialDesign:PackIcon x:Name="iconSick" Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock x:Name="lblSick" Text="NGHỈ ỐM" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtSickCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
+                            <materialDesign:Card.Style>
+                                <Style TargetType="materialDesign:Card">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                            <Setter Property="Height" Value="65"/>
+                                            <Setter Property="Width" Value="200"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:Card.Style>
                         </materialDesign:Card>
                     </WrapPanel>
                 </WrapPanel>
 
                 <!-- Actions Bar & Title -->
-                <WrapPanel Orientation="Horizontal" Margin="0 10 0 10">
+                <WrapPanel x:Name="wpToolbarRow" Orientation="Horizontal" Margin="0 10 0 10">
                     <StackPanel Margin="0 0 20 10">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountMultiple" Width="24" Height="24" Foreground="#1976D2" VerticalAlignment="Center" Margin="0 0 8 0"/>
                             <TextBlock Text="Danh sách nhân sự" FontSize="20" FontWeight="Bold" Foreground="#1976D2" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="Quản lý toàn bộ hồ sơ nhân viên" FontSize="12" Foreground="#78909C" Margin="32 2 0 0"/>
+                        <TextBlock x:Name="txtSubtitle" Text="Quản lý toàn bộ hồ sơ nhân viên" FontSize="12" Foreground="#78909C" Margin="32 2 0 0"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
@@ -257,7 +365,7 @@
 
                 <DataGrid.Columns>
                     <!-- COT 1: STT -->
-                    <DataGridTemplateColumn Header="STT" Width="60">
+                    <DataGridTemplateColumn Header="STT" Width="50">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding STT}"
@@ -268,7 +376,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- COT 2: HỌ VÀ TÊN — chiều rộng quản lý bởi code-behind -->
-                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="280">
+                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="1.8*" MinWidth="220">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid Margin="12,0,8,0" VerticalAlignment="Center">
@@ -309,7 +417,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- COT 3: THÔNG TIN CƠ BẢN — fixed 200 -->
-                    <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="200">
+                    <DataGridTemplateColumn Header="THÔNG TIN CƠ BẢN" Width="1.2*" MinWidth="160">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
@@ -338,7 +446,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- COT 4: BỘ PHẬN — fixed 250 -->
-                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="250">
+                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="1.5*" MinWidth="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center" Margin="12,0,8,0">
@@ -355,7 +463,7 @@
                     </DataGridTemplateColumn>
 
                     <!-- COT 5: LIÊN HỆ — fixed 300 -->
-                    <DataGridTemplateColumn Header="LIÊN HỆ" Width="300">
+                    <DataGridTemplateColumn Header="LIÊN HỆ" Width="1.5*" MinWidth="200">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel VerticalAlignment="Center" Margin="10,0,8,0">
@@ -384,33 +492,94 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <!-- COT 6: HÀNH ĐỘNG — cố định 140px -->
-                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="140">
+
+                    <!-- COT 6: HÀNH ĐỘNG (responsive: 3 nút Full HD, ⋮ màn nhỏ) -->
+                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="130">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0">
-                                    <Button x:Name="btnView" Click="btnView_Click" Tag="{Binding Id}"
-                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xem chi tiết"
-                                            Width="30" Height="30" Margin="0,0,5,0"
-                                            Background="#E1F5FE" BorderBrush="#E1F5FE" Foreground="#0288D1"
-                                            materialDesign:ElevationAssist.Elevation="Dp0">
-                                        <materialDesign:PackIcon Kind="Eye" Width="15" Height="15"/>
+                                <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                                    <!-- Full HD: 3 nút icon riêng lế -->
+                                    <StackPanel x:Name="panelFull" Orientation="Horizontal"
+                                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <!-- Xem -->
+                                        <Button Tag="{Binding Id}" Click="btnView_Click"
+                                                Style="{StaticResource ActionBtnView}"
+                                                ToolTip="Xem chi tiết">
+                                            <materialDesign:PackIcon Kind="Eye" Width="18" Height="18" Foreground="#0288D1"/>
+                                        </Button>
+                                        <!-- Sửa -->
+                                        <Button Tag="{Binding Id}" Click="btnEdit_Click"
+                                                Loaded="AdminOnly_Loaded"
+                                                Style="{StaticResource ActionBtnView}"
+                                                ToolTip="Chỉnh sửa">
+                                            <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18" Foreground="#3949AB"/>
+                                        </Button>
+                                        <!-- Xóa -->
+                                        <Button Tag="{Binding Id}" Click="btnDelete_Click"
+                                                Loaded="AdminOnly_Loaded"
+                                                Style="{StaticResource ActionBtnView}"
+                                                ToolTip="Xóa">
+                                            <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Foreground="#E53935"/>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!-- Màn nhỏ: nút ⋮ compact -->
+                                    <Button x:Name="btnCompact"
+                                            Tag="{Binding Id}"
+                                            Click="btnActionMenu_Click"
+                                            Style="{DynamicResource MaterialDesignIconForegroundButton}"
+                                            Width="34" Height="34"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                        <materialDesign:PackIcon Kind="DotsVertical" Width="20" Height="20" Foreground="#607D8B"/>
+                                        <Button.ContextMenu>
+                                            <ContextMenu Style="{StaticResource ActionContextMenuStyle}">
+                                                <MenuItem Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="btnView_Click"
+                                                          Style="{StaticResource ActionMenuItemStyle}">
+                                                    <MenuItem.Icon>
+                                                        <materialDesign:PackIcon Kind="Eye" Foreground="#0288D1" Width="17" Height="17"/>
+                                                    </MenuItem.Icon>
+                                                    <MenuItem.Header>
+                                                        <TextBlock Text="Xem chi tiết" FontSize="13" FontWeight="Medium" Foreground="#263238"/>
+                                                    </MenuItem.Header>
+                                                </MenuItem>
+                                                <MenuItem Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="btnEdit_Click"
+                                                          Loaded="AdminOnly_Loaded"
+                                                          Style="{StaticResource ActionMenuItemStyle}">
+                                                    <MenuItem.Icon>
+                                                        <materialDesign:PackIcon Kind="Pencil" Foreground="#3949AB" Width="17" Height="17"/>
+                                                    </MenuItem.Icon>
+                                                    <MenuItem.Header>
+                                                        <TextBlock Text="Chỉnh sửa" FontSize="13" FontWeight="Medium" Foreground="#263238"/>
+                                                    </MenuItem.Header>
+                                                </MenuItem>
+                                                <Separator Style="{StaticResource ActionSeparatorStyle}"/>
+                                                <MenuItem Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="btnDelete_Click"
+                                                          Loaded="AdminOnly_Loaded"
+                                                          Style="{StaticResource ActionMenuItemStyle}">
+                                                    <MenuItem.Icon>
+                                                        <materialDesign:PackIcon Kind="Delete" Foreground="#E53935" Width="17" Height="17"/>
+                                                    </MenuItem.Icon>
+                                                    <MenuItem.Header>
+                                                        <TextBlock Text="Xóa" FontSize="13" FontWeight="Medium" Foreground="#E53935"/>
+                                                    </MenuItem.Header>
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
                                     </Button>
-                                    <Button x:Name="btnEdit" Click="btnEdit_Click" Tag="{Binding Id}" Loaded="AdminOnly_Loaded"
-                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Chỉnh sửa"
-                                            Width="30" Height="30" Margin="0,0,5,0"
-                                            Background="#E8EAF6" BorderBrush="#E8EAF6" Foreground="#3949AB"
-                                            materialDesign:ElevationAssist.Elevation="Dp0">
-                                        <materialDesign:PackIcon Kind="Pencil" Width="15" Height="15"/>
-                                    </Button>
-                                    <Button x:Name="btnDelete" Click="btnDelete_Click" Tag="{Binding Id}" Loaded="AdminOnly_Loaded"
-                                            Style="{DynamicResource MaterialDesignFloatingActionMiniLightButton}" ToolTip="Xóa"
-                                            Width="30" Height="30"
-                                            Background="#FFEBEE" BorderBrush="#FFEBEE" Foreground="#D32F2F"
-                                            materialDesign:ElevationAssist.Elevation="Dp0">
-                                        <materialDesign:PackIcon Kind="Delete" Width="15" Height="15"/>
-                                    </Button>
-                                </StackPanel>
+                                </Grid>
+
+                                <DataTemplate.Triggers>
+                                    <!-- Khi IsCompact=True: Ẩn 3 nút, hiện ⋮ -->
+                                    <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                        <Setter TargetName="panelFull" Property="Visibility" Value="Collapsed"/>
+                                        <Setter TargetName="btnCompact" Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -420,7 +589,7 @@
         </materialDesign:Card>
 
         <!-- Footer Pagination -->
-        <Grid Grid.Row="2" Margin="0 10 0 0">
+        <Grid Grid.Row="2" Margin="0 5 0 0">
             <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 nhân viên" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="btnPrevPage" Click="btnPrevPage_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">

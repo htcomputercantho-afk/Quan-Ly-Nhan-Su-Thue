@@ -7,13 +7,13 @@
              xmlns:views="clr-namespace:TaxPersonnelManagement.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" Background="#F0F0F0">
-    <Grid Margin="20">
+    <Grid Margin="10 5 10 10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Tổng quan" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 25"/>
+        <TextBlock Text="Tổng quan" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 15"/>
 
         <views:PersonnelListView x:Name="PersonnelList" Grid.Row="1"/>
     </Grid>

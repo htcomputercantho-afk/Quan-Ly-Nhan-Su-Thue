@@ -32,6 +32,13 @@ namespace TaxPersonnelManagement
             // Điều hướng mặc định tới màn hình Tổng quan (Dashboard) khi mở app
             NavigateDashboard(null, null);
             SetVersionInfo();
+
+            // Auto-collapse sidebar khi app khởi động trên màn hình nhỏ
+            this.Loaded += (s, e) =>
+            {
+                if (this.ActualWidth < 1400)
+                    CollapseSidebar();
+            };
         }
 
         private void SetVersionInfo()
@@ -172,74 +179,93 @@ namespace TaxPersonnelManagement
         }
 
         private bool _isSidebarExpanded = true;
+        /// <summary>
+        /// True nếu người dùng đã bấm toggle thủ công — khi đó SizeChanged không tự ghi đè trạng thái.
+        /// </summary>
+        private bool _manualToggle = false;
+
+        private void CollapseSidebar()
+        {
+            _isSidebarExpanded = false;
+            colSidebar.Width = new GridLength(70);
+            txtLogo.Visibility = Visibility.Collapsed;
+            txtOverview.Visibility = Visibility.Collapsed;
+            txtPersonnel.Visibility = Visibility.Collapsed;
+            txtSalary.Visibility = Visibility.Collapsed;
+            txtAnnualIncome.Visibility = Visibility.Collapsed;
+            txtLeaveDetail.Visibility = Visibility.Collapsed;
+            txtPositionDuration.Visibility = Visibility.Collapsed;
+            txtEmulationReward.Visibility = Visibility.Collapsed;
+            txtUsers.Visibility = Visibility.Collapsed;
+            txtBackupRestore.Visibility = Visibility.Collapsed;
+            txtLogout.Visibility = Visibility.Collapsed;
+            txtCopyright.Visibility = Visibility.Collapsed;
+            txtVersion.Visibility = Visibility.Collapsed;
+            imgLogo.Margin = new Thickness(0);
+
+            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnUsers, btnBackupRestore, btnLogout };
+            foreach (var btn in buttons)
+            {
+                btn.Padding = new Thickness(0);
+                if (btn.Content is System.Windows.Controls.StackPanel sp && sp.Children.Count > 0)
+                {
+                    var icon = sp.Children[0] as FrameworkElement;
+                    if (icon != null) icon.Margin = new Thickness(14, 0, 0, 0);
+                }
+            }
+        }
+
+        private void ExpandSidebar()
+        {
+            _isSidebarExpanded = true;
+            colSidebar.Width = new GridLength(250);
+            txtLogo.Visibility = Visibility.Visible;
+            txtOverview.Visibility = Visibility.Visible;
+            txtPersonnel.Visibility = Visibility.Visible;
+            txtSalary.Visibility = Visibility.Visible;
+            txtAnnualIncome.Visibility = Visibility.Visible;
+            txtLeaveDetail.Visibility = Visibility.Visible;
+            txtPositionDuration.Visibility = Visibility.Visible;
+            txtEmulationReward.Visibility = Visibility.Visible;
+            txtUsers.Visibility = Visibility.Visible;
+            txtBackupRestore.Visibility = Visibility.Visible;
+            txtLogout.Visibility = Visibility.Visible;
+            txtCopyright.Visibility = Visibility.Visible;
+            txtVersion.Visibility = Visibility.Visible;
+            imgLogo.Margin = new Thickness(0, 0, 10, 0);
+
+            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnUsers, btnBackupRestore, btnLogout };
+            foreach (var btn in buttons)
+            {
+                btn.Padding = new Thickness(25, 0, 25, 0);
+                if (btn.Content is System.Windows.Controls.StackPanel sp && sp.Children.Count > 0)
+                {
+                    var icon = sp.Children[0] as FrameworkElement;
+                    if (icon != null) icon.Margin = new Thickness(0, 0, 15, 0);
+                }
+            }
+        }
 
         private void btnToggleSidebar_Click(object sender, RoutedEventArgs e)
         {
-            _isSidebarExpanded = !_isSidebarExpanded;
+            _manualToggle = true; // Người dùng chủ động bấm — không tự ghi đè nữa
+            if (_isSidebarExpanded) CollapseSidebar();
+            else ExpandSidebar();
+        }
 
-            if (_isSidebarExpanded)
-            {
-                // Phóng to
-                colSidebar.Width = new GridLength(250);
-                txtLogo.Visibility = Visibility.Visible;
-                txtOverview.Visibility = Visibility.Visible;
-                txtPersonnel.Visibility = Visibility.Visible;
-                txtSalary.Visibility = Visibility.Visible;
-                txtAnnualIncome.Visibility = Visibility.Visible;
-                txtLeaveDetail.Visibility = Visibility.Visible;
-                txtPositionDuration.Visibility = Visibility.Visible;
-                txtEmulationReward.Visibility = Visibility.Visible;
-                txtUsers.Visibility = Visibility.Visible;
-                txtBackupRestore.Visibility = Visibility.Visible;
-                txtLogout.Visibility = Visibility.Visible;
-                txtCopyright.Visibility = Visibility.Visible;
-                txtVersion.Visibility = Visibility.Visible;
+        /// <summary>
+        /// Tự động thu gọn/mở rộng Sidebar khi cửa sổ thay đổi kích thước.
+        /// Ngưỡng: &lt; 1400px → thu gọn; ≥ 1400px → mở rộng.
+        /// Nếu người dùng đã bấm toggle thủ công thì không tự ghi đè.
+        /// </summary>
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (_manualToggle) return;
 
-                imgLogo.Margin = new Thickness(0, 0, 10, 0);
-
-                var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnUsers, btnBackupRestore, btnLogout };
-                foreach (var btn in buttons)
-                {
-                    btn.Padding = new Thickness(25, 0, 25, 0);
-                    if (btn.Content is System.Windows.Controls.StackPanel sp && sp.Children.Count > 0)
-                    {
-                        var icon = sp.Children[0] as FrameworkElement;
-                        if (icon != null) icon.Margin = new Thickness(0, 0, 15, 0);
-                    }
-                }
-            }
-            else
-            {
-                // Thu gọn
-                colSidebar.Width = new GridLength(70);
-                txtLogo.Visibility = Visibility.Collapsed;
-                txtOverview.Visibility = Visibility.Collapsed;
-                txtPersonnel.Visibility = Visibility.Collapsed;
-                txtSalary.Visibility = Visibility.Collapsed;
-                txtAnnualIncome.Visibility = Visibility.Collapsed;
-                txtLeaveDetail.Visibility = Visibility.Collapsed;
-                txtPositionDuration.Visibility = Visibility.Collapsed;
-                txtEmulationReward.Visibility = Visibility.Collapsed;
-                txtUsers.Visibility = Visibility.Collapsed;
-                txtBackupRestore.Visibility = Visibility.Collapsed;
-                txtLogout.Visibility = Visibility.Collapsed;
-                txtCopyright.Visibility = Visibility.Collapsed;
-                txtVersion.Visibility = Visibility.Collapsed;
-
-                imgLogo.Margin = new Thickness(0);
-
-                var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnUsers, btnBackupRestore, btnLogout };
-                foreach (var btn in buttons)
-                {
-                    btn.Padding = new Thickness(0);
-                    if (btn.Content is System.Windows.Controls.StackPanel sp && sp.Children.Count > 0)
-                    {
-                        var icon = sp.Children[0] as FrameworkElement;
-                        // Canh giữa icon khi thu gọn (Width cột = 70, nút có Margin ngang = 10 -> Width nút = 50. Icon=22. Left Margin = (50-22)/2 = 14)
-                        if (icon != null) icon.Margin = new Thickness(14, 0, 0, 0);
-                    }
-                }
-            }
+            if (e.NewSize.Width < 1400 && _isSidebarExpanded)
+                CollapseSidebar();
+            else if (e.NewSize.Width >= 1400 && !_isSidebarExpanded)
+                ExpandSidebar();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)

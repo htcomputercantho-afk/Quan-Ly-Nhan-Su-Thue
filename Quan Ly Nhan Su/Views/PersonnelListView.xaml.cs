@@ -22,6 +22,20 @@ namespace TaxPersonnelManagement.Views
 
         public int? TargetPersonnelId { get; set; }
 
+        /// <summary>
+        /// True khi UserControl đủ hẹp để hiển 3 nút riêng lế (Full HD);
+        /// False khi màn nhỏ - thu gọn vào menu ⋮.
+        /// </summary>
+        public static readonly DependencyProperty IsCompactProperty =
+            DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(PersonnelListView),
+                new PropertyMetadata(false));
+
+        public bool IsCompact
+        {
+            get => (bool)GetValue(IsCompactProperty);
+            set => SetValue(IsCompactProperty, value);
+        }
+
         public PersonnelListView()
         {
             try
@@ -30,6 +44,10 @@ namespace TaxPersonnelManagement.Views
                 ApplyAuthorization();
                 LoadDepartments();
                 LoadData();
+
+                // Responsive: kiểm tra ngay khi load và mỗi khi resize
+                this.Loaded += (s, e) => { IsCompact = this.ActualWidth < 1400; ApplyCompactMode(); };
+                this.SizeChanged += (s, e) => { IsCompact = e.NewSize.Width < 1400; ApplyCompactMode(); };
             }
             catch (Exception ex)
             {
@@ -48,6 +66,42 @@ namespace TaxPersonnelManagement.Views
                 btnAdd.Visibility = Visibility.Collapsed;
                 btnImportExcel.Visibility = Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// Thu nhỏ phần header + KPI khi màn nhỏ để bảng danh sách được hiện nhiều dòng hơn.
+        /// </summary>
+        private void ApplyCompactMode()
+        {
+            bool c = IsCompact;
+
+            // ── Margin top section ──────────────────────────────
+            // Tăng nhẹ Top margin từ 6 lên 12 để hint của ComboBox (Outlined) không bị cắt
+            spTopContent.Margin  = c ? new Thickness(10, 12, 10, 4) : new Thickness(15, 18, 15, 10);
+            wpKPIRow.Margin      = c ? new Thickness(0, 0, 0, 2)    : new Thickness(0, 0, 0, 10);
+            wpToolbarRow.Margin  = c ? new Thickness(0, 2, 0, 4)    : new Thickness(0, 10, 0, 10);
+
+            // ── Subtitle: Thu nhỏ thay vì ẩn hoàn toàn nếu user muốn thấy "Tiêu đề"
+            txtSubtitle.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+
+            // ── KPI Cards: height + width ───────────────────────
+            double cardH = c ? 54 : 100;
+            double cardW = c ? 160 : 260;
+            cardTotal.Height     = cardH; cardTotal.Width     = cardW;
+            cardMaternity.Height = cardH; cardMaternity.Width = cardW;
+            cardSick.Height      = cardH; cardSick.Width      = cardW;
+
+            // ── Ẩn/hiện icon bên trong card ────────────────────
+            iconTotal.Visibility     = c ? Visibility.Collapsed : Visibility.Visible;
+            iconMaternity.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            iconSick.Visibility      = c ? Visibility.Collapsed : Visibility.Visible;
+
+            // ── Thu nhỏ font chữ số và label ───────────────────
+            double numFont = c ? 18 : 26;
+            double lblFont = c ? 10 : 13;
+            txtTotalCount.FontSize     = numFont; lblTotal.FontSize     = lblFont;
+            txtMaternityCount.FontSize = numFont; lblMaternity.FontSize = lblFont;
+            txtSickCount.FontSize      = numFont; lblSick.FontSize      = lblFont;
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
@@ -326,41 +380,54 @@ namespace TaxPersonnelManagement.Views
              }
         }
 
+        /// <summary>
+        /// Mở ContextMenu khi bấm nút ⋮ (DotsVertical).
+        /// </summary>
+        private void btnActionMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is int id)
+            int? id = sender is Button btn ? btn.Tag as int?
+                     : sender is MenuItem mi ? mi.Tag as int? : null;
+            if (id == null) return;
+
+            using (var context = new AppDbContext())
             {
-                using (var context = new AppDbContext())
+                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
+                if (p != null)
                 {
-                    var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
-                    if (p != null)
-                    {
-                        if (Application.Current.MainWindow is MainWindow mw)
-                        {
-                            mw.NavigateToPersonnelDetail(p);
-                        }
-                    }
+                    if (Application.Current.MainWindow is MainWindow mw)
+                        mw.NavigateToPersonnelDetail(p);
                 }
             }
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.Tag is int id)
+            int? id = sender is Button btn ? btn.Tag as int?
+                     : sender is MenuItem mi ? mi.Tag as int? : null;
+            if (id == null) return;
+
+            var dialog = new ConfirmDialog("Bạn có chắc muốn xóa nhân sự này?");
+            if (dialog.ShowDialog() == true)
             {
-                var dialog = new ConfirmDialog("Bạn có chắc muốn xóa nhân sự này?");
-                if (dialog.ShowDialog() == true)
+                using (var context = new AppDbContext())
                 {
-                    using (var context = new AppDbContext())
+                    var p = context.Personnel.Find(id);
+                    if (p != null)
                     {
-                        var p = context.Personnel.Find(id);
-                        if (p != null)
-                        {
-                            context.Personnel.Remove(p);
-                            context.SaveChanges();
-                            LoadData();
-                            LoadDepartments();
-                        }
+                        context.Personnel.Remove(p);
+                        context.SaveChanges();
+                        LoadData();
+                        LoadDepartments();
                     }
                 }
             }
@@ -368,18 +435,19 @@ namespace TaxPersonnelManagement.Views
 
         private void btnView_Click(object sender, RoutedEventArgs e)
         {
-             if (sender is Button btn && btn.Tag is int id)
-             {
-                  using (var context = new AppDbContext())
-                  {
-                      var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
-                      if (p != null)
-                      {
-                          var dialog = new PersonnelProfileDialog(p);
-                          dialog.ShowDialog();
-                      }
-                  }
-             }
+            int? id = sender is Button btn ? btn.Tag as int?
+                     : sender is MenuItem mi ? mi.Tag as int? : null;
+            if (id == null) return;
+
+            using (var context = new AppDbContext())
+            {
+                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
+                if (p != null)
+                {
+                    var dialog = new PersonnelProfileDialog(p);
+                    dialog.ShowDialog();
+                }
+            }
         }
 
         private async void btnExportExcel_Click(object sender, RoutedEventArgs e)

@@ -125,12 +125,12 @@
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Setter Property="FontSize" Value="14"/>
                         <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Padding" Value="10"/>
+                        <Setter Property="Padding" Value="4 10"/>
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                     </Style>
                     <Style TargetType="DataGridCell">
                         <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-                        <Setter Property="FontSize" Value="15"/>
+                        <Setter Property="FontSize" Value="13"/>
                         <Setter Property="Padding" Value="4"/>
                         <Setter Property="Template">
                             <Setter.Value>
@@ -152,7 +152,7 @@
                          <Setter Property="HorizontalAlignment" Value="Center"/>
                          <Setter Property="VerticalAlignment" Value="Center"/>
                          <Setter Property="TextWrapping" Value="Wrap"/>
-                         <Setter Property="FontSize" Value="15"/>
+                         <Setter Property="FontSize" Value="13"/>
                     </Style>
 
                     <Style x:Key="WrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
@@ -193,20 +193,17 @@
                 
                 <DataGrid.Columns>
                     <!-- STT -->
-                    <DataGridTextColumn Header="STT" Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" Width="60" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="STT" Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" Width="75" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
-                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="250" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                    <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10 4 0 4">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8 4 0 4">
                                     <!-- Avatar -->
-                                    <Grid Width="32" Height="32" Margin="0 0 10 0" VerticalAlignment="Top">
-                                        <!-- Placeholder -->
+                                    <Grid Width="28" Height="28" Margin="0 0 8 0" VerticalAlignment="Top">
                                         <Ellipse Fill="{DynamicResource PrimaryHueMidBrush}"/>
-                                        <materialDesign:PackIcon Kind="Account" Width="20" Height="20" Foreground="White" 
+                                        <materialDesign:PackIcon Kind="Account" Width="18" Height="18" Foreground="White" 
                                                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        
-                                        <!-- Real Image Overlay -->
                                         <Ellipse>
                                             <Ellipse.Fill>
                                                 <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
@@ -226,13 +223,13 @@
                                             </Ellipse.Style>
                                         </Ellipse>
                                     </Grid>
-                                    <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="Wrap" FontSize="15"/>
+                                    <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="Wrap" FontSize="13"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="200" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                    <DataGridTemplateColumn Header="BỘ PHẬN" Width="180" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border x:Name="brdDept" Background="#E8EAF6" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,4">
@@ -251,14 +248,14 @@
                     </DataGridTemplateColumn>
 
                     <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
-                    <DataGridTextColumn Header="MÃ NGẠCH" Binding="{Binding RankCode}" Width="110" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
-                    <DataGridTextColumn Header="BẬC LƯƠNG" Binding="{Binding CurrentSalaryStep}" Width="110" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="MÃ NGẠCH" Binding="{Binding RankCode}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="BẬC LƯƠNG" Binding="{Binding CurrentSalaryStep}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
-                    <DataGridTemplateColumn Header="HỆ SỐ LƯƠNG" Width="130" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                    <DataGridTemplateColumn Header="HỆ SỐ LƯƠNG" Width="90" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border x:Name="brdCoef" Background="#E3F2FD" CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                    <TextBlock Text="{Binding CurrentSalaryCoefficient}" FontWeight="SemiBold" FontSize="15" 
+                                    <TextBlock Text="{Binding CurrentSalaryCoefficient}" FontWeight="SemiBold" FontSize="13" 
                                                Foreground="#1565C0" HorizontalAlignment="Center"/>
                                 </Border>
                                 <DataTemplate.Triggers>
@@ -273,18 +270,18 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="140" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
-                    <DataGridTextColumn Header="THỜI ĐIỂM&#x0a;TÍNH BẬC LƯƠNG&#x0a;LẦN SAU" Binding="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy}" Width="200" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="THỜI ĐIỂM&#x0a;TÍNH BẬC LƯƠNG&#x0a;LẦN SAU" Binding="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
-                    <DataGridTextColumn Header="THÁNG" Binding="{Binding ExpectedSalaryIncreaseDate, StringFormat=MM}" Width="90" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="THÁNG" Binding="{Binding ExpectedSalaryIncreaseDate, StringFormat=MM}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
-                    <DataGridTemplateColumn Header="DỰ KIẾN&#x0a;LÊN LƯƠNG" Width="180" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                    <DataGridTemplateColumn Header="DỰ KIẾN&#x0a;LÊN LƯƠNG" Width="130" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border x:Name="brdExpectedDate" Background="#FFF3E0" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
                                     <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy}" 
-                                               FontWeight="Bold" Foreground="#E65100" FontSize="15"/>
+                                               FontWeight="Bold" Foreground="#E65100" FontSize="13"/>
                                 </Border>
                                 <DataTemplate.Triggers>
                                     <DataTrigger Binding="{Binding ExpectedSalaryIncreaseDate}" Value="{x:Null}">
@@ -295,7 +292,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Header="GHI CHÚ / TRẠNG THÁI" Width="160" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                    <DataGridTemplateColumn Header="GHI CHÚ / TRẠNG THÁI" Width="*" MinWidth="150" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border Background="#FFC107" CornerRadius="12" Padding="10 4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 4">
@@ -322,11 +319,27 @@
                     <DataGridTemplateColumn Header="THAO TÁC" Width="100" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Button Style="{StaticResource ActionIconButtonStyle}" ToolTip="Sửa" Click="btnEditSalary_Click" Loaded="AdminOnly_Loaded">
-                                        <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
-                                    </Button>
-                                </StackPanel>
+                                <Button Tag="{Binding Id}"
+                                        Click="btnSalaryActionMenu_Click"
+                                        Style="{DynamicResource MaterialDesignIconForegroundButton}"
+                                        ToolTip="Thao tác" Width="34" Height="34"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <materialDesign:PackIcon Kind="DotsVertical" Width="20" Height="20" Foreground="#607D8B"/>
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Click="btnEditSalary_Click"
+                                                      Loaded="AdminOnly_Loaded">
+                                                <MenuItem.Icon>
+                                                    <materialDesign:PackIcon Kind="Pencil" Foreground="#3949AB" Width="16" Height="16"/>
+                                                </MenuItem.Icon>
+                                                <MenuItem.Header>
+                                                    <TextBlock Text="Chỉnh sửa" FontSize="13"/>
+                                                </MenuItem.Header>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

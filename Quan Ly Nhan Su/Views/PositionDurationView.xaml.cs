@@ -176,16 +176,30 @@ namespace TaxPersonnelManagement.Views
             e.Row.Header = ((_currentPage - 1) * PageSize + e.Row.GetIndex() + 1).ToString();
         }
 
+        private void btnPositionActionMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
         private void btnViewDetail_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is Personnel p)
+            Personnel? p = null;
+
+            if (sender is Button btn)
+                p = btn.DataContext as Personnel;
+            else if (sender is MenuItem mi && mi.Tag is int id)
             {
-                if (Application.Current.MainWindow is MainWindow mw)
-                {
-                    // Tab 2 (History Info) is index 1
-                    mw.NavigateToPersonnelDetail(p, 1);
-                }
+                using var context = new AppDbContext();
+                p = context.Personnel.Include(x => x.SalaryRecords).FirstOrDefault(x => x.Id == id);
             }
+
+            if (p != null && Application.Current.MainWindow is MainWindow mw)
+                mw.NavigateToPersonnelDetail(p, 1);
         }
 
         private void btnExport_Click(object sender, RoutedEventArgs e)

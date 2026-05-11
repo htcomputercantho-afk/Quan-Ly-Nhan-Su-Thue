@@ -264,6 +264,32 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="THAO TÁC" Width="70" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Tag="{Binding Id}"
+                                            Click="btnPositionActionMenu_Click"
+                                            Style="{DynamicResource MaterialDesignIconForegroundButton}"
+                                            ToolTip="Thao tác" Width="34" Height="34"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="DotsVertical" Width="20" Height="20" Foreground="#607D8B"/>
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Tag="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          Click="btnViewDetail_Click">
+                                                    <MenuItem.Icon>
+                                                        <materialDesign:PackIcon Kind="Eye" Foreground="#0288D1" Width="16" Height="16"/>
+                                                    </MenuItem.Icon>
+                                                    <MenuItem.Header>
+                                                        <TextBlock Text="Xem chi tiết" FontSize="13"/>
+                                                    </MenuItem.Header>
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 

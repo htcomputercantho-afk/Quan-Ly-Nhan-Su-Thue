@@ -239,16 +239,37 @@ namespace TaxPersonnelManagement.Views
             e.Row.Header = ((_currentPage - 1) * PageSize + e.Row.GetIndex() + 1).ToString();
         }
 
+        /// <summary>
+        /// Mở ContextMenu khi bấm nút ⋮ trong bảng lương.
+        /// </summary>
+        private void btnSalaryActionMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.ContextMenu != null)
+            {
+                btn.ContextMenu.PlacementTarget = btn;
+                btn.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                btn.ContextMenu.IsOpen = true;
+            }
+        }
+
         private void btnEditSalary_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is Personnel p)
+            Personnel? p = null;
+
+            if (sender is Button btn)
+                p = btn.DataContext as Personnel;
+            else if (sender is MenuItem mi)
             {
-                if (Application.Current.MainWindow is MainWindow mw)
+                // Tag là Id (int), tra cứu lại từ DB
+                if (mi.Tag is int id)
                 {
-                    // Tab 6 (Salary Info) is index 5
-                    mw.NavigateToPersonnelDetail(p, 5);
+                    using var context = new AppDbContext();
+                    p = context.Personnel.Find(id);
                 }
             }
+
+            if (p != null && Application.Current.MainWindow is MainWindow mw)
+                mw.NavigateToPersonnelDetail(p, 5);
         }
 
         /// <summary>
