@@ -173,7 +173,7 @@ namespace TaxPersonnelManagement.Views
 
         private void dg_LoadingRow(object sender, DataGridRowEventArgs e)
         {
-            e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+            e.Row.Header = ((_currentPage - 1) * PageSize + e.Row.GetIndex() + 1).ToString();
         }
 
         private void btnViewDetail_Click(object sender, RoutedEventArgs e)

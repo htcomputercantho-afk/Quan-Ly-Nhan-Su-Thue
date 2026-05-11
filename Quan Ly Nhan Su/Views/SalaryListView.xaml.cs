@@ -236,7 +236,7 @@ namespace TaxPersonnelManagement.Views
 
         private void dgSalary_LoadingRow(object sender, DataGridRowEventArgs e)
         {
-            e.Row.Header = (e.Row.GetIndex() + 1).ToString();
+            e.Row.Header = ((_currentPage - 1) * PageSize + e.Row.GetIndex() + 1).ToString();
         }
 
         private void btnEditSalary_Click(object sender, System.Windows.RoutedEventArgs e)

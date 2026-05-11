@@ -1,3 +1,6 @@
+## v1.0.3.3 — 2026-05-11
+- [Sửa lỗi] Bảng dữ liệu: Khắc phục lỗi cột Số thứ tự (STT) bị reset lại từ 1 khi chuyển sang trang tiếp theo ở màn hình "Thời gian giữ vị trí công tác" và "Theo dõi nâng lương".
+
 ## v1.0.3.2 — 2026-05-09
 - [Sửa lỗi] Khắc phục lỗi hiển thị sai font chữ (lỗi encoding) ở màn hình Chi tiết nhân sự.
 
