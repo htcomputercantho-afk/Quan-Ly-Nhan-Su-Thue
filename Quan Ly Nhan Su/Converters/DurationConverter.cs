@@ -9,7 +9,7 @@ namespace TaxPersonnelManagement.Converters
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values.Length < 2) return "";
-            
+
             DateTime? startDate = values[0] as DateTime?;
             DateTime? endDate = values[1] as DateTime?;
 

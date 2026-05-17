@@ -38,10 +38,10 @@ namespace TaxPersonnelManagement.Views
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string keyword = txtSearch.Text.ToLower();
-            dgUsers.ItemsSource = _allUsers.Where(u => 
-                (u.Username != null && u.Username.ToLower().Contains(keyword)) ||
-                (u.FullName != null && u.FullName.ToLower().Contains(keyword))).ToList();
+            string keyword = txtSearch.Text.Trim();
+            dgUsers.ItemsSource = _allUsers.Where(u =>
+                TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(u.Username, keyword) ||
+                TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(u.FullName, keyword)).ToList();
         }
 
         private void BtnAddUser_Click(object sender, RoutedEventArgs e)
@@ -115,7 +115,7 @@ namespace TaxPersonnelManagement.Views
 
                     var confirm = new ConfirmDialog($"Bạn có chắc chắn muốn xóa tài khoản '{userToDelete.Username}'?");
                     confirm.Owner = Window.GetWindow(this);
-                    
+
                     if (confirm.ShowDialog() == true)
                     {
                         try
@@ -127,7 +127,7 @@ namespace TaxPersonnelManagement.Views
                                 {
                                     db.Users.Remove(user);
                                     db.SaveChanges();
-                                    
+
                                     LoadData();
                                     txtSearch.Text = string.Empty; // Reset search
 

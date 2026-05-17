@@ -57,12 +57,14 @@ namespace TaxPersonnelManagement.Views
                     };
 
                     _fullList = query.AsEnumerable()
-                                    .OrderBy(p => {
+                                    .OrderBy(p =>
+                                    {
                                         string dept = (p.Department ?? "").Trim();
                                         int index = deptOrder.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
                                         return index == -1 ? 999 : index;
                                     })
-                                    .ThenBy(p => {
+                                    .ThenBy(p =>
+                                    {
                                         string pos = p.Position?.ToLower() ?? "";
                                         string dept3 = (p.Department ?? "").ToLower();
 
@@ -101,17 +103,17 @@ namespace TaxPersonnelManagement.Views
 
         private void ApplyFilter()
         {
-            string keyword = txtSearch.Text.Trim().ToLower();
+            string keyword = txtSearch.Text.Trim();
             if (string.IsNullOrEmpty(keyword))
             {
                 _filteredList = _fullList;
             }
             else
             {
-                _filteredList = _fullList.Where(p => 
-                    (p.FullName ?? "").ToLower().Contains(keyword) || 
-                    (p.Department ?? "").ToLower().Contains(keyword) || 
-                    (p.Position ?? "").ToLower().Contains(keyword)
+                _filteredList = _fullList.Where(p =>
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.FullName, keyword) ||
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.Department, keyword) ||
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.Position, keyword)
                 ).ToList();
             }
 
@@ -151,6 +153,11 @@ namespace TaxPersonnelManagement.Views
 
             btnPrevPage.IsEnabled = _currentPage > 1;
             btnNextPage.IsEnabled = _currentPage < _totalPages;
+
+            if (dgPositionDuration.Items.Count > 0)
+            {
+                dgPositionDuration.ScrollIntoView(dgPositionDuration.Items[0]);
+            }
         }
 
         private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
@@ -263,12 +270,12 @@ namespace TaxPersonnelManagement.Views
                             worksheet.Cell(row, 1).Value = stt++;
                             worksheet.Cell(row, 2).Value = item.FullName;
                             worksheet.Cell(row, 3).Value = item.Department;
-                            
+
                             string durationText = "";
                             if (item.PositionDecisionDate.HasValue)
                             {
                                 worksheet.Cell(row, 4).Value = item.PositionDecisionDate.Value;
-                                
+
                                 // Calculate duration
                                 DateTime start = item.PositionDecisionDate.Value;
                                 if (referenceDate >= start)
@@ -290,7 +297,7 @@ namespace TaxPersonnelManagement.Views
                                     durationText = "0 năm 0 tháng";
                                 }
                             }
-                            
+
                             worksheet.Cell(row, 5).Value = durationText;
 
                             for (int col = 1; col <= 5; col++)
@@ -301,7 +308,7 @@ namespace TaxPersonnelManagement.Views
 
                         worksheet.Columns().AdjustToContents();
                         workbook.SaveAs(saveFileDialog.FileName);
-                        
+
                         var successWindow = new SuccessWindow("Xuất Excel thành công!", "File đã được lưu tại:", saveFileDialog.FileName, true);
                         successWindow.Owner = Window.GetWindow(this);
                         successWindow.ShowDialog();

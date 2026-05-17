@@ -25,20 +25,20 @@ namespace TaxPersonnelManagement.Services
                 var worksheet = workbook.Worksheets.Add("DanhSachNhanSu");
 
                 // Tiêu đề các cột (35 cột, từ A đến AI)
-                string[] headers = 
+                string[] headers =
                 {
                     "STT", "Số hiệu CB", "Họ và Tên", // A, B, C
                     "Giới tính", "Ngày sinh", "Dân tộc", "Tôn giáo", "Nơi sinh", // D, E, F, G, H
                     "SĐT", "Email", // I, J
                     "CCCD", "Nơi cấp CCCD", "Số BHXH", // K, L, M
-                    "Phòng ban", "Chức vụ", "Ngày về hưu (Dự kiến)", // N, O, P
-                    "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // Q, R, S
-                    "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // T, U, V, W
-                    "Ngày vào Đảng", "Ngày chính thức", // X, Y
-                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // Z, AA, AB, AC
-                    "Phụ cấp CV", "Vượt khung %", // AD, AE
-                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AF, AG, AH
-                    "Ghi chú" // AI
+                    "Phòng ban", "Chức vụ", "Ngày về hưu (Dự kiến)", "Số năm công tác", // N, O, P, Q
+                    "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // R, S, T
+                    "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // U, V, W, X
+                    "Ngày vào Đảng", "Ngày chính thức", // Y, Z
+                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AA, AB, AC, AD
+                    "Phụ cấp CV", "Vượt khung %", // AE, AF
+                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AG, AH, AI
+                    "Ghi chú" // AJ
                 };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -61,18 +61,18 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 1).Value = stt++;
                     worksheet.Cell(row, 2).Value = p.StaffId;
                     worksheet.Cell(row, 3).Value = p.FullName;
-                    
+
                     worksheet.Cell(row, 4).Value = p.Gender;
-                    worksheet.Cell(row, 5).Value = p.DateOfBirth; 
+                    worksheet.Cell(row, 5).Value = p.DateOfBirth;
                     worksheet.Cell(row, 5).Style.DateFormat.Format = "dd/MM/yyyy";
 
                     worksheet.Cell(row, 6).Value = p.Ethnicity;
                     worksheet.Cell(row, 7).Value = p.Religion;
                     worksheet.Cell(row, 8).Value = p.BirthPlace;
-                    
+
                     worksheet.Cell(row, 9).Value = p.PhoneNumber;
                     worksheet.Cell(row, 10).Value = p.Email;
-                    
+
                     worksheet.Cell(row, 11).Value = "'" + p.IdentityCardNumber; // Force text to avoid scientific notation
                     worksheet.Cell(row, 12).Value = p.IdentityCardPlace;
                     worksheet.Cell(row, 13).Value = "'" + p.SocialSecurityNumber;
@@ -80,35 +80,37 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 14).Value = p.Department;
                     worksheet.Cell(row, 15).Value = p.Position;
                     worksheet.Cell(row, 16).Value = p.RetirementDate;
-                     worksheet.Cell(row, 16).Style.DateFormat.Format = "dd/MM/yyyy";
+                    worksheet.Cell(row, 16).Style.DateFormat.Format = "dd/MM/yyyy";
 
-                    worksheet.Cell(row, 17).Value = p.EducationLevel;
-                    worksheet.Cell(row, 18).Value = p.Major;
-                    worksheet.Cell(row, 19).Value = p.University;
+                    worksheet.Cell(row, 17).Value = CalcWorkingYears(p, now);
 
-                    worksheet.Cell(row, 20).Value = p.PoliticalTheoryLevel;
-                    worksheet.Cell(row, 21).Value = p.StateManagementLevel;
-                    worksheet.Cell(row, 22).Value = p.LanguageSkillLevel;
-                    worksheet.Cell(row, 23).Value = p.ITSkillLevel;
+                    worksheet.Cell(row, 18).Value = p.EducationLevel;
+                    worksheet.Cell(row, 19).Value = p.Major;
+                    worksheet.Cell(row, 20).Value = p.University;
 
-                    worksheet.Cell(row, 24).Value = p.PartyEntryDate;
-                    worksheet.Cell(row, 24).Style.DateFormat.Format = "dd/MM/yyyy";
-                    worksheet.Cell(row, 25).Value = p.PartyOfficialDate;
+                    worksheet.Cell(row, 21).Value = p.PoliticalTheoryLevel;
+                    worksheet.Cell(row, 22).Value = p.StateManagementLevel;
+                    worksheet.Cell(row, 23).Value = p.LanguageSkillLevel;
+                    worksheet.Cell(row, 24).Value = p.ITSkillLevel;
+
+                    worksheet.Cell(row, 25).Value = p.PartyEntryDate;
                     worksheet.Cell(row, 25).Style.DateFormat.Format = "dd/MM/yyyy";
+                    worksheet.Cell(row, 26).Value = p.PartyOfficialDate;
+                    worksheet.Cell(row, 26).Style.DateFormat.Format = "dd/MM/yyyy";
 
-                    worksheet.Cell(row, 26).Value = p.RankCode;
-                    worksheet.Cell(row, 27).Value = p.RankName;
-                    worksheet.Cell(row, 28).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
-                    worksheet.Cell(row, 29).Value = p.CurrentSalaryCoefficient;
+                    worksheet.Cell(row, 27).Value = p.RankCode;
+                    worksheet.Cell(row, 28).Value = p.RankName;
+                    worksheet.Cell(row, 29).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
+                    worksheet.Cell(row, 30).Value = p.CurrentSalaryCoefficient;
 
-                    worksheet.Cell(row, 30).Value = p.PositionAllowance;
-                    worksheet.Cell(row, 31).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
+                    worksheet.Cell(row, 31).Value = p.PositionAllowance;
+                    worksheet.Cell(row, 32).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
 
-                    worksheet.Cell(row, 32).Value = p.EmulationTitles;
-                    worksheet.Cell(row, 33).Value = p.RewardForms;
-                    worksheet.Cell(row, 34).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
+                    worksheet.Cell(row, 33).Value = p.EmulationTitles;
+                    worksheet.Cell(row, 34).Value = p.RewardForms;
+                    worksheet.Cell(row, 35).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
 
-                    // Cột 35: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
+                    // Cột 36: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
                     string ghiChu = "";
                     if (p.LeaveHistories != null)
                     {
@@ -142,13 +144,13 @@ namespace TaxPersonnelManagement.Services
                             }
                         }
                     }
-                    worksheet.Cell(row, 35).Value = ghiChu;
+                    worksheet.Cell(row, 36).Value = ghiChu;
 
                     // Áp dụng viền và căn chỉnh cho toàn bộ ô trong dòng
                     for (int c = 1; c <= headers.Length; c++)
                     {
-                         worksheet.Cell(row, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                         worksheet.Cell(row, c).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        worksheet.Cell(row, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Cell(row, c).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                     }
 
                     row++;
@@ -160,6 +162,24 @@ namespace TaxPersonnelManagement.Services
                 // Lưu file Excel
                 workbook.SaveAs(filePath);
             }
+        }
+
+        private static string CalcWorkingYears(Personnel p, DateTime now)
+        {
+            if (!p.TaxAuthorityStartDate.HasValue) return "";
+            DateTime start = p.TaxAuthorityStartDate.Value;
+            if (start > now) return "0 năm";
+
+            DateTime temp = start;
+            int y = 0;
+            while (temp.AddYears(1) <= now) { y++; temp = temp.AddYears(1); }
+            int m = 0;
+            while (temp.AddMonths(1) <= now) { m++; temp = temp.AddMonths(1); }
+            int d = (now - temp).Days;
+
+            if (m == 0 && d == 0) return $"{y} năm";
+            if (d == 0) return $"{y} năm {m} tháng";
+            return $"{y} năm {m} tháng {d} ngày";
         }
     }
 }

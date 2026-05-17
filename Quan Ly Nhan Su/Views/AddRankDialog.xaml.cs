@@ -48,8 +48,8 @@ namespace TaxPersonnelManagement.Views
                     // Check duplicate code
                     if (context.Ranks.Any(r => r.Code == txtCode.Text))
                     {
-                         new WarningWindow("Mã ngạch này đã tồn tại!", "Thông báo").ShowDialog();
-                         return;
+                        new WarningWindow("Mã ngạch này đã tồn tại!", "Thông báo").ShowDialog();
+                        return;
                     }
 
                     var newRank = new Rank { Code = txtCode.Text, Name = txtName.Text };
@@ -67,7 +67,7 @@ namespace TaxPersonnelManagement.Views
                         SelectedRankCode = rankToEdit.Code;
                     }
                     _editingRank = null;
-                    btnAdd.Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Floppy, Margin = new Thickness(0,0,8,0), VerticalAlignment = VerticalAlignment.Center }, new TextBlock { Text = "Thêm mới", VerticalAlignment = VerticalAlignment.Center } } };
+                    btnAdd.Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Floppy, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center }, new TextBlock { Text = "Thêm mới", VerticalAlignment = VerticalAlignment.Center } } };
                 }
 
                 context.SaveChanges();
@@ -76,7 +76,7 @@ namespace TaxPersonnelManagement.Views
             // Clear inputs
             txtCode.Text = "";
             txtName.Text = "";
-            
+
             LoadRanks();
         }
 
@@ -87,9 +87,9 @@ namespace TaxPersonnelManagement.Views
                 _editingRank = rank;
                 txtCode.Text = rank.Code;
                 txtName.Text = rank.Name;
-                
+
                 // Change button text
-                btnAdd.Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentSave, Margin = new Thickness(0,0,8,0), VerticalAlignment = VerticalAlignment.Center }, new TextBlock { Text = "Cập nhật", VerticalAlignment = VerticalAlignment.Center } } };
+                btnAdd.Content = new StackPanel { Orientation = Orientation.Horizontal, Children = { new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentSave, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center }, new TextBlock { Text = "Cập nhật", VerticalAlignment = VerticalAlignment.Center } } };
             }
         }
 

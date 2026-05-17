@@ -156,7 +156,7 @@ namespace TaxPersonnelManagement.Helpers
 
             // Vietnamese day names starting from Sunday
             string[] baseDayNames = { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
-            
+
             // Rotate the array based on FirstDayOfWeek (Sunday=0, Monday=1, ...)
             int firstDayIndex = (int)dp.FirstDayOfWeek;
             string[] rotatedDayNames = new string[7];
@@ -167,7 +167,7 @@ namespace TaxPersonnelManagement.Helpers
 
             // Walk the visual tree inside the popup to find headers
             var allTextBlocks = FindVisualChildren<TextBlock>(popup.Child);
-            
+
             // Filters only for single-character headers "T" (Mon-Sat) or "C" (Sun)
             var dayHeaders = allTextBlocks
                 .Where(tb => tb.Text != null && tb.Text.Length == 1

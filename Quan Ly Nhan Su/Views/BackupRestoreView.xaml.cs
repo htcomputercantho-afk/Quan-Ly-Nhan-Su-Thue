@@ -128,7 +128,7 @@ namespace TaxPersonnelManagement.Views
                 string autoBackupPath = Path.Combine(
                     Path.GetDirectoryName(_dbPath)!,
                     $"tax_personnel_auto_backup_{DateTime.Now:yyyyMMdd_HHmmss}.db");
-                
+
                 if (File.Exists(_dbPath))
                 {
                     File.Copy(_dbPath, autoBackupPath, overwrite: true);

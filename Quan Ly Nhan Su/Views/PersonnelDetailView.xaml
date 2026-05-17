@@ -423,6 +423,7 @@
                                             <Grid>
                                                 <ComboBox x:Name="cboGender" 
                                                           Style="{StaticResource ModernComboBox}">
+                                                    <ComboBoxItem Content=""/>
                                                     <ComboBoxItem Content="Nam"/>
                                                     <ComboBoxItem Content="Nữ"/>
                                                 </ComboBox>
@@ -432,6 +433,9 @@
                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding SelectedItem, ElementName=cboGender}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=cboGender}" Value="">
                                                                     <Setter Property="Visibility" Value="Visible"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -533,6 +537,9 @@
                                                                 <DataTrigger Binding="{Binding SelectedItem, ElementName=cboDepartment}" Value="{x:Null}">
                                                                     <Setter Property="Visibility" Value="Visible"/>
                                                                 </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=cboDepartment}" Value="">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </TextBlock.Style>
@@ -561,6 +568,9 @@
                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding SelectedItem, ElementName=cboPosition}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=cboPosition}" Value="">
                                                                     <Setter Property="Visibility" Value="Visible"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -594,6 +604,9 @@
                                                             <Setter Property="Visibility" Value="Collapsed"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding SelectedItem, ElementName=cboRankCode}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Text, ElementName=cboRankCode}" Value="">
                                                                     <Setter Property="Visibility" Value="Visible"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -653,10 +666,11 @@
                                                 <TextBlock Text="Trình độ" Style="{StaticResource ModernLabel}"/>
                                                 <Grid>
                                                     <ComboBox x:Name="cboEducationLevel" Style="{StaticResource ModernComboBox}">
-                                                         <ComboBoxItem Content="Thạc sĩ"/>
-                                                         <ComboBoxItem Content="Cử nhân"/>
-                                                         <ComboBoxItem Content="Trung cấp"/>
-                                                    </ComboBox>
+                                                                                                              <ComboBoxItem Content=""/>
+                                                                                                              <ComboBoxItem Content="Thạc sĩ"/>
+                                                                                                              <ComboBoxItem Content="Cử nhân"/>
+                                                                                                              <ComboBoxItem Content="Trung cấp"/>
+                                                                                                         </ComboBox>
                                                     <TextBlock Text="-- Chọn --" IsHitTestVisible="False" VerticalAlignment="Center" Margin="10 0" Foreground="#A0AEC0">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
@@ -705,6 +719,7 @@
                                                 <TextBlock Text="Quản lý Nhà nước" Style="{StaticResource ModernLabel}"/>
                                                 <Grid>
                                                     <ComboBox x:Name="cboStateManagement" Style="{StaticResource ModernComboBox}">
+                                                         <ComboBoxItem Content=""/>
                                                          <ComboBoxItem Content="Chuyên viên chính"/>
                                                          <ComboBoxItem Content="Chuyên viên"/>
                                                     </ComboBox>
@@ -731,6 +746,7 @@
                                                 <TextBlock Text="Lý luận chính trị" Style="{StaticResource ModernLabel}"/>
                                                 <Grid>
                                                     <ComboBox x:Name="cboPoliticalTheory" Style="{StaticResource ModernComboBox}">
+                                                         <ComboBoxItem Content=""/>
                                                          <ComboBoxItem Content="Sơ cấp"/>
                                                          <ComboBoxItem Content="Trung cấp"/>
                                                          <ComboBoxItem Content="Cao cấp"/>
@@ -1372,8 +1388,25 @@
                             <!-- Step -->
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Bậc lương" Style="{StaticResource ModernLabel}"/>
-                                <ComboBox x:Name="cboSalaryStep" Style="{StaticResource ModernComboBox}"
-                                          SelectionChanged="cboSalaryStep_SelectionChanged"/>
+                                <Grid>
+                                    <ComboBox x:Name="cboSalaryStep" Style="{StaticResource ModernComboBox}"
+                                              SelectionChanged="cboSalaryStep_SelectionChanged"/>
+                                    <TextBlock Text="-- Chọn bậc --" IsHitTestVisible="False" VerticalAlignment="Center" Margin="11 0" Foreground="Gray" Opacity="0.7">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedItem, ElementName=cboSalaryStep}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Text, ElementName=cboSalaryStep}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
                             </StackPanel>
 
                             <!-- Coefficient -->

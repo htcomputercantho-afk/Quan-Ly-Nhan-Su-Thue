@@ -14,7 +14,7 @@ namespace TaxPersonnelManagement.Views
 
             txtCurrentVersion.Text = args.InstalledVersion.ToString();
             txtNewVersion.Text = args.CurrentVersion.ToString();
-            
+
             this.Loaded += UpdateNotificationWindow_Loaded;
         }
 
@@ -22,13 +22,13 @@ namespace TaxPersonnelManagement.Views
         {
             if (!string.IsNullOrEmpty(_args.ChangelogURL))
             {
-                try 
+                try
                 {
                     txtChangelog.Text = "Đang tải thông tin bản cập nhật...";
                     using var client = new System.Net.Http.HttpClient();
                     string url = _args.ChangelogURL;
                     if (!url.Contains("?")) url += $"?t={System.DateTime.Now.Ticks}";
-                    
+
                     var changelogText = await client.GetStringAsync(url);
                     if (!string.IsNullOrWhiteSpace(changelogText))
                     {
@@ -39,7 +39,7 @@ namespace TaxPersonnelManagement.Views
                         txtChangelog.Text = "Không có thông tin chi tiết cho bản cập nhật này.";
                     }
                 }
-                catch 
+                catch
                 {
                     txtChangelog.Text = "Hệ thống đã sẵn sàng bản cập nhật mới với nhiều cải tiến. Vui lòng cập nhật để trải nghiệm.";
                 }

@@ -35,9 +35,10 @@ namespace TaxPersonnelManagement.Views
             {
                 // Ensure table exists just in case
                 try { context.Database.EnsureCreated(); } catch { }
-                
+
                 var list = context.Positions.ToList()
-                                  .OrderBy(x => {
+                                  .OrderBy(x =>
+                                  {
                                       int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
                                       return idx == -1 ? 999 : idx;
                                   })
@@ -87,11 +88,11 @@ namespace TaxPersonnelManagement.Views
 
             txtPositionName.Clear();
             txtPositionName.Focus();
-            
+
             // Reset button visual
-             btnAdd.Background = (System.Windows.Media.Brush)Application.Current.Resources["PrimaryHueMidBrush"];
-             btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Plus, Width = 24, Height = 24 };
-             btnAdd.ToolTip = "Thêm chức vụ";
+            btnAdd.Background = (System.Windows.Media.Brush)Application.Current.Resources["PrimaryHueMidBrush"];
+            btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Plus, Width = 24, Height = 24 };
+            btnAdd.ToolTip = "Thêm chức vụ";
 
             LoadPositions();
         }
@@ -103,8 +104,8 @@ namespace TaxPersonnelManagement.Views
                 _editingPosition = pos;
                 txtPositionName.Text = pos.Name;
                 txtPositionName.Focus();
-                
-                 // Change button to indicate Update
+
+                // Change button to indicate Update
                 btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentSave, Width = 24, Height = 24 };
                 btnAdd.ToolTip = "Lưu thay đổi";
                 btnAdd.Background = System.Windows.Media.Brushes.Orange;
@@ -118,7 +119,7 @@ namespace TaxPersonnelManagement.Views
                 var confirm = new ConfirmWindow($"Bạn có chắc muốn xóa chức vụ '{pos.Name}'?", "Xác nhận xóa");
                 if (confirm.ShowDialog() == true)
                 {
-                     using (var context = new AppDbContext())
+                    using (var context = new AppDbContext())
                     {
                         var p = context.Positions.Find(pos.Id);
                         if (p != null)

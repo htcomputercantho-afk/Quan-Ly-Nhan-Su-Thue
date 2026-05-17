@@ -13,7 +13,7 @@ namespace TaxPersonnelManagement.Converters
 
             if (value is string str && string.IsNullOrWhiteSpace(str))
                 return "---";
-            
+
             // If it's a DateTime and it's MinValue, return "---"
             if (value is DateTime dt && dt == DateTime.MinValue)
                 return "---";

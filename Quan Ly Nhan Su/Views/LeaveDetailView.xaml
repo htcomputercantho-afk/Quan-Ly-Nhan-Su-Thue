@@ -22,36 +22,38 @@
 
             <!-- Top Header & Controls -->
             <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="20" Margin="0 0 0 15" Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                <StackPanel>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                        <TextBlock x:Name="txtHeaderTitle" Grid.Column="0" 
-                                   Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
-                                   FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
-                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
-                                   TextWrapping="Wrap" Margin="0 0 20 0"/>
+                    <TextBlock x:Name="txtHeaderTitle" Grid.Row="0" Grid.Column="0" 
+                               Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
+                               FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
+                               Foreground="{DynamicResource PrimaryHueMidBrush}"
+                               TextWrapping="Wrap" Margin="0 0 20 0"/>
 
-                        <Button x:Name="btnExportExcel" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
-                                Style="{DynamicResource MaterialDesignRaisedButton}"
-                                Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18" HorizontalAlignment="Right"
-                                VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
-                            </StackPanel>
-                        </Button>
-                    </Grid>
+                    <Button x:Name="btnExportExcel" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
+                            Style="{DynamicResource MaterialDesignRaisedButton}"
+                            Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
+                            materialDesign:ButtonAssist.CornerRadius="18" HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                            <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                        </StackPanel>
+                    </Button>
 
                     <!-- Modern Search Bar -->
-                    <Border Margin="0 20 0 5" 
+                    <Border Grid.Row="1" Grid.Column="0" Margin="0 20 0 5" 
                             Background="White" BorderBrush="#E0E0E0" BorderThickness="1.5" 
                             CornerRadius="22" Padding="15 2" HorizontalAlignment="Left" 
-                            Width="600" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=StackPanel}}"
+                            Width="600" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Grid}}"
                             Effect="{DynamicResource MaterialDesignShadowDepth1}">
                         <Border.Style>
                             <Style TargetType="Border">
@@ -90,7 +92,7 @@
                             </Button>
                         </Grid>
                     </Border>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <!-- Main DataGrid Container -->

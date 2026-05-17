@@ -25,18 +25,18 @@ namespace TaxPersonnelManagement.Services
 
                     // Page Content with Red Border and Distinct Backgrounds
                     page.Content()
-                        .PaddingVertical(0) 
+                        .PaddingVertical(0)
                         .Border(5).BorderColor("#B71C1C") // Full Page Red Frame
                         .Padding(20) // More formatting padding since we have no margin
                         .Column(column =>
                         {
                             column.Spacing(15);
-                            
+
                             // Header on White Background
                             column.Item().Element(header => ComposeHeader(header, p));
 
                             // Body sections on Light Yellow Background
-                            column.Item().Background("#FFF8E1").Border(1).BorderColor("#FFE0B2").Padding(10).Column(bodyCol =>  
+                            column.Item().Background("#FFF8E1").Border(1).BorderColor("#FFE0B2").Padding(10).Column(bodyCol =>
                             {
                                 bodyCol.Spacing(15);
                                 bodyCol.Item().Element(e => ComposeSection(e, "1. THÔNG TIN CHUNG", c => ComposeGeneralInfo(c, p)));
@@ -47,7 +47,7 @@ namespace TaxPersonnelManagement.Services
                                 bodyCol.Item().Element(e => ComposeSection(e, "6. THÔNG TIN ĐẢNG VIÊN", c => ComposeParty(c, p)));
                                 bodyCol.Item().Element(e => ComposeSection(e, "7. KHEN THƯỞNG & KỶ LUẬT", c => ComposeRewardDiscipline(c, p)));
                             });
-                            
+
                             // Footer inside the border
                             column.Item().PaddingTop(10).AlignCenter().Text(x =>
                             {
@@ -66,7 +66,7 @@ namespace TaxPersonnelManagement.Services
             {
                 // Avatar
                 var avatarItem = row.ConstantItem(100).Height(120).Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.White);
-                
+
                 bool hasImage = false;
                 if (!string.IsNullOrEmpty(p.AvatarBase64))
                 {
@@ -80,7 +80,7 @@ namespace TaxPersonnelManagement.Services
                     }
                     catch { /* Ignore error, show placeholder */ }
                 }
-                
+
                 if (!hasImage)
                 {
                     avatarItem.AlignCenter().AlignMiddle().Text("Ảnh").FontColor(Colors.Grey.Medium);
@@ -90,10 +90,10 @@ namespace TaxPersonnelManagement.Services
                 {
                     col.Item().Text(p.FullName?.ToUpper() ?? "").FontSize(20).Bold().FontColor("#D32F2F"); // Red
                     col.Item().Text(p.Department?.ToUpper() ?? "").FontSize(14).Bold().FontColor("#B71C1C");
-                    
+
                     col.Item().PaddingTop(5).Text(p.Position ?? "").FontSize(14).Bold();
-                    
-                    col.Item().PaddingTop(10).Row(r => 
+
+                    col.Item().PaddingTop(10).Row(r =>
                     {
                         r.AutoItem()
                          .Background("#9C2727") // Deep Red
@@ -112,7 +112,7 @@ namespace TaxPersonnelManagement.Services
         {
             // Ensure section start has enough space, or push start to next page
             container.EnsureSpace(100)
-                     .Border(1).BorderColor("#FBE9E7").Background("#FFFAFA").Padding(15).Column(column => 
+                     .Border(1).BorderColor("#FBE9E7").Background("#FFFAFA").Padding(15).Column(column =>
             {
                 column.Item().Text(title).FontSize(14).Bold().FontColor("#B71C1C");
                 column.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
@@ -122,16 +122,16 @@ namespace TaxPersonnelManagement.Services
 
         static void ComposeGeneralInfo(ColumnDescriptor column, Personnel p)
         {
-            column.Item().Row(row => 
+            column.Item().Row(row =>
             {
-                row.RelativeItem().Column(c => 
+                row.RelativeItem().Column(c =>
                 {
                     LabelValue(c, "Ngày sinh:", p.DateOfBirth?.ToString("dd/MM/yyyy"));
                     LabelValue(c, "SĐT:", p.PhoneNumber);
                     LabelValue(c, "CCCD:", p.IdentityCardNumber);
                     LabelValue(c, "BHXH:", p.SocialSecurityNumber);
                 });
-                row.RelativeItem().Column(c => 
+                row.RelativeItem().Column(c =>
                 {
                     LabelValue(c, "Giới tính:", p.Gender);
                     LabelValue(c, "Email:", p.Email);
@@ -143,15 +143,15 @@ namespace TaxPersonnelManagement.Services
 
         static void ComposeEducation(ColumnDescriptor column, Personnel p)
         {
-            column.Item().Row(row => 
+            column.Item().Row(row =>
             {
-                row.RelativeItem().Column(c => 
+                row.RelativeItem().Column(c =>
                 {
                     LabelValue(c, "Trình độ:", p.EducationLevel);
                     LabelValue(c, "Tin học:", p.ITSkillLevel);
                     LabelValue(c, "Quản lý Nhà nước:", p.StateManagementLevel);
                 });
-                row.RelativeItem().Column(c => 
+                row.RelativeItem().Column(c =>
                 {
                     LabelValue(c, "Chuyên ngành:", $"{p.Major} - {p.University}");
                     LabelValue(c, "Ngoại ngữ:", p.LanguageSkillLevel);
@@ -164,7 +164,7 @@ namespace TaxPersonnelManagement.Services
         {
             // 1. Calculate Salary Dates matching UI logic
             DateTime? nextCalcDate = p.NextSalaryStepDate;
-            
+
             // If p.NextSalaryStepDate is null, try to get it from the latest SalaryRecord
             if (!nextCalcDate.HasValue && p.SalaryRecords != null && p.SalaryRecords.Count > 0)
             {
@@ -206,7 +206,7 @@ namespace TaxPersonnelManagement.Services
                     double unpaidDays = p.LeaveHistories
                         .Where(h => h.LeaveType == "Không lương")
                         .Sum(h => h.DurationDays);
-                    
+
                     if (unpaidDays > 0)
                     {
                         calcDate = calcDate.AddDays(unpaidDays);
@@ -216,11 +216,11 @@ namespace TaxPersonnelManagement.Services
                 expectedDate = calcDate;
             }
 
-            column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row => 
+            column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row =>
             {
                 void CenteredItem(RowDescriptor r, string label, string? val, bool highlight = false, bool last = false)
                 {
-                    r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c => 
+                    r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c =>
                     {
                         c.Item().AlignCenter().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1);
                         c.Item().PaddingTop(5).AlignCenter().Text(val ?? "---").Bold().FontSize(16).FontColor(highlight ? "#B71C1C" : Colors.Black);
@@ -231,15 +231,15 @@ namespace TaxPersonnelManagement.Services
                 CenteredItem(row, "Bậc lương", p.CurrentSalaryStep);
                 CenteredItem(row, "Hệ số", p.CurrentSalaryCoefficient.ToString("F2"), true, true);
             });
-            
-            column.Item().PaddingTop(10).Row(row => 
+
+            column.Item().PaddingTop(10).Row(row =>
             {
                 row.RelativeItem().Column(c => LabelValue(c, "% Vượt khung:", p.ExceedFramePercent + "%"));
                 row.RelativeItem().Column(c => LabelValue(c, "PC Chức vụ:", p.PositionAllowance));
                 row.RelativeItem().Column(c => LabelValue(c, "Thời hạn bảo lưu:", p.SalaryReservationDeadline?.ToString("dd/MM/yyyy")));
             });
 
-            column.Item().PaddingTop(5).Row(row => 
+            column.Item().PaddingTop(5).Row(row =>
             {
                 row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", nextCalcDate?.ToString("dd/MM/yyyy")));
                 row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", expectedDate?.ToString("dd/MM/yyyy")));
@@ -292,14 +292,14 @@ namespace TaxPersonnelManagement.Services
                             table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
                         }
                     }
-                    else 
+                    else
                     {
                         table.Cell().ColumnSpan(9).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử lương").Italic().FontColor(Colors.Grey.Medium);
                     }
                 });
             });
         }
-        
+
         static void ComposeLeave(ColumnDescriptor column, Personnel p)
         {
             // 1. Calculate stats matching UI logic
@@ -309,7 +309,7 @@ namespace TaxPersonnelManagement.Services
 
             if (p.LeaveHistories != null)
             {
-                foreach(var item in p.LeaveHistories)
+                foreach (var item in p.LeaveHistories)
                 {
                     if (item.StartDate.Year == currentYear && item.LeaveType == "Phép năm")
                     {
@@ -326,29 +326,29 @@ namespace TaxPersonnelManagement.Services
             if (remaining < 0) remaining = 0;
 
             // Stats
-            column.Item().PaddingBottom(10).Row(row => 
+            column.Item().PaddingBottom(10).Row(row =>
             {
-                 row.RelativeItem().Background("#E3F2FD").Padding(10).Column(c => 
-                 {
-                     c.Item().AlignCenter().Text("Tổng phép").FontSize(9).FontColor(Colors.Grey.Darken1);
-                     c.Item().AlignCenter().Text(p.TotalAnnualLeaveDays.ToString()).FontSize(14).Bold();
-                 });
-                 
-                 row.Spacing(10);
-                 
-                 row.RelativeItem().Background("#FFEBEE").Padding(10).Column(c => 
-                 {
-                     c.Item().AlignCenter().Text("Đã nghỉ").FontSize(9).FontColor(Colors.Red.Darken1);
-                     c.Item().AlignCenter().Text(used.ToString()).FontSize(14).Bold().FontColor(Colors.Red.Darken1); 
-                 });
-                 
-                 row.Spacing(10);
-                 
-                 row.RelativeItem().Background("#E8F5E9").Padding(10).Column(c => 
-                 {
-                     c.Item().AlignCenter().Text("Còn lại").FontSize(9).FontColor(Colors.Green.Darken1);
-                     c.Item().AlignCenter().Text(remaining.ToString()).FontSize(14).Bold().FontColor(Colors.Green.Darken1);
-                 });
+                row.RelativeItem().Background("#E3F2FD").Padding(10).Column(c =>
+                {
+                    c.Item().AlignCenter().Text("Tổng phép").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    c.Item().AlignCenter().Text(p.TotalAnnualLeaveDays.ToString()).FontSize(14).Bold();
+                });
+
+                row.Spacing(10);
+
+                row.RelativeItem().Background("#FFEBEE").Padding(10).Column(c =>
+                {
+                    c.Item().AlignCenter().Text("Đã nghỉ").FontSize(9).FontColor(Colors.Red.Darken1);
+                    c.Item().AlignCenter().Text(used.ToString()).FontSize(14).Bold().FontColor(Colors.Red.Darken1);
+                });
+
+                row.Spacing(10);
+
+                row.RelativeItem().Background("#E8F5E9").Padding(10).Column(c =>
+                {
+                    c.Item().AlignCenter().Text("Còn lại").FontSize(9).FontColor(Colors.Green.Darken1);
+                    c.Item().AlignCenter().Text(remaining.ToString()).FontSize(14).Bold().FontColor(Colors.Green.Darken1);
+                });
             });
 
             // Table
@@ -383,10 +383,10 @@ namespace TaxPersonnelManagement.Services
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SystemMessageDisplay).FontSize(8).FontColor("#D32F2F");
                     }
                 }
-                
+
                 if (p.LeaveHistories == null || p.LeaveHistories.Count == 0)
                 {
-                     table.Cell().ColumnSpan(5).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử nghỉ").Italic().FontColor(Colors.Grey.Medium);
+                    table.Cell().ColumnSpan(5).Padding(10).AlignCenter().Text("Chưa có dữ liệu lịch sử nghỉ").Italic().FontColor(Colors.Grey.Medium);
                 }
             });
         }
@@ -394,14 +394,16 @@ namespace TaxPersonnelManagement.Services
         static void ComposeWorkHistory(ColumnDescriptor column, Personnel p)
         {
             column.Item().Text("A. THÔNG TIN CÔNG TÁC").Bold().FontColor("#B71C1C").FontSize(12);
-            column.Item().PaddingTop(5).Row(row => {
-                 row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tại cơ quan thuế:", p.TaxAuthorityStartDate?.ToString("dd/MM/yyyy"), true));
+            column.Item().PaddingTop(5).Row(row =>
+            {
+                row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tại cơ quan thuế:", p.TaxAuthorityStartDate?.ToString("dd/MM/yyyy"), true));
             });
-             column.Item().PaddingTop(5).Row(row => {
-                 row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tính theo QĐ gần nhất:", p.PositionDecisionDate?.ToString("dd/MM/yyyy")));
-                 row.RelativeItem().Column(c => LabelValue(c, "Thời điểm tính thời gian công tác:", p.DisplayPositionCalculationDate.ToString("dd/MM/yyyy")));
+            column.Item().PaddingTop(5).Row(row =>
+            {
+                row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tính theo QĐ gần nhất:", p.PositionDecisionDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Thời điểm tính thời gian công tác:", p.DisplayPositionCalculationDate.ToString("dd/MM/yyyy")));
             });
-            
+
             // Calculated Stats
             int wYears = 0;
             int wMonths = 0;
@@ -415,7 +417,7 @@ namespace TaxPersonnelManagement.Services
                     // Clean calculation matching View logic
                     wYears = endDate.Year - startDate.Year;
                     if (startDate.Date > endDate.AddYears(-wYears)) wYears--;
-                    
+
                     DateTime tmpDate = startDate.AddYears(wYears);
                     while (tmpDate.AddMonths(1) <= endDate)
                     {
@@ -426,20 +428,20 @@ namespace TaxPersonnelManagement.Services
             }
 
             // Box
-            column.Item().PaddingTop(10).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row => 
+            column.Item().PaddingTop(10).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row =>
             {
-                 void CenteredItem(RowDescriptor r, string label, string? val, bool last = false)
-                 {
-                     r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c => 
-                     {
-                         c.Item().AlignCenter().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1).AlignCenter();
-                         c.Item().PaddingTop(5).AlignCenter().Text(val).Bold().FontSize(14);
-                     });
-                 }
+                void CenteredItem(RowDescriptor r, string label, string? val, bool last = false)
+                {
+                    r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c =>
+                    {
+                        c.Item().AlignCenter().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1).AlignCenter();
+                        c.Item().PaddingTop(5).AlignCenter().Text(val).Bold().FontSize(14);
+                    });
+                }
 
-                 CenteredItem(row, "Số năm công tác tính đến thời điểm hiện tại", wYears.ToString());
-                 CenteredItem(row, "Số tháng công tác tính đến thời điểm hiện tại", wMonths.ToString());
-                 CenteredItem(row, "Năm giữ vị trí công tác", p.CalculatedPositionYear, true);
+                CenteredItem(row, "Số năm công tác tính đến thời điểm hiện tại", wYears.ToString());
+                CenteredItem(row, "Số tháng công tác tính đến thời điểm hiện tại", wMonths.ToString());
+                CenteredItem(row, "Năm giữ vị trí công tác", p.CalculatedPositionYear, true);
             });
 
             // Retirement Stats
@@ -447,7 +449,7 @@ namespace TaxPersonnelManagement.Services
             string retRemaining = "---";
             DateTime now = DateTime.Now.Date;
 
-            string CalcDuration(DateTime start, DateTime end) 
+            string CalcDuration(DateTime start, DateTime end)
             {
                 if (start > end) return "0 năm 0 tháng 0 ngày";
                 DateTime temp = start;
@@ -461,24 +463,25 @@ namespace TaxPersonnelManagement.Services
 
             if (p.TaxAuthorityStartDate.HasValue)
                 retYearsWorked = CalcDuration(p.TaxAuthorityStartDate.Value, now);
-            
+
             if (p.RetirementDate.HasValue)
                 retRemaining = CalcDuration(now, p.RetirementDate.Value);
 
             column.Item().PaddingTop(15).Text("B. THÔNG TIN NGHỈ HƯU").Bold().FontColor("#B71C1C").FontSize(12);
-            column.Item().PaddingTop(5).Row(row => {
-                 row.RelativeItem().Column(c => LabelValue(c, "Ngày về hưu", p.RetirementDate?.ToString("dd/MM/yyyy")));
-                 row.RelativeItem().Column(c => LabelValueBlue(c, "Số năm công tác", retYearsWorked)); 
-                 row.RelativeItem().Column(c => LabelValueRed(c, "Số năm còn lại", retRemaining));
+            column.Item().PaddingTop(5).Row(row =>
+            {
+                row.RelativeItem().Column(c => LabelValue(c, "Ngày về hưu", p.RetirementDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValueBlue(c, "Số năm công tác", retYearsWorked));
+                row.RelativeItem().Column(c => LabelValueRed(c, "Số năm còn lại", retRemaining));
             });
 
             column.Item().PaddingTop(15).Text("C. QUÁ TRÌNH CÔNG TÁC CHI TIẾT").Bold().FontColor("#B71C1C").FontSize(12);
-             column.Item().PaddingTop(5).Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Text(p.DetailedWorkHistory ?? "").FontSize(10);
+            column.Item().PaddingTop(5).Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Text(p.DetailedWorkHistory ?? "").FontSize(10);
         }
 
         static void ComposeParty(ColumnDescriptor column, Personnel p)
         {
-            column.Item().Row(row => 
+            column.Item().Row(row =>
             {
                 row.RelativeItem().Column(c => LabelValue(c, "Ngày vào Đảng:", p.PartyEntryDate?.ToString("dd/MM/yyyy")));
                 row.RelativeItem().Column(c => LabelValue(c, "Ngày chính thức:", p.PartyOfficialDate?.ToString("dd/MM/yyyy")));
@@ -492,36 +495,36 @@ namespace TaxPersonnelManagement.Services
             column.Item().PaddingTop(5).Column(c => LabelValueBox(c, "Hình thức khen thưởng:", p.RewardForms));
 
             column.Item().PaddingTop(15).Text("B. THÔNG TIN KỶ LUẬT").Bold().FontColor("#D32F2F");
-            
+
             if (!string.IsNullOrEmpty(p.DisciplineType) && p.DisciplineType != "-- Không có --" && p.DisciplineType != "---")
             {
-                column.Item().PaddingTop(5).Background("#FFEBEE").Padding(15).Column(c => 
+                column.Item().PaddingTop(5).Background("#FFEBEE").Padding(15).Column(c =>
                 {
                     c.Item().Text("Hình thức kỷ luật:").FontSize(10).Bold();
                     c.Item().Text(p.DisciplineType).FontSize(14).Bold().FontColor("#D32F2F");
-                    
-                    c.Item().PaddingTop(10).Row(row => 
+
+                    c.Item().PaddingTop(10).Row(row =>
                     {
                         row.RelativeItem().Text(t => { t.Span("Số QĐ: ").Bold(); t.Span(p.DisciplineDecisionNumber ?? ""); });
                         row.RelativeItem().Text(t => { t.Span("Ngày ký: ").Bold(); t.Span(p.DisciplineDecisionDate?.ToString("dd/MM/yyyy") ?? ""); });
                     });
-                    
-                     c.Item().PaddingTop(10).LineHorizontal(1).LineColor("#EF9A9A");
 
-                     c.Item().PaddingTop(5).Text("Nội dung / Lý do:").Bold();
-                     c.Item().Text(p.DisciplineReason ?? "").Italic();
+                    c.Item().PaddingTop(10).LineHorizontal(1).LineColor("#EF9A9A");
+
+                    c.Item().PaddingTop(5).Text("Nội dung / Lý do:").Bold();
+                    c.Item().Text(p.DisciplineReason ?? "").Italic();
                 });
             }
-            else 
+            else
             {
-                 column.Item().PaddingTop(5).Background("#E8F5E9").Padding(10).Text("Không có ghi nhận vi phạm kỷ luật").FontColor(Colors.Green.Darken2);
+                column.Item().PaddingTop(5).Background("#E8F5E9").Padding(10).Text("Không có ghi nhận vi phạm kỷ luật").FontColor(Colors.Green.Darken2);
             }
         }
 
         // Helpers
         static void LabelValue(ColumnDescriptor c, string label, string? value, bool highlight = false)
         {
-            c.Item().PaddingBottom(5).Column(col => 
+            c.Item().PaddingBottom(5).Column(col =>
             {
                 col.Item().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1);
                 col.Item().Text(value ?? "---").Bold().FontSize(12).FontColor(highlight ? "#B71C1C" : Colors.Black);
@@ -530,31 +533,31 @@ namespace TaxPersonnelManagement.Services
 
         static void LabelValueBig(ColumnDescriptor c, string label, string? value, bool highlight = false)
         {
-            c.Item().PaddingBottom(5).Column(col => 
+            c.Item().PaddingBottom(5).Column(col =>
             {
                 col.Item().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1);
                 col.Item().Text(value ?? "---").Bold().FontSize(14).FontColor(highlight ? "#B71C1C" : Colors.Black);
             });
         }
-        
+
         static void LabelValueBlue(ColumnDescriptor c, string label, string? value)
         {
-            c.Item().PaddingBottom(5).Column(col => 
+            c.Item().PaddingBottom(5).Column(col =>
             {
                 col.Item().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1);
                 col.Item().Text(value ?? "---").Bold().FontSize(12).FontColor("#1976D2");
             });
         }
-         static void LabelValueRed(ColumnDescriptor c, string label, string? value)
+        static void LabelValueRed(ColumnDescriptor c, string label, string? value)
         {
-            c.Item().PaddingBottom(5).Column(col => 
+            c.Item().PaddingBottom(5).Column(col =>
             {
                 col.Item().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1);
                 col.Item().Text(value ?? "---").Bold().FontSize(12).FontColor("#D32F2F");
             });
         }
-        
-         static void LabelValueBox(ColumnDescriptor c, string label, string? value)
+
+        static void LabelValueBox(ColumnDescriptor c, string label, string? value)
         {
             c.Item().Text(label).FontSize(10).Bold();
             c.Item().Background("#F5F5F5").Padding(8).Text(value ?? "---");

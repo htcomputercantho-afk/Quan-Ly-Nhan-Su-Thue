@@ -11,12 +11,12 @@ namespace TaxPersonnelManagement.Converters
         {
             if (value == null) return "---";
             string phone = value.ToString() ?? "";
-            
+
             // Remove any existing dots if present (just in case they are stored differently)
             string digits = new string(phone.Where(char.IsDigit).ToArray());
-            
+
             if (string.IsNullOrEmpty(digits)) return "---";
-            
+
             // Format: 0XXX.XXX.XXX
             string formatted = digits.Substring(0, Math.Min(4, digits.Length));
             if (digits.Length > 4)
@@ -27,7 +27,7 @@ namespace TaxPersonnelManagement.Converters
                     formatted += "." + digits.Substring(7, Math.Min(3, digits.Length - 7));
                 }
             }
-            
+
             return formatted;
         }
 

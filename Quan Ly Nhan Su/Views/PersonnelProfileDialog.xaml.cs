@@ -27,7 +27,7 @@ namespace TaxPersonnelManagement.Views
 
             if (p.LeaveHistories != null)
             {
-                foreach(var item in p.LeaveHistories)
+                foreach (var item in p.LeaveHistories)
                 {
                     // We only care about Phép năm taken this year
                     if (item.StartDate.Year == currentYear && item.LeaveType == "Phép năm")
@@ -53,7 +53,7 @@ namespace TaxPersonnelManagement.Views
 
 
             // Helper for precise duration
-            string CalcDuration(DateTime start, DateTime end) 
+            string CalcDuration(DateTime start, DateTime end)
             {
                 if (start > end) return "0 năm 0 tháng 0 ngày";
                 DateTime temp = start;
@@ -94,51 +94,51 @@ namespace TaxPersonnelManagement.Views
             }
 
             // 5. Leave History Visibility
-             // 6. Calculated Position Stats
-             if (p.PositionDecisionDate.HasValue)
-             {
-                 DateTime startDate = p.PositionDecisionDate.Value;
-                 DateTime endDate = p.PositionCalculationDate ?? DateTime.Now.Date;
-                 
-                 if (endDate >= startDate)
-                 {
-                     int wYears = endDate.Year - startDate.Year;
-                     if (startDate.Date > endDate.AddYears(-wYears)) wYears--;
+            // 6. Calculated Position Stats
+            if (p.PositionDecisionDate.HasValue)
+            {
+                DateTime startDate = p.PositionDecisionDate.Value;
+                DateTime endDate = p.PositionCalculationDate ?? DateTime.Now.Date;
 
-                     int wMonths = 0;
-                     DateTime tmpDate = startDate.AddYears(wYears);
-                     while (tmpDate.AddMonths(1) <= endDate)
-                     {
-                         wMonths++;
-                         tmpDate = tmpDate.AddMonths(1);
-                     }
-                     
-                     txtCalculatedYears.Text = wYears.ToString();
-                     txtCalculatedMonths.Text = wMonths.ToString();
-                 }
-             }
+                if (endDate >= startDate)
+                {
+                    int wYears = endDate.Year - startDate.Year;
+                    if (startDate.Date > endDate.AddYears(-wYears)) wYears--;
 
-             if (p.LeaveHistories != null && p.LeaveHistories.Count > 0)
-             {
-                 txtNoLeaveHistory.Visibility = Visibility.Collapsed;
-                 dgLeaveHistory.Visibility = Visibility.Visible;
-             }
-             else
-             {
-                 txtNoLeaveHistory.Visibility = Visibility.Visible;
-                 dgLeaveHistory.Visibility = Visibility.Collapsed;
-             }
+                    int wMonths = 0;
+                    DateTime tmpDate = startDate.AddYears(wYears);
+                    while (tmpDate.AddMonths(1) <= endDate)
+                    {
+                        wMonths++;
+                        tmpDate = tmpDate.AddMonths(1);
+                    }
 
-             if (p.SalaryRecords != null && p.SalaryRecords.Count > 0)
-             {
-                 txtNoSalaryHistory.Visibility = Visibility.Collapsed;
-                 dgSalaryHistory.Visibility = Visibility.Visible;
-             }
-             else
-             {
-                 txtNoSalaryHistory.Visibility = Visibility.Visible;
-                 dgSalaryHistory.Visibility = Visibility.Collapsed;
-             }
+                    txtCalculatedYears.Text = wYears.ToString();
+                    txtCalculatedMonths.Text = wMonths.ToString();
+                }
+            }
+
+            if (p.LeaveHistories != null && p.LeaveHistories.Count > 0)
+            {
+                txtNoLeaveHistory.Visibility = Visibility.Collapsed;
+                dgLeaveHistory.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                txtNoLeaveHistory.Visibility = Visibility.Visible;
+                dgLeaveHistory.Visibility = Visibility.Collapsed;
+            }
+
+            if (p.SalaryRecords != null && p.SalaryRecords.Count > 0)
+            {
+                txtNoSalaryHistory.Visibility = Visibility.Collapsed;
+                dgSalaryHistory.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                txtNoSalaryHistory.Visibility = Visibility.Visible;
+                dgSalaryHistory.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -162,7 +162,7 @@ namespace TaxPersonnelManagement.Views
             if (p == null) return;
 
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.FileName = $"HoSo_{p.StaffId}_{p.FullName}.pdf"; 
+            dlg.FileName = $"HoSo_{p.StaffId}_{p.FullName}.pdf";
             dlg.DefaultExt = ".pdf";
             dlg.Filter = "PDF Documents (.pdf)|*.pdf";
 
@@ -170,24 +170,26 @@ namespace TaxPersonnelManagement.Views
             {
                 string filePath = dlg.FileName;
                 LoadingOverlay.Visibility = Visibility.Visible;
-                
+
                 try
                 {
-                    await Task.Run(() => {
+                    await Task.Run(() =>
+                    {
                         TaxPersonnelManagement.Services.PdfExporter.Export(p, filePath);
                     });
-                    
+
                     LoadingOverlay.Visibility = Visibility.Collapsed;
                     var success = new SuccessWindow("Xuất file PDF thành công!");
                     success.Owner = this;
                     success.ShowDialog();
-                    
-                    try 
+
+                    try
                     {
                         var process = new System.Diagnostics.Process();
                         process.StartInfo = new System.Diagnostics.ProcessStartInfo(filePath) { UseShellExecute = true };
                         process.Start();
-                    } catch {}
+                    }
+                    catch { }
                 }
                 catch (Exception ex)
                 {

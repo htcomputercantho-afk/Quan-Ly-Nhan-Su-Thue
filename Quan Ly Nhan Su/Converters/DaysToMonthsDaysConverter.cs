@@ -11,7 +11,7 @@ namespace TaxPersonnelManagement.Converters
             if (value is double days || value is int || value is float || value is decimal)
             {
                 double dValue = System.Convert.ToDouble(value);
-                
+
                 if (dValue >= 30)
                 {
                     int m = (int)(dValue / 30);

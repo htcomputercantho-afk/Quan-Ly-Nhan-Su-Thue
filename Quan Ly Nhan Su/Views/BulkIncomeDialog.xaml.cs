@@ -15,7 +15,7 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             LoadYears(defaultYear);
             LoadDepartments();
-            
+
             cboMonth.SelectedIndex = DateTime.Now.Month - 1;
         }
 
@@ -68,7 +68,7 @@ namespace TaxPersonnelManagement.Views
             // Simple number formatting
             // Loại bỏ các ký tự không phải số (đề phòng trường hợp paste dữ liệu)
             string value = Regex.Replace(txtAmount.Text, "[^0-9]", "");
-            
+
             // Tạm thời gỡ bỏ sự kiện TextChanged để tránh lặp vô hạn khi gán lại Text
             txtAmount.TextChanged -= TxtAmount_TextChanged;
 
@@ -98,14 +98,14 @@ namespace TaxPersonnelManagement.Views
             // Validation
             if (cboMonth.SelectedIndex == -1 || cboYear.SelectedItem == null)
             {
-                new WarningWindow("Vui lòng chọn Tháng và Năm.", "Lỗi nhập liệu"){ Owner = this }.ShowDialog();
+                new WarningWindow("Vui lòng chọn Tháng và Năm.", "Lỗi nhập liệu") { Owner = this }.ShowDialog();
                 return;
             }
 
             string amountStr = txtAmount.Text.Replace(",", "").Replace(".", "");
             if (!decimal.TryParse(amountStr, out decimal amount) || amount <= 0)
             {
-                new WarningWindow("Vui lòng nhập số tiền hợp lệ lớn hơn 0.", "Lỗi nhập liệu"){ Owner = this }.ShowDialog();
+                new WarningWindow("Vui lòng nhập số tiền hợp lệ lớn hơn 0.", "Lỗi nhập liệu") { Owner = this }.ShowDialog();
                 return;
             }
 
@@ -117,7 +117,7 @@ namespace TaxPersonnelManagement.Views
 
             int selectedMonth = cboMonth.SelectedIndex + 1;
             int selectedYear = (int)cboYear.SelectedItem;
-            
+
             // Build query
             try
             {
@@ -142,7 +142,7 @@ namespace TaxPersonnelManagement.Views
                     string dept = cboDepartment.SelectedItem?.ToString() ?? "";
                     if (string.IsNullOrEmpty(dept))
                     {
-                        new WarningWindow("Vui lòng chọn phòng ban.", "Lỗi nhập liệu"){ Owner = this }.ShowDialog();
+                        new WarningWindow("Vui lòng chọn phòng ban.", "Lỗi nhập liệu") { Owner = this }.ShowDialog();
                         return;
                     }
                     personnelQuery = personnelQuery.Where(p => p.Department == dept);
@@ -157,24 +157,24 @@ namespace TaxPersonnelManagement.Views
 
                 if (targetPersonnel.Count == 0)
                 {
-                    new WarningWindow("Không tìm thấy công chức nào thỏa mãn điều kiện đã chọn.", "Thông báo"){ Owner = this }.ShowDialog();
+                    new WarningWindow("Không tìm thấy công chức nào thỏa mãn điều kiện đã chọn.", "Thông báo") { Owner = this }.ShowDialog();
                     return;
                 }
 
                 // Confirm dialog
                 var confirm = new ConfirmDialog($"Bạn chuẩn bị thêm {amount:N0} đ vào [Thu nhập khác] cho {targetPersonnel.Count} người.\nĐối tượng: {targetDesc}\nTháng: {selectedMonth}/{selectedYear}\nNội dung: {reason}\n\nBạn có chắc chắn muốn thực hiện?");
                 confirm.Owner = this;
-                
+
                 if (confirm.ShowDialog() == true)
                 {
                     int updateCount = 0;
-                    
+
                     foreach (var person in targetPersonnel)
                     {
-                        var record = db.IncomeRecords.FirstOrDefault(r => 
-                            r.PersonnelId == person.Id && 
-                            r.Year == selectedYear && 
-                            r.Month == selectedMonth && 
+                        var record = db.IncomeRecords.FirstOrDefault(r =>
+                            r.PersonnelId == person.Id &&
+                            r.Year == selectedYear &&
+                            r.Month == selectedMonth &&
                             r.IncomeType == "Thu nhập khác");
 
                         if (record != null)
@@ -203,17 +203,17 @@ namespace TaxPersonnelManagement.Views
                     }
 
                     db.SaveChanges();
-                    
+
                     var success = new SuccessWindow($"Đã nhập thu nhập thành công cho {updateCount} công chức!");
                     success.Owner = this;
                     success.ShowDialog();
-                    
+
                     this.DialogResult = true;
                 }
             }
             catch (Exception ex)
             {
-                new WarningWindow("Lỗi khi cập nhật dữ liệu: " + ex.Message, "Lỗi hệ thống"){ Owner = this }.ShowDialog();
+                new WarningWindow("Lỗi khi cập nhật dữ liệu: " + ex.Message, "Lỗi hệ thống") { Owner = this }.ShowDialog();
             }
         }
     }

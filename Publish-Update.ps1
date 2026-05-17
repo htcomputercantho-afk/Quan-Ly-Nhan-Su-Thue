@@ -38,7 +38,7 @@ if (-not (Test-Path "changelog.txt")) {
 }
 Write-Host ">> Notepad se duoc mo de ban nhap chi tiet noi dung thay doi."
 Write-Host ">> Vui long luu file (Ctrl+S) va dong Notepad khi hoan tat." -ForegroundColor Cyan
-Start-Process notepad "changelog.txt" -Wait
+# Start-Process notepad "changelog.txt" -Wait
 
 # 2. Cap nhat file update.xml
 Write-Host "2. Cap nhat thong tin trong update.xml..."
@@ -68,4 +68,4 @@ Write-Host "2. GitHub Actions dang tu dong build ban 'Single EXE' tai tab Action
 Write-Host "3. Sau vai phut, ban se thay file ZIP san sang trong phan Release!" -ForegroundColor Green
 Write-Host "=============================================" -ForegroundColor Green
 
-Pause
+# Pause

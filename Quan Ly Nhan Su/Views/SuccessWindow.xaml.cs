@@ -9,7 +9,7 @@ namespace TaxPersonnelManagement.Views
         public SuccessWindow(string? message = null, string? subMessage = null, string? filePath = null, bool showActions = false)
         {
             InitializeComponent();
-            
+
             if (!string.IsNullOrEmpty(message))
             {
                 txtMessage.Text = message;
@@ -25,7 +25,7 @@ namespace TaxPersonnelManagement.Views
             {
                 this.FilePath = filePath;
                 pnlActions.Visibility = showActions ? Visibility.Visible : Visibility.Collapsed;
-                
+
                 if (string.IsNullOrEmpty(subMessage))
                 {
                     txtSubMessage.Visibility = Visibility.Visible;

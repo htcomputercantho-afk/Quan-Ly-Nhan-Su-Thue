@@ -28,7 +28,7 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             LoadAllLeaveSummaries();
         }
-        
+
         private void Grid_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             if (!e.Handled)
@@ -71,7 +71,7 @@ namespace TaxPersonnelManagement.Views
             else
             {
                 string[] keywords = RemoveSign(rawKeyword.ToLower()).Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                _filteredSummaries = _allSummaries.Where(s => 
+                _filteredSummaries = _allSummaries.Where(s =>
                 {
                     string searchTarget = RemoveSign($"{s.FullName} {s.StaffId} {s.IdentityCardNumber} {s.DetailedContent}".ToLower());
                     return keywords.All(k => searchTarget.Contains(k));
@@ -91,7 +91,7 @@ namespace TaxPersonnelManagement.Views
         private string RemoveSign(string text)
         {
             if (string.IsNullOrEmpty(text)) return string.Empty;
-            
+
             // Normalize to Form D (decomposed) to separate base characters from accents
             string normalizedString = text.Normalize(System.Text.NormalizationForm.FormD);
             System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
@@ -108,7 +108,7 @@ namespace TaxPersonnelManagement.Views
             // Convert back to Form C and replace specific characters like 'đ'
             string result = stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC);
             result = result.Replace('đ', 'd').Replace('Đ', 'D');
-            
+
             return result;
         }
 
@@ -187,7 +187,7 @@ namespace TaxPersonnelManagement.Views
             {
                 int selectedYear = DateTime.Now.Year;
                 txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
-                
+
                 // Update DataGrid dynamic headers
                 colOldYear.Header = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
                 colCurrentYear.Header = $"Số ngày phép nghỉ theo chế độ năm {selectedYear}";
@@ -210,12 +210,14 @@ namespace TaxPersonnelManagement.Views
 
                     var personnelList = db.Personnel.Include(p => p.LeaveHistories)
                                           .AsEnumerable()
-                                          .OrderBy(p => {
+                                          .OrderBy(p =>
+                                          {
                                               string dept = (p.Department ?? "").Trim();
                                               int index = deptOrder.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
                                               return index == -1 ? 999 : index;
                                           })
-                                          .ThenBy(p => {
+                                          .ThenBy(p =>
+                                          {
                                               string pos = p.Position?.ToLower() ?? "";
                                               string dept3 = (p.Department ?? "").ToLower();
 
@@ -235,7 +237,7 @@ namespace TaxPersonnelManagement.Views
                                           })
                                           .ThenBy(p => p.FullName)
                                           .ToList();
-                    
+
                     var results = new List<LeaveSummaryItem>();
                     int index = 1;
 
@@ -257,7 +259,7 @@ namespace TaxPersonnelManagement.Views
                             .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear)
                             .OrderBy(h => h.StartDate)
                             .ToList();
-                        
+
                         var detailLines = new List<LeaveDetailLine>();
                         for (int i = 0; i < histories.Count; i++)
                         {
@@ -265,7 +267,7 @@ namespace TaxPersonnelManagement.Views
                             bool isOldYear = (h.LeaveYear == prevYear);
                             string reason = h.UserReasonDisplay;
                             string note = string.IsNullOrWhiteSpace(reason) ? "" : $": {reason}";
-                            
+
                             detailLines.Add(new LeaveDetailLine
                             {
                                 MainContent = $"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {h.StartDate:dd/MM/yyyy} đến ngày {h.EndDate:dd/MM/yyyy}{note}",
@@ -314,7 +316,7 @@ namespace TaxPersonnelManagement.Views
                 DateTime now = DateTime.Now;
                 int years = now.Year - start.Year;
                 if (now < start.AddYears(years)) years--;
-                
+
                 if (years < 0) years = 0;
                 baseDays += (years / 5);
             }
@@ -395,7 +397,7 @@ namespace TaxPersonnelManagement.Views
                         worksheet.Cell(3, 5).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
                         worksheet.Cell(3, 6).Value = $"Số ngày phép nghỉ theo chế độ năm {selectedYear}";
                         worksheet.Cell(3, 7).Value = "Tổng";
-                        
+
                         var remRange = worksheet.Range("H2:H3");
                         remRange.Merge();
                         remRange.Value = "Phép còn lại";
@@ -448,16 +450,16 @@ namespace TaxPersonnelManagement.Views
                             for (int i = 0; i < item.DetailLines.Count; i++)
                             {
                                 var line = item.DetailLines[i];
-                                
+
                                 // Nội dung chính (không in đậm)
                                 richText.AddText(line.MainContent);
-                                
+
                                 // Hậu tố (in đậm nếu là năm cũ)
                                 if (!string.IsNullOrEmpty(line.Suffix))
                                 {
                                     richText.AddText(line.Suffix).SetBold(true);
                                 }
-                                
+
                                 if (i < item.DetailLines.Count - 1)
                                 {
                                     richText.AddNewLine();
@@ -470,12 +472,12 @@ namespace TaxPersonnelManagement.Views
                                 var cell = worksheet.Cell(currentRow, i);
                                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                                 cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                                
+
                                 if (i != 2 && i != 9) // Căn giữa trừ cột Tên và Nội dung chi tiết
                                 {
                                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                 }
-                                
+
                                 if (i == 9) // Warp text cho nội dung chi tiết
                                 {
                                     cell.Style.Alignment.WrapText = true;

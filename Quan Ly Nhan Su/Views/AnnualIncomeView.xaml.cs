@@ -89,7 +89,7 @@ namespace TaxPersonnelManagement.Views
             years.Sort((a, b) => b.CompareTo(a)); // Sort descending
 
             int? selected = cboYear.SelectedItem as int?;
-            
+
             cboYear.ItemsSource = years;
 
             if (selected.HasValue && years.Contains(selected.Value))
@@ -104,10 +104,10 @@ namespace TaxPersonnelManagement.Views
 
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string keyword = txtSearch.Text.ToLower();
-            lvPersonnel.ItemsSource = _allPersonnel.Where(p => 
-                (p.FullName != null && p.FullName.ToLower().Contains(keyword)) ||
-                (p.StaffId != null && p.StaffId.ToLower().Contains(keyword))).ToList();
+            string keyword = txtSearch.Text.Trim();
+            lvPersonnel.ItemsSource = _allPersonnel.Where(p =>
+                TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.FullName, keyword) ||
+                TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.StaffId, keyword)).ToList();
         }
 
         private void LvPersonnel_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -129,7 +129,7 @@ namespace TaxPersonnelManagement.Views
             {
                 _matrixData.Clear();
                 int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
-                
+
                 var salaryRow = new AnnualIncomeRowViewModel { IncomeType = "Lương" };
                 var overtimeRow = new AnnualIncomeRowViewModel { IncomeType = "Làm thêm giờ" };
                 var otherRow = new AnnualIncomeRowViewModel { IncomeType = "Thu nhập khác" };
@@ -224,7 +224,7 @@ namespace TaxPersonnelManagement.Views
             txtTotalOther.Text = totalOther.ToString("N0") + " đ";
             txtGrandTotal.Text = (totalSalary + totalOvertime + totalOther).ToString("N0") + " đ";
         }
-        
+
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             if (lvPersonnel.SelectedItem is Personnel selectedPerson)
@@ -237,9 +237,9 @@ namespace TaxPersonnelManagement.Views
                         var existingRecords = db.IncomeRecords
                             .Where(r => r.PersonnelId == selectedPerson.Id && r.Year == selectedYear)
                             .ToList();
-                            
+
                         db.IncomeRecords.RemoveRange(existingRecords);
-                        
+
                         var salaryRow = _matrixData[0];
                         var overtimeRow = _matrixData[1];
                         var otherRow = _matrixData[2];
@@ -255,9 +255,9 @@ namespace TaxPersonnelManagement.Views
                             if (otherRow.GetAmount(m) > 0 || !string.IsNullOrWhiteSpace(otherRow.GetNote(m)))
                                 db.IncomeRecords.Add(new IncomeRecord { PersonnelId = selectedPerson.Id, Year = selectedYear, Month = m, IncomeType = "Thu nhập khác", Amount = otherRow.GetAmount(m), Note = otherRow.GetNote(m) });
                         }
-                        
+
                         db.SaveChanges();
-                        
+
                         var successDialog = new SuccessWindow("Đã lưu dữ liệu thu nhập thành công!");
                         successDialog.Owner = Window.GetWindow(this);
                         successDialog.ShowDialog();
@@ -271,7 +271,7 @@ namespace TaxPersonnelManagement.Views
                 }
             }
         }
-        
+
         private async void BtnImportExcel_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
@@ -285,7 +285,7 @@ namespace TaxPersonnelManagement.Views
                 try
                 {
                     LoadingOverlay.Visibility = Visibility.Visible;
-                    
+
                     // Configure text encoding for ExcelDataReader (required for .NET Core)
                     System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
@@ -298,7 +298,8 @@ namespace TaxPersonnelManagement.Views
 
                     string filePath = openFileDialog.FileName;
 
-                    await Task.Run(() => {
+                    await Task.Run(() =>
+                    {
                         using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
                         {
                             using (var reader = ExcelReaderFactory.CreateReader(stream))
@@ -312,17 +313,17 @@ namespace TaxPersonnelManagement.Views
                                 });
 
                                 if (dataSet.Tables.Count == 0) return;
-                                
+
                                 // We need to find the correct table in case it's not the first one (e.g. TH vs T01)
                                 DataTable? targetTable = null;
-                                
+
                                 foreach (DataTable table in dataSet.Tables)
                                 {
                                     // 1. Find the header row containing our key identifying strings
                                     for (int i = 0; i < Math.Min(10, table.Rows.Count); i++)
                                     {
                                         string rowString = string.Join(" ", table.Rows[i].ItemArray).ToUpper();
-                                        
+
                                         if (rowString.Contains("BẢNG THANH TOÁN TIỀN LƯƠNG"))
                                         {
                                             incomeType = "Lương";
@@ -363,7 +364,7 @@ namespace TaxPersonnelManagement.Views
                                         if (row.ItemArray.Length > Math.Max(cccdIndex, amountIndex))
                                         {
                                             string cccdStr = row[cccdIndex]?.ToString()?.Trim() ?? "";
-                                            string amountStr = row[amountIndex]?.ToString()?.Trim() ?? ""; 
+                                            string amountStr = row[amountIndex]?.ToString()?.Trim() ?? "";
 
                                             // Simple heuristic: if CCCD column is a long string of digits, it's a CCCD
                                             if (!string.IsNullOrEmpty(cccdStr) && Regex.IsMatch(cccdStr, @"^\d{9,12}$"))
@@ -396,7 +397,8 @@ namespace TaxPersonnelManagement.Views
                     LoadingOverlay.Visibility = Visibility.Visible;
 
                     // 3. Save to database
-                    await Task.Run(() => {
+                    await Task.Run(() =>
+                    {
                         using (var db = new AppDbContext())
                         {
                             int successCount = 0;
@@ -408,9 +410,9 @@ namespace TaxPersonnelManagement.Views
                                 if (person != null)
                                 {
                                     // Remove existing record for this month/year/type
-                                    var existing = db.IncomeRecords.FirstOrDefault(r => 
-                                        r.PersonnelId == person.Id && 
-                                        r.Year == detectedYear && 
+                                    var existing = db.IncomeRecords.FirstOrDefault(r =>
+                                        r.PersonnelId == person.Id &&
+                                        r.Year == detectedYear &&
                                         r.Month == detectedMonth &&
                                         r.IncomeType == incomeType);
 
@@ -438,16 +440,17 @@ namespace TaxPersonnelManagement.Views
                             }
 
                             db.SaveChanges();
-                            
+
                             // Return results to UI thread
-                            Dispatcher.Invoke(() => {
+                            Dispatcher.Invoke(() =>
+                            {
                                 // Change selected year in combo box to imported year if different, to show results instantly
                                 if ((int)(cboYear.SelectedItem ?? 0) != detectedYear)
                                 {
                                     LoadYears();
                                     cboYear.SelectedItem = detectedYear;
                                 }
-                                
+
                                 // Force refresh grid if a user is selected
                                 if (lvPersonnel.SelectedItem != null)
                                 {
@@ -475,7 +478,7 @@ namespace TaxPersonnelManagement.Views
         {
             int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
             var dialog = new BulkIncomeDialog(selectedYear) { Owner = Window.GetWindow(this) };
-            
+
             if (dialog.ShowDialog() == true)
             {
                 // Refresh data
@@ -487,7 +490,7 @@ namespace TaxPersonnelManagement.Views
         private async void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         {
             int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
-            
+
             var saveFileDialog = new SaveFileDialog
             {
                 Filter = "Excel Files|*.xlsx",
@@ -499,10 +502,11 @@ namespace TaxPersonnelManagement.Views
             {
                 string filePath = saveFileDialog.FileName;
                 LoadingOverlay.Visibility = Visibility.Visible;
-                
+
                 try
                 {
-                    await Task.Run(() => {
+                    await Task.Run(() =>
+                    {
                         using (var db = new AppDbContext())
                         {
                             var personnelList = db.Personnel.OrderBy(p => p.FullName).ToList();
@@ -547,7 +551,7 @@ namespace TaxPersonnelManagement.Views
                                     // Formatting numbers
                                     worksheet.Range(row, 3, row, 6).Style.NumberFormat.Format = "#,##0";
                                     worksheet.Range(row, 1, row, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                                    
+
                                     row++;
                                 }
 
@@ -627,8 +631,8 @@ namespace TaxPersonnelManagement.Views
         private decimal _m12Amount; public decimal M12Amount { get => _m12Amount; set { _m12Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
         private string _m12Note = ""; public string M12Note { get => _m12Note; set { _m12Note = value; OnPropertyChanged(); } }
 
-        public decimal Total => 
-            M1Amount + M2Amount + M3Amount + M4Amount + M5Amount + M6Amount + 
+        public decimal Total =>
+            M1Amount + M2Amount + M3Amount + M4Amount + M5Amount + M6Amount +
             M7Amount + M8Amount + M9Amount + M10Amount + M11Amount + M12Amount;
 
         public void SetAmount(int month, decimal amount)

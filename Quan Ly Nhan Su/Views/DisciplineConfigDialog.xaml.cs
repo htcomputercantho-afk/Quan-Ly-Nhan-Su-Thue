@@ -24,20 +24,20 @@ namespace TaxPersonnelManagement.Views
         private void LoadData()
         {
             _items.Clear();
-            
-            try 
+
+            try
             {
                 using (var context = new AppDbContext())
                 {
                     // Ensure table exists (just in case migration failed or direct SQL needed)
                     // But usually App.xaml.cs handles migration. We'll trust it or use simple check.
-                    
+
                     var list = context.DisciplineTypes.OrderBy(x => x.Id).ToList();
-                    
+
                     // Seed if empty
                     if (list.Count == 0)
                     {
-                        var defaults = new[] 
+                        var defaults = new[]
                         {
                             "Khiển trách",
                             "Cảnh cáo",
@@ -95,7 +95,7 @@ namespace TaxPersonnelManagement.Views
                             itemToUpdate.Name = txtName.Text.Trim();
                             context.SaveChanges();
                         }
-                        
+
                         // Reset UI
                         _editingItem = null;
                         if (btnAdd.Content is StackPanel sp && sp.Children[1] is TextBlock tb)
@@ -119,19 +119,19 @@ namespace TaxPersonnelManagement.Views
         {
             if (sender is Button btn && btn.Tag is int id)
             {
-                 var item = _items.FirstOrDefault(x => x.Id == id);
-                 if (item != null)
-                 {
-                     _editingItem = item;
-                     txtName.Text = item.Name;
-                     
-                     // Change button text to "Lưu"
-                     if (btnAdd.Content is StackPanel sp && sp.Children.Count > 1 && sp.Children[1] is TextBlock tb)
-                     {
-                         tb.Text = "Lưu";
-                     }
-                     txtName.Focus();
-                 }
+                var item = _items.FirstOrDefault(x => x.Id == id);
+                if (item != null)
+                {
+                    _editingItem = item;
+                    txtName.Text = item.Name;
+
+                    // Change button text to "Lưu"
+                    if (btnAdd.Content is StackPanel sp && sp.Children.Count > 1 && sp.Children[1] is TextBlock tb)
+                    {
+                        tb.Text = "Lưu";
+                    }
+                    txtName.Focus();
+                }
             }
         }
 

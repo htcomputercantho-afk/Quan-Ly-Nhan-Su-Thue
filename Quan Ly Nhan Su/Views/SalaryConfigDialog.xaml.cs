@@ -53,7 +53,7 @@ namespace TaxPersonnelManagement.Views
                                   .Where(s => s.RankCode == rankCode)
                                   .OrderBy(s => s.Coefficient) // Order by coeff
                                   .ToList();
-                
+
                 foreach (var item in list)
                 {
                     _specs.Add(item);
@@ -77,7 +77,7 @@ namespace TaxPersonnelManagement.Views
 
             // Normalize input: replace comma with dot
             string input = txtCoefficient.Text.Replace(",", ".");
-            
+
             // Remove any characters that are not digits or dots
             string cleanInput = Regex.Replace(input, "[^0-9.]", "");
 
@@ -105,10 +105,10 @@ namespace TaxPersonnelManagement.Views
                 };
                 context.RankSalarySpecs.Add(newSpec);
                 context.SaveChanges();
-                
+
                 // Reload to get ID
                 LoadSpecs(selectedRank.Code);
-                
+
                 // Clear inputs
                 txtSalaryStep.Clear();
                 txtCoefficient.Clear();
@@ -129,7 +129,7 @@ namespace TaxPersonnelManagement.Views
                         {
                             context.RankSalarySpecs.Remove(item);
                             context.SaveChanges();
-                            
+
                             // Remove from UI list directly
                             var uiItem = _specs.FirstOrDefault(s => s.Id == id);
                             if (uiItem != null) _specs.Remove(uiItem);

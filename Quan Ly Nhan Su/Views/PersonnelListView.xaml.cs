@@ -13,7 +13,7 @@ namespace TaxPersonnelManagement.Views
     public partial class PersonnelListView : UserControl
     {
         private string _currentCardFilter = "All";
-        
+
         // Pagination
         private List<Personnel> _fullFilteredList = new List<Personnel>();
         private int _currentPage = 1;
@@ -77,9 +77,9 @@ namespace TaxPersonnelManagement.Views
 
             // ── Margin top section ──────────────────────────────
             // Tăng nhẹ Top margin từ 6 lên 12 để hint của ComboBox (Outlined) không bị cắt
-            spTopContent.Margin  = c ? new Thickness(10, 12, 10, 4) : new Thickness(15, 18, 15, 10);
-            wpKPIRow.Margin      = c ? new Thickness(0, 0, 0, 2)    : new Thickness(0, 0, 0, 10);
-            wpToolbarRow.Margin  = c ? new Thickness(0, 2, 0, 4)    : new Thickness(0, 10, 0, 10);
+            spTopContent.Margin = c ? new Thickness(10, 12, 10, 4) : new Thickness(15, 18, 15, 10);
+            wpKPIRow.Margin = c ? new Thickness(0, 0, 0, 2) : new Thickness(0, 0, 0, 10);
+            wpToolbarRow.Margin = c ? new Thickness(0, 2, 0, 4) : new Thickness(0, 10, 0, 10);
 
             // ── Subtitle: Thu nhỏ thay vì ẩn hoàn toàn nếu user muốn thấy "Tiêu đề"
             txtSubtitle.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
@@ -87,21 +87,21 @@ namespace TaxPersonnelManagement.Views
             // ── KPI Cards: height + width ───────────────────────
             double cardH = c ? 54 : 100;
             double cardW = c ? 160 : 260;
-            cardTotal.Height     = cardH; cardTotal.Width     = cardW;
+            cardTotal.Height = cardH; cardTotal.Width = cardW;
             cardMaternity.Height = cardH; cardMaternity.Width = cardW;
-            cardSick.Height      = cardH; cardSick.Width      = cardW;
+            cardSick.Height = cardH; cardSick.Width = cardW;
 
             // ── Ẩn/hiện icon bên trong card ────────────────────
-            iconTotal.Visibility     = c ? Visibility.Collapsed : Visibility.Visible;
+            iconTotal.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
             iconMaternity.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
-            iconSick.Visibility      = c ? Visibility.Collapsed : Visibility.Visible;
+            iconSick.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
 
             // ── Thu nhỏ font chữ số và label ───────────────────
             double numFont = c ? 18 : 26;
             double lblFont = c ? 10 : 13;
-            txtTotalCount.FontSize     = numFont; lblTotal.FontSize     = lblFont;
+            txtTotalCount.FontSize = numFont; lblTotal.FontSize = lblFont;
             txtMaternityCount.FontSize = numFont; lblMaternity.FontSize = lblFont;
-            txtSickCount.FontSize      = numFont; lblSick.FontSize      = lblFont;
+            txtSickCount.FontSize = numFont; lblSick.FontSize = lblFont;
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
@@ -135,13 +135,14 @@ namespace TaxPersonnelManagement.Views
                                       .Where(x => !string.IsNullOrEmpty(x))
                                       .Distinct()
                                       .ToList()
-                                      .OrderBy(x => {
+                                      .OrderBy(x =>
+                                      {
                                           int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
                                           return idx == -1 ? 999 : idx;
                                       })
                                       .ThenBy(x => x)
                                       .ToList();
-                
+
                 allDepts.Insert(0, "-- Tất cả bộ phận --");
                 cbDepartmentFilter.ItemsSource = allDepts;
                 cbDepartmentFilter.SelectedIndex = 0;
@@ -157,18 +158,21 @@ namespace TaxPersonnelManagement.Views
                                    .Include(p => p.SalaryRecords)
                                    .AsQueryable();
 
-                if (!string.IsNullOrEmpty(search))
-                {
-                    string s = search.ToLower();
-                    query = query.Where(p => (p.FullName != null && p.FullName.ToLower().Contains(s)) || 
-                                             (p.Department != null && p.Department.ToLower().Contains(s)));
-                }
-
                 if (cbDepartmentFilter.SelectedItem is string dept && dept != "-- Tất cả bộ phận --")
                 {
                     query = query.Where(p => p.Department == dept);
                 }
-                
+
+                var allPersonnel = query.ToList();
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    allPersonnel = allPersonnel.Where(p =>
+                        TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.FullName, search) ||
+                        TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.Department, search)
+                    ).ToList();
+                }
+
                 var deptOrder = new List<string> {
                     "Ban lãnh đạo",
                     "Tổ Hành chính, tổng hợp",
@@ -183,13 +187,15 @@ namespace TaxPersonnelManagement.Views
                     "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                 };
 
-                var list = query.AsEnumerable()
-                                .OrderBy(p => {
+                var list = allPersonnel.AsEnumerable()
+                                .OrderBy(p =>
+                                {
                                     string dept2 = (p.Department ?? "").Trim();
                                     int index = deptOrder.FindIndex(d => d.Equals(dept2, StringComparison.OrdinalIgnoreCase));
                                     return index == -1 ? 999 : index;
                                 })
-                                .ThenBy(p => {
+                                .ThenBy(p =>
+                                {
                                     string pos = p.Position?.ToLower() ?? "";
                                     string dept3 = (p.Department ?? "").ToLower();
 
@@ -213,33 +219,33 @@ namespace TaxPersonnelManagement.Views
                 txtTotalCount.Text = list.Count.ToString();
 
                 var now = DateTime.Now.Date;
-                
-                int maternity = list.Count(p => p.LeaveHistories != null && 
-                                                p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") && 
+
+                int maternity = list.Count(p => p.LeaveHistories != null &&
+                                                p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") &&
                                                                           l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtMaternityCount.Text = maternity.ToString();
 
-                int sick = list.Count(p => p.LeaveHistories != null && 
-                                           p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) && 
+                int sick = list.Count(p => p.LeaveHistories != null &&
+                                           p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) &&
                                                                       l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtSickCount.Text = sick.ToString();
 
                 var displayList = list.AsEnumerable();
                 if (_currentCardFilter == "Maternity")
                 {
-                    displayList = displayList.Where(p => p.LeaveHistories != null && 
-                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") && 
+                    displayList = displayList.Where(p => p.LeaveHistories != null &&
+                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản") &&
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
                 else if (_currentCardFilter == "Sick")
                 {
-                    displayList = displayList.Where(p => p.LeaveHistories != null && 
-                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) && 
+                    displayList = displayList.Where(p => p.LeaveHistories != null &&
+                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) &&
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
 
                 _fullFilteredList = displayList.ToList();
-                
+
                 if (TargetPersonnelId.HasValue)
                 {
                     int index = _fullFilteredList.FindIndex(p => p.Id == TargetPersonnelId.Value);
@@ -261,7 +267,7 @@ namespace TaxPersonnelManagement.Views
         {
             int totalItems = _fullFilteredList.Count;
             _totalPages = Math.Max(1, (int)Math.Ceiling((double)totalItems / PageSize));
-            
+
             if (_currentPage > _totalPages) _currentPage = _totalPages;
             if (_currentPage < 1) _currentPage = 1;
 
@@ -285,7 +291,8 @@ namespace TaxPersonnelManagement.Views
                 if (targetItem != null)
                 {
                     // Use Dispatcher to ensure the DataGrid has loaded the items
-                    Dispatcher.BeginInvoke(new Action(() => {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
                         dgPersonnel.SelectedItem = targetItem;
                         dgPersonnel.ScrollIntoView(targetItem);
                         TargetPersonnelId = null; // Reset after focusing
@@ -374,10 +381,10 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-             if (Application.Current.MainWindow is MainWindow mw)
-             {
-                 mw.NavigateToPersonnelDetail(null);
-             }
+            if (Application.Current.MainWindow is MainWindow mw)
+            {
+                mw.NavigateToPersonnelDetail(null);
+            }
         }
 
         /// <summary>
@@ -470,10 +477,11 @@ namespace TaxPersonnelManagement.Views
                     LoadingOverlay.Visibility = Visibility.Visible;
                     try
                     {
-                        await Task.Run(() => {
+                        await Task.Run(() =>
+                        {
                             TaxPersonnelManagement.Services.ExcelExporter.Export(_fullFilteredList, filePath);
                         });
-                        
+
                         LoadingOverlay.Visibility = Visibility.Collapsed;
                         var success = new SuccessWindow("Xuất Excel thành công!", null, filePath, true);
                         if (Window.GetWindow(this) is Window parent) success.Owner = parent;
@@ -520,8 +528,8 @@ namespace TaxPersonnelManagement.Views
                         }
 
                         // Lọc những người chưa có trong DB (dựa trên CCCD)
-                        var newData = importedData.Where(p => 
-                            string.IsNullOrEmpty(p.IdentityCardNumber) || 
+                        var newData = importedData.Where(p =>
+                            string.IsNullOrEmpty(p.IdentityCardNumber) ||
                             !existingIds.Contains(p.IdentityCardNumber)
                         ).ToList();
 
@@ -544,8 +552,9 @@ namespace TaxPersonnelManagement.Views
                         if (confirmDialog.ShowDialog() == true)
                         {
                             LoadingOverlay.Visibility = Visibility.Visible;
-                            
-                            await Task.Run(() => {
+
+                            await Task.Run(() =>
+                            {
                                 using (var context = new AppDbContext())
                                 {
                                     context.Personnel.AddRange(newData);

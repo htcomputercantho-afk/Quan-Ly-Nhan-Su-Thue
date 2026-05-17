@@ -19,7 +19,7 @@ namespace TaxPersonnelManagement.Converters
 
             if (hasMajor && hasUni)
                 return $"{major} - {university}";
-            
+
             if (hasMajor)
                 return major;
 

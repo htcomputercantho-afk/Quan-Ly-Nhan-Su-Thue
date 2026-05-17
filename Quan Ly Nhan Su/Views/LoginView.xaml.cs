@@ -44,11 +44,13 @@ namespace TaxPersonnelManagement.Views
                     {
                         txtUsername.Text = creds.Username;
                         // Simple Base64 decode
-                        try {
+                        try
+                        {
                             byte[] data = Convert.FromBase64String(creds.Password);
                             txtPassword.Password = System.Text.Encoding.UTF8.GetString(data);
-                        } catch { txtPassword.Password = ""; }
-                        
+                        }
+                        catch { txtPassword.Password = ""; }
+
                         chkRememberMe.IsChecked = true;
                         App.DebugLog("Credentials loaded.");
                     }
@@ -123,8 +125,8 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                 App.DebugLog($"Login Error: {ex.Message}");
-                 MessageBox.Show($"Lỗi đăng nhập: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                App.DebugLog($"Login Error: {ex.Message}");
+                MessageBox.Show($"Lỗi đăng nhập: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -146,7 +148,7 @@ namespace TaxPersonnelManagement.Views
                 _isSyncing = true;
                 txtVisiblePassword.Text = txtPassword.Password;
                 _isSyncing = false;
-                
+
                 txtVisiblePassword.Visibility = Visibility.Visible;
                 txtPassword.Visibility = Visibility.Collapsed;
                 if (icon != null) icon.Kind = MaterialDesignThemes.Wpf.PackIconKind.EyeOff;
@@ -166,21 +168,21 @@ namespace TaxPersonnelManagement.Views
 
         private void txtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
-             if (_isSyncing) return;
-             
-             // If typing in PasswordBox (Hidden Mode), update hidden TextBox value
-             // (though TextBox is collapsed, we keep it ready or just sync on toggle).
-             // Syncing on toggle is safer to avoid string mismanagement, 
-             // but if we want 'real-time' state, we can sync. 
-             // Currently, we only sync ON TOGGLE in the click handler, which is sufficient for this simple use case.
-             // But if specific requirement needs typing in visible mode:
-             
-             if (txtPassword.Visibility == Visibility.Visible)
-             {
-                 _isSyncing = true;
-                 txtVisiblePassword.Text = txtPassword.Password;
-                 _isSyncing = false;
-             }
+            if (_isSyncing) return;
+
+            // If typing in PasswordBox (Hidden Mode), update hidden TextBox value
+            // (though TextBox is collapsed, we keep it ready or just sync on toggle).
+            // Syncing on toggle is safer to avoid string mismanagement, 
+            // but if we want 'real-time' state, we can sync. 
+            // Currently, we only sync ON TOGGLE in the click handler, which is sufficient for this simple use case.
+            // But if specific requirement needs typing in visible mode:
+
+            if (txtPassword.Visibility == Visibility.Visible)
+            {
+                _isSyncing = true;
+                txtVisiblePassword.Text = txtPassword.Password;
+                _isSyncing = false;
+            }
         }
 
         private void txtVisiblePassword_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)

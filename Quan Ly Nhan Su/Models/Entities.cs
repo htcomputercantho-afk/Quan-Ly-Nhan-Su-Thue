@@ -66,27 +66,27 @@ namespace TaxPersonnelManagement.Models
         // Tab 2: Position History Info
         public DateTime? PositionDecisionDate { get; set; } // Thời gian công tác tính theo QĐ gần nhất
         public DateTime? PositionCalculationDate { get; set; } // Thời điểm tính thời gian công tác
-        
+
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public DateTime DisplayPositionCalculationDate => DateTime.Now;
-        
+
         public string? PositionYear { get; set; } // Năm giữ vị trí công tác
-        
+
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public string CalculatedPositionYear
         {
             get
             {
                 if (!PositionDecisionDate.HasValue) return PositionYear ?? "";
-                
+
                 DateTime startDate = PositionDecisionDate.Value;
                 DateTime endDate = DateTime.Now;
-                
+
                 if (endDate < startDate) return "0 năm 0 tháng";
-                
+
                 int years = endDate.Year - startDate.Year;
                 if (startDate.Date > endDate.AddYears(-years)) years--;
-                
+
                 DateTime tmpDate = startDate.AddYears(years);
                 int months = 0;
                 while (tmpDate.AddMonths(1) <= endDate)
@@ -94,11 +94,11 @@ namespace TaxPersonnelManagement.Models
                     months++;
                     tmpDate = tmpDate.AddMonths(1);
                 }
-                
+
                 return $"{years} năm {months} tháng";
             }
         }
-        
+
         public string? DetailedWorkHistory { get; set; } // Quá trình công tác chi tiết
 
         // Tab 3: Retirement Info
@@ -228,7 +228,7 @@ namespace TaxPersonnelManagement.Models
         public int Id { get; set; }
         public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
         public virtual Personnel? Personnel { get; set; }
-        
+
         public DateTime? StartDate { get; set; } // Thời gian bắt đầu
         public DateTime? EndDate { get; set; } // Thời gian kết thúc
         public DateTime? SalaryCalculationDate { get; set; } // Mốc xét lương từ
@@ -238,7 +238,7 @@ namespace TaxPersonnelManagement.Models
         public double Percentage { get; set; } = 100; // Phần trăm được hưởng (Default 100%)
         public string? DecisionNumber { get; set; } // Số VB/QĐ
         public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
-        
+
         public string? Note { get; set; } // Ghi chú thêm (Legacy/Extra)
     }
 
@@ -259,14 +259,14 @@ namespace TaxPersonnelManagement.Models
         public string? Reason { get; set; }
         public string? SystemNote { get; set; } // Ghi chú hệ thống (chi tiết ngày nghỉ)
 
-        
+
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public int STT { get; set; }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string UserReasonDisplay 
-        { 
-            get 
+        public string UserReasonDisplay
+        {
+            get
             {
                 if (string.IsNullOrEmpty(Reason)) return "";
                 // Split by |SYS: OR |LINK:
@@ -276,9 +276,9 @@ namespace TaxPersonnelManagement.Models
         }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string SystemMessageDisplay 
-        { 
-            get 
+        public string SystemMessageDisplay
+        {
+            get
             {
                 // First, try to extract specific SYS message
                 string sysMsg = "";
@@ -311,12 +311,12 @@ namespace TaxPersonnelManagement.Models
                     {
                         yearPrefix = $"Phép năm {LeaveYear.Value}: ";
                     }
-                    
+
                     // Combine with sysMsg (if any from Split) and SystemNote
                     string finalMsg = yearPrefix;
                     // If we have a sysMsg from the Split (like "Ưu tiên trừ phép tồn"), 
                     // and it's NOT just the year prefix we already handled:
-                    if (!string.IsNullOrEmpty(sysMsg) && !sysMsg.Contains("năm") ) 
+                    if (!string.IsNullOrEmpty(sysMsg) && !sysMsg.Contains("năm"))
                     {
                         finalMsg += sysMsg + "\n";
                     }
@@ -329,7 +329,7 @@ namespace TaxPersonnelManagement.Models
                 }
 
                 DateTime start = StartDate.Date;
-                
+
                 if (!EndDate.HasValue)
                 {
                     return "Đang nghỉ (Chưa xác định ngày kết thúc)";

@@ -1,3 +1,16 @@
+## v1.2.0 — 2026-05-17
+- [Tính năng] Tìm kiếm Tiếng Việt không dấu thông minh:
+    + Nâng cấp toàn diện bộ lọc tìm kiếm hỗ trợ không dấu (diacritic-insensitive) và không phân biệt chữ hoa chữ thường (case-insensitive) cho toàn bộ ứng dụng.
+    + Người dùng chỉ cần gõ tên đơn giản không dấu (ví dụ: "duc", "thuy", "linh") đều có thể tìm thấy nhân viên tiếng Việt có dấu tương ứng một cách chính xác.
+    + Đồng bộ tính năng tìm kiếm này trên tất cả các màn hình chính: Danh sách nhân sự, Thời gian giữ chức vụ, Thi đua khen thưởng, Tổng hợp thu nhập năm và Danh sách tài khoản.
+- [Tính năng] Xuất Excel tổng quát:
+    + Thêm cột mới "Số năm công tác" vào vị trí số 17 (Cột Q, ngay sau cột "Ngày về hưu (Dự kiến)").
+    + Thời gian công tác được tự động tính toán chính xác và xuất dưới dạng chuỗi chi tiết: "X năm Y tháng Z ngày" (ví dụ: "10 năm 4 tháng 2 ngày") đồng bộ với giao diện hồ sơ.
+- [Tối ưu] Dọn dẹp & Clean Code:
+    + Loại bỏ gói thư viện CommunityToolkit.Mvvm không sử dụng giúp tối ưu dung lượng và tốc độ của ứng dụng.
+    + Xóa bỏ các tệp tin log rác (debug.log) và tệp tin tạm thời trong thư mục dự án.
+    + Định dạng lại toàn bộ mã nguồn, dọn dẹp các import/using dư thừa giúp ứng dụng luôn trong trạng thái chuẩn mực và dễ bảo trì nhất.
+
 ## v1.1.0 — 2026-05-11
 - [Giao diện] Tối ưu hóa hiển thị đa độ phân giải: 
     + Tự động thích ứng tốt trên cả màn hình nhỏ (1366x768) và màn hình Full HD.

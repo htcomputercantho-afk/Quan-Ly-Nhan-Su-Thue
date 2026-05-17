@@ -26,13 +26,13 @@ namespace TaxPersonnelManagement.Views
             _reasons.Clear();
             string dbPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "tax_personnel.db");
             TaxPersonnelManagement.App.DebugLog($"LoadData Started. DB Path: {dbPath}");
-            
-            try 
+
+            try
             {
                 if (!System.IO.File.Exists(dbPath))
                 {
                     TaxPersonnelManagement.App.DebugLog("Database file MISSING at path!");
-                } 
+                }
 
                 using (var context = new AppDbContext())
                 {
@@ -46,73 +46,73 @@ namespace TaxPersonnelManagement.Views
                     }
                     catch (Exception ex)
                     {
-                         TaxPersonnelManagement.App.DebugLog($"LoadData Catch Block Hit. Error: {ex.Message}");
-                         
-                         // DIRECT REPAIR using Microsoft.Data.Sqlite
-                         // Bypass EF Core entirely to avoid model validation errors or context state issues
-                         // Use outer dbPath
-                         string connectionString = $"Data Source={dbPath}";
-                         
-                         using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString))
-                         {
-                             connection.Open();
-                             TaxPersonnelManagement.App.DebugLog("Direct Connection Opened.");
-                             
-                             // 1. Create Table
-                             using (var command = connection.CreateCommand())
-                             {
-                                 command.CommandText = @"
+                        TaxPersonnelManagement.App.DebugLog($"LoadData Catch Block Hit. Error: {ex.Message}");
+
+                        // DIRECT REPAIR using Microsoft.Data.Sqlite
+                        // Bypass EF Core entirely to avoid model validation errors or context state issues
+                        // Use outer dbPath
+                        string connectionString = $"Data Source={dbPath}";
+
+                        using (var connection = new Microsoft.Data.Sqlite.SqliteConnection(connectionString))
+                        {
+                            connection.Open();
+                            TaxPersonnelManagement.App.DebugLog("Direct Connection Opened.");
+
+                            // 1. Create Table
+                            using (var command = connection.CreateCommand())
+                            {
+                                command.CommandText = @"
                                     CREATE TABLE IF NOT EXISTS SalaryDelayReasons (
                                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         Name TEXT NOT NULL
                                     );";
-                                 command.ExecuteNonQuery();
-                                 TaxPersonnelManagement.App.DebugLog("Table Create SQL Executed.");
-                             }
-                             
-                             // 2. Check Count
-                             long count = 0;
-                             using (var command = connection.CreateCommand())
-                             {
-                                 command.CommandText = "SELECT COUNT(*) FROM SalaryDelayReasons";
-                                 var res = command.ExecuteScalar();
-                                 if (res != null) count = Convert.ToInt64(res);
-                             }
-                             
-                             // 3. Seed if empty
-                             if (count == 0)
-                             {
-                                 using (var transaction = connection.BeginTransaction())
-                                 {
-                                     var cmd = connection.CreateCommand();
-                                     cmd.Transaction = transaction;
-                                     cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')";
-                                     cmd.ExecuteNonQuery();
-                                     
-                                     cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')";
-                                     cmd.ExecuteNonQuery();
-                                     
-                                     cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')";
-                                     cmd.ExecuteNonQuery();
-                                     
-                                     cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')";
-                                     cmd.ExecuteNonQuery();
-                                     
-                                     transaction.Commit();
-                                 }
-                             }
-                         }
-                        
-                         // Retry load logic (again, use raw SQL or fresh context)
-                         // Let's use fresh context now that table MUST exist
-                         using (var retryContext = new AppDbContext())
-                         {
-                             var retryList = retryContext.SalaryDelayReasons.OrderBy(x => x.Id).ToList();
-                             foreach (var item in retryList)
-                             {
-                                 _reasons.Add(item);
-                             }
-                         }
+                                command.ExecuteNonQuery();
+                                TaxPersonnelManagement.App.DebugLog("Table Create SQL Executed.");
+                            }
+
+                            // 2. Check Count
+                            long count = 0;
+                            using (var command = connection.CreateCommand())
+                            {
+                                command.CommandText = "SELECT COUNT(*) FROM SalaryDelayReasons";
+                                var res = command.ExecuteScalar();
+                                if (res != null) count = Convert.ToInt64(res);
+                            }
+
+                            // 3. Seed if empty
+                            if (count == 0)
+                            {
+                                using (var transaction = connection.BeginTransaction())
+                                {
+                                    var cmd = connection.CreateCommand();
+                                    cmd.Transaction = transaction;
+                                    cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')";
+                                    cmd.ExecuteNonQuery();
+
+                                    cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')";
+                                    cmd.ExecuteNonQuery();
+
+                                    cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')";
+                                    cmd.ExecuteNonQuery();
+
+                                    cmd.CommandText = "INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')";
+                                    cmd.ExecuteNonQuery();
+
+                                    transaction.Commit();
+                                }
+                            }
+                        }
+
+                        // Retry load logic (again, use raw SQL or fresh context)
+                        // Let's use fresh context now that table MUST exist
+                        using (var retryContext = new AppDbContext())
+                        {
+                            var retryList = retryContext.SalaryDelayReasons.OrderBy(x => x.Id).ToList();
+                            foreach (var item in retryList)
+                            {
+                                _reasons.Add(item);
+                            }
+                        }
                     }
                 }
             }
@@ -155,7 +155,7 @@ namespace TaxPersonnelManagement.Views
                     }
                     else
                     {
-                         // Fallback if structure changes, though we defined it in XAML
+                        // Fallback if structure changes, though we defined it in XAML
                     }
                 }
             }
@@ -169,20 +169,20 @@ namespace TaxPersonnelManagement.Views
         {
             if (sender is Button btn && btn.Tag is int id)
             {
-                 var item = _reasons.FirstOrDefault(x => x.Id == id);
-                 if (item != null)
-                 {
-                     _editingItem = item;
-                     txtName.Text = item.Name;
-                     
-                     // Change button text to "Lưu"
-                     // Quick hack to find the TextBlock inside the StackPanel inside the Button
-                     if (btnAdd.Content is StackPanel sp && sp.Children.Count > 1 && sp.Children[1] is TextBlock tb)
-                     {
-                         tb.Text = "Lưu";
-                     }
-                     txtName.Focus();
-                 }
+                var item = _reasons.FirstOrDefault(x => x.Id == id);
+                if (item != null)
+                {
+                    _editingItem = item;
+                    txtName.Text = item.Name;
+
+                    // Change button text to "Lưu"
+                    // Quick hack to find the TextBlock inside the StackPanel inside the Button
+                    if (btnAdd.Content is StackPanel sp && sp.Children.Count > 1 && sp.Children[1] is TextBlock tb)
+                    {
+                        tb.Text = "Lưu";
+                    }
+                    txtName.Focus();
+                }
             }
         }
 

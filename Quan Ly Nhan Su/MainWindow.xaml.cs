@@ -8,6 +8,7 @@ namespace TaxPersonnelManagement
     {
         private User? _currentUser;
         private PersonnelDetailView? _personnelDetailCache;
+        private DashboardView? _dashboardCache;
 
 
         /// <summary>
@@ -21,7 +22,7 @@ namespace TaxPersonnelManagement
             _currentUser = user;
             App.CurrentUser = user; // Lưu thông tin người dùng vào biến toàn cục của Ứng dụng
             txtWelcome.Text = _currentUser.FullName; // Updated to just set the Name part
-            
+
             // Ẩn menu 'Tài khoản' và 'Sao lưu' nếu người dùng không phải là Quản trị viên (Admin)
             if (_currentUser.Role != UserRole.Admin)
             {
@@ -59,7 +60,22 @@ namespace TaxPersonnelManagement
         public void NavigateToDashboard(int? targetPersonnelId = null)
         {
             UpdateMenuState(btnDashboard); // Cập nhật trạng thái hiển thị của nút menu
-            MainFrame.Navigate(new DashboardView(targetPersonnelId)); // Tải nội dung View vào Frame chính
+
+            if (_dashboardCache == null)
+            {
+                _dashboardCache = new DashboardView(targetPersonnelId);
+            }
+            else
+            {
+                if (targetPersonnelId.HasValue)
+                {
+                    _dashboardCache.PersonnelList.TargetPersonnelId = targetPersonnelId;
+                }
+                // Refresh data to show any updates, but retain the selected filter
+                _dashboardCache.PersonnelList.LoadData();
+            }
+
+            MainFrame.Navigate(_dashboardCache); // Tải nội dung View vào Frame chính
         }
 
         private void NavigateDashboard(object? sender, RoutedEventArgs? e)
@@ -74,7 +90,7 @@ namespace TaxPersonnelManagement
         public void NavigateToPersonnelDetail(Personnel? p, int activeTab = 0)
         {
             UpdateMenuState(btnPersonnel);
-            
+
             // Nếu là thêm mới, sử dụng cache nếu có
             if (p == null)
             {
@@ -123,7 +139,7 @@ namespace TaxPersonnelManagement
             UpdateMenuState(btnLeaveDetail);
             MainFrame.Navigate(new LeaveDetailView());
         }
-        
+
         private void NavigateEmulationReward(object sender, RoutedEventArgs e)
         {
             UpdateMenuState(btnEmulationReward);
@@ -135,7 +151,7 @@ namespace TaxPersonnelManagement
             UpdateMenuState(btnPositionDuration);
             MainFrame.Navigate(new PositionDurationView());
         }
-        
+
         private void NavigateUsers(object sender, RoutedEventArgs e)
         {
             // Only Admin

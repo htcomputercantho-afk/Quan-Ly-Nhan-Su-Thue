@@ -45,18 +45,18 @@ namespace TaxPersonnelManagement.Views
         private void ApplyFilter()
         {
             if (_allPersonnel == null) return;
-            
-            string keyword = txtSearch.Text.Trim().ToLower();
+
+            string keyword = txtSearch.Text.Trim();
             if (string.IsNullOrEmpty(keyword))
             {
                 lvPersonnel.ItemsSource = _allPersonnel;
             }
             else
             {
-                lvPersonnel.ItemsSource = _allPersonnel.Where(p => 
-                    (p.FullName != null && p.FullName.ToLower().Contains(keyword)) ||
-                    (p.IdentityCardNumber != null && p.IdentityCardNumber.ToLower().Contains(keyword)) ||
-                    (p.StaffId != null && p.StaffId.ToLower().Contains(keyword))
+                lvPersonnel.ItemsSource = _allPersonnel.Where(p =>
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.FullName, keyword) ||
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.IdentityCardNumber, keyword) ||
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.StaffId, keyword)
                 ).ToList();
             }
         }
@@ -70,7 +70,7 @@ namespace TaxPersonnelManagement.Views
                 pnlDetails.IsEnabled = true;
                 pnlDetails.Opacity = 1.0;
                 txtPrompt.Visibility = Visibility.Collapsed;
-                
+
                 txtEmulationTitles.Text = _selectedPersonnel.EmulationTitles;
                 txtRewardForms.Text = _selectedPersonnel.RewardForms;
             }
@@ -79,7 +79,7 @@ namespace TaxPersonnelManagement.Views
                 pnlDetails.IsEnabled = false;
                 pnlDetails.Opacity = 0.5;
                 txtPrompt.Visibility = Visibility.Visible;
-                
+
                 txtEmulationTitles.Text = string.Empty;
                 txtRewardForms.Text = string.Empty;
             }
@@ -162,7 +162,7 @@ namespace TaxPersonnelManagement.Views
                         worksheet.Column(5).Width = 50;  // Khen thưởng
 
                         workbook.SaveAs(saveFileDialog.FileName);
-                        
+
                         // Thông báo thành công giống các menu khác
                         var success = new SuccessWindow("Xuất danh sách thi đua khen thưởng thành công!", null, saveFileDialog.FileName, true);
                         if (Window.GetWindow(this) is Window parent) success.Owner = parent;

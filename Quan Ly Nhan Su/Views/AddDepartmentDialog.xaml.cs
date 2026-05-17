@@ -40,9 +40,10 @@ namespace TaxPersonnelManagement.Views
             {
                 // Ensure table exists just in case (hacky migration)
                 try { context.Database.EnsureCreated(); } catch { }
-                
+
                 var list = context.Departments.ToList()
-                                  .OrderBy(x => {
+                                  .OrderBy(x =>
+                                  {
                                       int idx = deptOrder.FindIndex(d => d.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
                                       return idx == -1 ? 999 : idx;
                                   })
@@ -92,10 +93,10 @@ namespace TaxPersonnelManagement.Views
             txtDepartmentName.Clear();
             txtDepartmentName.Focus();
             // Reset button visual
-             btnAdd.Background = (System.Windows.Media.Brush)Application.Current.Resources["PrimaryHueMidBrush"];
-             btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Plus, Width = 24, Height = 24 };
-             btnAdd.ToolTip = "Thêm phòng ban";
-             
+            btnAdd.Background = (System.Windows.Media.Brush)Application.Current.Resources["PrimaryHueMidBrush"];
+            btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Plus, Width = 24, Height = 24 };
+            btnAdd.ToolTip = "Thêm phòng ban";
+
             LoadDepartments();
         }
 
@@ -108,7 +109,7 @@ namespace TaxPersonnelManagement.Views
                 _editingDepartment = dept;
                 txtDepartmentName.Text = dept.Name;
                 txtDepartmentName.Focus();
-                
+
                 // Change button to indicate Update
                 btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentSave, Width = 24, Height = 24 };
                 btnAdd.ToolTip = "Lưu thay đổi";
@@ -123,7 +124,7 @@ namespace TaxPersonnelManagement.Views
                 var confirm = new ConfirmWindow($"Bạn có chắc muốn xóa phòng ban '{dept.Name}'?", "Xác nhận xóa");
                 if (confirm.ShowDialog() == true)
                 {
-                     using (var context = new AppDbContext())
+                    using (var context = new AppDbContext())
                     {
                         var d = context.Departments.Find(dept.Id);
                         if (d != null)

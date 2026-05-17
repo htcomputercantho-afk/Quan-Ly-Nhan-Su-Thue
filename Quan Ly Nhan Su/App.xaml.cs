@@ -23,9 +23,9 @@ namespace TaxPersonnelManagement
         {
             DebugLog("App Constructor Started");
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
-            try 
+            try
             {
-                InitializeComponent(); 
+                InitializeComponent();
             }
             catch (Exception ex)
             {
@@ -58,16 +58,16 @@ namespace TaxPersonnelManagement
 
             // Thêm ?t=... để tránh bị lưu bộ nhớ đệm (Cache) của GitHub
             AutoUpdater.Start($"https://raw.githubusercontent.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/main/update.xml?t={System.DateTime.Now.Ticks}");
-            
+
             // Force Standard Vietnamese Culture (Ignore Local OS Overrides)
             var culture = new System.Globalization.CultureInfo("vi-VN", false);
             culture.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
             culture.DateTimeFormat.DateSeparator = "/";
-            
+
             // Explicitly set abbreviated day names to avoid single-letter truncation
             culture.DateTimeFormat.AbbreviatedDayNames = new string[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
             culture.DateTimeFormat.ShortestDayNames = new string[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
-            
+
             System.Threading.Thread.CurrentThread.CurrentCulture = culture;
             System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
             CultureInfo.DefaultThreadCurrentCulture = culture;
@@ -87,7 +87,7 @@ namespace TaxPersonnelManagement
                     System.Windows.Input.InputMethod.SetIsInputMethodSuspended(tb, false);
                 }
             }));
-            
+
             EventManager.RegisterClassHandler(typeof(System.Windows.Controls.PasswordBox), UIElement.GotKeyboardFocusEvent, new System.Windows.Input.KeyboardFocusChangedEventHandler((s, args) =>
             {
                 if (s is System.Windows.Controls.PasswordBox pb)
@@ -110,7 +110,7 @@ namespace TaxPersonnelManagement
                     var emptyIdentityPersonnel = context.Personnel
                         .Where(p => string.IsNullOrEmpty(p.IdentityCardPlace) || p.IdentityCardPlace == "---")
                         .ToList();
-                    
+
                     if (emptyIdentityPersonnel.Any())
                     {
                         foreach (var p in emptyIdentityPersonnel)
@@ -127,7 +127,7 @@ namespace TaxPersonnelManagement
                         PerformBackup("before_migration");
                     }
 
-                    
+
                     // Manual Migration for Departments table
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS Departments (
@@ -162,7 +162,7 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PositionCalculationDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PositionYear TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN DetailedWorkHistory TEXT"); } catch { }
-                    
+
                     // Manual Migration for Tab 3 Fields (Retirement Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN RetirementDate TEXT"); } catch { }
 
@@ -200,26 +200,31 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN SalaryIncreaseDelayType TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN ExpectedSalaryIncreaseDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN SalaryHistoryLog TEXT"); } catch { }
-                    
+
                     // Auto-migrate SalaryRecords (Robust way to remove NOT NULL constraints from old columns)
                     bool needsMigration = false;
-                    try 
-                    { 
+                    try
+                    {
                         // Kiểm tra xem có cột lỗi không
-                        context.Database.ExecuteSqlRaw("SELECT SalaryLevel FROM SalaryRecords LIMIT 1"); 
+                        context.Database.ExecuteSqlRaw("SELECT SalaryLevel FROM SalaryRecords LIMIT 1");
                         needsMigration = true;
-                    } catch { 
-                        try {
+                    }
+                    catch
+                    {
+                        try
+                        {
                             context.Database.ExecuteSqlRaw("SELECT SalaryLevel_Old FROM SalaryRecords LIMIT 1");
                             needsMigration = true;
-                        } catch { }
+                        }
+                        catch { }
                     }
 
                     if (needsMigration)
                     {
-                        try {
+                        try
+                        {
                             context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords RENAME TO SalaryRecords_Backup");
-                            
+
                             // Tạo bảng mới với cấu trúc chuẩn
                             context.Database.ExecuteSqlRaw(@"
                                 CREATE TABLE SalaryRecords (
@@ -240,15 +245,18 @@ namespace TaxPersonnelManagement
 
                             // Chép dữ liệu cũ sang (Bỏ qua cột SalaryLevel lỗi)
                             // Lưu ý: Dùng try-catch bên trong nếu có cột nào đó ở bản cực cũ không khớp
-                            try {
+                            try
+                            {
                                 context.Database.ExecuteSqlRaw(@"
                                     INSERT INTO SalaryRecords (Id, PersonnelId, StartDate, EndDate, SalaryCalculationDate, RankCode, SalaryStep, Coefficient, DecisionNumber, DecisionDate, Note)
                                     SELECT Id, PersonnelId, StartDate, EndDate, SalaryCalculationDate, RankCode, SalaryStep, Coefficient, DecisionNumber, DecisionDate, Note 
                                     FROM SalaryRecords_Backup;");
-                            } catch { }
+                            }
+                            catch { }
 
                             context.Database.ExecuteSqlRaw("DROP TABLE SalaryRecords_Backup");
-                        } catch { }
+                        }
+                        catch { }
                     }
 
                     // Đảm bảo bảng luôn tồn tại (nếu chưa có)
@@ -342,56 +350,56 @@ namespace TaxPersonnelManagement
 
                     // Seed Salary Delay Reasons if empty
                     var delayCount = context.Database.ExecuteSqlRaw("SELECT COUNT(*) FROM SalaryDelayReasons"); // This returns -1 for SELECT usually with ExecuteSqlRaw, need scalar
-                    // Actually, ExecuteSqlRaw returns interactions.
-                    // Let's just try insert ignoring conflicts or check via EF.
-                    
+                                                                                                                // Actually, ExecuteSqlRaw returns interactions.
+                                                                                                                // Let's just try insert ignoring conflicts or check via EF.
+
                     // Better verify if empty using EF since schema is now ensured
                     if (!context.SalaryDelayReasons.Any())
                     {
-                         context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')");
-                         context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')");
-                         context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')");
-                         context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')");
+                        context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')");
+                        context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')");
+                        context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')");
+                        context.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')");
                     }
 
                     // Manual Migration for Nullable Dates (Schema Fix)
                     bool needDateFix = false;
                     using (var command = context.Database.GetDbConnection().CreateCommand())
                     {
-                         command.CommandText = "PRAGMA table_info(Personnel)";
-                         context.Database.OpenConnection();
-                         using (var result = command.ExecuteReader())
-                         {
-                             while (result.Read())
-                             {
-                                 if (result["name"].ToString() == "DateOfBirth" && Convert.ToInt32(result["notnull"]) == 1)
-                                 {
-                                     needDateFix = true;
-                                     break;
-                                 }
-                             }
-                         }
-                         context.Database.CloseConnection();
+                        command.CommandText = "PRAGMA table_info(Personnel)";
+                        context.Database.OpenConnection();
+                        using (var result = command.ExecuteReader())
+                        {
+                            while (result.Read())
+                            {
+                                if (result["name"].ToString() == "DateOfBirth" && Convert.ToInt32(result["notnull"]) == 1)
+                                {
+                                    needDateFix = true;
+                                    break;
+                                }
+                            }
+                        }
+                        context.Database.CloseConnection();
                     }
 
                     // Manual Migration for Nullable EndDate in LeaveHistories
                     bool needLeaveDateFix = false;
                     using (var command = context.Database.GetDbConnection().CreateCommand())
                     {
-                         command.CommandText = "PRAGMA table_info(LeaveHistories)";
-                         context.Database.OpenConnection();
-                         using (var result = command.ExecuteReader())
-                         {
-                             while (result.Read())
-                             {
-                                 if (result["name"].ToString() == "EndDate" && Convert.ToInt32(result["notnull"]) == 1)
-                                 {
-                                     needLeaveDateFix = true;
-                                     break;
-                                 }
-                             }
-                         }
-                         context.Database.CloseConnection();
+                        command.CommandText = "PRAGMA table_info(LeaveHistories)";
+                        context.Database.OpenConnection();
+                        using (var result = command.ExecuteReader())
+                        {
+                            while (result.Read())
+                            {
+                                if (result["name"].ToString() == "EndDate" && Convert.ToInt32(result["notnull"]) == 1)
+                                {
+                                    needLeaveDateFix = true;
+                                    break;
+                                }
+                            }
+                        }
+                        context.Database.CloseConnection();
                     }
 
                     if (needLeaveDateFix)
@@ -536,7 +544,7 @@ namespace TaxPersonnelManagement
                             {
                                 transaction.Rollback();
                                 DebugLog("Migration Failed: " + ex.Message);
-                                throw; 
+                                throw;
                             }
                         }
                     }
@@ -672,7 +680,7 @@ namespace TaxPersonnelManagement
             if (context.PublicHolidays.Any(h => h.Date.Year == year)) return;
 
             var holidays = new System.Collections.Generic.List<PublicHoliday>();
-            
+
             // Solar Fixed
             holidays.Add(new PublicHoliday { Name = "Tết Dương lịch", Date = new DateTime(year, 1, 1) });
             holidays.Add(new PublicHoliday { Name = "Ngày Giải phóng", Date = new DateTime(year, 4, 30) });
@@ -684,13 +692,16 @@ namespace TaxPersonnelManagement
             ChineseLunisolarCalendar lunar = new ChineseLunisolarCalendar();
 
             // 1. Giỗ tổ Hùng Vương (10/03 Âm lịch)
-            try {
+            try
+            {
                 DateTime hungKings = GetSolarFromLunar(lunar, year, 3, 10);
                 holidays.Add(new PublicHoliday { Name = "Giỗ tổ Hùng Vương", Date = hungKings });
-            } catch { }
+            }
+            catch { }
 
             // 2. Tết Nguyên Đán (Từ 29/12 hoặc 30/12 đến mùng 4 Tết)
-            try {
+            try
+            {
                 // Mùng 1, 2, 3, 4 Tết
                 holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán", Date = GetSolarFromLunar(lunar, year, 1, 1) });
                 holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán", Date = GetSolarFromLunar(lunar, year, 1, 2) });
@@ -701,7 +712,8 @@ namespace TaxPersonnelManagement
                 // Phải tính dựa trên năm hiện tại trừ 1 để ra ngày cuối cùng
                 DateTime firstDayOfNewYear = GetSolarFromLunar(lunar, year, 1, 1);
                 holidays.Add(new PublicHoliday { Name = "Tết Nguyên Đán (Giao thừa)", Date = firstDayOfNewYear.AddDays(-1) });
-            } catch { }
+            }
+            catch { }
 
             context.PublicHolidays.AddRange(holidays);
             context.SaveChanges();
@@ -713,11 +725,12 @@ namespace TaxPersonnelManagement
             // ChineseLunisolarCalendar year cycle is different, we need to find the solar year
             // that contains this lunar date.
             // For a given solar year, the Lunar New Year usually falls in Jan or Feb.
-            
+
             // Try to find the solar date in the range [year, year+1]
             for (int y = year - 1; y <= year + 1; y++)
             {
-                try {
+                try
+                {
                     int monthsInYear = lunar.GetMonthsInYear(y);
                     for (int m = 1; m <= monthsInYear; m++)
                     {
@@ -726,24 +739,25 @@ namespace TaxPersonnelManagement
                         // Simplified check:
                         if (lunar.GetDayOfMonth(lunar.ToDateTime(y, m, lDay, 0, 0, 0, 0)) == lDay)
                         {
-                           // This is complex. Let's use a simpler approach.
+                            // This is complex. Let's use a simpler approach.
                         }
                     }
-                } catch { }
+                }
+                catch { }
             }
 
             // Simplified accurate enough for standard years:
             // The ToDateTime(year, month, day, ...) uses Lunar parameters.
             // We need to map the "Solar Year" to the "Lunar Year" which is tricky.
             // Actually, for Tet of solar year Y, the Lunar Year is usually Y or Y-1.
-            
+
             // Standard approach for Tet in Solar Year Y:
             // Tet usually starts in Jan/Feb of Year Y.
             // So we try Lunar Year Y or Y-1.
-            
+
             DateTime date1 = lunar.ToDateTime(year, lMonth, lDay, 0, 0, 0, 0);
             if (date1.Year == year || (lMonth == 1 && date1.Year == year)) return date1;
-            
+
             DateTime date2 = lunar.ToDateTime(year - 1, lMonth, lDay, 0, 0, 0, 0);
             return date2;
         }

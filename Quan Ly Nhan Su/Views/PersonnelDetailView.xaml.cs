@@ -64,19 +64,19 @@ namespace TaxPersonnelManagement.Views
                 // Since _personnel is set, it might work inside the methods.
                 // However, the original code had manual setting inside LoadDepartments.
                 // Let's verify LoadDepartments logic below.
-                
+
                 // If the Load methods ALREADY set the values using _personnel, we don't need to set them again here?
                 // LoadDepartments: uses _personnel.Department.
                 // LoadPositions: uses _personnel.Position.
                 // LoadRanks: uses _personnel.RankCode.
-                
+
                 // So lines 41-44 might be redundant OR need to be careful not to overwrite if Load didn't work.
                 // The explicit assignments here (e.g. cboPosition.Text) are good backups or primary if Load methods didn't set Text property.
                 // Actually, let's keep explicit assignments for safety, but use SelectedValue were appropriate.
-                
+
                 // cboDepartment is set inside LoadDepartments.
                 // cboPosition is set inside LoadPositions.
-                
+
                 txtRankName.Text = _personnel.RankName;
                 dpStartDate.SelectedDate = _personnel.TaxAuthorityStartDate;
 
@@ -114,7 +114,7 @@ namespace TaxPersonnelManagement.Views
                 txtPositionAllowance.Text = _personnel.PositionAllowance;
                 dpSalaryReservation.SelectedDate = _personnel.SalaryReservationDeadline;
                 dpNextSalaryStepDate.SelectedDate = _personnel.NextSalaryStepDate;
-                
+
                 if (!string.IsNullOrEmpty(_personnel.SalaryIncreaseDelayType))
                     SetComboBoxByContent(cboSalaryDelay, _personnel.SalaryIncreaseDelayType);
                 else
@@ -139,7 +139,7 @@ namespace TaxPersonnelManagement.Views
                 // Tab 8: Discipline Info
                 if (!string.IsNullOrEmpty(_personnel.DisciplineType))
                     SetComboBoxByContent(cboDisciplineType, _personnel.DisciplineType);
-                
+
                 txtDisciplineNumber.Text = _personnel.DisciplineDecisionNumber;
                 dpDisciplineDate.SelectedDate = _personnel.DisciplineDecisionDate;
                 txtDisciplineReason.Text = _personnel.DisciplineReason;
@@ -161,7 +161,7 @@ namespace TaxPersonnelManagement.Views
             {
                 txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
             }
-            
+
             if (_personnel != null)
             {
                 lblSaveText.Text = "Cập nhật";
@@ -170,9 +170,9 @@ namespace TaxPersonnelManagement.Views
             {
                 lblSaveText.Text = "Lưu Hồ Sơ";
             }
-            
+
             // Initial Calculation to ensure consistency
-            if (_personnel == null || !dpExpectedSalaryIncrease.SelectedDate.HasValue) 
+            if (_personnel == null || !dpExpectedSalaryIncrease.SelectedDate.HasValue)
             {
                 // Chỉ tự động tính ngày dự kiến lên lương nếu thêm mới
                 // hoặc ngày đã lưu bị rỗng
@@ -184,7 +184,7 @@ namespace TaxPersonnelManagement.Views
 
             CalculateAnnualLeave(DateTime.Now); // Force recalculation with valid _personnel
             RefreshLeaveHistoryGrid(); // Populate and clean leave history
-            
+
             // Initialize Year ComboBox
             var currentYear = DateTime.Now.Year;
             var startYear = 2025;
@@ -192,10 +192,10 @@ namespace TaxPersonnelManagement.Views
             for (int i = startYear; i <= currentYear; i++) years.Add(i);
             cboLeaveYear.ItemsSource = years;
             cboLeaveYear.SelectedItem = currentYear;
-            
+
             // Event for Year Change
             cboLeaveYear.SelectionChanged += (s, e) => { UpdateLeaveStatistics(); };
-            
+
             LoadLeaveYears();
             ApplyAuthorization();
 
@@ -211,15 +211,15 @@ namespace TaxPersonnelManagement.Views
             {
                 // Hide Save button
                 btnSave.Visibility = Visibility.Collapsed;
-                
+
                 // Hide config/add buttons
                 btnAddDepartment.Visibility = Visibility.Collapsed;
                 btnAddPosition.Visibility = Visibility.Collapsed;
                 btnAddRank.Visibility = Visibility.Collapsed;
-                
+
                 // Hide avatar buttons (if they exist as explicit named buttons)
                 btnRemoveAvatar.Visibility = Visibility.Collapsed;
-                
+
                 // Hide Add Leave button
                 btnAddLeave.Visibility = Visibility.Collapsed;
             }
@@ -240,17 +240,17 @@ namespace TaxPersonnelManagement.Views
             var currentYear = DateTime.Now.Year;
             var startYear = 2025;
             var years = new List<int>();
-            
+
             // Logic: Iterate 2025 to CurrentYear
             for (int i = startYear; i <= currentYear; i++)
             {
                 // Always add current year
-                if (i == currentYear) 
+                if (i == currentYear)
                 {
                     years.Add(i);
                     continue;
                 }
-                
+
                 // Add if explicitly included (e.g. editing old record)
                 if (includeYear.HasValue && i == includeYear.Value)
                 {
@@ -264,12 +264,12 @@ namespace TaxPersonnelManagement.Views
                     years.Add(i);
                 }
             }
-            
+
             // Preserve selection if possible
             var previouslySelected = cboLeaveYear.SelectedItem;
-            
+
             cboLeaveYear.ItemsSource = years;
-            
+
             if (previouslySelected is int val && years.Contains(val))
             {
                 cboLeaveYear.SelectedItem = val;
@@ -298,26 +298,28 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-               // Load from Departments table
-               var dbDepts = context.Departments.Select(d => d.Name).ToList();
-               
-               // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
-               if (_personnel != null && !string.IsNullOrEmpty(_personnel.Department) && !dbDepts.Contains(_personnel.Department))
-               {
-                   dbDepts.Add(_personnel.Department);
-               }
+                // Load from Departments table
+                var dbDepts = context.Departments.Select(d => d.Name).ToList();
 
-               var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x))
-                                     .Distinct()
-                                     .OrderBy(x => {
-                                         int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
-                                         return idx == -1 ? 999 : idx;
-                                     })
-                                     .ThenBy(x => x)
-                                     .ToList();
+                // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
+                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Department) && !dbDepts.Contains(_personnel.Department))
+                {
+                    dbDepts.Add(_personnel.Department);
+                }
 
-               cboDepartment.ItemsSource = allDepts;
-                
+                var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x))
+                                      .Distinct()
+                                      .OrderBy(x =>
+                                      {
+                                          int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
+                                          return idx == -1 ? 999 : idx;
+                                      })
+                                      .ThenBy(x => x)
+                                      .ToList();
+                allDepts.Insert(0, "");
+
+                cboDepartment.ItemsSource = allDepts;
+
                 if (_personnel != null)
                 {
                     SetComboBoxByContent(cboDepartment, _personnel.Department);
@@ -347,7 +349,11 @@ namespace TaxPersonnelManagement.Views
 
             System.Collections.Generic.List<string> filtered;
 
-            if (selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(selectedDept))
+            {
+                filtered = new System.Collections.Generic.List<string>();
+            }
+            else if (selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase))
             {
                 var leadershipPositions = new[] { "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở" };
                 filtered = _allPositions.Where(p => leadershipPositions.Any(lp => lp.Equals(p, StringComparison.OrdinalIgnoreCase))).ToList();
@@ -359,31 +365,31 @@ namespace TaxPersonnelManagement.Views
             }
             else
             {
-                filtered = _allPositions;
+                filtered = _allPositions.ToList();
             }
 
             var currentPos = cboPosition.SelectedItem?.ToString() ?? (_personnel?.Position);
+            filtered.Insert(0, "");
             cboPosition.ItemsSource = filtered;
-            
+
             if (!string.IsNullOrEmpty(currentPos) && filtered.Any(f => f.Equals(currentPos, StringComparison.OrdinalIgnoreCase)))
             {
                 SetComboBoxByContent(cboPosition, currentPos);
             }
-            else if (filtered.Count > 0)
+            else
             {
-                // Optionally clear or set to first if current not valid for new dept
-                // But usually we just let it be empty so user can pick
+                cboPosition.SelectedIndex = 0;
             }
         }
-        
-        
+
+
         private void btnAddDepartment_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new AddDepartmentDialog(); // No args
             if (dialog.ShowDialog() == true)
             {
                 LoadDepartments(); // Reload list from DB
-                
+
                 if (!string.IsNullOrEmpty(dialog.SelectedDepartment))
                 {
                     cboDepartment.SelectedItem = dialog.SelectedDepartment;
@@ -401,7 +407,7 @@ namespace TaxPersonnelManagement.Views
             // Refresh steps for current rank if selected
             if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
             {
-                 LoadSalarySteps(selectedRank.Code);
+                LoadSalarySteps(selectedRank.Code);
             }
         }
 
@@ -418,34 +424,35 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-               var dbPos = context.Positions.Select(p => p.Name).ToList();
-               
-               // Thêm chức vụ hiện tại của nhân sự đang xem nếu chưa có trong danh mục chính
-               if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !dbPos.Contains(_personnel.Position))
-               {
-                   dbPos.Add(_personnel.Position);
-               }
+                var dbPos = context.Positions.Select(p => p.Name).ToList();
 
-               _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x))
-                                 .Distinct()
-                                 .OrderBy(x => {
-                                     int idx = posOrder.FindIndex(p => p.Equals(x, StringComparison.OrdinalIgnoreCase));
-                                     return idx == -1 ? 999 : idx;
-                                 })
-                                 .ThenBy(x => x)
-                                 .ToList();
+                // Thêm chức vụ hiện tại của nhân sự đang xem nếu chưa có trong danh mục chính
+                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !dbPos.Contains(_personnel.Position))
+                {
+                    dbPos.Add(_personnel.Position);
+                }
 
-               UpdatePositionFilter();
+                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x))
+                                  .Distinct()
+                                  .OrderBy(x =>
+                                  {
+                                      int idx = posOrder.FindIndex(p => p.Equals(x, StringComparison.OrdinalIgnoreCase));
+                                      return idx == -1 ? 999 : idx;
+                                  })
+                                  .ThenBy(x => x)
+                                  .ToList();
+
+                UpdatePositionFilter();
             }
         }
-        
+
         private void btnAddPosition_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new AddPositionDialog();
             if (dialog.ShowDialog() == true)
             {
                 LoadPositions();
-                
+
                 if (!string.IsNullOrEmpty(dialog.SelectedPosition))
                 {
                     cboPosition.SelectedItem = dialog.SelectedPosition;
@@ -459,7 +466,7 @@ namespace TaxPersonnelManagement.Views
             using (var context = new AppDbContext())
             {
                 var dbRanks = context.Ranks.ToList();
-                
+
                 // Nếu nhân sự đang xem có mã ngạch không tồn tại trong danh mục chính, thêm mã ngạch đó vào danh sách hiển thị
                 if (_personnel != null && !string.IsNullOrEmpty(_personnel.RankCode) && !dbRanks.Any(r => r.Code == _personnel.RankCode))
                 {
@@ -467,7 +474,8 @@ namespace TaxPersonnelManagement.Views
                 }
 
                 var sortedRanks = dbRanks.OrderBy(r => r.Code).ToList();
-                
+                sortedRanks.Insert(0, new Rank { Code = "", Name = "" });
+
                 cboRankCode.ItemsSource = sortedRanks;
                 cboRankCode.DisplayMemberPath = "Code";
                 cboRankCode.SelectedValuePath = "Code";
@@ -495,10 +503,10 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    try 
+                    try
                     {
                         var reasons = context.SalaryDelayReasons.OrderBy(r => r.Id).Select(r => r.Name).ToList();
-                        
+
                         cboSalaryDelay.Items.Clear();
                         cboSalaryDelay.Items.Add("-- Không lùi --");
                         foreach (var r in reasons)
@@ -521,26 +529,28 @@ namespace TaxPersonnelManagement.Views
                                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     Name TEXT NOT NULL
                                 );");
-                                
+
                             // 2. Check and Insert using SQL
                             var count = -1;
                             using (var command = repairContext.Database.GetDbConnection().CreateCommand())
                             {
                                 command.CommandText = "SELECT COUNT(*) FROM SalaryDelayReasons";
                                 repairContext.Database.OpenConnection();
-                                try {
+                                try
+                                {
                                     var result = command.ExecuteScalar();
                                     if (result != null) count = Convert.ToInt32(result);
-                                } catch {}
+                                }
+                                catch { }
                                 repairContext.Database.CloseConnection();
                             }
 
                             if (count == 0)
                             {
-                                 repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')");
-                                 repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')");
-                                 repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')");
-                                 repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')");
                             }
                         }
 
@@ -559,7 +569,7 @@ namespace TaxPersonnelManagement.Views
                             }
                         }
                     }
-                    
+
                     if (_personnel != null && !string.IsNullOrEmpty(_personnel.SalaryIncreaseDelayType))
                     {
                         SetComboBoxByContent(cboSalaryDelay, _personnel.SalaryIncreaseDelayType);
@@ -569,7 +579,7 @@ namespace TaxPersonnelManagement.Views
                         // Default to first item ("-- Không lùi --")
                         if (cboSalaryDelay.Items.Count > 0)
                             cboSalaryDelay.SelectedIndex = 0;
-                        else 
+                        else
                             cboSalaryDelay.Text = "-- Không lùi --";
                     }
                 }
@@ -596,16 +606,18 @@ namespace TaxPersonnelManagement.Views
 
         private void cboRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            if (cboRankCode.SelectedItem is Rank selectedRank)
+            if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
             {
-                if (!string.IsNullOrEmpty(selectedRank.Name)) 
+                if (!string.IsNullOrEmpty(selectedRank.Name))
                     txtRankName.Text = selectedRank.Name;
-                
+                else
+                    txtRankName.Text = "";
+
                 LoadSalarySteps(selectedRank.Code);
             }
             else
             {
-                // Clear steps if rank is deslected
+                // Clear steps if rank is deselected or blank Rank is chosen
                 cboSalaryStep.ItemsSource = null;
                 txtRankName.Text = "";
             }
@@ -637,7 +649,7 @@ namespace TaxPersonnelManagement.Views
 
                     cboSalaryHistStep.ItemsSource = steps;
                     cboSalaryHistStep.DisplayMemberPath = "SalaryStep";
-                    cboSalaryHistStep.SelectedValuePath = "SalaryStep"; 
+                    cboSalaryHistStep.SelectedValuePath = "SalaryStep";
                 }
             }
             catch (Exception ex)
@@ -650,16 +662,22 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
+                if (string.IsNullOrEmpty(rankCode))
+                {
+                    cboSalaryStep.ItemsSource = null;
+                    return;
+                }
                 using (var context = new AppDbContext())
                 {
                     var steps = context.RankSalarySpecs
                                        .Where(s => s.RankCode == rankCode)
                                        .OrderBy(s => s.SalaryStep)
                                        .ToList();
+                    steps.Insert(0, new RankSalarySpec { RankCode = rankCode, SalaryStep = "", Coefficient = 0 });
 
                     cboSalaryStep.ItemsSource = steps;
                     cboSalaryStep.DisplayMemberPath = "SalaryStep";
-                    cboSalaryStep.SelectedValuePath = "SalaryStep"; 
+                    cboSalaryStep.SelectedValuePath = "SalaryStep";
                 }
             }
             catch (Exception ex)
@@ -673,15 +691,19 @@ namespace TaxPersonnelManagement.Views
         {
             if (cboSalaryStep.SelectedItem is RankSalarySpec spec)
             {
-                // Auto-fill fields for both main salary info and history input
-                string coeffStr = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
-                txtSalaryCoefficient.Text = coeffStr;
-                
-                // Keep the original behavior but only for the MAIN tab info
-                // We won't auto-fill the history section here as it might be confusing 
-                // if the user is editing the main info but NOT adding history yet.
-                // However, the user asked to make it like the select in Tab 1, 
-                // so we handle the history section's ComboBoxes separately.
+                if (spec.Coefficient > 0)
+                {
+                    string coeffStr = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+                    txtSalaryCoefficient.Text = coeffStr;
+                }
+                else
+                {
+                    txtSalaryCoefficient.Text = "";
+                }
+            }
+            else
+            {
+                txtSalaryCoefficient.Text = "";
             }
         }
 
@@ -714,7 +736,7 @@ namespace TaxPersonnelManagement.Views
                 var types = context.DisciplineTypes.Select(t => t.Name).ToList();
                 types.Insert(0, "-- Không có --");
                 cboDisciplineType.ItemsSource = types;
-                
+
                 // Default to "-- Không có --" if list is not empty
                 if (types.Count > 0)
                 {
@@ -722,14 +744,14 @@ namespace TaxPersonnelManagement.Views
                 }
             }
         }
-        
+
         private void btnAddDisciplineType_Click(object? sender, RoutedEventArgs e)
         {
             var dialog = new DisciplineConfigDialog();
             dialog.ShowDialog(); // Just show dialog, refresh data afterwards regardless of return value
             LoadDisciplineTypes();
         }
-        
+
         /// <summary>
         /// Xử lý sự kiện khi người dùng nhấn nút Lưu/Cập nhật.
         /// Thực hiện Validate dữ liệu và tiến hành Lưu mới hoặc Cập nhật bản ghi vào Cơ sở dữ liệu.
@@ -747,15 +769,15 @@ namespace TaxPersonnelManagement.Views
             string phoneDigits = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
             if (!string.IsNullOrEmpty(txtPhone.Text) && (phoneDigits.Length != 10 || !phoneDigits.StartsWith("0")))
             {
-                 MessageBox.Show("Số điện thoại không hợp lệ! (Phải bắt đầu bằng số 0 và có 10 chữ số)", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                 return;
+                MessageBox.Show("Số điện thoại không hợp lệ! (Phải bắt đầu bằng số 0 và có 10 chữ số)", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
             // Email Validation
             if (!string.IsNullOrWhiteSpace(txtEmail.Text) && !IsValidEmail(txtEmail.Text))
             {
-                 MessageBox.Show("Địa chỉ Email không đúng định dạng!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                 return;
+                MessageBox.Show("Địa chỉ Email không đúng định dạng!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
             using (var context = new AppDbContext())
@@ -777,11 +799,11 @@ namespace TaxPersonnelManagement.Views
                         BirthPlace = txtBirthPlace.Text,
                         Ethnicity = txtEthnicity.Text,
                         Religion = txtReligion.Text,
-                        
+
                         Department = cboDepartment.Text,
                         Position = cboPosition.Text,
                         RankCode = (cboRankCode.SelectedItem as Rank)?.Code ?? "", // Allow free text if it's editable? Style is ComboBox, usually allows text if IsEditable=True. Default style might not.
-                                                     // If DropDown only, use SelectedValue or Text (which returns selected item string)
+                                                                                   // If DropDown only, use SelectedValue or Text (which returns selected item string)
                         RankName = txtRankName.Text,
                         TaxAuthorityStartDate = dpStartDate.SelectedDate,
                         StartDate = dpStartDate.SelectedDate,
@@ -795,7 +817,7 @@ namespace TaxPersonnelManagement.Views
                         ITSkillLevel = txtITSkill.Text,
                         LanguageSkillLevel = txtLanguageSkill.Text,
                         AvatarBase64 = _currentAvatarBase64, // Save new avatar
-                        
+
                         // Tab 2
                         PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
                         PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate,
@@ -824,13 +846,13 @@ namespace TaxPersonnelManagement.Views
                         // Tab 7
                         EmulationTitles = txtEmulationTitles.Text,
                         RewardForms = txtRewardForms.Text,
-                        
+
                         // Tab 8
                         DisciplineType = cboDisciplineType.Text,
                         DisciplineDecisionNumber = txtDisciplineNumber.Text,
                         DisciplineDecisionDate = dpDisciplineDate.SelectedDate,
                         DisciplineReason = txtDisciplineReason.Text,
-                        
+
                         // Tab 5 Leave
                         TotalAnnualLeaveDays = int.TryParse(txtTotalAnnualLeave.Text, out int leaves) ? leaves : 12,
                     };
@@ -867,7 +889,7 @@ namespace TaxPersonnelManagement.Views
                         // ... (Other fields remain same, not restating all for brevity in thought, but implementation needs them)
                         // Actually replace_file_content needs EXACT TargetContent.
                         // I will target the existingP retrieval and the end of the block.
-                        
+
                         existingP.Gender = cboGender.Text;
                         existingP.DateOfBirth = dpDOB.SelectedDate;
                         existingP.PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
@@ -892,8 +914,8 @@ namespace TaxPersonnelManagement.Views
                         existingP.PoliticalTheoryLevel = cboPoliticalTheory.Text;
                         existingP.ITSkillLevel = txtITSkill.Text;
                         existingP.LanguageSkillLevel = txtLanguageSkill.Text;
-                        
-                        if (_isAvatarChanged) 
+
+                        if (_isAvatarChanged)
                         {
                             existingP.AvatarBase64 = _currentAvatarBase64;
                         }
@@ -920,32 +942,32 @@ namespace TaxPersonnelManagement.Views
                         existingP.NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate;
                         existingP.SalaryIncreaseDelayType = cboSalaryDelay.Text;
                         existingP.ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate;
-                        
+
                         // Handle Salary Records Sync
                         if (existingP.SalaryRecords == null) existingP.SalaryRecords = new List<SalaryRecord>();
                         if (_personnel.SalaryRecords != null)
                         {
                             // 1. Identify IDs to keep
                             var currentSalaryIds = _personnel.SalaryRecords.Select(s => s.Id).Where(id => id != 0).ToList();
-                            
+
                             // 2. Remove deleted
                             var toDeleteSalary = existingP.SalaryRecords.Where(s => !currentSalaryIds.Contains(s.Id)).ToList();
-                            foreach(var item in toDeleteSalary)
+                            foreach (var item in toDeleteSalary)
                             {
                                 context.SalaryRecords.Remove(item);
                             }
 
                             // 3. Add new
                             var toAddSalary = _personnel.SalaryRecords.Where(s => s.Id == 0).ToList();
-                            foreach(var item in toAddSalary)
+                            foreach (var item in toAddSalary)
                             {
                                 item.PersonnelId = existingP.Id;
                                 context.SalaryRecords.Add(item);
                             }
-                            
+
                             // 4. Update existing
                             var toUpdateSalary = _personnel.SalaryRecords.Where(s => s.Id != 0).ToList();
-                            foreach(var item in toUpdateSalary)
+                            foreach (var item in toUpdateSalary)
                             {
                                 var dbItem = existingP.SalaryRecords.FirstOrDefault(x => x.Id == item.Id);
                                 if (dbItem != null)
@@ -960,9 +982,9 @@ namespace TaxPersonnelManagement.Views
                                 }
                             }
                         }
-                        
+
                         existingP.SalaryHistoryLog = string.Join("\n", existingP.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? new List<string>());
-                    
+
                         // Tab 7
                         existingP.EmulationTitles = txtEmulationTitles.Text;
                         existingP.RewardForms = txtRewardForms.Text;
@@ -986,25 +1008,25 @@ namespace TaxPersonnelManagement.Views
                         {
                             // 1. Identify IDs to keep
                             var currentIds = _personnel.LeaveHistories.Select(L => L.Id).Where(id => id != 0).ToList();
-                            
+
                             // 2. Remove deleted
                             var toDelete = existingP.LeaveHistories.Where(lh => !currentIds.Contains(lh.Id)).ToList();
-                            foreach(var item in toDelete)
+                            foreach (var item in toDelete)
                             {
                                 context.LeaveHistories.Remove(item);
                             }
 
                             // 3. Add new
                             var toAdd = _personnel.LeaveHistories.Where(lh => lh.Id == 0).ToList();
-                            foreach(var item in toAdd)
+                            foreach (var item in toAdd)
                             {
                                 item.PersonnelId = existingP.Id; // Link ForeignKey
-                                context.LeaveHistories.Add(item); 
+                                context.LeaveHistories.Add(item);
                             }
-                            
+
                             // 4. Update existing
                             var toUpdate = _personnel.LeaveHistories.Where(lh => lh.Id != 0).ToList();
-                            foreach(var item in toUpdate)
+                            foreach (var item in toUpdate)
                             {
                                 var dbItem = existingP.LeaveHistories.FirstOrDefault(x => x.Id == item.Id);
                                 if (dbItem != null)
@@ -1054,7 +1076,7 @@ namespace TaxPersonnelManagement.Views
             {
                 Filter = "Image files (*.png;*.jpg)|*.png;*.jpg"
             };
-            
+
             if (openFileDialog.ShowDialog() == true)
             {
                 try
@@ -1085,7 +1107,7 @@ namespace TaxPersonnelManagement.Views
             imgAvatar.Fill = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F5F5F5"));
             iconAvatarPlaceholder.Visibility = Visibility.Visible;
             btnRemoveAvatar.Visibility = Visibility.Collapsed;
-            
+
             _currentAvatarBase64 = null;
             _isAvatarChanged = true;
         }
@@ -1093,13 +1115,13 @@ namespace TaxPersonnelManagement.Views
         // Helper: File -> Base64 (with resizing to max 500px width/height to save space)
         private string ImageToBase64(string path)
         {
-            try 
+            try
             {
                 byte[] imageBytes = System.IO.File.ReadAllBytes(path);
-                
+
                 // Pure Check: If > 1MB, maybe warn? OR just resize.
                 // For simplicity in WPF without extra libraries, we use built-in classes.
-                
+
                 var image = new System.Windows.Media.Imaging.BitmapImage();
                 image.BeginInit();
                 image.UriSource = new Uri(path);
@@ -1112,14 +1134,14 @@ namespace TaxPersonnelManagement.Views
                 // Let's implement a simple Resize using TransformedBitmap.
 
                 double scale = 1.0;
-                double maxDimension = 600; 
+                double maxDimension = 600;
                 if (image.PixelWidth > maxDimension || image.PixelHeight > maxDimension)
                 {
                     scale = Math.Min(maxDimension / image.PixelWidth, maxDimension / image.PixelHeight);
                 }
 
                 var transformed = new System.Windows.Media.Imaging.TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale, scale));
-                
+
                 var encoder = new System.Windows.Media.Imaging.JpegBitmapEncoder(); // JPG is smaller than PNG usually
                 encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(transformed));
                 encoder.QualityLevel = 80;
@@ -1142,7 +1164,7 @@ namespace TaxPersonnelManagement.Views
             try
             {
                 byte[] binaryData = Convert.FromBase64String(base64String);
-                
+
                 var bi = new System.Windows.Media.Imaging.BitmapImage();
                 bi.BeginInit();
                 bi.StreamSource = new System.IO.MemoryStream(binaryData);
@@ -1172,125 +1194,125 @@ namespace TaxPersonnelManagement.Views
                 _personnel = null;
                 lblSaveText.Text = "Lưu Hồ Sơ";
 
-            txtStaffId.Clear();
-            txtName.Clear();
-            cboGender.SelectedItem = null;
-            cboGender.Text = "";
-            dpDOB.SelectedDate = null;
-            txtPhone.Clear();
-            txtIdentityNumber.Clear();
-            txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
-            txtEmail.Clear();
-            txtSocialInsurance.Clear();
-            txtBirthPlace.Clear();
-            txtEthnicity.Clear();
-            txtReligion.Clear();
+                txtStaffId.Clear();
+                txtName.Clear();
+                cboGender.SelectedItem = null;
+                cboGender.Text = "";
+                dpDOB.SelectedDate = null;
+                txtPhone.Clear();
+                txtIdentityNumber.Clear();
+                txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
+                txtEmail.Clear();
+                txtSocialInsurance.Clear();
+                txtBirthPlace.Clear();
+                txtEthnicity.Clear();
+                txtReligion.Clear();
 
-            cboDepartment.SelectedItem = null;
-            cboDepartment.Text = "";
-            cboPosition.SelectedItem = null;
-            cboPosition.Text = "";
-            
-            cboRankCode.SelectedItem = null;
-            cboRankCode.Text = "";
-            txtRankName.Clear();
-            dpStartDate.SelectedDate = null;
+                cboDepartment.SelectedItem = null;
+                cboDepartment.Text = "";
+                cboPosition.SelectedItem = null;
+                cboPosition.Text = "";
 
-            cboEducationLevel.SelectedItem = null;
-            cboEducationLevel.Text = "";
-            txtMajor.Clear();
-            txtUniversity.Clear();
-            cboStateManagement.SelectedItem = null;
-            cboStateManagement.Text = "";
-            cboPoliticalTheory.SelectedItem = null;
-            cboPoliticalTheory.Text = "";
-            txtITSkill.Clear();
-            txtLanguageSkill.Clear();
+                cboRankCode.SelectedItem = null;
+                cboRankCode.Text = "";
+                txtRankName.Clear();
+                dpStartDate.SelectedDate = null;
 
-            // Tab 2
-            dpPositionDecisionDate.SelectedDate = null;
-            dpPositionCalculationDate.SelectedDate = DateTime.Now;
-            txtPositionYear.Clear();
-            txtDetailedWorkHistory.Clear();
-            txtYearsWorked.Clear();
-            txtYearsWorked.Clear();
-            txtMonthsWorked.Clear();
+                cboEducationLevel.SelectedItem = null;
+                cboEducationLevel.Text = "";
+                txtMajor.Clear();
+                txtUniversity.Clear();
+                cboStateManagement.SelectedItem = null;
+                cboStateManagement.Text = "";
+                cboPoliticalTheory.SelectedItem = null;
+                cboPoliticalTheory.Text = "";
+                txtITSkill.Clear();
+                txtLanguageSkill.Clear();
 
-            // Tab 3
-            dpRetirementDate.SelectedDate = null;
-            txtRetirementYearsWorked.Clear();
-            txtRemainingYears.Clear();
+                // Tab 2
+                dpPositionDecisionDate.SelectedDate = null;
+                dpPositionCalculationDate.SelectedDate = DateTime.Now;
+                txtPositionYear.Clear();
+                txtDetailedWorkHistory.Clear();
+                txtYearsWorked.Clear();
+                txtYearsWorked.Clear();
+                txtMonthsWorked.Clear();
 
-            // Tab 4
-            dpPartyEntryDate.SelectedDate = null;
-            dpPartyOfficialDate.SelectedDate = null;
+                // Tab 3
+                dpRetirementDate.SelectedDate = null;
+                txtRetirementYearsWorked.Clear();
+                txtRemainingYears.Clear();
 
-            // Tab 6: Salary Info
-            cboSalaryStep.ItemsSource = null;
-            cboSalaryStep.SelectedIndex = -1;
-            cboSalaryStep.Text = "";
-            txtSalaryCoefficient.Clear();
-            txtExceedFrame.Clear();
-            txtPositionAllowance.Clear();
-            dpSalaryReservation.SelectedDate = null;
-            dpNextSalaryStepDate.SelectedDate = null;
-            cboSalaryDelay.SelectedIndex = -1;
-            cboSalaryDelay.Text = "";
-            dpExpectedSalaryIncrease.SelectedDate = null;
-            // Tab 6
-            if (_personnel == null) _personnel = new Personnel();
-            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
-            _personnel.SalaryRecords.Clear();
-            RefreshSalaryHistoryGrid();
-            
-            dpSalaryHistStart.SelectedDate = null;
-            dpSalaryHistEnd.SelectedDate = null;
-            dpSalaryHistCalc.SelectedDate = null;
-            txtSalaryHistCoeff.Clear();
-            txtSalaryHistPercent.Text = "100";
-            txtSalaryHistDecisionNo.Clear();
-            dpSalaryHistDecisionDate.SelectedDate = null;
+                // Tab 4
+                dpPartyEntryDate.SelectedDate = null;
+                dpPartyOfficialDate.SelectedDate = null;
 
-            // Tab 5
-            // Tab 5
-            txtTotalAnnualLeave.Text = "12";
-            txtAnnualLeaveTaken.Text = "0";
-            txtAnnualLeaveRemaining.Text = "12";
-            txtSickLeaveTaken.Text = "0";
-            txtUnpaidLeaveTaken.Text = "0";
-            txtMaternityLeaveTaken.Text = "0";
-            
-            dpLeaveStartDate.SelectedDate = null;
-            dpLeaveEndDate.SelectedDate = null;
-            cboLeaveType.SelectedIndex = -1;
-            txtLeaveReason.Clear();
-            txtLeaveDuration.Clear();
-            dgLeaveHistory.ItemsSource = null;
+                // Tab 6: Salary Info
+                cboSalaryStep.ItemsSource = null;
+                cboSalaryStep.SelectedIndex = -1;
+                cboSalaryStep.Text = "";
+                txtSalaryCoefficient.Clear();
+                txtExceedFrame.Clear();
+                txtPositionAllowance.Clear();
+                dpSalaryReservation.SelectedDate = null;
+                dpNextSalaryStepDate.SelectedDate = null;
+                cboSalaryDelay.SelectedIndex = -1;
+                cboSalaryDelay.Text = "";
+                dpExpectedSalaryIncrease.SelectedDate = null;
+                // Tab 6
+                if (_personnel == null) _personnel = new Personnel();
+                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+                _personnel.SalaryRecords.Clear();
+                RefreshSalaryHistoryGrid();
 
-            // Reset Edit Mode
-            _editingLeaveHistory = null;
-            if (btnAddLeave.Content is StackPanel sp)
-            {
-               foreach(var child in sp.Children)
-               {
-                   if (child is TextBlock tb)
-                   {
-                       tb.Text = "Thêm vào bảng";
-                       break;
-                   }
-               }
-            }
+                dpSalaryHistStart.SelectedDate = null;
+                dpSalaryHistEnd.SelectedDate = null;
+                dpSalaryHistCalc.SelectedDate = null;
+                txtSalaryHistCoeff.Clear();
+                txtSalaryHistPercent.Text = "100";
+                txtSalaryHistDecisionNo.Clear();
+                dpSalaryHistDecisionDate.SelectedDate = null;
 
-            // Clear Avatar
-            btnRemoveAvatar_Click(sender, e);
-            _isAvatarChanged = false; // Reset change flag as we are starting fresh
+                // Tab 5
+                // Tab 5
+                txtTotalAnnualLeave.Text = "12";
+                txtAnnualLeaveTaken.Text = "0";
+                txtAnnualLeaveRemaining.Text = "12";
+                txtSickLeaveTaken.Text = "0";
+                txtUnpaidLeaveTaken.Text = "0";
+                txtMaternityLeaveTaken.Text = "0";
 
-            // Clear Errors
-            lblPhoneError.Visibility = Visibility.Collapsed;
-            lblEmailError.Visibility = Visibility.Collapsed;
-             
-                 // Focus first field
-                 txtStaffId.Focus();
+                dpLeaveStartDate.SelectedDate = null;
+                dpLeaveEndDate.SelectedDate = null;
+                cboLeaveType.SelectedIndex = -1;
+                txtLeaveReason.Clear();
+                txtLeaveDuration.Clear();
+                dgLeaveHistory.ItemsSource = null;
+
+                // Reset Edit Mode
+                _editingLeaveHistory = null;
+                if (btnAddLeave.Content is StackPanel sp)
+                {
+                    foreach (var child in sp.Children)
+                    {
+                        if (child is TextBlock tb)
+                        {
+                            tb.Text = "Thêm vào bảng";
+                            break;
+                        }
+                    }
+                }
+
+                // Clear Avatar
+                btnRemoveAvatar_Click(sender, e);
+                _isAvatarChanged = false; // Reset change flag as we are starting fresh
+
+                // Clear Errors
+                lblPhoneError.Visibility = Visibility.Collapsed;
+                lblEmailError.Visibility = Visibility.Collapsed;
+
+                // Focus first field
+                txtStaffId.Focus();
             }
             catch (Exception ex)
             {
@@ -1310,7 +1332,7 @@ namespace TaxPersonnelManagement.Views
 
         private void txtEmail_TextChanged(object? sender, TextChangedEventArgs e)
         {
-             if (string.IsNullOrEmpty(txtEmail.Text))
+            if (string.IsNullOrEmpty(txtEmail.Text))
             {
                 lblEmailError.Visibility = Visibility.Collapsed;
                 return;
@@ -1396,7 +1418,7 @@ namespace TaxPersonnelManagement.Views
             // 2. Số năm còn công tác = RetirementDate - Now -> Output: X năm Y tháng Z ngày
 
             DateTime now = DateTime.Now.Date;
-            
+
             // Calculate Annual Leave (Tab 5)
             CalculateAnnualLeave(now);
 
@@ -1405,7 +1427,7 @@ namespace TaxPersonnelManagement.Views
             if (dpStartDate.SelectedDate.HasValue)
             {
                 DateTime start = dpStartDate.SelectedDate.Value;
-                
+
                 if (now > start)
                 {
                     txtRetirementYearsWorked.Text = CalculateDetailedDateDifference(start, now);
@@ -1449,13 +1471,13 @@ namespace TaxPersonnelManagement.Views
             if (dpStartDate.SelectedDate.HasValue)
             {
                 DateTime start = dpStartDate.SelectedDate.Value;
-                
+
                 // Calculate full years worked
                 // Simple approximation or strict year difference?
                 // Using strict year diff logic:
                 int years = now.Year - start.Year;
                 if (now < start.AddYears(years)) years--;
-                
+
                 if (years < 0) years = 0;
 
                 int bonusDays = years / 5;
@@ -1467,7 +1489,7 @@ namespace TaxPersonnelManagement.Views
             txtTotalAnnualLeave.Text = totalLeave.ToString();
             UpdateLeaveStatistics(totalLeave); // Pass calculated total explicitly
         }
-        
+
         private string CalculateDetailedDateDifference(DateTime startDate, DateTime endDate)
         {
             if (startDate > endDate) return "0 năm 0 tháng 0 ngày";
@@ -1506,7 +1528,7 @@ namespace TaxPersonnelManagement.Views
                 _editingSalaryRecord.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
                 _editingSalaryRecord.DecisionNumber = txtSalaryHistDecisionNo.Text;
                 _editingSalaryRecord.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
-                
+
                 _editingSalaryRecord = null; // Clear editing state
             }
             else
@@ -1531,7 +1553,7 @@ namespace TaxPersonnelManagement.Views
             }
 
             RefreshSalaryHistoryGrid();
-            
+
             // Clear inputs
             dpSalaryHistStart.SelectedDate = null;
             dpSalaryHistEnd.SelectedDate = null;
@@ -1636,18 +1658,18 @@ namespace TaxPersonnelManagement.Views
 
                     // Handle overlap with ongoing or closed leaves
                     bool isOverlap = false;
-                    
+
                     if (history.EndDate.HasValue)
                     {
                         if (end.HasValue)
                         {
-                             // Case: Both have end dates
-                             isOverlap = (start <= history.EndDate.Value && end.Value >= history.StartDate);
+                            // Case: Both have end dates
+                            isOverlap = (start <= history.EndDate.Value && end.Value >= history.StartDate);
                         }
                         else
                         {
-                             // Case: New is ongoing
-                             isOverlap = (start <= history.EndDate.Value);
+                            // Case: New is ongoing
+                            isOverlap = (start <= history.EndDate.Value);
                         }
                     }
                     else
@@ -1674,7 +1696,7 @@ namespace TaxPersonnelManagement.Views
 
                 }
             }
-            
+
             double duration = 0;
             if (double.TryParse(txtLeaveDuration.Text, out double manualDuration))
             {
@@ -1710,7 +1732,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     double remainingCurrent = GetRemainingAnnualLeaveDays(currentYear);
                     double remainingOld = GetRemainingAnnualLeaveDays(currentYear - 1);
-                    
+
                     if (chkPrioritizeOldYear.IsChecked == true)
                         totalAvailable = remainingCurrent + (remainingOld > 0 ? remainingOld : 0);
                     else
@@ -1722,7 +1744,7 @@ namespace TaxPersonnelManagement.Views
                     totalAvailable = GetRemainingAnnualLeaveDays(selectedYear);
 
                     // If editing, add back the *original* duration to the available pool
-                    if (_editingLeaveHistory != null && 
+                    if (_editingLeaveHistory != null &&
                         _editingLeaveHistory.LeaveType == "Phép năm" &&
                         (_editingLeaveHistory.LeaveYear ?? _editingLeaveHistory.StartDate.Year) == selectedYear)
                     {
@@ -1749,10 +1771,10 @@ namespace TaxPersonnelManagement.Views
                 _editingLeaveHistory.DurationDays = duration;
                 _editingLeaveHistory.DurationDays = duration;
                 _editingLeaveHistory.Reason = reason;
-                
+
                 if (type == "Phép năm")
                 {
-                     _editingLeaveHistory.LeaveYear = (int?)cboLeaveYear.SelectedItem;
+                    _editingLeaveHistory.LeaveYear = (int?)cboLeaveYear.SelectedItem;
                 }
                 else
                 {
@@ -1775,19 +1797,19 @@ namespace TaxPersonnelManagement.Views
                 // Reset Edit Mode
                 _editingLeaveHistory = null;
                 dgLeaveHistory.SelectedItem = null;
-                
+
                 // Reset Button Text
                 // Find TextBlock inside button
                 if (btnAddLeave.Content is StackPanel sp)
                 {
-                   foreach(var child in sp.Children)
-                   {
-                       if (child is TextBlock tb)
-                       {
-                           tb.Text = "Thêm vào bảng";
-                           break;
-                       }
-                   }
+                    foreach (var child in sp.Children)
+                    {
+                        if (child is TextBlock tb)
+                        {
+                            tb.Text = "Thêm vào bảng";
+                            break;
+                        }
+                    }
                 }
             }
             else
@@ -1798,7 +1820,7 @@ namespace TaxPersonnelManagement.Views
                 if (type == "Phép năm")
                 {
                     int currentYear = DateTime.Now.Year;
-                    int previousYear = currentYear - 1; 
+                    int previousYear = currentYear - 1;
 
                     // Check if there is remaining leave in the PREVIOUS year AND user wants to prioritize it
                     double remainingOld = GetRemainingAnnualLeaveDays(previousYear);
@@ -1819,8 +1841,8 @@ namespace TaxPersonnelManagement.Views
                             var itemOld = new LeaveHistory
                             {
                                 LeaveType = type,
-                                StartDate = start, 
-                                EndDate = start.AddDays(takenFromOld - 1), 
+                                StartDate = start,
+                                EndDate = start.AddDays(takenFromOld - 1),
                                 DurationDays = takenFromOld,
                                 Reason = reason + $"|SYS:Ưu tiên trừ phép tồn năm {previousYear}|LINK:{linkId}",
                                 PersonnelId = _personnel != null ? _personnel.Id : 0,
@@ -1850,7 +1872,7 @@ namespace TaxPersonnelManagement.Views
                             };
 
 
-                             if (_personnel == null) _personnel = new Personnel();
+                            if (_personnel == null) _personnel = new Personnel();
                             if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
                             _personnel.LeaveHistories.Add(itemCurrent);
                         }
@@ -1858,15 +1880,15 @@ namespace TaxPersonnelManagement.Views
                         CalculateAnnualLeave(DateTime.Now); // Refresh totals
                         RefreshLeaveHistoryGrid();
                         UpdateLeaveStatistics(); // Show stats
-                        
+
                         string msg = $"Đã ưu tiên trừ {takenFromOld} ngày từ phép tồn năm {previousYear}.";
                         if (takenFromCurrent > 0)
                         {
                             msg += $"\nHệ thống tự động chuyển {takenFromCurrent} ngày còn lại vào phép năm {currentYear}.";
                         }
-                        
+
                         new NotificationWindow(msg, "Thông báo tự động").ShowDialog();
-                        
+
                         // Cleanup UI
                         cboLeaveType.SelectedIndex = -1;
                         cboLeaveYear.IsEnabled = false;
@@ -1893,19 +1915,19 @@ namespace TaxPersonnelManagement.Views
                 };
 
 
-                
+
                 if (_personnel == null) _personnel = new Personnel();
                 if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
-                
+
                 _personnel.LeaveHistories.Add(newItem);
             }
-            
+
             _isRefreshing = false;
             // Refresh Grid
             RefreshLeaveHistoryGrid();
 
             UpdateLeaveStatistics();
-            
+
             // Clear inputs
             cboLeaveType.SelectedIndex = -1;
             cboLeaveYear.IsEnabled = false;
@@ -1921,14 +1943,14 @@ namespace TaxPersonnelManagement.Views
             CalculateMaternityEndDate();
             CalculateMaternityEndDate();
             UpdateLeaveDuration();
-            
+
             // Enable Year Selection if "Phép năm"
             var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString();
             if (type == "Phép năm")
             {
                 cboLeaveYear.IsEnabled = true;
                 if (!_isRefreshing) LoadLeaveYears(); // Don't reload if we are already in selection changed from LoadLeaveYears
-                
+
                 int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? DateTime.Now.Year;
                 if (selectedYear == DateTime.Now.Year)
                 {
@@ -1946,7 +1968,7 @@ namespace TaxPersonnelManagement.Views
                 chkPrioritizeOldYear.Visibility = Visibility.Collapsed;
                 chkPrioritizeOldYear.IsChecked = false;
             }
-            
+
             // Trigger Stat Update for selected year
             UpdateLeaveStatistics();
         }
@@ -1972,7 +1994,7 @@ namespace TaxPersonnelManagement.Views
                     return;
                 }
             }
-            
+
             // Fallback for non-item list (like strings)
             cbo.Text = content;
         }
@@ -2032,13 +2054,13 @@ namespace TaxPersonnelManagement.Views
 
             if (type == "Phép năm")
             {
-                 duration = CalculateWorkingDays(start, end);
+                duration = CalculateWorkingDays(start, end);
             }
             else
             {
                 duration = (end - start).TotalDays + 1;
             }
-            
+
             txtLeaveDuration.Text = duration.ToString();
         }
 
@@ -2115,9 +2137,9 @@ namespace TaxPersonnelManagement.Views
             if (dgLeaveHistory.SelectedItem is LeaveHistory item)
             {
                 _editingLeaveHistory = item;
-                
+
                 // Populate fields
-                foreach(ComboBoxItem cbi in cboLeaveType.Items)
+                foreach (ComboBoxItem cbi in cboLeaveType.Items)
                 {
                     if (cbi.Content?.ToString() == item.LeaveType)
                     {
@@ -2125,12 +2147,12 @@ namespace TaxPersonnelManagement.Views
                         break;
                     }
                 }
-                
+
                 dpLeaveStartDate.SelectedDate = item.StartDate;
                 dpLeaveEndDate.SelectedDate = item.EndDate;
                 txtLeaveDuration.Text = item.DurationDays.ToString();
                 txtLeaveReason.Text = item.UserReasonDisplay; // Only show user part
-                
+
                 if (item.LeaveType == "Phép năm")
                 {
                     if (item.LeaveYear.HasValue)
@@ -2149,10 +2171,10 @@ namespace TaxPersonnelManagement.Views
                     }
 
                     // NEW: Detect Priority from Reason
-                    bool isPriority = !string.IsNullOrEmpty(item.Reason) && 
-                                     (item.Reason.Contains("|SYS:Ưu tiên trừ phép tồn năm") || 
+                    bool isPriority = !string.IsNullOrEmpty(item.Reason) &&
+                                     (item.Reason.Contains("|SYS:Ưu tiên trừ phép tồn năm") ||
                                       item.Reason.Contains("|SYS:Trừ tiếp vào phép tồn năm"));
-                    
+
                     if (isPriority)
                     {
                         chkPrioritizeOldYear.Visibility = Visibility.Visible;
@@ -2168,14 +2190,14 @@ namespace TaxPersonnelManagement.Views
                 // Find TextBlock inside button
                 if (btnAddLeave.Content is StackPanel sp)
                 {
-                   foreach(var child in sp.Children)
-                   {
-                       if (child is TextBlock tb)
-                       {
-                           tb.Text = "Cập nhật ngày nghỉ";
-                           break;
-                       }
-                   }
+                    foreach (var child in sp.Children)
+                    {
+                        if (child is TextBlock tb)
+                        {
+                            tb.Text = "Cập nhật ngày nghỉ";
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -2206,9 +2228,9 @@ namespace TaxPersonnelManagement.Views
                         var confirm = new ConfirmWindow(
                             $"Bản ghi này thuộc về một đợt nghỉ phép bị tách ({linkedItems.Count + 1} phần).\n" +
                             "Hệ thống sẽ xóa TẤT CẢ các bản ghi liên quan để đảm bảo đồng bộ.\n" +
-                            "Bạn có chắc chắn muốn xóa không?", 
+                            "Bạn có chắc chắn muốn xóa không?",
                             "Xác nhận xóa liên kết");
-                        
+
                         if (confirm.ShowDialog() == true)
                         {
                             _personnel.LeaveHistories.Remove(item);
@@ -2222,7 +2244,7 @@ namespace TaxPersonnelManagement.Views
                     {
                         // Standard delete
                         var confirm = new ConfirmWindow($"Bạn có chắc muốn xóa lịch sử nghỉ: {item.LeaveType}?", "Xác nhận xóa");
-                         if (confirm.ShowDialog() == true)
+                        if (confirm.ShowDialog() == true)
                         {
                             _personnel.LeaveHistories.Remove(item);
                         }
@@ -2239,15 +2261,15 @@ namespace TaxPersonnelManagement.Views
 
         private void UpdateLeaveStatistics(int? yearOverride = null)
         {
-             // if (_personnel == null) return; // Removed to allow UI update with override values
+            // if (_personnel == null) return; // Removed to allow UI update with override values
             if (_personnel != null && _personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
-            
+
             var histories = _personnel?.LeaveHistories ?? new List<LeaveHistory>();
 
             double annualTakenCurrentYear = 0;
             double annualTakenOldYear = 0;
             double sickTaken = 0;
-            
+
             // Maternity Logic
             string maternityDisplay = "0";
             // Find ALL Maternity records, sort by StartDate descending
@@ -2266,7 +2288,7 @@ namespace TaxPersonnelManagement.Views
 
             // Determine which year to calculate for
             int yearToCalculate = yearOverride ?? DateTime.Now.Year;
-            
+
             // If user selected a year in ComboBox, we might want to prioritize that for display
             if (yearOverride == null && cboLeaveYear.SelectedItem is int selectedYear)
             {
@@ -2278,7 +2300,7 @@ namespace TaxPersonnelManagement.Views
             foreach (var item in histories)
             {
                 // Always accumulate unpaid leave across ALL years for salary delay calculation
-                if (item.LeaveType == "Không lương") 
+                if (item.LeaveType == "Không lương")
                 {
                     totalUnpaidTakenAllYears += item.DurationDays;
                 }
@@ -2306,7 +2328,7 @@ namespace TaxPersonnelManagement.Views
             // Bind to UI
             // Assuming default 12 if not set in UI text
             int totalAnnual = 12;
-            
+
             // Prefer Model over Text parsing
             if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
             {
@@ -2323,7 +2345,7 @@ namespace TaxPersonnelManagement.Views
             txtSickLeaveTaken.Text = sickTaken.ToString();
             txtUnpaidLeaveTaken.Text = totalUnpaidTakenAllYears.ToString();
             txtMaternityLeaveTaken.Text = maternityDisplay;
-            
+
             CalculateExpectedSalaryDate();
         }
 
@@ -2331,7 +2353,7 @@ namespace TaxPersonnelManagement.Views
         {
             // Default to 12 or value from UI if personnel is null/empty
             int total = 12;
-            
+
             if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
             {
                 total = _personnel.TotalAnnualLeaveDays;
@@ -2348,9 +2370,9 @@ namespace TaxPersonnelManagement.Views
             double taken = 0;
             if (_personnel != null && _personnel.LeaveHistories != null)
             {
-               taken = _personnel.LeaveHistories
-                    .Where(x => x.LeaveType == "Phép năm" && (x.LeaveYear ?? x.StartDate.Year) == year)
-                    .Sum(x => x.DurationDays);
+                taken = _personnel.LeaveHistories
+                     .Where(x => x.LeaveType == "Phép năm" && (x.LeaveYear ?? x.StartDate.Year) == year)
+                     .Sum(x => x.DurationDays);
             }
 
             return total - taken;
@@ -2392,7 +2414,7 @@ namespace TaxPersonnelManagement.Views
                         // Check if there are actually other records with this LinkId
                         int count = sortedList.Count(x => x.LinkId == item.LinkId);
                         item.IsLinkedGroupHead = count > 1; // It is a head of a group only if count > 1
-                        
+
                         processedLinkIds.Add(item.LinkId);
                     }
                 }
@@ -2456,11 +2478,11 @@ namespace TaxPersonnelManagement.Views
                 if (cboRankCode.SelectedItem is Rank r) rankCode = r.Code;
                 else if (cboRankCode.SelectedValue != null) rankCode = cboRankCode.SelectedValue.ToString() ?? "";
                 else rankCode = cboRankCode.Text;
-                
+
                 rankCode = rankCode.Trim();
 
-                if (string.Equals(rankCode, "06.039-1", StringComparison.OrdinalIgnoreCase) || 
-                    string.Equals(rankCode, "01.011", StringComparison.OrdinalIgnoreCase) || 
+                if (string.Equals(rankCode, "06.039-1", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(rankCode, "01.011", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(rankCode, "01.009", StringComparison.OrdinalIgnoreCase))
                 {
                     periodYears = 2;
@@ -2479,7 +2501,7 @@ namespace TaxPersonnelManagement.Views
                 delayReason = cboSalaryDelay.SelectedItem.ToString() ?? "";
             else
                 delayReason = cboSalaryDelay.Text;
-            
+
             if (!string.IsNullOrEmpty(delayReason))
             {
                 if (delayReason.Contains("Lùi 3 tháng"))
@@ -2526,16 +2548,16 @@ namespace TaxPersonnelManagement.Views
                 int caretIndex = txtPhone.CaretIndex;
                 string originalText = txtPhone.Text;
                 string digits = new string(originalText.Where(char.IsDigit).ToArray());
-                
+
                 // Limit to 10 digits
                 if (digits.Length > 10) digits = digits.Substring(0, 10);
-                
+
                 string formatted = FormatPhoneNumber(digits);
-                
+
                 if (txtPhone.Text != formatted)
                 {
                     txtPhone.Text = formatted;
-                    
+
                     // Restore caret position
                     int digitsBefore = originalText.Substring(0, Math.Min(caretIndex, originalText.Length)).Count(char.IsDigit);
                     int newCaretIndex = 0;
@@ -2545,11 +2567,11 @@ namespace TaxPersonnelManagement.Views
                         if (char.IsDigit(formatted[newCaretIndex])) digitCount++;
                         newCaretIndex++;
                     }
-                    
+
                     if (newCaretIndex < formatted.Length && formatted[newCaretIndex] == '.')
                     {
-                         if (e.Changes.Any(c => c.AddedLength > 0))
-                             newCaretIndex++;
+                        if (e.Changes.Any(c => c.AddedLength > 0))
+                            newCaretIndex++;
                     }
 
                     txtPhone.CaretIndex = Math.Min(newCaretIndex, formatted.Length);
@@ -2580,12 +2602,12 @@ namespace TaxPersonnelManagement.Views
         private string FormatPhoneNumber(string? digits)
         {
             if (string.IsNullOrEmpty(digits)) return "";
-            
+
             // Clean non-digits first
             digits = new string(digits.Where(char.IsDigit).ToArray());
-            
+
             if (digits.Length == 0) return "";
-            
+
             string formatted = digits.Substring(0, Math.Min(4, digits.Length));
             if (digits.Length > 4)
             {

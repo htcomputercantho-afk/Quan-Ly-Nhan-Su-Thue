@@ -15,7 +15,7 @@ namespace TaxPersonnelManagement.Views
         {
             InitializeComponent();
             _editingUserId = userId;
-            
+
             // Populate Roles
             var roles = Enum.GetValues(typeof(UserRole)).Cast<UserRole>()
                             .Where(r => r == UserRole.Admin || r == UserRole.Staff)
@@ -25,7 +25,7 @@ namespace TaxPersonnelManagement.Views
             if (_editingUserId.HasValue)
             {
                 txtTitle.Text = "CẬP NHẬT TÀI KHOẢN";
-                txtUsername.IsReadOnly = true; 
+                txtUsername.IsReadOnly = true;
                 pwdPassword.Visibility = Visibility.Collapsed;
                 txtPasswordHint.Visibility = Visibility.Collapsed; // We will use a separate dialog for password
                 txtPasswordLabel.Visibility = Visibility.Collapsed;
@@ -78,8 +78,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtUsername.Text) || 
-                string.IsNullOrWhiteSpace(txtFullName.Text) || 
+            if (string.IsNullOrWhiteSpace(txtUsername.Text) ||
+                string.IsNullOrWhiteSpace(txtFullName.Text) ||
                 cboRole.SelectedValue == null)
             {
                 var warning = new WarningWindow("Cảnh báo", "Vui lòng nhập đầy đủ Tên đăng nhập, Họ tên và chọn Quyền hạn.");

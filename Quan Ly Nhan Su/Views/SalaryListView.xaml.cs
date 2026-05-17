@@ -147,12 +147,14 @@ namespace TaxPersonnelManagement.Views
                     };
 
                     _fullSalaryList = query.AsEnumerable()
-                                    .OrderBy(p => {
+                                    .OrderBy(p =>
+                                    {
                                         string dept = (p.Department ?? "").Trim();
                                         int index = deptOrder.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
                                         return index == -1 ? 999 : index;
                                     })
-                                    .ThenBy(p => {
+                                    .ThenBy(p =>
+                                    {
                                         string pos = p.Position?.ToLower() ?? "";
                                         string dept3 = (p.Department ?? "").ToLower();
 
@@ -214,6 +216,11 @@ namespace TaxPersonnelManagement.Views
 
             btnPrevPage.IsEnabled = _currentPage > 1;
             btnNextPage.IsEnabled = _currentPage < _totalPages;
+
+            if (dgSalary.Items.Count > 0)
+            {
+                dgSalary.ScrollIntoView(dgSalary.Items[0]);
+            }
         }
 
         private void BtnPrevPage_Click(object sender, RoutedEventArgs e)
@@ -318,11 +325,11 @@ namespace TaxPersonnelManagement.Views
 
                         // 1. Tiêu đề file Excel - thay đổi theo bộ lọc năm/kỳ
                         string yearText = "Năm " + (cbYear.SelectedItem is FilterItem y ? y.Value.ToString() : DateTime.Now.Year.ToString());
-                        if (cbYear.SelectedItem is FilterItem yi && yi.Value == 0) yearText = ""; 
-                        
+                        if (cbYear.SelectedItem is FilterItem yi && yi.Value == 0) yearText = "";
+
                         string periodText = cbPeriod.SelectedItem?.ToString() ?? "";
                         bool isAllPeriod = (cbPeriod.SelectedItem is FilterItem pi && pi.Value == 0);
-                        
+
                         string title;
                         if (string.IsNullOrEmpty(yearText) && isAllPeriod)
                         {
@@ -336,7 +343,7 @@ namespace TaxPersonnelManagement.Views
                         {
                             title = $"DANH SÁCH NHÂN SỰ ĐẾN HẠN NÂNG LƯƠNG - {yearText} ({periodText})".ToUpper();
                         }
-                        
+
                         var titleRange = worksheet.Range("A1:K1");
                         titleRange.Merge();
                         titleRange.Value = title;
@@ -349,7 +356,7 @@ namespace TaxPersonnelManagement.Views
 
                         // 2. Tiêu đề các cột
                         string[] headers = { "STT", "Họ và tên", "Ngày sinh", "Mã ngạch", "Bậc lương", "Hệ số lương", "% Vượt khung", "Thời điểm tính bậc lương lần sau", "Tháng", "Dự kiến lên lương", "Ghi chú" };
-                        
+
                         for (int i = 0; i < headers.Length; i++)
                         {
                             var cell = worksheet.Cell(3, i + 1);
@@ -369,22 +376,22 @@ namespace TaxPersonnelManagement.Views
                         {
                             worksheet.Cell(row, 1).Value = stt++;
                             worksheet.Cell(row, 2).Value = item.FullName;
-                            worksheet.Cell(row, 3).Value = item.DateOfBirth; 
+                            worksheet.Cell(row, 3).Value = item.DateOfBirth;
                             worksheet.Cell(row, 4).Value = item.RankCode;
                             worksheet.Cell(row, 5).Value = item.CurrentSalaryStep;
                             worksheet.Cell(row, 6).Value = item.CurrentSalaryCoefficient;
                             worksheet.Cell(row, 7).Value = item.ExceedFramePercent > 0 ? $"{item.ExceedFramePercent}%" : "";
-                            
-                             if (item.NextSalaryStepDate.HasValue)
+
+                            if (item.NextSalaryStepDate.HasValue)
                                 worksheet.Cell(row, 8).Value = item.NextSalaryStepDate.Value;
-                             
-                             if (item.ExpectedSalaryIncreaseDate.HasValue)
-                             {
+
+                            if (item.ExpectedSalaryIncreaseDate.HasValue)
+                            {
                                 worksheet.Cell(row, 9).Value = item.ExpectedSalaryIncreaseDate.Value.Month;
                                 var nextDateCell = worksheet.Cell(row, 10);
                                 nextDateCell.Value = item.ExpectedSalaryIncreaseDate.Value;
                                 nextDateCell.Style.Font.FontColor = XLColor.Red;
-                             }
+                            }
 
                             worksheet.Cell(row, 11).Value = ""; // No Note property in Entity
 
@@ -399,13 +406,13 @@ namespace TaxPersonnelManagement.Views
 
                         // 4. Định dạng: Tự động điều chỉnh độ rộng cột, căn giữa dữ liệu
                         worksheet.Columns().AdjustToContents();
-                        worksheet.Column(8).Width = 20; 
+                        worksheet.Column(8).Width = 20;
                         worksheet.Column(10).Width = 20;
 
                         // Alignment: Center all data cells by default, except Name (Col 2)
                         var dataRange = worksheet.Range(4, 1, row - 1, 11);
                         dataRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        
+
                         // Left align Names
                         var nameRange = worksheet.Range(4, 2, row - 1, 2);
                         nameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
