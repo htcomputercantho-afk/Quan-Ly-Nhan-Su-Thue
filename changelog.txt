@@ -1,3 +1,9 @@
+## v1.2.1 — 2026-05-21
+- [Sửa lỗi] Tự động sửa hướng ảnh đại diện (EXIF Orientation):
+    + Tích hợp bộ giải mã dữ liệu nhị phân (byte parser) tự động bóc tách thông tin thẻ EXIF Orientation từ file ảnh gốc.
+    + Khắc phục triệt để lỗi ảnh đại diện chụp bằng điện thoại (ảnh đứng dọc) bị tự động xoay ngang khi hiển thị trong ứng dụng.
+    + Tự động xoay đứng hình ảnh trước khi nén, mã hóa sang chuỗi Base64 để lưu trữ vào cơ sở dữ liệu, đảm bảo đồng bộ hiển thị thẳng đứng 100% trên tất cả các máy trạm khác.
+
 ## v1.2.0 — 2026-05-17
 - [Tính năng] Tìm kiếm Tiếng Việt không dấu thông minh:
     + Nâng cấp toàn diện bộ lọc tìm kiếm hỗ trợ không dấu (diacritic-insensitive) và không phân biệt chữ hoa chữ thường (case-insensitive) cho toàn bộ ứng dụng.

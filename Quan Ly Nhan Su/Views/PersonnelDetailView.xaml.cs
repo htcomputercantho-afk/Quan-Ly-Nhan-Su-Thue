@@ -1081,8 +1081,8 @@ namespace TaxPersonnelManagement.Views
             {
                 try
                 {
-                    // 1. Display
-                    var bitmap = new System.Windows.Media.Imaging.BitmapImage(new Uri(openFileDialog.FileName));
+                    // 1. Display (Orient image using EXIF orientation metadata)
+                    var bitmap = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(openFileDialog.FileName);
                     var brush = new System.Windows.Media.ImageBrush(bitmap)
                     {
                         Stretch = System.Windows.Media.Stretch.UniformToFill
@@ -1112,26 +1112,13 @@ namespace TaxPersonnelManagement.Views
             _isAvatarChanged = true;
         }
 
-        // Helper: File -> Base64 (with resizing to max 500px width/height to save space)
+        // Helper: File -> Base64 (with resizing to max 500px width/height to save space, and correcting EXIF orientation)
         private string ImageToBase64(string path)
         {
             try
             {
-                byte[] imageBytes = System.IO.File.ReadAllBytes(path);
-
-                // Pure Check: If > 1MB, maybe warn? OR just resize.
-                // For simplicity in WPF without extra libraries, we use built-in classes.
-
-                var image = new System.Windows.Media.Imaging.BitmapImage();
-                image.BeginInit();
-                image.UriSource = new Uri(path);
-                image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                image.EndInit();
-
-                // Resize logic could be complex without System.Drawing (GDI+), checking if we can just store raw bytes.
-                // The user asked for "nhẹ", so let's try to limit simple storage.
-                // Storing raw bytes of a 5MB photo is bad.
-                // Let's implement a simple Resize using TransformedBitmap.
+                // Load and orient the image first
+                var image = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(path);
 
                 double scale = 1.0;
                 double maxDimension = 600;
@@ -1158,20 +1145,13 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        // Helper: Base64 -> BitmapImage
-        private System.Windows.Media.Imaging.BitmapImage? Base64ToImage(string base64String)
+        // Helper: Base64 -> BitmapSource (Orient image using EXIF orientation metadata)
+        private System.Windows.Media.Imaging.BitmapSource? Base64ToImage(string base64String)
         {
             try
             {
                 byte[] binaryData = Convert.FromBase64String(base64String);
-
-                var bi = new System.Windows.Media.Imaging.BitmapImage();
-                bi.BeginInit();
-                bi.StreamSource = new System.IO.MemoryStream(binaryData);
-                bi.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
-                bi.EndInit();
-                bi.Freeze();
-                return bi;
+                return TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(binaryData);
             }
             catch
             {

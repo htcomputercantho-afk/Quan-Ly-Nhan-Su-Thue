@@ -3,6 +3,7 @@ using System.Globalization;
 using System.IO;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using TaxPersonnelManagement.Helpers;
 
 namespace TaxPersonnelManagement.Converters
 {
@@ -17,15 +18,7 @@ namespace TaxPersonnelManagement.Converters
                     return null;
 
                 byte[] binaryData = System.Convert.FromBase64String(base64);
-
-                BitmapImage bi = new BitmapImage();
-                bi.BeginInit();
-                bi.StreamSource = new MemoryStream(binaryData);
-                bi.CacheOption = BitmapCacheOption.OnLoad; // Important to load immediately
-                bi.EndInit();
-                bi.Freeze(); // Freezing for performance and thread safety
-
-                return bi;
+                return ImageHelper.LoadAndOrientImage(binaryData);
             }
             catch
             {
