@@ -1,3 +1,20 @@
+## v1.3.0 — 2026-05-26
+- [Tính năng] Bộ lọc báo cáo phép năm và tối ưu hóa hiển thị:
+    + Thêm bộ lọc phòng ban (bộ phận), tháng nghỉ và năm nghỉ động tại màn hình Báo cáo phép năm.
+    + Khi chọn bộ lọc tháng nghỉ, danh sách nhân viên và các đợt nghỉ phép sẽ được lọc chính xác theo tháng tương ứng (vẫn giữ nguyên tổng số phép dư của cả năm để tiện theo dõi).
+    + Tự động thay đổi tiêu đề bảng dữ liệu và đồng bộ tiêu đề, dữ liệu xuất Excel theo các tiêu chí bộ lọc đã chọn.
+- [Tính năng] Tự động lùi thời gian nâng lương do Nghỉ không lương:
+    + Tự động tính toán và hiển thị tùy chọn lùi nâng lương dạng "Nghỉ không lương (X ngày)" làm mặc định khi nhân viên có nghỉ không lương.
+    + Hỗ trợ tùy chọn "-- Không lùi --" để bỏ qua việc lùi thời hạn nâng lương theo ngày nghỉ không lương, đảm bảo tính linh hoạt tối đa.
+    + Hiển thị đồng bộ trường "Lùi thời gian nâng lương" trên giao diện popup chi tiết nhân sự và tệp PDF xuất ra bằng màu đỏ nổi bật.
+- [Tính năng] Tự động tính ngày nghỉ thai sản:
+    + Tự động tính ngày kết thúc nghỉ thai sản (nghỉ từ 1/7 trở đi được nghỉ 7 tháng, trước 1/7 được nghỉ 6 tháng) áp dụng động cho mọi năm.
+    + Cho phép người dùng chỉnh sửa thủ công ngày kết thúc nghỉ thai sản mà không lo bị hệ thống ghi đè lại.
+- [Tối ưu] Loại bỏ độ trễ tìm kiếm:
+    + Tích hợp Debounce Timer 300ms cho ô tìm kiếm danh sách nhân sự giúp gõ phím mượt mà, phản hồi ngay lập tức và loại bỏ hiện tượng giật/lag chữ.
+- [Tính năng] Cải tiến lịch sử nghỉ phép trong chi tiết nhân sự:
+    + Hiển thị độc lập mọi đợt nghỉ phép (không gộp nhóm theo LinkId), sắp xếp đợt nghỉ mới nhất/thêm vào sau lên trên đầu để dễ quản lý.
+
 ## v1.2.1 — 2026-05-21
 - [Sửa lỗi] Tự động sửa hướng ảnh đại diện (EXIF Orientation):
     + Tích hợp bộ giải mã dữ liệu nhị phân (byte parser) tự động bóc tách thông tin thẻ EXIF Orientation từ file ảnh gốc.

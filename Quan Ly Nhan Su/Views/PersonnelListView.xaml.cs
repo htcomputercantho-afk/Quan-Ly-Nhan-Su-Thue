@@ -19,6 +19,7 @@ namespace TaxPersonnelManagement.Views
         private int _currentPage = 1;
         private const int PageSize = 20;
         private int _totalPages = 1;
+        private System.Windows.Threading.DispatcherTimer? _searchDebounceTimer;
 
         public int? TargetPersonnelId { get; set; }
 
@@ -43,6 +44,16 @@ namespace TaxPersonnelManagement.Views
                 InitializeComponent();
                 ApplyAuthorization();
                 LoadDepartments();
+                
+                // Set up search debounce timer (300ms)
+                _searchDebounceTimer = new System.Windows.Threading.DispatcherTimer();
+                _searchDebounceTimer.Interval = TimeSpan.FromMilliseconds(300);
+                _searchDebounceTimer.Tick += (s, e) =>
+                {
+                    _searchDebounceTimer.Stop();
+                    LoadData(txtSearch.Text);
+                };
+
                 LoadData();
 
                 // Responsive: kiểm tra ngay khi load và mỗi khi resize
@@ -376,7 +387,15 @@ namespace TaxPersonnelManagement.Views
 
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            LoadData(txtSearch.Text);
+            if (_searchDebounceTimer != null)
+            {
+                _searchDebounceTimer.Stop();
+                _searchDebounceTimer.Start();
+            }
+            else
+            {
+                LoadData(txtSearch.Text);
+            }
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)

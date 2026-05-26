@@ -26,6 +26,61 @@ namespace TaxPersonnelManagement.Views
         public LeaveDetailView()
         {
             InitializeComponent();
+            InitializeFilters();
+            LoadAllLeaveSummaries();
+        }
+
+        private void InitializeFilters()
+        {
+            _isUpdating = true;
+
+            try
+            {
+                // 1. Month Filter
+                cbMonthFilter.Items.Clear();
+                cbMonthFilter.Items.Add("Tất cả các tháng");
+                for (int i = 1; i <= 12; i++)
+                {
+                    cbMonthFilter.Items.Add($"Tháng {i}");
+                }
+                cbMonthFilter.SelectedIndex = 0;
+
+                // 2. Year Filter
+                cbYearFilter.Items.Clear();
+                int currentYear = DateTime.Now.Year;
+                for (int y = currentYear - 3; y <= currentYear + 3; y++)
+                {
+                    cbYearFilter.Items.Add(y);
+                }
+                cbYearFilter.SelectedItem = currentYear;
+
+                // 3. Department Filter
+                cbDepartmentFilter.Items.Clear();
+                cbDepartmentFilter.Items.Add("Tất cả bộ phận");
+                
+                using (var db = new AppDbContext())
+                {
+                    var departments = db.Departments.Select(d => d.Name).OrderBy(n => n).ToList();
+                    foreach (var dept in departments)
+                    {
+                        cbDepartmentFilter.Items.Add(dept);
+                    }
+                }
+                cbDepartmentFilter.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("Error initializing filters: " + ex.Message);
+            }
+            finally
+            {
+                _isUpdating = false;
+            }
+        }
+
+        private void FilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isUpdating) return;
             LoadAllLeaveSummaries();
         }
 
@@ -186,7 +241,31 @@ namespace TaxPersonnelManagement.Views
             try
             {
                 int selectedYear = DateTime.Now.Year;
-                txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
+                if (cbYearFilter != null && cbYearFilter.SelectedItem is int yr)
+                {
+                    selectedYear = yr;
+                }
+
+                int? selectedMonth = null;
+                if (cbMonthFilter != null && cbMonthFilter.SelectedIndex > 0)
+                {
+                    selectedMonth = cbMonthFilter.SelectedIndex;
+                }
+
+                string? selectedDept = null;
+                if (cbDepartmentFilter != null && cbDepartmentFilter.SelectedIndex > 0)
+                {
+                    selectedDept = cbDepartmentFilter.SelectedItem as string;
+                }
+
+                if (selectedMonth.HasValue)
+                {
+                    txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ THÁNG {selectedMonth.Value} NĂM {selectedYear}";
+                }
+                else
+                {
+                    txtHeaderTitle.Text = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
+                }
 
                 // Update DataGrid dynamic headers
                 colOldYear.Header = $"Số ngày phép nghỉ theo chế độ năm {selectedYear - 1}";
@@ -208,8 +287,13 @@ namespace TaxPersonnelManagement.Views
                         "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                     };
 
-                    var personnelList = db.Personnel.Include(p => p.LeaveHistories)
-                                          .AsEnumerable()
+                    var query = db.Personnel.Include(p => p.LeaveHistories).AsQueryable();
+                    if (!string.IsNullOrEmpty(selectedDept))
+                    {
+                        query = query.Where(p => p.Department == selectedDept);
+                    }
+
+                    var personnelList = query.AsEnumerable()
                                           .OrderBy(p =>
                                           {
                                               string dept = (p.Department ?? "").Trim();
@@ -243,28 +327,47 @@ namespace TaxPersonnelManagement.Views
 
                     foreach (var p in personnelList)
                     {
-                        int totalAnnual = CalculateTotalAnnualLeave(p);
+                        int totalAnnual = CalculateTotalAnnualLeave(p, selectedYear);
                         int prevYear = selectedYear - 1;
-                        double takenFromOldYear = p.LeaveHistories
-                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear && h.LeaveYear == prevYear)
+
+                        // Balance for the whole year (not month-filtered)
+                        double totalCurrentYearTakenAnnual = p.LeaveHistories
+                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear && (h.LeaveYear == selectedYear || h.LeaveYear == null))
                             .Sum(h => h.DurationDays);
 
-                        double takenFromCurrentYear = p.LeaveHistories
-                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear && (h.LeaveYear == selectedYear || h.LeaveYear == null))
+                        double remaining = totalAnnual - totalCurrentYearTakenAnnual;
+
+                        // Filter histories by Month if selected
+                        var historiesQuery = p.LeaveHistories
+                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear);
+
+                        if (selectedMonth.HasValue)
+                        {
+                            historiesQuery = historiesQuery.Where(h => h.StartDate.Month == selectedMonth.Value);
+                        }
+
+                        var historiesList = historiesQuery.OrderBy(h => h.StartDate).ToList();
+
+                        double takenFromOldYear = historiesList
+                            .Where(h => h.LeaveYear == prevYear)
+                            .Sum(h => h.DurationDays);
+
+                        double takenFromCurrentYear = historiesList
+                            .Where(h => h.LeaveYear == selectedYear || h.LeaveYear == null)
                             .Sum(h => h.DurationDays);
 
                         double annualTaken = takenFromOldYear + takenFromCurrentYear;
 
-                        var histories = p.LeaveHistories
-                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear)
-                            .OrderBy(h => h.StartDate)
-                            .ToList();
+                        // If month filter is selected, skip personnel with no leaves in that month
+                        if (selectedMonth.HasValue && annualTaken == 0)
+                        {
+                            continue;
+                        }
 
                         var detailLines = new List<LeaveDetailLine>();
-                        for (int i = 0; i < histories.Count; i++)
+                        for (int i = 0; i < historiesList.Count; i++)
                         {
-                            var h = histories[i];
-                            bool isOldYear = (h.LeaveYear == prevYear);
+                            var h = historiesList[i];
                             string reason = h.UserReasonDisplay;
                             string note = string.IsNullOrWhiteSpace(reason) ? "" : $": {reason}";
 
@@ -288,7 +391,7 @@ namespace TaxPersonnelManagement.Views
                             ActualTaken = annualTaken,
                             DetailedContent = detailedContent,
                             DetailLines = detailLines,
-                            Remaining = totalAnnual - takenFromCurrentYear,
+                            Remaining = remaining,
                             AvatarBase64 = p.AvatarBase64 ?? string.Empty
                         });
                     }
@@ -307,16 +410,18 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private int CalculateTotalAnnualLeave(Personnel p)
+        private int CalculateTotalAnnualLeave(Personnel p, int selectedYear)
         {
             int baseDays = 12;
             if (p.TaxAuthorityStartDate.HasValue || p.StartDate.HasValue)
             {
                 DateTime start = p.TaxAuthorityStartDate ?? p.StartDate!.Value;
-                DateTime now = DateTime.Now;
-                int years = now.Year - start.Year;
-                if (now < start.AddYears(years)) years--;
-
+                int years = selectedYear - start.Year;
+                if (selectedYear == DateTime.Now.Year)
+                {
+                    DateTime now = DateTime.Now;
+                    if (now < start.AddYears(years)) years--;
+                }
                 if (years < 0) years = 0;
                 baseDays += (years / 5);
             }
@@ -332,10 +437,22 @@ namespace TaxPersonnelManagement.Views
             }
 
             int selectedYear = DateTime.Now.Year;
+            if (cbYearFilter != null && cbYearFilter.SelectedItem is int yr)
+            {
+                selectedYear = yr;
+            }
+
+            int? selectedMonth = null;
+            if (cbMonthFilter != null && cbMonthFilter.SelectedIndex > 0)
+            {
+                selectedMonth = cbMonthFilter.SelectedIndex;
+            }
+
+            string monthFileSuffix = selectedMonth.HasValue ? $"Thang{selectedMonth.Value}_" : "";
             var saveFileDialog = new SaveFileDialog
             {
                 Filter = "Excel Files|*.xlsx",
-                FileName = $"BaoCao_PhepNam_{selectedYear}_{DateTime.Now:yyyyMMdd}.xlsx"
+                FileName = $"BaoCao_PhepNam_{monthFileSuffix}{selectedYear}_{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
             if (saveFileDialog.ShowDialog() == true)
@@ -348,6 +465,10 @@ namespace TaxPersonnelManagement.Views
 
                         // 1. Tiêu đề báo cáo
                         string title = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM {selectedYear}";
+                        if (selectedMonth.HasValue)
+                        {
+                            title = $"BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ THÁNG {selectedMonth.Value} NĂM {selectedYear}";
+                        }
                         var titleRange = worksheet.Range("A1:I1");
                         titleRange.Merge();
                         titleRange.Value = title;
@@ -372,7 +493,9 @@ namespace TaxPersonnelManagement.Views
 
                         var takenRange = worksheet.Range("E2:G2");
                         takenRange.Merge();
-                        takenRange.Value = $"Số ngày đã nghỉ phép năm {selectedYear}";
+                        takenRange.Value = selectedMonth.HasValue
+                            ? $"Số ngày đã nghỉ phép tháng {selectedMonth.Value} năm {selectedYear}"
+                            : $"Số ngày đã nghỉ phép năm {selectedYear}";
                         takenRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                         takenRange.Style.Font.Bold = true;
                         takenRange.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565C0");

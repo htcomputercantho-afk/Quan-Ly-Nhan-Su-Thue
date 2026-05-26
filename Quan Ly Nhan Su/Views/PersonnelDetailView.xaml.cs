@@ -115,10 +115,7 @@ namespace TaxPersonnelManagement.Views
                 dpSalaryReservation.SelectedDate = _personnel.SalaryReservationDeadline;
                 dpNextSalaryStepDate.SelectedDate = _personnel.NextSalaryStepDate;
 
-                if (!string.IsNullOrEmpty(_personnel.SalaryIncreaseDelayType))
-                    SetComboBoxByContent(cboSalaryDelay, _personnel.SalaryIncreaseDelayType);
-                else
-                    cboSalaryDelay.SelectedIndex = 0; // Default to first item ("-- Không lùi --")
+                SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
 
                 dpExpectedSalaryIncrease.SelectedDate = _personnel.ExpectedSalaryIncreaseDate;
                 // Load Salary Records
@@ -200,6 +197,7 @@ namespace TaxPersonnelManagement.Views
             ApplyAuthorization();
 
             _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
+            CalculateExpectedSalaryDate();
         }
 
         /// <summary>
@@ -570,17 +568,13 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
 
-                    if (_personnel != null && !string.IsNullOrEmpty(_personnel.SalaryIncreaseDelayType))
+                    if (_personnel != null)
                     {
-                        SetComboBoxByContent(cboSalaryDelay, _personnel.SalaryIncreaseDelayType);
+                        SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
                     }
                     else
                     {
-                        // Default to first item ("-- Không lùi --")
-                        if (cboSalaryDelay.Items.Count > 0)
-                            cboSalaryDelay.SelectedIndex = 0;
-                        else
-                            cboSalaryDelay.Text = "-- Không lùi --";
+                        SetSalaryDelaySelection(null);
                     }
                 }
             }
@@ -1920,8 +1914,10 @@ namespace TaxPersonnelManagement.Views
 
         private void OnLeaveDateChanged(object? sender, SelectionChangedEventArgs e)
         {
-            CalculateMaternityEndDate();
-            CalculateMaternityEndDate();
+            if (sender != dpLeaveEndDate)
+            {
+                CalculateMaternityEndDate();
+            }
             UpdateLeaveDuration();
 
             // Enable Year Selection if "Phép năm"
@@ -1979,6 +1975,25 @@ namespace TaxPersonnelManagement.Views
             cbo.Text = content;
         }
 
+        private void SetSalaryDelaySelection(string? delayType)
+        {
+            if (string.IsNullOrEmpty(delayType) || delayType == "-- Không lùi --" || delayType == "-- Không lương --" || delayType.StartsWith("Nghỉ không lương (", StringComparison.OrdinalIgnoreCase))
+            {
+                if (cboSalaryDelay.Items.Count > 0)
+                {
+                    cboSalaryDelay.SelectedIndex = 0;
+                }
+                else
+                {
+                    cboSalaryDelay.Text = "-- Không lùi --";
+                }
+            }
+            else
+            {
+                SetComboBoxByContent(cboSalaryDelay, delayType);
+            }
+        }
+
         private void CalculateMaternityEndDate()
         {
             if (_isRefreshing) return;
@@ -1989,7 +2004,7 @@ namespace TaxPersonnelManagement.Views
             if (dpLeaveStartDate.SelectedDate == null) return;
 
             DateTime start = dpLeaveStartDate.SelectedDate.Value;
-            DateTime cutoff = new DateTime(2026, 7, 1);
+            DateTime cutoff = new DateTime(start.Year, 7, 1);
             DateTime end;
 
             if (start < cutoff)
@@ -2368,41 +2383,17 @@ namespace TaxPersonnelManagement.Views
             // int currentYear = DateTime.Now.Year;
             // _personnel.LeaveHistories.RemoveAll(x => x.EndDate.Year < currentYear);
 
-            // Sort by Custom LeaveType Order then StartDate Descending
+            // Sort by StartDate Descending, then by Id Descending (newest leaves/recently added ones are placed on top)
             var sortedList = _personnel.LeaveHistories
-                                .OrderBy(x => x.LeaveType == "Phép năm" ? 1 :
-                                             x.LeaveType == "Nghỉ ốm" ? 2 :
-                                             x.LeaveType == "Không lương" ? 3 :
-                                             x.LeaveType == "Thai sản" ? 4 : 5)
-                                .ThenByDescending(x => x.StartDate)
+                                .OrderByDescending(x => x.StartDate)
+                                .ThenByDescending(x => x.Id)
                                 .ToList();
 
-            // Set ShowDeleteButton logic
-            var processedLinkIds = new HashSet<string>();
+            // Do not group anymore - show delete button for every individual item
             foreach (var item in sortedList)
             {
-                if (!string.IsNullOrEmpty(item.LinkId))
-                {
-                    if (processedLinkIds.Contains(item.LinkId))
-                    {
-                        item.ShowDeleteButton = false; // Hide if link seen before
-                        item.IsLinkedGroupHead = false;
-                    }
-                    else
-                    {
-                        item.ShowDeleteButton = true; // Show for first instance
-                        // Check if there are actually other records with this LinkId
-                        int count = sortedList.Count(x => x.LinkId == item.LinkId);
-                        item.IsLinkedGroupHead = count > 1; // It is a head of a group only if count > 1
-
-                        processedLinkIds.Add(item.LinkId);
-                    }
-                }
-                else
-                {
-                    item.ShowDeleteButton = true; // Always show for unlinked
-                    item.IsLinkedGroupHead = false;
-                }
+                item.ShowDeleteButton = true;
+                item.IsLinkedGroupHead = false;
             }
 
             _personnel.LeaveHistories = sortedList;
@@ -2429,6 +2420,145 @@ namespace TaxPersonnelManagement.Views
         private void CalculateExpectedSalaryDate()
         {
             if (_isRefreshing) return;
+
+            // Handle dynamic insert/remove of "Nghỉ không lương (X ngày)" in cboSalaryDelay
+            double unpaidDays = 0;
+            bool hasUnpaidLeave = double.TryParse(txtUnpaidLeaveTaken.Text, out unpaidDays) && unpaidDays > 0;
+            if (cboSalaryDelay.Items.Count > 0)
+            {
+                // Ensure the first item is always "-- Không lùi --"
+                var firstItemObj = cboSalaryDelay.Items[0];
+                string firstItemText = firstItemObj is ComboBoxItem cbi0 ? cbi0.Content?.ToString() ?? "" : firstItemObj.ToString() ?? "";
+                if (firstItemText != "-- Không lùi --")
+                {
+                    bool wasRefreshing = _isRefreshing;
+                    _isRefreshing = true;
+                    try
+                    {
+                        if (firstItemObj is ComboBoxItem cbiUpdate)
+                            cbiUpdate.Content = "-- Không lùi --";
+                        else
+                            cboSalaryDelay.Items[0] = "-- Không lùi --";
+                    }
+                    finally
+                    {
+                        _isRefreshing = wasRefreshing;
+                    }
+                }
+
+                // Check if any item starts with "Nghỉ không lương (" in cboSalaryDelay.Items
+                int unpaidItemIndex = -1;
+                string currentUnpaidTextInList = "";
+                for (int i = 0; i < cboSalaryDelay.Items.Count; i++)
+                {
+                    var itemObj = cboSalaryDelay.Items[i];
+                    string itemText = itemObj is ComboBoxItem cbiItem ? cbiItem.Content?.ToString() ?? "" : itemObj.ToString() ?? "";
+                    if (itemText.StartsWith("Nghỉ không lương (", StringComparison.OrdinalIgnoreCase))
+                    {
+                        unpaidItemIndex = i;
+                        currentUnpaidTextInList = itemText;
+                        break;
+                    }
+                }
+
+                string expectedUnpaidText = $"Nghỉ không lương ({unpaidDays} ngày)";
+
+                if (hasUnpaidLeave)
+                {
+                    if (unpaidItemIndex == -1)
+                    {
+                        bool wasRefreshing = _isRefreshing;
+                        _isRefreshing = true;
+                        try
+                        {
+                            // Insert at index 1 (right after "-- Không lùi --")
+                            cboSalaryDelay.Items.Insert(1, expectedUnpaidText);
+                            
+                            // If selectedIndex was 0, -1, or "-- Không lương --", set it to 1 ("Nghỉ không lương (X ngày)")
+                            int selectedIndex = cboSalaryDelay.SelectedIndex;
+                            string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
+                            if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
+                            {
+                                cboSalaryDelay.SelectedIndex = 1;
+                            }
+                        }
+                        finally
+                        {
+                            _isRefreshing = wasRefreshing;
+                        }
+                    }
+                    else
+                    {
+                        // Check if the current selected index is 0 or -1 or "-- Không lương --" / "-- Không lùi --", and force it to the unpaid item index
+                        int selectedIndex = cboSalaryDelay.SelectedIndex;
+                        string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
+                        if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
+                        {
+                            bool wasRefreshing = _isRefreshing;
+                            _isRefreshing = true;
+                            try
+                            {
+                                cboSalaryDelay.SelectedIndex = unpaidItemIndex;
+                            }
+                            finally
+                            {
+                                _isRefreshing = wasRefreshing;
+                            }
+                        }
+
+                        if (currentUnpaidTextInList != expectedUnpaidText)
+                        {
+                            // Update the text in place
+                            bool wasRefreshing = _isRefreshing;
+                            _isRefreshing = true;
+                            try
+                            {
+                                var existingItem = cboSalaryDelay.Items[unpaidItemIndex];
+                                if (existingItem is ComboBoxItem cbiUpdate)
+                                {
+                                    cbiUpdate.Content = expectedUnpaidText;
+                                }
+                                else
+                                {
+                                    cboSalaryDelay.Items[unpaidItemIndex] = expectedUnpaidText;
+                                }
+                                
+                                // Force selection refresh if this item is selected
+                                if (cboSalaryDelay.SelectedIndex == unpaidItemIndex)
+                                {
+                                    cboSalaryDelay.SelectedIndex = -1;
+                                    cboSalaryDelay.SelectedIndex = unpaidItemIndex;
+                                }
+                            }
+                            finally
+                            {
+                                _isRefreshing = wasRefreshing;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (unpaidItemIndex != -1)
+                    {
+                        bool wasRefreshing = _isRefreshing;
+                        _isRefreshing = true;
+                        try
+                        {
+                            int selectedIndex = cboSalaryDelay.SelectedIndex;
+                            cboSalaryDelay.Items.RemoveAt(unpaidItemIndex);
+                            if (selectedIndex == unpaidItemIndex)
+                            {
+                                cboSalaryDelay.SelectedIndex = 0; // Default back to "-- Không lùi --"
+                            }
+                        }
+                        finally
+                        {
+                            _isRefreshing = wasRefreshing;
+                        }
+                    }
+                }
+            }
 
             // 1. Base Date: Next Salary Step Date
             if (!dpNextSalaryStepDate.SelectedDate.HasValue)
@@ -2500,7 +2630,7 @@ namespace TaxPersonnelManagement.Views
 
             // 4. Automatic Delay from Unpaid Leave
             // "trong đó nếu nghỉ không lương thì Nghỉ bao lâu Thì lùi đúng số tháng nghỉ"
-            if (double.TryParse(txtUnpaidLeaveTaken.Text, out double unpaidDays) && unpaidDays > 0)
+            if (delayReason != "-- Không lùi --" && unpaidDays > 0)
             {
                 expectedDate = expectedDate.AddDays(unpaidDays);
             }

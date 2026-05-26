@@ -331,6 +331,10 @@
                                             <TextBlock Text="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                         <StackPanel Grid.Row="2" Grid.Column="1">
+                                            <TextBlock Text="Lùi thời gian nâng lương:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding SalaryIncreaseDelayType, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.Column="2">
                                             <TextBlock Text="Dự kiến lên lương:" Foreground="#78909C" FontSize="15"/>
                                             <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>

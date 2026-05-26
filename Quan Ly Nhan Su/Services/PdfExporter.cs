@@ -201,7 +201,7 @@ namespace TaxPersonnelManagement.Services
                 else if (delayType.Contains("12 tháng")) calcDate = calcDate.AddMonths(12);
 
                 // Delay from Unpaid Leave
-                if (p.LeaveHistories != null)
+                if (delayType != "-- Không lùi --" && p.LeaveHistories != null)
                 {
                     double unpaidDays = p.LeaveHistories
                         .Where(h => h.LeaveType == "Không lương")
@@ -242,6 +242,7 @@ namespace TaxPersonnelManagement.Services
             column.Item().PaddingTop(5).Row(row =>
             {
                 row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", nextCalcDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValueRed(c, "Lùi thời gian nâng lương:", p.SalaryIncreaseDelayType));
                 row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", expectedDate?.ToString("dd/MM/yyyy")));
             });
 
