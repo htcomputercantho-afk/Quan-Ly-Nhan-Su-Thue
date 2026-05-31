@@ -135,6 +135,18 @@ namespace TaxPersonnelManagement.Models
         public DateTime? ExpectedSalaryIncreaseDate { get; set; } // Dự kiến lên lương
         public string? SalaryHistoryLog { get; set; }
         public virtual ICollection<SalaryRecord>? SalaryRecords { get; set; }
+        public virtual ICollection<EvaluationRecord>? EvaluationRecords { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string RankDisplayName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(RankCode)) return "---";
+                if (string.IsNullOrEmpty(RankName)) return RankCode;
+                return $"{RankCode} - {RankName}";
+            }
+        }
 
         // Tab 7: Reward Info
         public string? EmulationTitles { get; set; } // Danh hiệu thi đua
@@ -424,6 +436,19 @@ namespace TaxPersonnelManagement.Models
         public string Name { get; set; } = string.Empty;
         public DateTime Date { get; set; }
         public string? Note { get; set; }
+    }
+
+    public class EvaluationRecord
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+        public int Year { get; set; }
+        public string Rating { get; set; } = string.Empty;
+        public string? DecisionNumber { get; set; }
+        public DateTime? DecisionDate { get; set; }
+        public string? DecisionAgency { get; set; }
     }
 }
 

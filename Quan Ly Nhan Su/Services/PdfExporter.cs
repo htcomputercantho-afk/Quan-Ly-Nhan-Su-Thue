@@ -46,6 +46,7 @@ namespace TaxPersonnelManagement.Services
                                 bodyCol.Item().Element(e => ComposeSection(e, "5. CÔNG TÁC", c => ComposeWorkHistory(c, p)));
                                 bodyCol.Item().Element(e => ComposeSection(e, "6. THÔNG TIN ĐẢNG VIÊN", c => ComposeParty(c, p)));
                                 bodyCol.Item().Element(e => ComposeSection(e, "7. KHEN THƯỞNG & KỶ LUẬT", c => ComposeRewardDiscipline(c, p)));
+                                bodyCol.Item().Element(e => ComposeSection(e, "8. LỊCH SỬ XẾP LOẠI", c => ComposeEvaluationHistory(c, p), "#E65100", "#FFE0B2"));
                             });
 
                             // Footer inside the border
@@ -108,13 +109,13 @@ namespace TaxPersonnelManagement.Services
             });
         }
 
-        static void ComposeSection(IContainer container, string title, Action<ColumnDescriptor> content)
+        static void ComposeSection(IContainer container, string title, Action<ColumnDescriptor> content, string sectionColor = "#B71C1C", string borderColor = "#FBE9E7")
         {
             // Ensure section start has enough space, or push start to next page
             container.EnsureSpace(100)
-                     .Border(1).BorderColor("#FBE9E7").Background("#FFFAFA").Padding(15).Column(column =>
+                     .Border(1).BorderColor(borderColor).Background("#FFFAFA").Padding(15).Column(column =>
             {
-                column.Item().Text(title).FontSize(14).Bold().FontColor("#B71C1C");
+                column.Item().Text(title).FontSize(14).Bold().FontColor(sectionColor);
                 column.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                 column.Item().PaddingTop(10).Element(e => e.Column(content));
             });
@@ -218,16 +219,17 @@ namespace TaxPersonnelManagement.Services
 
             column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row =>
             {
-                void CenteredItem(RowDescriptor r, string label, string? val, bool highlight = false, bool last = false)
+                void CenteredItem(RowDescriptor r, string label, string? val, bool highlight = false, bool last = false, int fontSize = 16)
                 {
                     r.RelativeItem().BorderRight(last ? 0 : 2).BorderColor(Colors.Grey.Lighten2).PaddingHorizontal(10).Column(c =>
                     {
                         c.Item().AlignCenter().Text(label).FontSize(10).FontColor(Colors.Grey.Darken1);
-                        c.Item().PaddingTop(5).AlignCenter().Text(val ?? "---").Bold().FontSize(16).FontColor(highlight ? "#B71C1C" : Colors.Black);
+                        c.Item().PaddingTop(5).AlignCenter().Text(val ?? "---").Bold().FontSize(fontSize).FontColor(highlight ? "#B71C1C" : Colors.Black);
                     });
                 }
 
-                CenteredItem(row, "Mã ngạch", p.RankCode);
+                int codeFontSize = (!string.IsNullOrEmpty(p.RankName)) ? 11 : 16;
+                CenteredItem(row, "Mã ngạch", p.RankDisplayName, last: false, fontSize: codeFontSize);
                 CenteredItem(row, "Bậc lương", p.CurrentSalaryStep);
                 CenteredItem(row, "Hệ số", p.CurrentSalaryCoefficient.ToString("F2"), true, true);
             });
@@ -562,6 +564,47 @@ namespace TaxPersonnelManagement.Services
         {
             c.Item().Text(label).FontSize(10).Bold();
             c.Item().Background("#F5F5F5").Padding(8).Text(value ?? "---");
+        }
+
+        static void ComposeEvaluationHistory(ColumnDescriptor column, Personnel p)
+        {
+            string headerBgColor = "#E65100";
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(1.0f); // Năm
+                    columns.RelativeColumn(3.0f); // Xếp loại
+                    columns.RelativeColumn(1.5f); // Số QĐ
+                    columns.RelativeColumn(1.5f); // Ngày ký QĐ
+                    columns.RelativeColumn(2.0f); // Đơn vị ra QĐ
+                });
+
+                table.Header(header =>
+                {
+                    header.Cell().Background(headerBgColor).Padding(5).AlignCenter().Text("Năm").Bold().FontSize(8).FontColor(Colors.White);
+                    header.Cell().Background(headerBgColor).Padding(5).AlignCenter().Text("Xếp loại").Bold().FontSize(8).FontColor(Colors.White);
+                    header.Cell().Background(headerBgColor).Padding(5).AlignCenter().Text("Số QĐ").Bold().FontSize(8).FontColor(Colors.White);
+                    header.Cell().Background(headerBgColor).Padding(5).AlignCenter().Text("Ngày ký QĐ").Bold().FontSize(8).FontColor(Colors.White);
+                    header.Cell().Background(headerBgColor).Padding(5).AlignCenter().Text("Đơn vị ra QĐ").Bold().FontSize(8).FontColor(Colors.White);
+                });
+
+                if (p.EvaluationRecords != null && p.EvaluationRecords.Count > 0)
+                {
+                    foreach (var h in p.EvaluationRecords.OrderByDescending(e => e.Year))
+                    {
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Year.ToString()).FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Rating ?? "").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionNumber ?? "---").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "---").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionAgency ?? "---").FontSize(8);
+                    }
+                }
+                else
+                {
+                    table.Cell().ColumnSpan(5).Padding(10).AlignCenter().Text("Chưa có dữ liệu xếp loại").Italic().FontColor(Colors.Grey.Medium);
+                }
+            });
         }
     }
 }

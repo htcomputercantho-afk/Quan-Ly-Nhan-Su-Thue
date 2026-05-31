@@ -36,7 +36,6 @@ namespace TaxPersonnelManagement.Views
             if (App.CurrentUser?.Role == UserRole.Staff)
             {
                 // Hide action buttons
-                btnImportExcel.Visibility = Visibility.Collapsed;
                 btnBulkAdd.Visibility = Visibility.Collapsed;
             }
         }
@@ -55,7 +54,49 @@ namespace TaxPersonnelManagement.Views
             {
                 using var db = new AppDbContext();
                 // Load personnel list
-                _allPersonnel = db.Personnel.OrderBy(p => p.FullName).ToList();
+                var deptOrder = new List<string> {
+                    "Ban lãnh đạo",
+                    "Tổ Hành chính, tổng hợp",
+                    "Tổ Kiểm tra số 1",
+                    "Tổ Kiểm tra số 2",
+                    "Tổ Kiểm tra số 3",
+                    "Tổ Nghiệp vụ, dự toán, pháp chế",
+                    "Tổ Quản lý các khoản thu khác",
+                    "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                    "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                    "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                    "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+                };
+
+                _allPersonnel = db.Personnel.AsEnumerable()
+                                  .OrderBy(p =>
+                                  {
+                                      string dept = (p.Department ?? "").Trim();
+                                      int index = deptOrder.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
+                                      return index == -1 ? 999 : index;
+                                  })
+                                  .ThenBy(p =>
+                                  {
+                                      string pos = p.Position?.ToLower() ?? "";
+                                      string dept3 = (p.Department ?? "").ToLower();
+
+                                      if (dept3.Contains("lãnh đạo"))
+                                      {
+                                          if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
+                                          if (pos.Contains("quyền")) return 2;
+                                          if (pos.Contains("phó")) return 3;
+                                      }
+                                      else
+                                      {
+                                          if (pos.Contains("tổ trưởng") && !pos.Contains("phó")) return 1;
+                                          if (pos.Contains("phó")) return 2;
+                                          if (pos.Contains("công chức")) return 3;
+                                      }
+                                      return 99;
+                                  })
+                                  .ThenBy(p => p.FullName)
+                                  .ToList();
+
                 lvPersonnel.ItemsSource = _allPersonnel;
             }
             catch (Exception ex)
@@ -157,8 +198,23 @@ namespace TaxPersonnelManagement.Views
 
                         if (targetRow != null)
                         {
-                            targetRow.SetAmount(record.Month, record.Amount);
-                            targetRow.SetNote(record.Month, record.Note ?? "");
+                            if (record.IncomeType == "Thu nhập khác" || record.IncomeType == "Làm thêm giờ")
+                            {
+                                string formattedNote = record.Note ?? "";
+                                if (!string.IsNullOrWhiteSpace(formattedNote) && 
+                                    !Regex.IsMatch(formattedNote, @"^\s*\d+([\.,]\d+)*\s*đ?\s*-") && 
+                                    record.Amount > 0)
+                                {
+                                    formattedNote = $"{record.Amount:N0} đ - {formattedNote}";
+                                }
+                                targetRow.SetNote(record.Month, formattedNote);
+                                targetRow.SetAmount(record.Month, record.Amount);
+                            }
+                            else
+                            {
+                                targetRow.SetAmount(record.Month, record.Amount);
+                                targetRow.SetNote(record.Month, record.Note ?? "");
+                            }
                         }
                     }
                 }
@@ -250,10 +306,45 @@ namespace TaxPersonnelManagement.Views
                                 db.IncomeRecords.Add(new IncomeRecord { PersonnelId = selectedPerson.Id, Year = selectedYear, Month = m, IncomeType = "Lương", Amount = salaryRow.GetAmount(m), Note = salaryRow.GetNote(m) });
 
                             if (overtimeRow.GetAmount(m) > 0 || !string.IsNullOrWhiteSpace(overtimeRow.GetNote(m)))
-                                db.IncomeRecords.Add(new IncomeRecord { PersonnelId = selectedPerson.Id, Year = selectedYear, Month = m, IncomeType = "Làm thêm giờ", Amount = overtimeRow.GetAmount(m), Note = overtimeRow.GetNote(m) });
+                            {
+                                string rawNote = overtimeRow.GetNote(m);
+                                string stdNote = AnnualIncomeRowViewModel.StandardizeOtherIncomeNote(rawNote);
+                                decimal recalculatedAmount = AnnualIncomeRowViewModel.ParseAmountFromNote(rawNote);
+                                
+                                db.IncomeRecords.Add(new IncomeRecord 
+                                { 
+                                    PersonnelId = selectedPerson.Id, 
+                                    Year = selectedYear, 
+                                    Month = m, 
+                                    IncomeType = "Làm thêm giờ", 
+                                    Amount = recalculatedAmount, 
+                                    Note = stdNote 
+                                });
+                                
+                                overtimeRow.SetNote(m, stdNote);
+                                overtimeRow.SetAmount(m, recalculatedAmount);
+                            }
 
                             if (otherRow.GetAmount(m) > 0 || !string.IsNullOrWhiteSpace(otherRow.GetNote(m)))
-                                db.IncomeRecords.Add(new IncomeRecord { PersonnelId = selectedPerson.Id, Year = selectedYear, Month = m, IncomeType = "Thu nhập khác", Amount = otherRow.GetAmount(m), Note = otherRow.GetNote(m) });
+                            {
+                                string rawNote = otherRow.GetNote(m);
+                                string stdNote = AnnualIncomeRowViewModel.StandardizeOtherIncomeNote(rawNote);
+                                decimal recalculatedAmount = AnnualIncomeRowViewModel.ParseAmountFromNote(rawNote);
+                                
+                                db.IncomeRecords.Add(new IncomeRecord 
+                                { 
+                                    PersonnelId = selectedPerson.Id, 
+                                    Year = selectedYear, 
+                                    Month = m, 
+                                    IncomeType = "Thu nhập khác", 
+                                    Amount = recalculatedAmount, 
+                                    Note = stdNote 
+                                });
+                                
+                                // Sync back to the row model to update UI immediately
+                                otherRow.SetNote(m, stdNote);
+                                otherRow.SetAmount(m, recalculatedAmount);
+                            }
                         }
 
                         db.SaveChanges();
@@ -272,208 +363,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private async void BtnImportExcel_Click(object sender, RoutedEventArgs e)
-        {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Excel Files|*.xls;*.xlsx|All Files|*.*",
-                Title = "Chọn file Bảng lương Excel"
-            };
 
-            if (openFileDialog.ShowDialog() == true)
-            {
-                try
-                {
-                    LoadingOverlay.Visibility = Visibility.Visible;
-
-                    // Configure text encoding for ExcelDataReader (required for .NET Core)
-                    System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-
-                    int detectedMonth = 0;
-                    int detectedYear = 0;
-                    string incomeType = "";
-                    int cccdIndex = -1;
-                    int amountIndex = -1;
-                    var importedData = new List<(string cccd, decimal amount)>();
-
-                    string filePath = openFileDialog.FileName;
-
-                    await Task.Run(() =>
-                    {
-                        using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
-                        {
-                            using (var reader = ExcelReaderFactory.CreateReader(stream))
-                            {
-                                var dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
-                                {
-                                    ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
-                                    {
-                                        UseHeaderRow = false // We read raw rows because headers are spread out
-                                    }
-                                });
-
-                                if (dataSet.Tables.Count == 0) return;
-
-                                // We need to find the correct table in case it's not the first one (e.g. TH vs T01)
-                                DataTable? targetTable = null;
-
-                                foreach (DataTable table in dataSet.Tables)
-                                {
-                                    // 1. Find the header row containing our key identifying strings
-                                    for (int i = 0; i < Math.Min(10, table.Rows.Count); i++)
-                                    {
-                                        string rowString = string.Join(" ", table.Rows[i].ItemArray).ToUpper();
-
-                                        if (rowString.Contains("BẢNG THANH TOÁN TIỀN LƯƠNG"))
-                                        {
-                                            incomeType = "Lương";
-                                            cccdIndex = 4; // Column E
-                                            amountIndex = 55; // Column BD
-                                        }
-                                        else if (rowString.Contains("BẢNG THANH TOÁN TIỀN LÀM THÊM GIỜ") || rowString.Contains("TIỀN CHI LÀM THÊM GIỜ"))
-                                        {
-                                            incomeType = "Làm thêm giờ";
-                                            cccdIndex = 2;   // Column C
-                                            amountIndex = 28; // Column AC
-                                        }
-
-                                        // Try to match "THÁNG 01/2026" or similar anywhere in the top 10 rows
-                                        var match = Regex.Match(rowString, @"THÁNG\s*(\d{1,2})\s*/\s*(\d{4})");
-                                        if (match.Success)
-                                        {
-                                            detectedMonth = int.Parse(match.Groups[1].Value);
-                                            detectedYear = int.Parse(match.Groups[2].Value);
-                                        }
-
-                                        if (!string.IsNullOrEmpty(incomeType) && detectedMonth > 0 && detectedYear > 0)
-                                        {
-                                            targetTable = table;
-                                            break;
-                                        }
-                                    }
-                                    if (targetTable != null) break;
-                                }
-
-                                if (targetTable != null)
-                                {
-                                    // 2. Iterate through rows to find data
-                                    for (int r = 0; r < targetTable.Rows.Count; r++)
-                                    {
-                                        var row = targetTable.Rows[r];
-                                        // Ensure row has enough columns
-                                        if (row.ItemArray.Length > Math.Max(cccdIndex, amountIndex))
-                                        {
-                                            string cccdStr = row[cccdIndex]?.ToString()?.Trim() ?? "";
-                                            string amountStr = row[amountIndex]?.ToString()?.Trim() ?? "";
-
-                                            // Simple heuristic: if CCCD column is a long string of digits, it's a CCCD
-                                            if (!string.IsNullOrEmpty(cccdStr) && Regex.IsMatch(cccdStr, @"^\d{9,12}$"))
-                                            {
-                                                if (decimal.TryParse(amountStr, out decimal amount) && amount > 0)
-                                                {
-                                                    importedData.Add((cccdStr, amount));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-
-                    LoadingOverlay.Visibility = Visibility.Collapsed;
-
-                    if (importedData.Count == 0)
-                    {
-                        var warning = new WarningWindow("Không tìm thấy dữ liệu hợp lệ trong file Excel hoặc không nhận diện được loại file. Vui lòng kiểm tra cấu trúc cột.", "Lỗi Import");
-                        warning.ShowDialog();
-                        return;
-                    }
-
-                    // Confirm with user
-                    var confirmDialog = new ConfirmDialog($"Phần mềm nhận diện bảng thu nhập này là [{incomeType}] thuộc Tháng {detectedMonth} năm {detectedYear}.\n\nBạn có muốn Import dữ liệu vào tháng này không?");
-                    if (confirmDialog.ShowDialog() != true) return;
-
-                    LoadingOverlay.Visibility = Visibility.Visible;
-
-                    // 3. Save to database
-                    await Task.Run(() =>
-                    {
-                        using (var db = new AppDbContext())
-                        {
-                            int successCount = 0;
-                            int notFoundCount = 0;
-
-                            foreach (var data in importedData)
-                            {
-                                var person = db.Personnel.FirstOrDefault(p => p.IdentityCardNumber == data.cccd);
-                                if (person != null)
-                                {
-                                    // Remove existing record for this month/year/type
-                                    var existing = db.IncomeRecords.FirstOrDefault(r =>
-                                        r.PersonnelId == person.Id &&
-                                        r.Year == detectedYear &&
-                                        r.Month == detectedMonth &&
-                                        r.IncomeType == incomeType);
-
-                                    if (existing != null)
-                                    {
-                                        db.IncomeRecords.Remove(existing);
-                                    }
-
-                                    // Add new record
-                                    db.IncomeRecords.Add(new IncomeRecord
-                                    {
-                                        PersonnelId = person.Id,
-                                        Year = detectedYear,
-                                        Month = detectedMonth,
-                                        IncomeType = incomeType,
-                                        Amount = data.amount,
-                                        Note = incomeType == "Lương" ? "Import từ file Bảng lương" : "Import từ file Làm thêm giờ"
-                                    });
-                                    successCount++;
-                                }
-                                else
-                                {
-                                    notFoundCount++;
-                                }
-                            }
-
-                            db.SaveChanges();
-
-                            // Return results to UI thread
-                            Dispatcher.Invoke(() =>
-                            {
-                                // Change selected year in combo box to imported year if different, to show results instantly
-                                if ((int)(cboYear.SelectedItem ?? 0) != detectedYear)
-                                {
-                                    LoadYears();
-                                    cboYear.SelectedItem = detectedYear;
-                                }
-
-                                // Force refresh grid if a user is selected
-                                if (lvPersonnel.SelectedItem != null)
-                                {
-                                    var temp = lvPersonnel.SelectedItem;
-                                    lvPersonnel.SelectedItem = null;
-                                    lvPersonnel.SelectedItem = temp;
-                                }
-
-                                LoadingOverlay.Visibility = Visibility.Collapsed;
-                                var successDialog = new SuccessWindow($"Import thành công!", $"Đã cập nhật lương cho {successCount} công chức.\nKhông tìm thấy người nhận cho {notFoundCount} CCCD trong CSDL.");
-                                successDialog.ShowDialog();
-                            });
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    LoadingOverlay.Visibility = Visibility.Collapsed;
-                    var errorDialog = new WarningWindow("Lỗi khi đọc file Excel: " + ex.Message, "Lỗi");
-                    errorDialog.ShowDialog();
-                }
-            }
-        }
         private void BtnBulkAdd_Click(object sender, RoutedEventArgs e)
         {
             int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
@@ -509,7 +399,48 @@ namespace TaxPersonnelManagement.Views
                     {
                         using (var db = new AppDbContext())
                         {
-                            var personnelList = db.Personnel.OrderBy(p => p.FullName).ToList();
+                            var deptOrder = new List<string> {
+                                "Ban lãnh đạo",
+                                "Tổ Hành chính, tổng hợp",
+                                "Tổ Kiểm tra số 1",
+                                "Tổ Kiểm tra số 2",
+                                "Tổ Kiểm tra số 3",
+                                "Tổ Nghiệp vụ, dự toán, pháp chế",
+                                "Tổ Quản lý các khoản thu khác",
+                                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                                "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                                "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+                            };
+
+                            var personnelList = db.Personnel.AsEnumerable()
+                                                  .OrderBy(p =>
+                                                  {
+                                                      string dept = (p.Department ?? "").Trim();
+                                                      int index = deptOrder.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
+                                                      return index == -1 ? 999 : index;
+                                                  })
+                                                  .ThenBy(p =>
+                                                  {
+                                                      string pos = p.Position?.ToLower() ?? "";
+                                                      string dept3 = (p.Department ?? "").ToLower();
+
+                                                      if (dept3.Contains("lãnh đạo"))
+                                                      {
+                                                          if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
+                                                          if (pos.Contains("quyền")) return 2;
+                                                          if (pos.Contains("phó")) return 3;
+                                                      }
+                                                      else
+                                                      {
+                                                          if (pos.Contains("tổ trưởng") && !pos.Contains("phó")) return 1;
+                                                          if (pos.Contains("phó")) return 2;
+                                                          if (pos.Contains("công chức")) return 3;
+                                                      }
+                                                      return 99;
+                                                  })
+                                                  .ThenBy(p => p.FullName)
+                                                  .ToList();
                             var allRecords = db.IncomeRecords.Where(r => r.Year == selectedYear).ToList();
 
                             using (var workbook = new XLWorkbook())
@@ -590,46 +521,157 @@ namespace TaxPersonnelManagement.Views
         }
     }
 
+    public class IncomeBreakdownItem
+    {
+        public decimal Amount { get; set; }
+        public string Reason { get; set; } = "";
+        public string FormattedAmount => Amount > 0 ? Amount.ToString("N0") + " đ" : "";
+    }
+
     public class AnnualIncomeRowViewModel : INotifyPropertyChanged
     {
         public string IncomeType { get; set; } = "";
         public bool IsTotalRow { get; set; } = false;
 
+        public static decimal ParseAmountFromNote(string note)
+        {
+            if (string.IsNullOrWhiteSpace(note)) return 0;
+            decimal total = 0;
+            var lines = note.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                int dashIndex = line.IndexOf('-');
+                string amtStr = dashIndex == -1 ? line : line.Substring(0, dashIndex);
+                string cleanAmt = Regex.Replace(amtStr, @"[^0-9]", "");
+                if (decimal.TryParse(cleanAmt, out decimal amount))
+                {
+                    total += amount;
+                }
+            }
+            return total;
+        }
+
+        public static List<IncomeBreakdownItem> ParseBreakdown(string note)
+        {
+            var list = new List<IncomeBreakdownItem>();
+            if (string.IsNullOrWhiteSpace(note)) return list;
+            
+            var lines = note.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                int dashIndex = line.IndexOf('-');
+                if (dashIndex == -1)
+                {
+                    string cleanAmt = Regex.Replace(line, @"[^0-9]", "");
+                    if (decimal.TryParse(cleanAmt, out decimal amount) && amount > 0)
+                    {
+                        list.Add(new IncomeBreakdownItem { Amount = amount, Reason = "" });
+                    }
+                    else
+                    {
+                        list.Add(new IncomeBreakdownItem { Amount = 0, Reason = line.Trim() });
+                    }
+                }
+                else
+                {
+                    string amtStr = line.Substring(0, dashIndex);
+                    string reasonStr = line.Substring(dashIndex + 1).Trim();
+                    string cleanAmt = Regex.Replace(amtStr, @"[^0-9]", "");
+                    decimal.TryParse(cleanAmt, out decimal amount);
+                    list.Add(new IncomeBreakdownItem { Amount = amount, Reason = reasonStr });
+                }
+            }
+            return list;
+        }
+
+        public static string StandardizeOtherIncomeNote(string note)
+        {
+            if (string.IsNullOrWhiteSpace(note)) return "";
+            var lines = note.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var standardizedLines = new List<string>();
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                int dashIndex = line.IndexOf('-');
+                if (dashIndex == -1)
+                {
+                    string cleanAmt = Regex.Replace(line, @"[^0-9]", "");
+                    if (decimal.TryParse(cleanAmt, out decimal amount) && amount > 0)
+                    {
+                        standardizedLines.Add($"{amount:N0} đ");
+                    }
+                    else
+                    {
+                        standardizedLines.Add(line.Trim());
+                    }
+                }
+                else
+                {
+                    string amtStr = line.Substring(0, dashIndex);
+                    string reasonStr = line.Substring(dashIndex + 1).Trim();
+                    string cleanAmt = Regex.Replace(amtStr, @"[^0-9]", "");
+                    if (decimal.TryParse(cleanAmt, out decimal amount))
+                    {
+                        standardizedLines.Add($"{amount:N0} đ - {reasonStr}");
+                    }
+                    else
+                    {
+                        standardizedLines.Add(line.Trim());
+                    }
+                }
+            }
+            return string.Join("\n", standardizedLines);
+        }
+
         private decimal _m1Amount; public decimal M1Amount { get => _m1Amount; set { _m1Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m1Note = ""; public string M1Note { get => _m1Note; set { _m1Note = value; OnPropertyChanged(); } }
+        private string _m1Note = ""; public string M1Note { get => _m1Note; set { _m1Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M1Amount = ParseAmountFromNote(value); OnPropertyChanged("M1Breakdown"); } } }
+        public List<IncomeBreakdownItem> M1Breakdown => ParseBreakdown(M1Note);
 
         private decimal _m2Amount; public decimal M2Amount { get => _m2Amount; set { _m2Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m2Note = ""; public string M2Note { get => _m2Note; set { _m2Note = value; OnPropertyChanged(); } }
+        private string _m2Note = ""; public string M2Note { get => _m2Note; set { _m2Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M2Amount = ParseAmountFromNote(value); OnPropertyChanged("M2Breakdown"); } } }
+        public List<IncomeBreakdownItem> M2Breakdown => ParseBreakdown(M2Note);
 
         private decimal _m3Amount; public decimal M3Amount { get => _m3Amount; set { _m3Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m3Note = ""; public string M3Note { get => _m3Note; set { _m3Note = value; OnPropertyChanged(); } }
+        private string _m3Note = ""; public string M3Note { get => _m3Note; set { _m3Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M3Amount = ParseAmountFromNote(value); OnPropertyChanged("M3Breakdown"); } } }
+        public List<IncomeBreakdownItem> M3Breakdown => ParseBreakdown(M3Note);
 
         private decimal _m4Amount; public decimal M4Amount { get => _m4Amount; set { _m4Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m4Note = ""; public string M4Note { get => _m4Note; set { _m4Note = value; OnPropertyChanged(); } }
+        private string _m4Note = ""; public string M4Note { get => _m4Note; set { _m4Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M4Amount = ParseAmountFromNote(value); OnPropertyChanged("M4Breakdown"); } } }
+        public List<IncomeBreakdownItem> M4Breakdown => ParseBreakdown(M4Note);
 
         private decimal _m5Amount; public decimal M5Amount { get => _m5Amount; set { _m5Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m5Note = ""; public string M5Note { get => _m5Note; set { _m5Note = value; OnPropertyChanged(); } }
+        private string _m5Note = ""; public string M5Note { get => _m5Note; set { _m5Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M5Amount = ParseAmountFromNote(value); OnPropertyChanged("M5Breakdown"); } } }
+        public List<IncomeBreakdownItem> M5Breakdown => ParseBreakdown(M5Note);
 
         private decimal _m6Amount; public decimal M6Amount { get => _m6Amount; set { _m6Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m6Note = ""; public string M6Note { get => _m6Note; set { _m6Note = value; OnPropertyChanged(); } }
+        private string _m6Note = ""; public string M6Note { get => _m6Note; set { _m6Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M6Amount = ParseAmountFromNote(value); OnPropertyChanged("M6Breakdown"); } } }
+        public List<IncomeBreakdownItem> M6Breakdown => ParseBreakdown(M6Note);
 
         private decimal _m7Amount; public decimal M7Amount { get => _m7Amount; set { _m7Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m7Note = ""; public string M7Note { get => _m7Note; set { _m7Note = value; OnPropertyChanged(); } }
+        private string _m7Note = ""; public string M7Note { get => _m7Note; set { _m7Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M7Amount = ParseAmountFromNote(value); OnPropertyChanged("M7Breakdown"); } } }
+        public List<IncomeBreakdownItem> M7Breakdown => ParseBreakdown(M7Note);
 
         private decimal _m8Amount; public decimal M8Amount { get => _m8Amount; set { _m8Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m8Note = ""; public string M8Note { get => _m8Note; set { _m8Note = value; OnPropertyChanged(); } }
+        private string _m8Note = ""; public string M8Note { get => _m8Note; set { _m8Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M8Amount = ParseAmountFromNote(value); OnPropertyChanged("M8Breakdown"); } } }
+        public List<IncomeBreakdownItem> M8Breakdown => ParseBreakdown(M8Note);
 
         private decimal _m9Amount; public decimal M9Amount { get => _m9Amount; set { _m9Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m9Note = ""; public string M9Note { get => _m9Note; set { _m9Note = value; OnPropertyChanged(); } }
+        private string _m9Note = ""; public string M9Note { get => _m9Note; set { _m9Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M9Amount = ParseAmountFromNote(value); OnPropertyChanged("M9Breakdown"); } } }
+        public List<IncomeBreakdownItem> M9Breakdown => ParseBreakdown(M9Note);
 
         private decimal _m10Amount; public decimal M10Amount { get => _m10Amount; set { _m10Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m10Note = ""; public string M10Note { get => _m10Note; set { _m10Note = value; OnPropertyChanged(); } }
+        private string _m10Note = ""; public string M10Note { get => _m10Note; set { _m10Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M10Amount = ParseAmountFromNote(value); OnPropertyChanged("M10Breakdown"); } } }
+        public List<IncomeBreakdownItem> M10Breakdown => ParseBreakdown(M10Note);
 
         private decimal _m11Amount; public decimal M11Amount { get => _m11Amount; set { _m11Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m11Note = ""; public string M11Note { get => _m11Note; set { _m11Note = value; OnPropertyChanged(); } }
+        private string _m11Note = ""; public string M11Note { get => _m11Note; set { _m11Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M11Amount = ParseAmountFromNote(value); OnPropertyChanged("M11Breakdown"); } } }
+        public List<IncomeBreakdownItem> M11Breakdown => ParseBreakdown(M11Note);
 
         private decimal _m12Amount; public decimal M12Amount { get => _m12Amount; set { _m12Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m12Note = ""; public string M12Note { get => _m12Note; set { _m12Note = value; OnPropertyChanged(); } }
+        private string _m12Note = ""; public string M12Note { get => _m12Note; set { _m12Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M12Amount = ParseAmountFromNote(value); OnPropertyChanged("M12Breakdown"); } } }
+        public List<IncomeBreakdownItem> M12Breakdown => ParseBreakdown(M12Note);
 
         public decimal Total =>
             M1Amount + M2Amount + M3Amount + M4Amount + M5Amount + M6Amount +

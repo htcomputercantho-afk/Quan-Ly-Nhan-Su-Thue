@@ -427,7 +427,7 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
+                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).Include(p => p.EvaluationRecords).FirstOrDefault(x => x.Id == id);
                 if (p != null)
                 {
                     if (Application.Current.MainWindow is MainWindow mw)
@@ -467,7 +467,7 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).FirstOrDefault(x => x.Id == id);
+                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).Include(p => p.EvaluationRecords).FirstOrDefault(x => x.Id == id);
                 if (p != null)
                 {
                     var dialog = new PersonnelProfileDialog(p);

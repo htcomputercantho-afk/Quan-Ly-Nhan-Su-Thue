@@ -383,17 +383,34 @@ namespace TaxPersonnelManagement.Views
                             worksheet.Cell(row, 7).Value = item.ExceedFramePercent > 0 ? $"{item.ExceedFramePercent}%" : "";
 
                             if (item.NextSalaryStepDate.HasValue)
-                                worksheet.Cell(row, 8).Value = item.NextSalaryStepDate.Value;
+                            {
+                                var nextStepCell = worksheet.Cell(row, 8);
+                                nextStepCell.Value = item.NextSalaryStepDate.Value;
+                                nextStepCell.Style.DateFormat.Format = "dd/MM/yyyy";
+                            }
 
                             if (item.ExpectedSalaryIncreaseDate.HasValue)
                             {
                                 worksheet.Cell(row, 9).Value = item.ExpectedSalaryIncreaseDate.Value.Month;
                                 var nextDateCell = worksheet.Cell(row, 10);
                                 nextDateCell.Value = item.ExpectedSalaryIncreaseDate.Value;
-                                nextDateCell.Style.Font.FontColor = XLColor.Red;
+                                nextDateCell.Style.DateFormat.Format = "dd/MM/yyyy";
+                                nextDateCell.Style.Font.FontColor = XLColor.FromHtml("#1565C0"); // Professional Navy Blue
+                                nextDateCell.Style.Font.Bold = true;
                             }
 
-                            worksheet.Cell(row, 11).Value = ""; // No Note property in Entity
+                            if (!string.IsNullOrEmpty(item.SalaryIncreaseDelayType) && item.SalaryIncreaseDelayType != "-- Không lùi --")
+                            {
+                                var noteCell = worksheet.Cell(row, 11);
+                                noteCell.Value = item.SalaryIncreaseDelayType;
+                                noteCell.Style.Font.Bold = true;
+                                noteCell.Style.Font.FontColor = XLColor.FromHtml("#C62828"); // Prominent Dark Red
+                                noteCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEBEE"); // Soft Red background
+                            }
+                            else
+                            {
+                                worksheet.Cell(row, 11).Value = "";
+                            }
 
                             // Borders
                             for (int col = 1; col <= 11; col++)

@@ -48,7 +48,7 @@ namespace TaxPersonnelManagement.Views
                 // 2. Year Filter
                 cbYearFilter.Items.Clear();
                 int currentYear = DateTime.Now.Year;
-                for (int y = currentYear - 3; y <= currentYear + 3; y++)
+                for (int y = 2025; y <= currentYear + 3; y++)
                 {
                     cbYearFilter.Items.Add(y);
                 }
@@ -338,12 +338,19 @@ namespace TaxPersonnelManagement.Views
                         double remaining = totalAnnual - totalCurrentYearTakenAnnual;
 
                         // Filter histories by Month if selected
-                        var historiesQuery = p.LeaveHistories
-                            .Where(h => h.LeaveType == "Phép năm" && h.StartDate.Year == selectedYear);
+                        var historiesQuery = p.LeaveHistories.Where(h => h.LeaveType == "Phép năm");
 
                         if (selectedMonth.HasValue)
                         {
-                            historiesQuery = historiesQuery.Where(h => h.StartDate.Month == selectedMonth.Value);
+                            var monthStart = new DateTime(selectedYear, selectedMonth.Value, 1);
+                            var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+                            historiesQuery = historiesQuery.Where(h => h.StartDate <= monthEnd && (h.EndDate ?? h.StartDate) >= monthStart);
+                        }
+                        else
+                        {
+                            var yearStart = new DateTime(selectedYear, 1, 1);
+                            var yearEnd = new DateTime(selectedYear, 12, 31);
+                            historiesQuery = historiesQuery.Where(h => h.StartDate <= yearEnd && (h.EndDate ?? h.StartDate) >= yearStart);
                         }
 
                         var historiesList = historiesQuery.OrderBy(h => h.StartDate).ToList();

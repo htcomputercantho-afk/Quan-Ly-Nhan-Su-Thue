@@ -810,6 +810,103 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- 8. EVALUATION -->
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
+                            <StackPanel>
+                                <Border Background="Transparent" Padding="15 10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="Star" Foreground="#FFA000" VerticalAlignment="Center" Margin="0 0 8 0" Width="22" Height="22"/>
+                                        <TextBlock Text="8. LỊCH SỬ XẾP LOẠI" FontWeight="Bold" Foreground="#FFA000" FontSize="17" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Separator Background="#EEEEEE"/>
+                                <StackPanel Margin="15">
+                                    <TextBlock x:Name="txtNoEvaluationHistory" Text="Không có ghi nhận xếp loại" Foreground="Gray" FontStyle="Italic" FontSize="15" Margin="0 5 0 0" Visibility="Collapsed"/>
+                                    <DataGrid x:Name="dgProfileEvaluations" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                              HeadersVisibility="Column" BorderThickness="0" Background="White"
+                                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
+                                              VerticalGridLinesBrush="Transparent" SelectionMode="Single"
+                                              PreviewMouseWheel="DataGrid_PreviewMouseWheel">
+                                        <DataGrid.ColumnHeaderStyle>
+                                            <Style TargetType="DataGridColumnHeader">
+                                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                                <Setter Property="Padding" Value="5"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                <Setter Property="Background" Value="#F8F9FA"/>
+                                                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                            </Style>
+                                        </DataGrid.ColumnHeaderStyle>
+                                        <DataGrid.CellStyle>
+                                            <Style TargetType="DataGridCell">
+                                                <Setter Property="Padding" Value="10 8"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="DataGridCell">
+                                                            <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                                                                <ContentPresenter VerticalAlignment="Center"/>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Setter Property="Foreground" Value="Black"/>
+                                                        <Setter Property="BorderThickness" Value="0"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGrid.CellStyle>
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Năm" Binding="{Binding Year}" Width="80">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Xếp loại" Binding="{Binding Rating}" Width="2*">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                                        <Setter Property="TextWrapping" Value="Wrap"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Số QĐ" Binding="{Binding DecisionNumber}" Width="1.5*">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, StringFormat=dd/MM/yyyy}" Width="1.5*">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Đơn vị ra QĐ" Binding="{Binding DecisionAgency}" Width="2*">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                                        <Setter Property="TextWrapping" Value="Wrap"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

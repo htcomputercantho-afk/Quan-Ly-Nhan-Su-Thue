@@ -343,6 +343,19 @@ namespace TaxPersonnelManagement
                             Note TEXT
                         );");
 
+                    // Manual Migration for EvaluationRecords (Tab 9: Xếp loại)
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS EvaluationRecords (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            PersonnelId INTEGER NOT NULL,
+                            Year INTEGER NOT NULL,
+                            Rating TEXT NOT NULL,
+                            DecisionNumber TEXT,
+                            DecisionDate TEXT,
+                            DecisionAgency TEXT,
+                            FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                        );");
+
                     // Ensure holidays for current and next year
                     EnsureHolidaysSeeded(context);
 

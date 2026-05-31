@@ -1,3 +1,16 @@
+## v1.4.0 — 2026-05-31
+- [Tính năng] Tab Xếp loại nhân sự (Tab 9):
+    + Quản lý lịch sử xếp loại chi tiết theo năm của nhân sự (Năm bắt đầu từ 1980 đến nay, tự động cập nhật năm mới theo thời gian thực).
+    + Cho phép nhập thông tin xếp loại gồm: Năm, Xếp loại năm (Hoàn thành xuất sắc nhiệm vụ, Hoàn thành tốt nhiệm vụ, Hoàn thành nhiệm vụ, Không hoàn thành nhiệm vụ), Số quyết định, Ngày ký quyết định và Đơn vị ra quyết định.
+    + Hỗ trợ thêm/cập nhật nhanh, click chọn dòng để tải ngược dữ liệu lên form sửa, và nút xóa dòng trực tiếp.
+- [Tính năng] Đồng bộ hóa hiển thị hồ sơ & PDF:
+    + Thêm mục "Lịch sử xếp loại" hiển thị danh sách các năm xếp loại dưới dạng bảng trong cửa sổ xem Chi tiết hồ sơ nhân viên.
+    + Tích hợp xuất thông tin xếp loại năm vào tệp xuất PDF nhân sự với tông màu cam nổi bật đồng bộ, các cột được căn giữa theo chuẩn hiển thị chuyên nghiệp.
+- [Tối ưu] Giao diện & Hiệu năng:
+    + Cải tiến layout Tab 9 sử dụng StackPanel thay cho Grid trong ScrollViewer để loại bỏ khoảng trống thừa ở 2 đầu trên dưới của bảng dữ liệu.
+    + Căn giữa toàn bộ nội dung trong bảng lịch sử xếp loại ở cả màn hình xem chi tiết và màn hình chỉnh sửa giúp tăng tính thẩm mỹ.
+    + Giải quyết triệt để cảnh báo trình biên dịch, làm sạch và tối ưu hóa mã nguồn.
+
 ## v1.3.0 — 2026-05-26
 - [Tính năng] Bộ lọc báo cáo phép năm và tối ưu hóa hiển thị:
     + Thêm bộ lọc phòng ban (bộ phận), tháng nghỉ và năm nghỉ động tại màn hình Báo cáo phép năm.

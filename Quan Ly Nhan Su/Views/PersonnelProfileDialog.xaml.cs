@@ -139,6 +139,19 @@ namespace TaxPersonnelManagement.Views
                 txtNoSalaryHistory.Visibility = Visibility.Visible;
                 dgSalaryHistory.Visibility = Visibility.Collapsed;
             }
+
+            // Load Evaluation History
+            if (p.EvaluationRecords != null && p.EvaluationRecords.Count > 0)
+            {
+                txtNoEvaluationHistory.Visibility = Visibility.Collapsed;
+                dgProfileEvaluations.Visibility = Visibility.Visible;
+                dgProfileEvaluations.ItemsSource = p.EvaluationRecords.OrderByDescending(ev => ev.Year).ToList();
+            }
+            else
+            {
+                txtNoEvaluationHistory.Visibility = Visibility.Visible;
+                dgProfileEvaluations.Visibility = Visibility.Collapsed;
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

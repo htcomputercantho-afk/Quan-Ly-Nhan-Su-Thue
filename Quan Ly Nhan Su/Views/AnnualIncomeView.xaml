@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
       mc:Ignorable="d" 
       d:DesignHeight="700" d:DesignWidth="1000"
       Title="Tổng thu nhập năm">
@@ -146,19 +147,7 @@
                                 materialDesign:ButtonAssist.CornerRadius="18">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="CardsOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Nhập hàng loạt" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="btnImportExcel" Height="36" Click="BtnImportExcel_Click" Margin="0 5 10 5" 
-                                Style="{DynamicResource MaterialDesignRaisedButton}"
-                                Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Background="White" CornerRadius="2" Padding="1" Margin="0 0 6 0">
-                                    <TextBlock Text="x" Foreground="#1976D2" FontSize="10" FontWeight="Bold" FontFamily="Consolas" Width="12" TextAlignment="Center"/>
-                                </Border>
-                                <TextBlock Text="Import Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                                <TextBlock Text="Nhập hàng loạt &amp; Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
                         
@@ -189,10 +178,113 @@
                     <!-- DataGrid -->
                     <DataGrid x:Name="dgMonthlyIncome" Grid.Row="2" BorderThickness="1" BorderBrush="#EEEEEE" Background="White"
                               AutoGenerateColumns="False" AlternatingRowBackground="#FAFAFA"
-                              RowHeight="70"
+                              MinRowHeight="60"
                               FrozenColumnCount="1"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
                               BeginningEdit="DgMonthlyIncome_BeginningEdit"
                               CellEditEnding="DgMonthlyIncome_CellEditEnding">
+                        
+                        <DataGrid.Resources>
+                            <converters:MathSubtractConverter x:Key="MathSubtractConverter"/>
+                            <!-- TextBlock Style for Amount -->
+                            <Style x:Key="MonthAmountStyle" TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="TextAlignment" Value="Right"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+
+                            <!-- TextBlock Style for Note -->
+                            <Style x:Key="MonthNoteStyle" TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="FontStyle" Value="Italic"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="MaxWidth" Value="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=15}"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="TextAlignment" Value="Right"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+
+                            <!-- ItemsControl Style for Breakdown -->
+                            <Style x:Key="MonthBreakdownStyle" TargetType="ItemsControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                <Setter Property="ItemTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0 0 0 6" HorizontalAlignment="Stretch">
+                                                <!-- Amount (Top, Bold, Right-aligned, Standard Foreground) -->
+                                                <TextBlock Text="{Binding FormattedAmount}" FontWeight="SemiBold" TextAlignment="Right"/>
+                                                <!-- Reason (Bottom, Gray, Italic, Right-aligned) -->
+                                                <TextBlock Text="{Binding Reason}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" FontSize="11" TextAlignment="Right"
+                                                           MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=15}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+
+                            <!-- TextBox Style for Amount Editing -->
+                            <Style x:Key="MonthAmountTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Setter Property="TextAlignment" Value="Right"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+
+                            <!-- TextBox Style for Note Editing -->
+                            <Style x:Key="MonthNoteTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Setter Property="Foreground" Value="Gray"/>
+                                <Setter Property="FontStyle" Value="Italic"/>
+                                <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="TextAlignment" Value="Right"/>
+                                <Setter Property="TextWrapping" Value="Wrap"/>
+                                <Setter Property="AcceptsReturn" Value="True"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
+                                        <Setter Property="materialDesign:HintAssist.Hint" Value="Nhập: [Số tiền] - [Nội dung] (Mỗi khoản 1 dòng)"/>
+                                        <Setter Property="Foreground" Value="#333333"/>
+                                        <Setter Property="FontStyle" Value="Normal"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                        <Setter Property="MinHeight" Value="60"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
+                                        <Setter Property="materialDesign:HintAssist.Hint" Value="Nhập: [Số tiền] - [Nội dung] (Mỗi khoản 1 dòng)"/>
+                                        <Setter Property="Foreground" Value="#333333"/>
+                                        <Setter Property="FontStyle" Value="Normal"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                        <Setter Property="MinHeight" Value="60"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
                         
                         <!-- Column Header Style -->
                         <DataGrid.ColumnHeaderStyle>
@@ -211,240 +303,252 @@
                             <DataGridTextColumn Header="Loại thu nhập" Binding="{Binding IncomeType}" Width="150" IsReadOnly="True" FontWeight="SemiBold"/>
                             
                             <!-- Month 1 -->
-                            <DataGridTemplateColumn Header="Tháng 1" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 1" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M1Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M1Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M1Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M1Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M1Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M1Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M1Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M1Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M1Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 2 -->
-                            <DataGridTemplateColumn Header="Tháng 2" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 2" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M2Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M2Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M2Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M2Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M2Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M2Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M2Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M2Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M2Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 3 -->
-                            <DataGridTemplateColumn Header="Tháng 3" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 3" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M3Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M3Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M3Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M3Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M3Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M3Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M3Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M3Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M3Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 4 -->
-                            <DataGridTemplateColumn Header="Tháng 4" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 4" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M4Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M4Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M4Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M4Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M4Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M4Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M4Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M4Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M4Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 5 -->
-                            <DataGridTemplateColumn Header="Tháng 5" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 5" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M5Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M5Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M5Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M5Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M5Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M5Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M5Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M5Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M5Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 6 -->
-                            <DataGridTemplateColumn Header="Tháng 6" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 6" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M6Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M6Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M6Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M6Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M6Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M6Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M6Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M6Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M6Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 7 -->
-                            <DataGridTemplateColumn Header="Tháng 7" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 7" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M7Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M7Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M7Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M7Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M7Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M7Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M7Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M7Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M7Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 8 -->
-                            <DataGridTemplateColumn Header="Tháng 8" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 8" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M8Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M8Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M8Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M8Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M8Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M8Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M8Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M8Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M8Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 9 -->
-                            <DataGridTemplateColumn Header="Tháng 9" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 9" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M9Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M9Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M9Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M9Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M9Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M9Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M9Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M9Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M9Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 10 -->
-                            <DataGridTemplateColumn Header="Tháng 10" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 10" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M10Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M10Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M10Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M10Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M10Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M10Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M10Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M10Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M10Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 11 -->
-                            <DataGridTemplateColumn Header="Tháng 11" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 11" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M11Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M11Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M11Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M11Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M11Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M11Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M11Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M11Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M11Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
                             <!-- Month 12 -->
-                            <DataGridTemplateColumn Header="Tháng 12" Width="130">
+                            <DataGridTemplateColumn Header="Tháng 12" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBlock Text="{Binding M12Amount, StringFormat='{}{0:N0} đ'}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                            <TextBlock Text="{Binding M12Note}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" MaxWidth="120" FontSize="11" TextAlignment="Right"/>
+                                            <TextBlock Text="{Binding M12Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
+                                            <TextBlock Text="{Binding M12Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            <ItemsControl ItemsSource="{Binding M12Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M12Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" TextAlignment="Right"/>
-                                            <TextBox Text="{Binding M12Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Foreground="Gray" FontStyle="Italic" FontSize="11" TextAlignment="Right"/>
+                                            <TextBox Text="{Binding M12Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M12Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>

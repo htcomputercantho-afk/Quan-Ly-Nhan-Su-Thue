@@ -20,6 +20,7 @@ namespace TaxPersonnelManagement.Views
         private bool _isFormatting = false;
         private List<string> _allPositions = new List<string>();
         private SalaryRecord? _editingSalaryRecord;
+        private EvaluationRecord? _editingEvaluationRecord;
 
         /// <summary>
         /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
@@ -141,6 +142,10 @@ namespace TaxPersonnelManagement.Views
                 dpDisciplineDate.SelectedDate = _personnel.DisciplineDecisionDate;
                 txtDisciplineReason.Text = _personnel.DisciplineReason;
 
+                // Load Evaluation Records
+                if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new System.Collections.Generic.List<EvaluationRecord>();
+                RefreshEvaluationHistoryGrid();
+
                 // Load Avatar
                 if (!string.IsNullOrEmpty(_personnel.AvatarBase64))
                 {
@@ -194,6 +199,7 @@ namespace TaxPersonnelManagement.Views
             cboLeaveYear.SelectionChanged += (s, e) => { UpdateLeaveStatistics(); };
 
             LoadLeaveYears();
+            LoadEvaluationYears();
             ApplyAuthorization();
 
             _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
@@ -868,6 +874,23 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
 
+                    // Copy Evaluation Records if any
+                    if (_personnel != null && _personnel.EvaluationRecords != null)
+                    {
+                        newP.EvaluationRecords ??= new List<EvaluationRecord>();
+                        foreach (var ev in _personnel.EvaluationRecords)
+                        {
+                            newP.EvaluationRecords.Add(new EvaluationRecord
+                            {
+                                Year = ev.Year,
+                                Rating = ev.Rating,
+                                DecisionNumber = ev.DecisionNumber,
+                                DecisionDate = ev.DecisionDate,
+                                DecisionAgency = ev.DecisionAgency
+                            });
+                        }
+                    }
+
                     context.Personnel.Add(newP);
                     _personnel = newP;
                 }
@@ -875,7 +898,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     // Update
                     // Update
-                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").FirstOrDefault(p => p.Id == _personnel.Id);
+                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").FirstOrDefault(p => p.Id == _personnel.Id);
                     if (existingP != null)
                     {
                         existingP.StaffId = txtStaffId.Text;
@@ -1031,6 +1054,44 @@ namespace TaxPersonnelManagement.Views
                                     dbItem.DurationDays = item.DurationDays;
                                     dbItem.Reason = item.Reason;
                                     dbItem.LeaveYear = item.LeaveYear;
+                                }
+                            }
+                        }
+
+                        // Sync Evaluation Records
+                        if (existingP.EvaluationRecords == null) existingP.EvaluationRecords = new List<EvaluationRecord>();
+                        if (_personnel.EvaluationRecords != null)
+                        {
+                            // 1. Identify IDs to keep
+                            var currentEvalIds = _personnel.EvaluationRecords.Select(e => e.Id).Where(id => id != 0).ToList();
+
+                            // 2. Remove deleted
+                            var toDeleteEval = existingP.EvaluationRecords.Where(e => !currentEvalIds.Contains(e.Id)).ToList();
+                            foreach (var item in toDeleteEval)
+                            {
+                                context.EvaluationRecords.Remove(item);
+                            }
+
+                            // 3. Add new
+                            var toAddEval = _personnel.EvaluationRecords.Where(e => e.Id == 0).ToList();
+                            foreach (var item in toAddEval)
+                            {
+                                item.PersonnelId = existingP.Id;
+                                context.EvaluationRecords.Add(item);
+                            }
+
+                            // 4. Update existing
+                            var toUpdateEval = _personnel.EvaluationRecords.Where(e => e.Id != 0).ToList();
+                            foreach (var item in toUpdateEval)
+                            {
+                                var dbItem = existingP.EvaluationRecords.FirstOrDefault(x => x.Id == item.Id);
+                                if (dbItem != null)
+                                {
+                                    dbItem.Year = item.Year;
+                                    dbItem.Rating = item.Rating;
+                                    dbItem.DecisionNumber = item.DecisionNumber;
+                                    dbItem.DecisionDate = item.DecisionDate;
+                                    dbItem.DecisionAgency = item.DecisionAgency;
                                 }
                             }
                         }
@@ -1276,6 +1337,15 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
                 }
+
+                // Tab 9 Resets
+                cboEvaluationYear.SelectedIndex = 0;
+                cboEvaluationRating.SelectedIndex = 0;
+                txtEvaluationDecisionNo.Clear();
+                dpEvaluationDecisionDate.SelectedDate = null;
+                txtEvaluationDecisionAgency.Clear();
+                _editingEvaluationRecord = null;
+                dgEvaluationHistory.ItemsSource = null;
 
                 // Clear Avatar
                 btnRemoveAvatar_Click(sender, e);
@@ -1949,6 +2019,12 @@ namespace TaxPersonnelManagement.Views
             UpdateLeaveStatistics();
         }
 
+        private void OnLeaveReasonTextChanged(object sender, TextChangedEventArgs e)
+        {
+            CalculateMaternityEndDate();
+            UpdateLeaveDuration();
+        }
+
         private void SetComboBoxByContent(ComboBox cbo, string? content)
         {
             if (string.IsNullOrEmpty(content))
@@ -2004,17 +2080,19 @@ namespace TaxPersonnelManagement.Views
             if (dpLeaveStartDate.SelectedDate == null) return;
 
             DateTime start = dpLeaveStartDate.SelectedDate.Value;
-            DateTime cutoff = new DateTime(start.Year, 7, 1);
-            DateTime end;
+            DateTime cutoff = new DateTime(2026, 7, 1);
+            
+            // Base maternity leave duration: 7 months from 1/7/2026 onwards, otherwise 6 months
+            int months = (start < cutoff) ? 6 : 7;
 
-            if (start < cutoff)
+            // Plus 1 month if "sinh đôi" is in the reason
+            string reason = txtLeaveReason?.Text ?? "";
+            if (reason.ToLower().Contains("sinh đôi"))
             {
-                end = start.AddMonths(6).AddDays(-1);
+                months += 1;
             }
-            else
-            {
-                end = start.AddMonths(7).AddDays(-1);
-            }
+
+            DateTime end = start.AddMonths(months).AddDays(-1);
 
             if (dpLeaveEndDate.SelectedDate != end)
             {
@@ -2740,6 +2818,157 @@ namespace TaxPersonnelManagement.Views
             catch
             {
                 return false;
+            }
+        }
+
+        private void LoadEvaluationYears()
+        {
+            var years = new List<string> { "" };
+            int currentYear = DateTime.Now.Year;
+            for (int y = 1980; y <= currentYear; y++)
+            {
+                years.Add(y.ToString());
+            }
+            cboEvaluationYear.ItemsSource = years;
+            cboEvaluationYear.SelectedIndex = 0;
+        }
+
+        private void RefreshEvaluationHistoryGrid()
+        {
+            if (_personnel == null) return;
+            if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new List<EvaluationRecord>();
+            var sortedList = _personnel.EvaluationRecords.OrderByDescending(e => e.Year).ToList();
+            dgEvaluationHistory.ItemsSource = null;
+            dgEvaluationHistory.ItemsSource = sortedList;
+        }
+
+        private void btnAddEvaluation_Click(object sender, RoutedEventArgs e)
+        {
+            var yearStr = cboEvaluationYear.SelectedItem?.ToString() ?? "";
+            if (string.IsNullOrEmpty(yearStr))
+            {
+                new WarningWindow("Vui lòng chọn năm xếp loại!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+            if (!int.TryParse(yearStr, out int year))
+            {
+                new WarningWindow("Năm xếp loại không hợp lệ!", "Lỗi dữ liệu").ShowDialog();
+                return;
+            }
+
+            var rating = cboEvaluationRating.SelectedItem is ComboBoxItem cbi ? cbi.Content?.ToString() ?? "" : cboEvaluationRating.Text;
+            if (string.IsNullOrEmpty(rating))
+            {
+                new WarningWindow("Vui lòng chọn xếp loại năm!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            var decisionNo = txtEvaluationDecisionNo.Text;
+            var decisionDate = dpEvaluationDecisionDate.SelectedDate;
+            var decisionAgency = txtEvaluationDecisionAgency.Text;
+
+            if (_personnel != null && _personnel.EvaluationRecords != null)
+            {
+                foreach (var ev in _personnel.EvaluationRecords)
+                {
+                    if (_editingEvaluationRecord != ev && ev.Year == year)
+                    {
+                        new WarningWindow($"Đã tồn tại xếp loại cho năm {year}!", "Trùng thông tin").ShowDialog();
+                        return;
+                    }
+                }
+            }
+
+            if (_editingEvaluationRecord != null)
+            {
+                _editingEvaluationRecord.Year = year;
+                _editingEvaluationRecord.Rating = rating;
+                _editingEvaluationRecord.DecisionNumber = decisionNo;
+                _editingEvaluationRecord.DecisionDate = decisionDate;
+                _editingEvaluationRecord.DecisionAgency = decisionAgency;
+
+                _editingEvaluationRecord = null;
+                dgEvaluationHistory.SelectedItem = null;
+            }
+            else
+            {
+                var newItem = new EvaluationRecord
+                {
+                    Year = year,
+                    Rating = rating,
+                    DecisionNumber = decisionNo,
+                    DecisionDate = decisionDate,
+                    DecisionAgency = decisionAgency,
+                    PersonnelId = _personnel != null ? _personnel.Id : 0
+                };
+                if (_personnel == null) _personnel = new Personnel();
+                if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new List<EvaluationRecord>();
+                _personnel.EvaluationRecords.Add(newItem);
+            }
+
+            RefreshEvaluationHistoryGrid();
+
+            cboEvaluationYear.SelectedIndex = 0;
+            cboEvaluationRating.SelectedIndex = 0;
+            txtEvaluationDecisionNo.Clear();
+            dpEvaluationDecisionDate.SelectedDate = null;
+            txtEvaluationDecisionAgency.Clear();
+        }
+
+        private void dgEvaluationHistory_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var dep = (DependencyObject)e.OriginalSource;
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep is DataGridRow row)
+            {
+                var item = row.DataContext as EvaluationRecord;
+                if (item == null) return;
+
+                cboEvaluationYear.SelectedItem = item.Year.ToString();
+                
+                cboEvaluationRating.SelectedIndex = 0;
+                foreach (var obj in cboEvaluationRating.Items)
+                {
+                    if (obj is ComboBoxItem cbi && cbi.Content?.ToString() == item.Rating)
+                    {
+                        cboEvaluationRating.SelectedItem = cbi;
+                        break;
+                    }
+                }
+
+                txtEvaluationDecisionNo.Text = item.DecisionNumber;
+                dpEvaluationDecisionDate.SelectedDate = item.DecisionDate;
+                txtEvaluationDecisionAgency.Text = item.DecisionAgency;
+
+                _editingEvaluationRecord = item;
+            }
+        }
+
+        private void btnDeleteEvaluation_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as FrameworkElement)?.DataContext as EvaluationRecord;
+            if (item != null && _personnel?.EvaluationRecords != null)
+            {
+                var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng xếp loại này không?");
+                if (confirm.ShowDialog() == true)
+                {
+                    _personnel.EvaluationRecords.Remove(item);
+                    RefreshEvaluationHistoryGrid();
+
+                    if (_editingEvaluationRecord == item)
+                    {
+                        _editingEvaluationRecord = null;
+                        cboEvaluationYear.SelectedIndex = 0;
+                        cboEvaluationRating.SelectedIndex = 0;
+                        txtEvaluationDecisionNo.Clear();
+                        dpEvaluationDecisionDate.SelectedDate = null;
+                        txtEvaluationDecisionAgency.Clear();
+                    }
+                }
             }
         }
     }

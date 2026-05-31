@@ -23,6 +23,7 @@ namespace TaxPersonnelManagement.Data
         public DbSet<DisciplineType> DisciplineTypes { get; set; }       // Bảng danh mục các loại kỷ luật
         public DbSet<IncomeRecord> IncomeRecords { get; set; }           // Bảng ghi nhận tổng thu nhập hàng tháng/năm
         public DbSet<PublicHoliday> PublicHolidays { get; set; }         // Bảng danh mục ngày nghỉ lễ
+        public DbSet<EvaluationRecord> EvaluationRecords { get; set; }   // Bảng ghi nhận xếp loại năm
 
 
         /// <summary>

@@ -196,13 +196,21 @@ namespace TaxPersonnelManagement.Views
         private void btnViewDetail_Click(object sender, RoutedEventArgs e)
         {
             Personnel? p = null;
+            int? id = null;
 
-            if (sender is Button btn)
-                p = btn.DataContext as Personnel;
-            else if (sender is MenuItem mi && mi.Tag is int id)
+            if (sender is Button btn && btn.DataContext is Personnel gridP)
+                id = gridP.Id;
+            else if (sender is MenuItem mi && mi.Tag is int miId)
+                id = miId;
+
+            if (id.HasValue)
             {
                 using var context = new AppDbContext();
-                p = context.Personnel.Include(x => x.SalaryRecords).FirstOrDefault(x => x.Id == id);
+                p = context.Personnel
+                           .Include(x => x.SalaryRecords)
+                           .Include(x => x.LeaveHistories)
+                           .Include(x => x.EvaluationRecords)
+                           .FirstOrDefault(x => x.Id == id.Value);
             }
 
             if (p != null && Application.Current.MainWindow is MainWindow mw)

@@ -5,106 +5,462 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Nhập Thu Nhập Khác Hàng Loạt" 
-        SizeToContent="Height" MaxHeight="800" Width="470"
+        Title="Nhập Hàng Loạt &amp; Import Excel" 
+        Height="720" Width="800"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="#F5F5F5" FontFamily="Roboto">
+
+    <Window.Resources>
+        <!-- Clean TabControl Style (Removes all default borders, underlines, and lines) -->
+        <Style x:Key="CleanTabControl" TargetType="TabControl">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid KeyboardNavigation.TabNavigation="Local">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <!-- Tab Header Panel using horizontal StackPanel to prevent layout clipping -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Panel.ZIndex="1" Margin="0 0 0 15"
+                                        IsItemsHost="True" KeyboardNavigation.TabIndex="1"/>
+                            <!-- Content Border -->
+                            <Border x:Name="ContentPanel" Grid.Row="1" KeyboardNavigation.TabIndex="2"
+                                    KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained"
+                                    Background="{TemplateBinding Background}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding BorderBrush}">
+                                <ContentPresenter x:Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}"
+                                                  ContentSource="SelectedContent"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Capsule TabItem Style -->
+        <Style x:Key="ModernTabItem" TargetType="TabItem">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#666666"/>
+            <Setter Property="Margin" Value="0 0 10 0"/>
+            <Setter Property="Padding" Value="18 10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid>
+                            <Border x:Name="border" 
+                                    Background="{TemplateBinding Background}" 
+                                    CornerRadius="20" 
+                                    Padding="{TemplateBinding Padding}"
+                                    Margin="4"
+                                    BorderThickness="1"
+                                    BorderBrush="#E0E0E0">
+                                <ContentPresenter ContentSource="Header" 
+                                                  HorizontalAlignment="Center" 
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#7B1FA2"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#7B1FA2"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect ShadowDepth="1" BlurRadius="4" Opacity="0.15" Direction="270"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#7B1FA2"/>
+                                <Setter Property="Foreground" Value="#7B1FA2"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#7B1FA2"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     
     <Border Background="White" CornerRadius="8" Margin="10" Effect="{DynamicResource MaterialDesignShadowDepth2}">
         <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Header -->
             <StackPanel Grid.Row="0" Margin="0 0 0 15">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <materialDesign:PackIcon Kind="CardsOutline" Width="28" Height="28" Foreground="#7B1FA2" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Nhập Hàng Loạt" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2" VerticalAlignment="Center"/>
+                    <TextBlock Text="Nhập Hàng Loạt &amp; Import" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2" VerticalAlignment="Center"/>
                 </StackPanel>
-                <TextBlock Text="Thêm thu nhập khác cho nhiều công chức cùng lúc" Foreground="Gray" FontSize="13" TextAlignment="Center" Margin="0 5 0 0"/>
+                <TextBlock Text="Nhập thủ công hoặc import dữ liệu thu nhập từ file Excel cho nhiều công chức" Foreground="Gray" FontSize="13" TextAlignment="Center" Margin="0 5 0 0"/>
             </StackPanel>
 
-            <!-- Content -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0 0 -10 0" Padding="0 0 10 0">
-                <StackPanel Margin="0 10 0 0">
-                    <!-- Data Info -->
-                    <GroupBox Header="Thông tin khoản thu" materialDesign:ColorZoneAssist.Mode="Standard" BorderBrush="#E0E0E0" Background="#FAFAFA" Margin="0 0 0 15">
-                        <StackPanel Margin="5">
-                            <Grid Margin="0 0 0 15">
+            <!-- Main Content: Tabs -->
+            <TabControl x:Name="tcBulkIncome" Grid.Row="1" Style="{StaticResource CleanTabControl}">
+                
+                <!-- TAB 1: NHẬP THỦ CÔNG -->
+                <TabItem Header="✍️ Nhập thủ công" Style="{StaticResource ModernTabItem}">
+                    <Grid Margin="0 5 0 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="0 0 -10 0" Padding="0 0 10 0">
+                            <StackPanel Margin="0 5 0 0">
+                                <!-- Data Info -->
+                                <GroupBox Header="Thông tin khoản thu" materialDesign:ColorZoneAssist.Mode="Standard" BorderBrush="#E0E0E0" Background="#FAFAFA" Margin="0 0 0 15">
+                                    <StackPanel Margin="5">
+                                        <Grid Margin="0 0 0 15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="15"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Tháng" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
+                                                <ComboBox x:Name="cboMonth" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" FontSize="15" Padding="5">
+                                                    <ComboBoxItem Content="Tháng 1"/>
+                                                    <ComboBoxItem Content="Tháng 2"/>
+                                                    <ComboBoxItem Content="Tháng 3"/>
+                                                    <ComboBoxItem Content="Tháng 4"/>
+                                                    <ComboBoxItem Content="Tháng 5"/>
+                                                    <ComboBoxItem Content="Tháng 6"/>
+                                                    <ComboBoxItem Content="Tháng 7"/>
+                                                    <ComboBoxItem Content="Tháng 8"/>
+                                                    <ComboBoxItem Content="Tháng 9"/>
+                                                    <ComboBoxItem Content="Tháng 10"/>
+                                                    <ComboBoxItem Content="Tháng 11"/>
+                                                    <ComboBoxItem Content="Tháng 12"/>
+                                                </ComboBox>
+                                            </StackPanel>
+                                            
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Năm" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
+                                                <ComboBox x:Name="cboYear" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" FontSize="15" Padding="5"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <TextBlock Text="Số tiền thưởng (VNĐ)" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
+                                        <TextBox x:Name="txtAmount" Style="{DynamicResource MaterialDesignOutlinedTextBox}" 
+                                                 materialDesign:HintAssist.Hint="Ví dụ: 500,000" FontSize="15" Margin="0 0 0 15" 
+                                                 Padding="10" TextChanged="TxtAmount_TextChanged"
+                                                 PreviewTextInput="TxtAmount_PreviewTextInput"
+                                                 InputMethod.IsInputMethodEnabled="False"
+                                                 materialDesign:TextFieldAssist.HasClearButton="True"/>
+                                        
+                                        <TextBlock Text="Nội dung thưởng" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
+                                        <TextBox x:Name="txtReason" Style="{DynamicResource MaterialDesignOutlinedTextBox}" 
+                                                 materialDesign:HintAssist.Hint="Nhập nội dung thưởng tại đây (có thể nhập nhiều dòng)..." 
+                                                 FontSize="15" Padding="10" Margin="0 0 0 5"
+                                                 AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" 
+                                                 VerticalScrollBarVisibility="Auto" SpellCheck.IsEnabled="True"/>
+                                    </StackPanel>
+                                </GroupBox>
+
+                                <!-- Target Selection -->
+                                <GroupBox Header="Đối tượng áp dụng" materialDesign:ColorZoneAssist.Mode="Standard" BorderBrush="#E0E0E0" Background="#FAFAFA">
+                                    <StackPanel Margin="5">
+                                        <RadioButton x:Name="radAll" Content="Tất cả công chức" GroupName="TargetGroup" IsChecked="True" Margin="0 0 0 10" Foreground="#444"/>
+                                        <RadioButton x:Name="radFemale" Content="Chỉ Công chức Nữ" GroupName="TargetGroup" Margin="0 0 0 10" Foreground="#444"/>
+                                        <RadioButton x:Name="radMale" Content="Chỉ Công chức Nam" GroupName="TargetGroup" Margin="0 0 0 10" Foreground="#444"/>
+                                        
+                                        <RadioButton x:Name="radDepartment" Content="Theo phòng ban:" GroupName="TargetGroup" Checked="RadDepartment_Checked" Unchecked="RadDepartment_Unchecked" Margin="0 0 0 5" Foreground="#444"/>
+                                        <ComboBox x:Name="cboDepartment" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" IsEnabled="False" Margin="25 0 0 10" Padding="5"/>
+
+                                        <RadioButton x:Name="radExcelFile" Content="Theo file Excel:" GroupName="TargetGroup" Checked="RadExcelFile_Checked" Unchecked="RadExcelFile_Unchecked" Margin="0 0 0 5" Foreground="#444"/>
+                                        <Border x:Name="gridExcelFile" IsEnabled="False" Margin="25 0 0 0" 
+                                                BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6" 
+                                                Padding="10 8">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="White"/>
+                                                    <Setter Property="Opacity" Value="1.0"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <materialDesign:PackIcon Grid.Column="0" Kind="FileExcel" Width="24" Height="24" Foreground="#2E7D32" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                                                
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 0 10 0">
+                                                    <TextBlock x:Name="txtManualExcelPath" Text="Chưa chọn file Excel" FontWeight="SemiBold" FontSize="13" Foreground="#444" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                                
+                                                <Button x:Name="btnBrowseManualExcel" Grid.Column="2" Click="BtnBrowseManualExcel_Click" 
+                                                        Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White"
+                                                        Style="{DynamicResource MaterialDesignRaisedButton}" 
+                                                        materialDesign:ButtonAssist.CornerRadius="14"
+                                                        Height="28" Padding="12 0" VerticalAlignment="Center">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="FolderOpenOutline" Width="14" Height="14" Margin="0 0 4 0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="CHỌN FILE" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Buttons for Tab 1 -->
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0">
+                            <Button Content="ĐÓNG" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
+                                    Width="120" Height="40" Margin="0 0 15 0" FontSize="13" FontWeight="Bold"/>
+                            <Button Content="ÁP DỤNG" Click="BtnApply_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
+                                    Foreground="White" Width="140" Height="40" FontSize="13" FontWeight="Bold"
+                                    materialDesign:ButtonAssist.CornerRadius="5"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+
+                <!-- TAB 2: IMPORT EXCEL & MAPPING -->
+                <TabItem Header="📄 Nhập từ file Excel" Style="{StaticResource ModernTabItem}">
+                    <Grid Margin="0 5 0 0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/> <!-- Browse panel -->
+                            <RowDefinition Height="*"/>    <!-- DataGrid mapping panel -->
+                            <RowDefinition Height="Auto"/> <!-- Actions panel -->
+                        </Grid.RowDefinitions>
+
+                        <!-- File Picker Card with Shadow -->
+                        <Border Grid.Row="0" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Background="White" Padding="15" Margin="0 0 0 15" Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="15"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Tháng" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
-                                    <ComboBox x:Name="cboMonth" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" FontSize="15" Padding="5">
-                                        <ComboBoxItem Content="Tháng 1"/>
-                                        <ComboBoxItem Content="Tháng 2"/>
-                                        <ComboBoxItem Content="Tháng 3"/>
-                                        <ComboBoxItem Content="Tháng 4"/>
-                                        <ComboBoxItem Content="Tháng 5"/>
-                                        <ComboBoxItem Content="Tháng 6"/>
-                                        <ComboBoxItem Content="Tháng 7"/>
-                                        <ComboBoxItem Content="Tháng 8"/>
-                                        <ComboBoxItem Content="Tháng 9"/>
-                                        <ComboBoxItem Content="Tháng 10"/>
-                                        <ComboBoxItem Content="Tháng 11"/>
-                                        <ComboBoxItem Content="Tháng 12"/>
-                                    </ComboBox>
+                                <materialDesign:PackIcon Grid.Column="0" Kind="FileExcel" Width="40" Height="40" Foreground="#2E7D32" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0 0 15 0">
+                                    <TextBlock x:Name="txtFileName" Text="Chưa chọn file Excel" FontWeight="Bold" FontSize="15" Foreground="#222"/>
+                                    <TextBlock x:Name="txtFilePath" Text="Chọn file Bảng lương hoặc Làm thêm giờ để phân tích..." FontSize="12" Foreground="Gray" TextTrimming="CharacterEllipsis" Margin="0 4 0 0"/>
                                 </StackPanel>
-                                
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="Năm" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
-                                    <ComboBox x:Name="cboYear" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" FontSize="15" Padding="5"/>
-                                </StackPanel>
+                                <Button x:Name="btnBrowse" Grid.Column="2" Click="BtnBrowse_Click" 
+                                        Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White"
+                                        Style="{DynamicResource MaterialDesignRaisedButton}" 
+                                        materialDesign:ButtonAssist.CornerRadius="18"
+                                        Height="36" Padding="18 0" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="FolderOpenOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="CHỌN FILE" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
                             </Grid>
+                        </Border>
 
-                            <TextBlock Text="Số tiền thưởng (VNĐ)" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
-                            <TextBox x:Name="txtAmount" Style="{DynamicResource MaterialDesignOutlinedTextBox}" 
-                                     materialDesign:HintAssist.Hint="Ví dụ: 500,000" FontSize="15" Margin="0 0 0 15" 
-                                     Padding="10" TextChanged="TxtAmount_TextChanged"
-                                     PreviewTextInput="TxtAmount_PreviewTextInput"
-                                     InputMethod.IsInputMethodEnabled="False"
-                                     materialDesign:TextFieldAssist.HasClearButton="True"/>
-                            
-                            <TextBlock Text="Nội dung thưởng" FontSize="12" Foreground="#7B1FA2" FontWeight="Bold" Margin="0 0 0 5"/>
-                            <TextBox x:Name="txtReason" Style="{DynamicResource MaterialDesignOutlinedTextBox}" 
-                                     materialDesign:HintAssist.Hint="Nhập nội dung thưởng tại đây (có thể nhập nhiều dòng)..." 
-                                     FontSize="15" Padding="10" Margin="0 0 0 5"
-                                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="100" 
-                                     VerticalScrollBarVisibility="Auto" SpellCheck.IsEnabled="True"/>
+                        <!-- Sheet mapping Table Panel -->
+                        <Border Grid.Row="1" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Background="White" Padding="15" Effect="{DynamicResource MaterialDesignShadowDepth1}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0 0 0 15">
+                                    <materialDesign:PackIcon Kind="PlaylistCheck" Width="22" Height="22" Foreground="#7B1FA2" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Cấu hình sheet dữ liệu nhận diện" FontWeight="Bold" FontSize="15" Foreground="#7B1FA2" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <Grid Grid.Row="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Table Header Row -->
+                                    <Border Grid.Row="0" Background="#F5F5F5" Padding="12 8" Margin="0 0 0 5" CornerRadius="4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50"/>   <!-- Chọn -->
+                                                <ColumnDefinition Width="70"/>   <!-- Tên Sheet -->
+                                                <ColumnDefinition Width="110"/>  <!-- Loại thu nhập -->
+                                                <ColumnDefinition Width="80"/>   <!-- Tháng gốc -->
+                                                <ColumnDefinition Width="130"/>  <!-- Tháng áp dụng -->
+                                                <ColumnDefinition Width="*"/>    <!-- Nội dung ghi chú -->
+                                                <ColumnDefinition Width="65"/>   <!-- Số dòng -->
+                                                <ColumnDefinition Width="14"/>   <!-- Khoảng trống Scrollbar -->
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox x:Name="chkSelectAll" Grid.Column="0" Checked="ChkSelectAll_Checked" Unchecked="ChkSelectAll_Unchecked" IsChecked="True" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="Tên Sheet" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="2" Text="Loại thu nhập" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="Tháng gốc" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="4" Text="Tháng áp dụng" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="5" Text="Nội dung ghi chú" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="6" Text="Số dòng" FontWeight="Bold" Foreground="#555555" FontSize="13" TextAlignment="Center" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Table Body Items -->
+                                    <ListView Grid.Row="1" x:Name="dgSheets" BorderThickness="0" Background="Transparent" Padding="0" 
+                                              ScrollViewer.VerticalScrollBarVisibility="Visible" 
+                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <!-- Items Styles and Custom Highlights Remover -->
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem">
+                                                <Setter Property="Focusable" Value="False"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                                <Setter Property="Padding" Value="0"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListViewItem">
+                                                            <ContentPresenter/>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        
+                                        <!-- Item DataTemplate -->
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#EEEEEE" BorderThickness="0 0 0 1" Padding="12 6" Background="White">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Opacity" Value="1.0"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="False">
+                                                                    <Setter Property="Opacity" Value="0.45"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="50"/>
+                                                            <ColumnDefinition Width="70"/>
+                                                            <ColumnDefinition Width="110"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="130"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="65"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        
+                                                        <TextBlock Grid.Column="1" Text="{Binding SheetName}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#333"/>
+                                                        
+                                                        <!-- Styled Badge for Type -->
+                                                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <Border Background="#E8EAF6" CornerRadius="4" Padding="6 3">
+                                                                <TextBlock Text="{Binding IncomeType}" Foreground="#3F51B5" FontWeight="Bold" FontSize="11"/>
+                                                            </Border>
+                                                        </StackPanel>
+                                                        
+                                                        <TextBlock Grid.Column="3" Text="{Binding OriginalMonthName}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" Foreground="#555"/>
+                                                        
+                                                        <!-- Outlined Material ComboBox (Unified style) -->
+                                                        <ComboBox Grid.Column="4" SelectedIndex="{Binding TargetMonthIndex, Mode=TwoWay}"
+                                                                  Width="110" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  Style="{StaticResource ModernComboBox}" Padding="10 0" FontSize="13"
+                                                                  IsEnabled="{Binding IsSelected}">
+                                                            <ComboBoxItem Content="Tháng 1"/>
+                                                            <ComboBoxItem Content="Tháng 2"/>
+                                                            <ComboBoxItem Content="Tháng 3"/>
+                                                            <ComboBoxItem Content="Tháng 4"/>
+                                                            <ComboBoxItem Content="Tháng 5"/>
+                                                <ComboBoxItem Content="Tháng 6"/>
+                                                            <ComboBoxItem Content="Tháng 7"/>
+                                                            <ComboBoxItem Content="Tháng 8"/>
+                                                            <ComboBoxItem Content="Tháng 9"/>
+                                                            <ComboBoxItem Content="Tháng 10"/>
+                                                            <ComboBoxItem Content="Tháng 11"/>
+                                                            <ComboBoxItem Content="Tháng 12"/>
+                                                        </ComboBox>
+                                                        
+                                                        <!-- Outlined Material TextBox (Unified style) -->
+                                                        <TextBox x:Name="txtNote" Grid.Column="5" Text="{Binding Note, Mode=OneWay}"
+                                                                 Height="34" VerticalAlignment="Center" Margin="10 0" Padding="10 0" FontSize="13"
+                                                                 Style="{StaticResource ModernTextBox}"
+                                                                 IsEnabled="{Binding IsSelected}"
+                                                                 IsReadOnly="True" Cursor="Hand"
+                                                                 PreviewMouseLeftButtonDown="TxtNote_PreviewMouseLeftButtonDown"
+                                                                 MaxWidth="240"/>
+
+                                                        <Popup x:Name="popNote" PlacementTarget="{Binding ElementName=txtNote}" 
+                                                               DataContext="{Binding}"
+                                                               Placement="Bottom" StaysOpen="True" AllowsTransparency="True" PopupAnimation="Slide">
+                                                            <Border Background="White" BorderBrush="#7B1FA2" BorderThickness="1.5" CornerRadius="6" Width="300" Padding="12">
+                                                                <Border.Effect>
+                                                                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Color="Gray" Opacity="0.3"/>
+                                                                </Border.Effect>
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Nội dung ghi chú chi tiết" FontWeight="Bold" Foreground="#7B1FA2" FontSize="13" Margin="0 0 0 8"/>
+                                                                    <TextBox Style="{DynamicResource MaterialDesignOutlinedTextBox}"
+                                                                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="120" FontSize="13" VerticalScrollBarVisibility="Auto"
+                                                                             Text="{Binding Note, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 10 0 0">
+                                                                        <Button Content="HỦY" Click="BtnPopupCancel_Click" Style="{DynamicResource MaterialDesignFlatButton}" Height="30" FontSize="11" Padding="8 0" Margin="0 0 5 0"/>
+                                                                        <Button Content="LƯU" Click="BtnPopupSave_Click" Style="{DynamicResource MaterialDesignFlatButton}" Foreground="#7B1FA2" Height="30" FontSize="11" Padding="8 0"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </Popup>
+                                                        
+                                                        <!-- Styled Badge for Rows Count -->
+                                                        <Border Grid.Column="6" Background="#E8F5E9" CornerRadius="12" Padding="8 4" Width="40" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding RecordsCount}" Foreground="#2E7D32" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+
+                                    <!-- Loading Panel for Excel Reading -->
+                                    <Grid x:Name="excelLoadingOverlay" Grid.RowSpan="2" Visibility="Collapsed" Background="#C8FFFFFF">
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" Value="0" IsIndeterminate="True" Width="35" Height="35" Foreground="#7B1FA2"/>
+                                            <TextBlock Text="Đang phân tích file Excel..." FontSize="13" Margin="0 10 0 0" Foreground="#7B1FA2" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Buttons for Tab 2 -->
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0">
+                            <Button Content="ĐÓNG" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
+                                    Width="120" Height="40" Margin="0 0 15 0" FontSize="13" FontWeight="Bold"/>
+                            <Button x:Name="btnConfirmExcelImport" Content="XÁC NHẬN" Click="BtnConfirmExcelImport_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
+                                    Foreground="White" Width="140" Height="40" FontSize="13" FontWeight="Bold" IsEnabled="False"
+                                    materialDesign:ButtonAssist.CornerRadius="5"/>
                         </StackPanel>
-                    </GroupBox>
-
-                    <!-- Target Selection -->
-                    <GroupBox Header="Đối tượng áp dụng" materialDesign:ColorZoneAssist.Mode="Standard" BorderBrush="#E0E0E0" Background="#FAFAFA">
-                        <StackPanel Margin="5">
-                            <RadioButton x:Name="radAll" Content="Tất cả công chức" GroupName="TargetGroup" IsChecked="True" Margin="0 0 0 10" Foreground="#444"/>
-                            <RadioButton x:Name="radFemale" Content="Chỉ Công chức Nữ" GroupName="TargetGroup" Margin="0 0 0 10" Foreground="#444"/>
-                            <RadioButton x:Name="radMale" Content="Chỉ Công chức Nam" GroupName="TargetGroup" Margin="0 0 0 10" Foreground="#444"/>
-                            
-                            <RadioButton x:Name="radDepartment" Content="Theo phòng ban:" GroupName="TargetGroup" Checked="RadDepartment_Checked" Unchecked="RadDepartment_Unchecked" Margin="0 0 0 5" Foreground="#444"/>
-                            <ComboBox x:Name="cboDepartment" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" IsEnabled="False" Margin="25 0 0 0" Padding="5"/>
-                        </StackPanel>
-                    </GroupBox>
-                    <TextBlock Text="*Số tiền nhập vào sẽ được CỘNG THÊM vào dữ liệu đang có của tháng được chọn." 
-                               FontSize="11" Foreground="#E65100" FontWeight="SemiBold" FontStyle="Italic" Margin="0 15 0 0" TextWrapping="Wrap"/>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- Buttons -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0">
-                <Button Content="ĐÓNG" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
-                        Width="120" Height="40" Margin="0 0 15 0" FontSize="13" FontWeight="Bold"/>
-                <Button Content="ÁP DỤNG" Click="BtnApply_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
-                        Foreground="White" Width="140" Height="40" FontSize="13" FontWeight="Bold"
-                        materialDesign:ButtonAssist.CornerRadius="5"/>
-            </StackPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Grid>
     </Border>
 </Window>
