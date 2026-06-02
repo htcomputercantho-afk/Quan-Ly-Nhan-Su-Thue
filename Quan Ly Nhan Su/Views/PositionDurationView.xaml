@@ -20,6 +20,7 @@
             </ResourceDictionary.MergedDictionaries>
             <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
             <converters:DurationConverter x:Key="DurationConverter"/>
+            <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -232,7 +233,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdDecisionDate" Background="#F5F5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding PositionDecisionDate, StringFormat=dd/MM/yyyy}" FontSize="15" Foreground="#616161"/>
+                                        <TextBlock Text="{Binding PositionDecisionDate, Converter={StaticResource DateFormatterConverter}}" FontSize="15" Foreground="#616161"/>
                                     </Border>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding PositionDecisionDate}" Value="{x:Null}">

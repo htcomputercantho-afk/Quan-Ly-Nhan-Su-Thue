@@ -1553,16 +1553,217 @@ namespace TaxPersonnelManagement.Views
             dgSalaryHistory.ItemsSource = _personnel.SalaryRecords.OrderByDescending(s => s.StartDate).ToList();
         }
 
+        private void ReconcileSalaryRecordsAfterAdd(System.Collections.Generic.ICollection<SalaryRecord> records, SalaryRecord newItem)
+        {
+            if (newItem.StartDate == null) return;
+            DateTime newStart = newItem.StartDate.Value;
+
+            var otherRecords = records
+                .Where(r => r != newItem && r.StartDate.HasValue)
+                .OrderBy(r => r.StartDate!.Value)
+                .ToList();
+
+            // Find predecessor and successor
+            SalaryRecord? predecessor = otherRecords.LastOrDefault(r => r.StartDate!.Value < newStart);
+            SalaryRecord? successor = otherRecords.FirstOrDefault(r => r.StartDate!.Value > newStart);
+
+            // If newItem's EndDate is null and successor exists, set it
+            if (newItem.EndDate == null && successor != null && successor.StartDate.HasValue)
+            {
+                newItem.EndDate = successor.StartDate!.Value.AddDays(-1);
+            }
+
+            // If predecessor exists
+            if (predecessor != null)
+            {
+                if (predecessor.EndDate == null)
+                {
+                    predecessor.EndDate = newStart.AddDays(-1);
+                }
+                else if (successor != null && successor.StartDate.HasValue && predecessor.EndDate == successor.StartDate!.Value.AddDays(-1))
+                {
+                    predecessor.EndDate = newStart.AddDays(-1);
+                }
+            }
+        }
+
+        private void ReconcileSalaryRecordsAfterDelete(System.Collections.Generic.ICollection<SalaryRecord> records, DateTime? deletedStartDate)
+        {
+            if (deletedStartDate == null) return;
+            DateTime delStart = deletedStartDate.Value;
+
+            var remainingRecords = records
+                .Where(r => r.StartDate.HasValue)
+                .OrderBy(r => r.StartDate!.Value)
+                .ToList();
+
+            SalaryRecord? predecessor = remainingRecords.LastOrDefault(r => r.StartDate!.Value < delStart);
+            SalaryRecord? successor = remainingRecords.FirstOrDefault(r => r.StartDate!.Value > delStart);
+
+            if (predecessor != null && predecessor.EndDate == delStart.AddDays(-1))
+            {
+                if (successor != null && successor.StartDate.HasValue)
+                {
+                    predecessor.EndDate = successor.StartDate!.Value.AddDays(-1);
+                }
+                else
+                {
+                    predecessor.EndDate = null;
+                }
+            }
+        }
+
+        private void ReconcileSalaryRecordsAfterUpdate(System.Collections.Generic.ICollection<SalaryRecord> records, SalaryRecord editedItem, DateTime? oldStartDate)
+        {
+            if (editedItem.StartDate == oldStartDate)
+            {
+                // Just check if we need to auto-calculate editedItem's own EndDate because it was set to null
+                if (editedItem.EndDate == null && editedItem.StartDate.HasValue)
+                {
+                    var successor = records
+                        .Where(r => r != editedItem && r.StartDate.HasValue && r.StartDate!.Value > editedItem.StartDate!.Value)
+                        .OrderBy(r => r.StartDate!.Value)
+                        .FirstOrDefault();
+                    if (successor != null && successor.StartDate.HasValue)
+                    {
+                        editedItem.EndDate = successor.StartDate!.Value.AddDays(-1);
+                    }
+                }
+                return;
+            }
+
+            // If StartDate changed:
+            // 1. Temporarily remove editedItem from list to simulate delete of oldStartDate
+            records.Remove(editedItem);
+
+            // 2. Run delete reconciliation for oldStartDate
+            ReconcileSalaryRecordsAfterDelete(records, oldStartDate);
+
+            // 3. Put editedItem back
+            records.Add(editedItem);
+
+            // 4. Run add reconciliation for newStartDate
+            ReconcileSalaryRecordsAfterAdd(records, editedItem);
+        }
+
+        private bool ValidateSalaryRecordsOverlap(System.Collections.Generic.ICollection<SalaryRecord> records)
+        {
+            var sorted = records
+                .Where(r => r.StartDate.HasValue)
+                .OrderBy(r => r.StartDate!.Value)
+                .ToList();
+
+            for (int i = 0; i < sorted.Count - 1; i++)
+            {
+                var current = sorted[i];
+                var next = sorted[i + 1];
+
+                if (current.StartDate!.Value == next.StartDate!.Value)
+                {
+                    return false; // Trùng ngày bắt đầu
+                }
+
+                if (current.EndDate.HasValue && current.EndDate!.Value >= next.StartDate!.Value)
+                {
+                    return false; // Trùng lặp/chồng chéo khoảng thời gian
+                }
+            }
+
+            return true;
+        }
+
         private void btnAddSalaryHistory_Click(object sender, RoutedEventArgs e)
         {
-            if (dpSalaryHistStart.SelectedDate == null && string.IsNullOrEmpty(cboSalaryHistRankCode.Text))
+            if (dpSalaryHistStart.SelectedDate == null)
             {
-                return; // Don't add empty
+                new WarningWindow("Vui lòng nhập ngày bắt đầu!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            if (_personnel == null) _personnel = new Personnel();
+            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+
+            // 1. Create a clone list for dry-run
+            var tempRecords = new System.Collections.Generic.List<SalaryRecord>();
+            foreach (var r in _personnel.SalaryRecords)
+            {
+                tempRecords.Add(new SalaryRecord
+                {
+                    Id = r.Id,
+                    PersonnelId = r.PersonnelId,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    SalaryCalculationDate = r.SalaryCalculationDate,
+                    RankCode = r.RankCode,
+                    SalaryStep = r.SalaryStep,
+                    Coefficient = r.Coefficient,
+                    Percentage = r.Percentage,
+                    DecisionNumber = r.DecisionNumber,
+                    DecisionDate = r.DecisionDate,
+                    Note = r.Note
+                });
             }
 
             if (_editingSalaryRecord != null)
             {
-                // UPDATE existing record
+                // Find matching record in tempRecords
+                var tempEdit = tempRecords.FirstOrDefault(r => r.Id == _editingSalaryRecord.Id && r.StartDate == _editingSalaryRecord.StartDate && r.RankCode == _editingSalaryRecord.RankCode && r.SalaryStep == _editingSalaryRecord.SalaryStep);
+                if (tempEdit == null)
+                {
+                    // Fallback to match by reference index if Id is 0
+                    int idx = _personnel.SalaryRecords.ToList().IndexOf(_editingSalaryRecord);
+                    if (idx >= 0 && idx < tempRecords.Count)
+                    {
+                        tempEdit = tempRecords[idx];
+                    }
+                }
+
+                if (tempEdit != null)
+                {
+                    DateTime? oldStartDate = tempEdit.StartDate;
+                    tempEdit.StartDate = dpSalaryHistStart.SelectedDate;
+                    tempEdit.EndDate = dpSalaryHistEnd.SelectedDate;
+                    tempEdit.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
+                    tempEdit.RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "";
+                    tempEdit.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
+                    tempEdit.Coefficient = txtSalaryHistCoeff.Text;
+                    tempEdit.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
+                    tempEdit.DecisionNumber = txtSalaryHistDecisionNo.Text;
+                    tempEdit.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
+
+                    ReconcileSalaryRecordsAfterUpdate(tempRecords, tempEdit, oldStartDate);
+                }
+            }
+            else
+            {
+                var tempNew = new SalaryRecord
+                {
+                    StartDate = dpSalaryHistStart.SelectedDate,
+                    EndDate = dpSalaryHistEnd.SelectedDate,
+                    SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
+                    RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "",
+                    SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
+                    Coefficient = txtSalaryHistCoeff.Text,
+                    Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                    DecisionNumber = txtSalaryHistDecisionNo.Text,
+                    DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
+                    PersonnelId = _personnel.Id
+                };
+                tempRecords.Add(tempNew);
+                ReconcileSalaryRecordsAfterAdd(tempRecords, tempNew);
+            }
+
+            // 2. Validate overlaps in tempRecords
+            if (!ValidateSalaryRecordsOverlap(tempRecords))
+            {
+                new WarningWindow("Khoảng thời gian quá trình lương bị trùng hoặc ngày bắt đầu đã tồn tại!", "Trùng lặp thời gian").ShowDialog();
+                return;
+            }
+
+            // 3. If valid, apply to actual _personnel.SalaryRecords
+            if (_editingSalaryRecord != null)
+            {
+                DateTime? oldStartDate = _editingSalaryRecord.StartDate;
                 _editingSalaryRecord.StartDate = dpSalaryHistStart.SelectedDate;
                 _editingSalaryRecord.EndDate = dpSalaryHistEnd.SelectedDate;
                 _editingSalaryRecord.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
@@ -1573,11 +1774,11 @@ namespace TaxPersonnelManagement.Views
                 _editingSalaryRecord.DecisionNumber = txtSalaryHistDecisionNo.Text;
                 _editingSalaryRecord.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
 
+                ReconcileSalaryRecordsAfterUpdate(_personnel.SalaryRecords, _editingSalaryRecord, oldStartDate);
                 _editingSalaryRecord = null; // Clear editing state
             }
             else
             {
-                // ADD new record
                 var newItem = new SalaryRecord
                 {
                     StartDate = dpSalaryHistStart.SelectedDate,
@@ -1589,11 +1790,10 @@ namespace TaxPersonnelManagement.Views
                     Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
                     DecisionNumber = txtSalaryHistDecisionNo.Text,
                     DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
-                    PersonnelId = _personnel != null ? _personnel.Id : 0
+                    PersonnelId = _personnel.Id
                 };
-                if (_personnel == null) _personnel = new Personnel();
-                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
                 _personnel.SalaryRecords.Add(newItem);
+                ReconcileSalaryRecordsAfterAdd(_personnel.SalaryRecords, newItem);
             }
 
             RefreshSalaryHistoryGrid();
@@ -1651,7 +1851,9 @@ namespace TaxPersonnelManagement.Views
                 var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng quá trình lương này không?");
                 if (confirm.ShowDialog() == true)
                 {
+                    DateTime? deletedStartDate = item.StartDate;
                     _personnel.SalaryRecords.Remove(item);
+                    ReconcileSalaryRecordsAfterDelete(_personnel.SalaryRecords, deletedStartDate);
                     RefreshSalaryHistoryGrid();
                 }
             }
@@ -2825,7 +3027,7 @@ namespace TaxPersonnelManagement.Views
         {
             var years = new List<string> { "" };
             int currentYear = DateTime.Now.Year;
-            for (int y = 1980; y <= currentYear; y++)
+            for (int y = currentYear; y >= 1980; y--)
             {
                 years.Add(y.ToString());
             }

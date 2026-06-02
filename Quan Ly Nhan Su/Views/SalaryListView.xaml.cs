@@ -6,6 +6,7 @@ using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using Microsoft.Win32;
 using ClosedXML.Excel;
+using TaxPersonnelManagement.Helpers;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -376,7 +377,7 @@ namespace TaxPersonnelManagement.Views
                         {
                             worksheet.Cell(row, 1).Value = stt++;
                             worksheet.Cell(row, 2).Value = item.FullName;
-                            worksheet.Cell(row, 3).Value = item.DateOfBirth;
+                            worksheet.Cell(row, 3).Value = item.DateOfBirth.HasValue ? DatePickerHelper.FormatDateForDisplay(item.DateOfBirth.Value) : "";
                             worksheet.Cell(row, 4).Value = item.RankCode;
                             worksheet.Cell(row, 5).Value = item.CurrentSalaryStep;
                             worksheet.Cell(row, 6).Value = item.CurrentSalaryCoefficient;
@@ -385,16 +386,15 @@ namespace TaxPersonnelManagement.Views
                             if (item.NextSalaryStepDate.HasValue)
                             {
                                 var nextStepCell = worksheet.Cell(row, 8);
-                                nextStepCell.Value = item.NextSalaryStepDate.Value;
-                                nextStepCell.Style.DateFormat.Format = "dd/MM/yyyy";
+                                nextStepCell.Value = DatePickerHelper.FormatDateForDisplay(item.NextSalaryStepDate.Value);
                             }
 
                             if (item.ExpectedSalaryIncreaseDate.HasValue)
                             {
-                                worksheet.Cell(row, 9).Value = item.ExpectedSalaryIncreaseDate.Value.Month;
+                                int month = item.ExpectedSalaryIncreaseDate.Value.Month;
+                                worksheet.Cell(row, 9).Value = month <= 2 ? month.ToString("00") : month.ToString();
                                 var nextDateCell = worksheet.Cell(row, 10);
-                                nextDateCell.Value = item.ExpectedSalaryIncreaseDate.Value;
-                                nextDateCell.Style.DateFormat.Format = "dd/MM/yyyy";
+                                nextDateCell.Value = DatePickerHelper.FormatDateForDisplay(item.ExpectedSalaryIncreaseDate.Value);
                                 nextDateCell.Style.Font.FontColor = XLColor.FromHtml("#1565C0"); // Professional Navy Blue
                                 nextDateCell.Style.Font.Bold = true;
                             }

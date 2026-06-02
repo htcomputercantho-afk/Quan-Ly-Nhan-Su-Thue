@@ -122,6 +122,7 @@ namespace TaxPersonnelManagement.Views
             {
                 txtNoLeaveHistory.Visibility = Visibility.Collapsed;
                 dgLeaveHistory.Visibility = Visibility.Visible;
+                dgLeaveHistory.ItemsSource = p.LeaveHistories.OrderByDescending(x => x.StartDate).ThenByDescending(x => x.Id).ToList();
             }
             else
             {

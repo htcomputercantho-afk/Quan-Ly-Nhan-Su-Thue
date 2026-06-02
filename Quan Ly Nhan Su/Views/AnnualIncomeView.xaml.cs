@@ -37,6 +37,7 @@ namespace TaxPersonnelManagement.Views
             {
                 // Hide action buttons
                 btnBulkAdd.Visibility = Visibility.Collapsed;
+                btnClearData.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -363,6 +364,37 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        private void BtnClearData_Click(object sender, RoutedEventArgs e)
+        {
+            if (lvPersonnel.SelectedItem is Personnel selectedPerson)
+            {
+                int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
+                var confirm = new ConfirmWindow($"Bạn có chắc chắn muốn xóa toàn bộ dữ liệu thu nhập năm {selectedYear} của công chức '{selectedPerson.FullName}' trên bảng không?\n(Dữ liệu dưới cơ sở dữ liệu sẽ chỉ bị xóa khi bạn nhấn 'Lưu dữ liệu')", "Xác nhận xóa dữ liệu năm");
+                confirm.Owner = Window.GetWindow(this);
+                if (confirm.ShowDialog() == true)
+                {
+                    foreach (var row in _matrixData)
+                    {
+                        if (row.IsTotalRow) continue;
+
+                        for (int m = 1; m <= 12; m++)
+                        {
+                            row.SetAmount(m, 0);
+                            row.SetNote(m, "");
+                        }
+                    }
+
+                    UpdateTotals();
+                    dgMonthlyIncome.Items.Refresh();
+                }
+            }
+            else
+            {
+                var warning = new WarningWindow("Thông báo", "Vui lòng chọn một công chức từ danh sách trước.");
+                warning.Owner = Window.GetWindow(this);
+                warning.ShowDialog();
+            }
+        }
 
         private void BtnBulkAdd_Click(object sender, RoutedEventArgs e)
         {

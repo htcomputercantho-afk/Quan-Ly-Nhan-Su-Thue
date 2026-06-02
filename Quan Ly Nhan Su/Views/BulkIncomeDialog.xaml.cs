@@ -55,6 +55,22 @@ namespace TaxPersonnelManagement.Views
             set => TargetMonth = value + 1;
         }
 
+        private int _targetYear;
+        public int TargetYear
+        {
+            get => _targetYear;
+            set
+            {
+                if (_targetYear != value)
+                {
+                    _targetYear = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public List<int> AvailableYears => new List<int> { OriginalYear, DateTime.Now.Year }.Distinct().OrderBy(y => y).ToList();
+
         private string _note = "";
         public string Note
         {
@@ -502,6 +518,7 @@ namespace TaxPersonnelManagement.Views
                                                 OriginalMonth = detectedMonth,
                                                 OriginalYear = detectedYear,
                                                 TargetMonth = detectedMonth,
+                                                TargetYear = detectedYear,
                                                 DefaultNotePrefix = defaultNotePrefix,
                                                 Records = sheetRecords
                                             };
@@ -571,7 +588,7 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            string details = string.Join("\n", selectedSheets.Select(s => $"- Sheet {s.SheetName} ({s.IncomeType}) -> Áp dụng: Tháng {s.TargetMonth}/{s.OriginalYear} | Ghi chú: {s.Note}"));
+            string details = string.Join("\n", selectedSheets.Select(s => $"- Sheet {s.SheetName} ({s.IncomeType}) -> Áp dụng: Tháng {s.TargetMonth}/{s.TargetYear} | Ghi chú: {s.Note}"));
             var confirm = new ConfirmDialog($"Bạn chuẩn bị import các sheet dữ liệu sau:\n{details}\n\nBạn có chắc chắn muốn thực hiện?");
             confirm.Owner = this;
 
@@ -598,7 +615,7 @@ namespace TaxPersonnelManagement.Views
                                     var person = db.Personnel.FirstOrDefault(p => p.IdentityCardNumber == data.CCCD);
                                     if (person != null)
                                     {
-                                        var personKey = (person.Id, sheet.OriginalYear, sheet.TargetMonth, sheet.IncomeType);
+                                        var personKey = (person.Id, sheet.TargetYear, sheet.TargetMonth, sheet.IncomeType);
                                         bool isFirstTimeInSession = !clearedRecords.Contains(personKey);
                                         if (isFirstTimeInSession)
                                         {
@@ -608,7 +625,7 @@ namespace TaxPersonnelManagement.Views
                                         // Find existing record, either loaded locally or in DB
                                         var record = db.IncomeRecords.Local.FirstOrDefault(r =>
                                             r.PersonnelId == person.Id &&
-                                            r.Year == sheet.OriginalYear &&
+                                            r.Year == sheet.TargetYear &&
                                             r.Month == sheet.TargetMonth &&
                                             r.IncomeType == sheet.IncomeType);
 
@@ -616,7 +633,7 @@ namespace TaxPersonnelManagement.Views
                                         {
                                             record = db.IncomeRecords.FirstOrDefault(r =>
                                                 r.PersonnelId == person.Id &&
-                                                r.Year == sheet.OriginalYear &&
+                                                r.Year == sheet.TargetYear &&
                                                 r.Month == sheet.TargetMonth &&
                                                 r.IncomeType == sheet.IncomeType);
                                         }
@@ -664,7 +681,7 @@ namespace TaxPersonnelManagement.Views
                                             db.IncomeRecords.Add(new IncomeRecord
                                             {
                                                 PersonnelId = person.Id,
-                                                Year = sheet.OriginalYear,
+                                                Year = sheet.TargetYear,
                                                 Month = sheet.TargetMonth,
                                                 IncomeType = sheet.IncomeType,
                                                 Amount = amount,
@@ -1004,6 +1021,7 @@ namespace TaxPersonnelManagement.Views
                                             OriginalMonth = selectedMonth,
                                             OriginalYear = selectedYear,
                                             TargetMonth = selectedMonth,
+                                            TargetYear = selectedYear,
                                             DefaultNotePrefix = defaultNotePrefix,
                                             Records = sheetRecords
                                         };

@@ -253,7 +253,7 @@ namespace TaxPersonnelManagement.Views
                         // Subtitle with Reference Date
                         var subtitleRange = worksheet.Range("A2:E2");
                         subtitleRange.Merge();
-                        subtitleRange.Value = $"(Tính đến ngày: {referenceDate:dd/MM/yyyy})";
+                        subtitleRange.Value = $"(Tính đến ngày: {DatePickerHelper.FormatDateForDisplay(referenceDate)})";
                         subtitleRange.Style.Font.Italic = true;
                         subtitleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
@@ -282,7 +282,7 @@ namespace TaxPersonnelManagement.Views
                             string durationText = "";
                             if (item.PositionDecisionDate.HasValue)
                             {
-                                worksheet.Cell(row, 4).Value = item.PositionDecisionDate.Value;
+                                worksheet.Cell(row, 4).Value = DatePickerHelper.FormatDateForDisplay(item.PositionDecisionDate.Value);
 
                                 // Calculate duration
                                 DateTime start = item.PositionDecisionDate.Value;

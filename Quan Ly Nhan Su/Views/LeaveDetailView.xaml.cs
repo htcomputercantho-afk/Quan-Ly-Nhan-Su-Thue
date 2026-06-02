@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using Microsoft.EntityFrameworkCore;
 using ClosedXML.Excel;
 using Microsoft.Win32;
+using TaxPersonnelManagement.Helpers;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -380,7 +381,7 @@ namespace TaxPersonnelManagement.Views
 
                             detailLines.Add(new LeaveDetailLine
                             {
-                                MainContent = $"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {h.StartDate:dd/MM/yyyy} đến ngày {h.EndDate:dd/MM/yyyy}{note}",
+                                MainContent = $"Lần {i + 1}: {h.DurationDays:0.#} ngày từ ngày {DatePickerHelper.FormatDateForDisplay(h.StartDate)} đến ngày {(h.EndDate.HasValue ? DatePickerHelper.FormatDateForDisplay(h.EndDate.Value) : "")}{note}",
                                 Suffix = $" - [NGHỈ PHÉP NĂM {h.LeaveYear ?? h.StartDate.Year}]"
                             });
                         }

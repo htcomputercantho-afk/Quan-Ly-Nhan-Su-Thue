@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
+        xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
         mc:Ignorable="d"
         d:DesignHeight="600" d:DesignWidth="800"
         FontFamily="{DynamicResource MaterialDesignFont}" Background="White">
 
     <UserControl.Resources>
+        <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
         <Style TargetType="TextBlock" x:Key="CenterAlignStyle">
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -1280,7 +1282,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Từ ngày" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
+                                    <DataGridTextColumn Header="Từ ngày" Binding="{Binding StartDate, Converter={StaticResource DateFormatterConverter}}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -1289,7 +1291,7 @@
                                             </Style>
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
-                                    <DataGridTextColumn Header="Đến ngày" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
+                                    <DataGridTextColumn Header="Đến ngày" Binding="{Binding EndDate, Converter={StaticResource DateFormatterConverter}}" Width="100" IsReadOnly="True" CellStyle="{StaticResource CenterAlignedCellStyle}">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="TextWrapping" Value="Wrap"/>
@@ -1673,7 +1675,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -1682,7 +1684,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -1691,7 +1693,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Mốc xét lương" Binding="{Binding SalaryCalculationDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Mốc xét lương" Binding="{Binding SalaryCalculationDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -1709,7 +1711,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -2033,7 +2035,7 @@
                                         </DataGridTextColumn.ElementStyle>
                                     </DataGridTextColumn>
 
-                                    <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, StringFormat=dd/MM/yyyy}" Width="1.5*">
+                                    <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="1.5*">
                                         <DataGridTextColumn.ElementStyle>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="HorizontalAlignment" Value="Center"/>

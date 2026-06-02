@@ -55,12 +55,68 @@ namespace TaxPersonnelManagement.Helpers
                 {
                     dp.DateValidationError += DatePicker_DateValidationError;
                     dp.PreviewKeyUp += DatePicker_PreviewKeyUp;
+                    dp.SelectedDateChanged += DatePicker_SelectedDateChanged;
+                    dp.Loaded += DatePicker_Loaded;
+                    if (dp.IsLoaded)
+                    {
+                        FormatDatePickerText(dp);
+                    }
                 }
                 else
                 {
                     dp.DateValidationError -= DatePicker_DateValidationError;
                     dp.PreviewKeyUp -= DatePicker_PreviewKeyUp;
+                    dp.SelectedDateChanged -= DatePicker_SelectedDateChanged;
+                    dp.Loaded -= DatePicker_Loaded;
                 }
+            }
+        }
+
+        public static string FormatDateForDisplay(DateTime dt)
+        {
+            string dayPart = dt.Day.ToString("00");
+            string yearPart = dt.Year.ToString("0000");
+            if (dt.Month <= 2)
+            {
+                return $"{dayPart}/{dt.Month:00}/{yearPart}";
+            }
+            else
+            {
+                return $"{dayPart}/{dt.Month}/{yearPart}";
+            }
+        }
+
+        private static void FormatDatePickerText(DatePicker dp)
+        {
+            if (dp.SelectedDate.HasValue)
+            {
+                DateTime dt = dp.SelectedDate.Value;
+                string formattedText = FormatDateForDisplay(dt);
+                
+                dp.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() =>
+                {
+                    var textBox = FindVisualChildren<DatePickerTextBox>(dp).FirstOrDefault();
+                    if (textBox != null)
+                    {
+                        textBox.Text = formattedText;
+                    }
+                }));
+            }
+        }
+
+        private static void DatePicker_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (sender is DatePicker dp)
+            {
+                FormatDatePickerText(dp);
+            }
+        }
+
+        private static void DatePicker_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is DatePicker dp)
+            {
+                FormatDatePickerText(dp);
             }
         }
 
@@ -136,7 +192,7 @@ namespace TaxPersonnelManagement.Helpers
                         var textBox = FindVisualChildren<DatePickerTextBox>(dp).FirstOrDefault();
                         if (textBox != null)
                         {
-                            textBox.Text = dt.ToString("dd/MM/yyyy");
+                            textBox.Text = FormatDateForDisplay(dt);
                         }
                     }));
                 }
@@ -188,12 +244,22 @@ namespace TaxPersonnelManagement.Helpers
                         
                         if (monthStr.Length == 1)
                         {
-                            if (int.TryParse(monthStr, out int month) && month >= 2)
+                            if (int.TryParse(monthStr, out int month))
                             {
-                                // Single digit month >= 2 is complete (cannot be 20, 30, etc.)
-                                textBox.Text = dayStr + "/0" + monthStr + "/";
-                                textBox.CaretIndex = textBox.Text.Length;
-                                return;
+                                if (month == 2)
+                                {
+                                    // Month 2 (February) -> format as 02/
+                                    textBox.Text = dayStr + "/02/";
+                                    textBox.CaretIndex = textBox.Text.Length;
+                                    return;
+                                }
+                                else if (month >= 3)
+                                {
+                                    // Month 3 onwards -> format as 3/, 4/, etc. (no leading zero)
+                                    textBox.Text = dayStr + "/" + monthStr + "/";
+                                    textBox.CaretIndex = textBox.Text.Length;
+                                    return;
+                                }
                             }
                         }
                         else if (monthStr.Length == 2)

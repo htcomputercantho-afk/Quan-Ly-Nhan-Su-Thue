@@ -4,12 +4,17 @@ using QuestPDF.Infrastructure;
 using System;
 using System.IO;
 using TaxPersonnelManagement.Models;
+using TaxPersonnelManagement.Helpers;
 using Colors = QuestPDF.Helpers.Colors;
 
 namespace TaxPersonnelManagement.Services
 {
     public static class PdfExporter
     {
+        private static string FormatDate(DateTime? dt, string fallback = "")
+        {
+            return dt.HasValue ? DatePickerHelper.FormatDateForDisplay(dt.Value) : fallback;
+        }
         public static void Export(Personnel p, string filePath)
         {
             QuestPDF.Settings.License = LicenseType.Community;
@@ -52,7 +57,7 @@ namespace TaxPersonnelManagement.Services
                             // Footer inside the border
                             column.Item().PaddingTop(10).AlignCenter().Text(x =>
                             {
-                                x.Span("Hệ thống Quản lý Nhân sự - Xuất ngày " + DateTime.Now.ToString("dd/MM/yyyy"))
+                                x.Span("Hệ thống Quản lý Nhân sự - Xuất ngày " + DatePickerHelper.FormatDateForDisplay(DateTime.Now))
                                  .FontColor(Colors.Grey.Medium).FontSize(10).Italic();
                             });
                         });
@@ -127,7 +132,7 @@ namespace TaxPersonnelManagement.Services
             {
                 row.RelativeItem().Column(c =>
                 {
-                    LabelValue(c, "Ngày sinh:", p.DateOfBirth?.ToString("dd/MM/yyyy"));
+                    LabelValue(c, "Ngày sinh:", FormatDate(p.DateOfBirth));
                     LabelValue(c, "SĐT:", p.PhoneNumber);
                     LabelValue(c, "CCCD:", p.IdentityCardNumber);
                     LabelValue(c, "BHXH:", p.SocialSecurityNumber);
@@ -238,14 +243,14 @@ namespace TaxPersonnelManagement.Services
             {
                 row.RelativeItem().Column(c => LabelValue(c, "% Vượt khung:", p.ExceedFramePercent + "%"));
                 row.RelativeItem().Column(c => LabelValue(c, "PC Chức vụ:", p.PositionAllowance));
-                row.RelativeItem().Column(c => LabelValue(c, "Thời hạn bảo lưu:", p.SalaryReservationDeadline?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Thời hạn bảo lưu:", FormatDate(p.SalaryReservationDeadline)));
             });
 
             column.Item().PaddingTop(5).Row(row =>
             {
-                row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", nextCalcDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", FormatDate(nextCalcDate)));
                 row.RelativeItem().Column(c => LabelValueRed(c, "Lùi thời gian nâng lương:", p.SalaryIncreaseDelayType));
-                row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", expectedDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", FormatDate(expectedDate)));
             });
 
             // Salary History Table - Keep title + table together to prevent page break between them
@@ -288,11 +293,11 @@ namespace TaxPersonnelManagement.Services
                             table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SalaryStep ?? "").FontSize(8);
                             table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Coefficient ?? "").FontSize(8).Bold();
                             table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{h.Percentage}%").FontSize(8);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.StartDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.EndDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SalaryCalculationDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(FormatDate(h.StartDate)).FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(FormatDate(h.EndDate)).FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(FormatDate(h.SalaryCalculationDate)).FontSize(8);
                             table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionNumber ?? "").FontSize(8);
-                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "").FontSize(8);
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(FormatDate(h.DecisionDate)).FontSize(8);
                         }
                     }
                     else
@@ -377,10 +382,10 @@ namespace TaxPersonnelManagement.Services
 
                 if (p.LeaveHistories != null)
                 {
-                    foreach (var h in p.LeaveHistories)
+                    foreach (var h in p.LeaveHistories.OrderByDescending(x => x.StartDate).ThenByDescending(x => x.Id))
                     {
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.LeaveType).FontSize(8).Bold();
-                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{h.StartDate:dd/MM/yyyy} - {h.EndDate:dd/MM/yyyy}").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text($"{DatePickerHelper.FormatDateForDisplay(h.StartDate)} - {FormatDate(h.EndDate, "---")}").FontSize(8);
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DurationDays.ToString() + " ngày").FontSize(8);
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.UserReasonDisplay).FontSize(8).Italic().FontColor("#455A64");
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.SystemMessageDisplay).FontSize(8).FontColor("#D32F2F");
@@ -399,12 +404,12 @@ namespace TaxPersonnelManagement.Services
             column.Item().Text("A. THÔNG TIN CÔNG TÁC").Bold().FontColor("#B71C1C").FontSize(12);
             column.Item().PaddingTop(5).Row(row =>
             {
-                row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tại cơ quan thuế:", p.TaxAuthorityStartDate?.ToString("dd/MM/yyyy"), true));
+                row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tại cơ quan thuế:", FormatDate(p.TaxAuthorityStartDate), true));
             });
             column.Item().PaddingTop(5).Row(row =>
             {
-                row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tính theo QĐ gần nhất:", p.PositionDecisionDate?.ToString("dd/MM/yyyy")));
-                row.RelativeItem().Column(c => LabelValue(c, "Thời điểm tính thời gian công tác:", p.DisplayPositionCalculationDate.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Thời gian công tác tính theo QĐ gần nhất:", FormatDate(p.PositionDecisionDate)));
+                row.RelativeItem().Column(c => LabelValue(c, "Thời điểm tính thời gian công tác:", DatePickerHelper.FormatDateForDisplay(p.DisplayPositionCalculationDate)));
             });
 
             // Calculated Stats
@@ -473,7 +478,7 @@ namespace TaxPersonnelManagement.Services
             column.Item().PaddingTop(15).Text("B. THÔNG TIN NGHỈ HƯU").Bold().FontColor("#B71C1C").FontSize(12);
             column.Item().PaddingTop(5).Row(row =>
             {
-                row.RelativeItem().Column(c => LabelValue(c, "Ngày về hưu", p.RetirementDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Ngày về hưu", FormatDate(p.RetirementDate)));
                 row.RelativeItem().Column(c => LabelValueBlue(c, "Số năm công tác", retYearsWorked));
                 row.RelativeItem().Column(c => LabelValueRed(c, "Số năm còn lại", retRemaining));
             });
@@ -486,8 +491,8 @@ namespace TaxPersonnelManagement.Services
         {
             column.Item().Row(row =>
             {
-                row.RelativeItem().Column(c => LabelValue(c, "Ngày vào Đảng:", p.PartyEntryDate?.ToString("dd/MM/yyyy")));
-                row.RelativeItem().Column(c => LabelValue(c, "Ngày chính thức:", p.PartyOfficialDate?.ToString("dd/MM/yyyy")));
+                row.RelativeItem().Column(c => LabelValue(c, "Ngày vào Đảng:", FormatDate(p.PartyEntryDate)));
+                row.RelativeItem().Column(c => LabelValue(c, "Ngày chính thức:", FormatDate(p.PartyOfficialDate)));
             });
         }
 
@@ -509,7 +514,7 @@ namespace TaxPersonnelManagement.Services
                     c.Item().PaddingTop(10).Row(row =>
                     {
                         row.RelativeItem().Text(t => { t.Span("Số QĐ: ").Bold(); t.Span(p.DisciplineDecisionNumber ?? ""); });
-                        row.RelativeItem().Text(t => { t.Span("Ngày ký: ").Bold(); t.Span(p.DisciplineDecisionDate?.ToString("dd/MM/yyyy") ?? ""); });
+                        row.RelativeItem().Text(t => { t.Span("Ngày ký: ").Bold(); t.Span(FormatDate(p.DisciplineDecisionDate)); });
                     });
 
                     c.Item().PaddingTop(10).LineHorizontal(1).LineColor("#EF9A9A");
@@ -596,7 +601,7 @@ namespace TaxPersonnelManagement.Services
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Year.ToString()).FontSize(8);
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.Rating ?? "").FontSize(8);
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionNumber ?? "---").FontSize(8);
-                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionDate?.ToString("dd/MM/yyyy") ?? "---").FontSize(8);
+                        table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(FormatDate(h.DecisionDate, "---")).FontSize(8);
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(5).AlignCenter().Text(h.DecisionAgency ?? "---").FontSize(8);
                     }
                 }

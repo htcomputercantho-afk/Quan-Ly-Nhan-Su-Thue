@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
         Title="Nhập Hàng Loạt &amp; Import Excel" 
-        Height="720" Width="800"
+        Height="720" Width="920"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="#F5F5F5" FontFamily="Roboto">
 
@@ -302,13 +302,14 @@
                                     <Border Grid.Row="0" Background="#F5F5F5" Padding="12 8" Margin="0 0 0 5" CornerRadius="4">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="50"/>   <!-- Chọn -->
-                                                <ColumnDefinition Width="70"/>   <!-- Tên Sheet -->
-                                                <ColumnDefinition Width="110"/>  <!-- Loại thu nhập -->
-                                                <ColumnDefinition Width="80"/>   <!-- Tháng gốc -->
-                                                <ColumnDefinition Width="130"/>  <!-- Tháng áp dụng -->
+                                                <ColumnDefinition Width="45"/>   <!-- Chọn -->
+                                                <ColumnDefinition Width="65"/>   <!-- Tên Sheet -->
+                                                <ColumnDefinition Width="105"/>  <!-- Loại thu nhập -->
+                                                <ColumnDefinition Width="70"/>   <!-- Tháng gốc -->
+                                                <ColumnDefinition Width="135"/>  <!-- Tháng áp dụng -->
+                                                <ColumnDefinition Width="95"/>   <!-- Năm áp dụng -->
                                                 <ColumnDefinition Width="*"/>    <!-- Nội dung ghi chú -->
-                                                <ColumnDefinition Width="65"/>   <!-- Số dòng -->
+                                                <ColumnDefinition Width="60"/>   <!-- Số dòng -->
                                                 <ColumnDefinition Width="14"/>   <!-- Khoảng trống Scrollbar -->
                                             </Grid.ColumnDefinitions>
                                             <CheckBox x:Name="chkSelectAll" Grid.Column="0" Checked="ChkSelectAll_Checked" Unchecked="ChkSelectAll_Unchecked" IsChecked="True" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -316,8 +317,9 @@
                                             <TextBlock Grid.Column="2" Text="Loại thu nhập" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="3" Text="Tháng gốc" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="4" Text="Tháng áp dụng" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="5" Text="Nội dung ghi chú" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="6" Text="Số dòng" FontWeight="Bold" Foreground="#555555" FontSize="13" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="5" Text="Năm áp dụng" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="6" Text="Nội dung ghi chú" FontWeight="Bold" Foreground="#555555" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="7" Text="Số dòng" FontWeight="Bold" Foreground="#555555" FontSize="13" TextAlignment="Center" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
 
@@ -359,13 +361,14 @@
                                                     </Border.Style>
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="50"/>
-                                                            <ColumnDefinition Width="70"/>
-                                                            <ColumnDefinition Width="110"/>
-                                                            <ColumnDefinition Width="80"/>
-                                                            <ColumnDefinition Width="130"/>
-                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="45"/>
                                                             <ColumnDefinition Width="65"/>
+                                                            <ColumnDefinition Width="105"/>
+                                                            <ColumnDefinition Width="70"/>
+                                                            <ColumnDefinition Width="135"/>
+                                                            <ColumnDefinition Width="95"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="60"/>
                                                         </Grid.ColumnDefinitions>
                                                         
                                                         <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -383,15 +386,15 @@
                                                         
                                                         <!-- Outlined Material ComboBox (Unified style) -->
                                                         <ComboBox Grid.Column="4" SelectedIndex="{Binding TargetMonthIndex, Mode=TwoWay}"
-                                                                  Width="110" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                                  Style="{StaticResource ModernComboBox}" Padding="10 0" FontSize="13"
+                                                                  Width="115" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  Style="{StaticResource ModernComboBox}" Padding="6 0" FontSize="13"
                                                                   IsEnabled="{Binding IsSelected}">
                                                             <ComboBoxItem Content="Tháng 1"/>
                                                             <ComboBoxItem Content="Tháng 2"/>
                                                             <ComboBoxItem Content="Tháng 3"/>
                                                             <ComboBoxItem Content="Tháng 4"/>
                                                             <ComboBoxItem Content="Tháng 5"/>
-                                                <ComboBoxItem Content="Tháng 6"/>
+                                                            <ComboBoxItem Content="Tháng 6"/>
                                                             <ComboBoxItem Content="Tháng 7"/>
                                                             <ComboBoxItem Content="Tháng 8"/>
                                                             <ComboBoxItem Content="Tháng 9"/>
@@ -400,14 +403,20 @@
                                                             <ComboBoxItem Content="Tháng 12"/>
                                                         </ComboBox>
                                                         
+                                                        <ComboBox Grid.Column="5" ItemsSource="{Binding AvailableYears}" SelectedItem="{Binding TargetYear, Mode=TwoWay}"
+                                                                  Width="80" Height="34" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  Style="{StaticResource ModernComboBox}" Padding="6 0" FontSize="13"
+                                                                  IsEnabled="{Binding IsSelected}">
+                                                        </ComboBox>
+                                                        
                                                         <!-- Outlined Material TextBox (Unified style) -->
-                                                        <TextBox x:Name="txtNote" Grid.Column="5" Text="{Binding Note, Mode=OneWay}"
+                                                        <TextBox x:Name="txtNote" Grid.Column="6" Text="{Binding Note, Mode=OneWay}"
                                                                  Height="34" VerticalAlignment="Center" Margin="10 0" Padding="10 0" FontSize="13"
                                                                  Style="{StaticResource ModernTextBox}"
                                                                  IsEnabled="{Binding IsSelected}"
                                                                  IsReadOnly="True" Cursor="Hand"
                                                                  PreviewMouseLeftButtonDown="TxtNote_PreviewMouseLeftButtonDown"
-                                                                 MaxWidth="240"/>
+                                                                 MaxWidth="280"/>
 
                                                         <Popup x:Name="popNote" PlacementTarget="{Binding ElementName=txtNote}" 
                                                                DataContext="{Binding}"
@@ -430,7 +439,7 @@
                                                         </Popup>
                                                         
                                                         <!-- Styled Badge for Rows Count -->
-                                                        <Border Grid.Column="6" Background="#E8F5E9" CornerRadius="12" Padding="8 4" Width="40" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                        <Border Grid.Column="7" Background="#E8F5E9" CornerRadius="12" Padding="8 4" Width="40" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                             <TextBlock Text="{Binding RecordsCount}" Foreground="#2E7D32" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                         </Border>
                                                     </Grid>

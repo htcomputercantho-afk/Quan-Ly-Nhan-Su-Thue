@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ClosedXML.Excel;
 using TaxPersonnelManagement.Models;
+using TaxPersonnelManagement.Helpers;
 
 namespace TaxPersonnelManagement.Services
 {
@@ -24,21 +25,22 @@ namespace TaxPersonnelManagement.Services
             {
                 var worksheet = workbook.Worksheets.Add("DanhSachNhanSu");
 
-                // Tiêu đề các cột (35 cột, từ A đến AI)
+                // Tiêu đề các cột (37 cột, từ A đến AK)
                 string[] headers =
                 {
                     "STT", "Số hiệu CB", "Họ và Tên", // A, B, C
                     "Giới tính", "Ngày sinh", "Dân tộc", "Tôn giáo", "Nơi sinh", // D, E, F, G, H
                     "SĐT", "Email", // I, J
                     "CCCD", "Nơi cấp CCCD", "Số BHXH", // K, L, M
-                    "Phòng ban", "Chức vụ", "Ngày về hưu (Dự kiến)", "Số năm công tác", // N, O, P, Q
+                    "Bộ phận", "Chức vụ", "Thời gian công tác tại cơ quan thuế", "Số năm công tác", // N, O, P, Q
                     "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // R, S, T
                     "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // U, V, W, X
                     "Ngày vào Đảng", "Ngày chính thức", // Y, Z
                     "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AA, AB, AC, AD
                     "Phụ cấp CV", "Vượt khung %", // AE, AF
                     "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AG, AH, AI
-                    "Ghi chú" // AJ
+                    "Ghi chú", // AJ
+                    "Ngày về hưu (Dự kiến)" // AK
                 };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -63,8 +65,7 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 3).Value = p.FullName;
 
                     worksheet.Cell(row, 4).Value = p.Gender;
-                    worksheet.Cell(row, 5).Value = p.DateOfBirth;
-                    worksheet.Cell(row, 5).Style.DateFormat.Format = "dd/MM/yyyy";
+                    worksheet.Cell(row, 5).Value = p.DateOfBirth.HasValue ? DatePickerHelper.FormatDateForDisplay(p.DateOfBirth.Value) : "";
 
                     worksheet.Cell(row, 6).Value = p.Ethnicity;
                     worksheet.Cell(row, 7).Value = p.Religion;
@@ -79,9 +80,8 @@ namespace TaxPersonnelManagement.Services
 
                     worksheet.Cell(row, 14).Value = p.Department;
                     worksheet.Cell(row, 15).Value = p.Position;
-                    worksheet.Cell(row, 16).Value = p.RetirementDate;
-                    worksheet.Cell(row, 16).Style.DateFormat.Format = "dd/MM/yyyy";
-
+                    worksheet.Cell(row, 16).Value = p.TaxAuthorityStartDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.TaxAuthorityStartDate.Value) : "";
+ 
                     worksheet.Cell(row, 17).Value = CalcWorkingYears(p, now);
 
                     worksheet.Cell(row, 18).Value = p.EducationLevel;
@@ -93,10 +93,8 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 23).Value = p.LanguageSkillLevel;
                     worksheet.Cell(row, 24).Value = p.ITSkillLevel;
 
-                    worksheet.Cell(row, 25).Value = p.PartyEntryDate;
-                    worksheet.Cell(row, 25).Style.DateFormat.Format = "dd/MM/yyyy";
-                    worksheet.Cell(row, 26).Value = p.PartyOfficialDate;
-                    worksheet.Cell(row, 26).Style.DateFormat.Format = "dd/MM/yyyy";
+                    worksheet.Cell(row, 25).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
+                    worksheet.Cell(row, 26).Value = p.PartyOfficialDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyOfficialDate.Value) : "";
 
                     worksheet.Cell(row, 27).Value = p.RankCode;
                     worksheet.Cell(row, 28).Value = p.RankName;
@@ -125,7 +123,7 @@ namespace TaxPersonnelManagement.Services
                             var endOf36Months = maternityLeave.StartDate.AddMonths(36);
                             if (now < endOf36Months)
                             {
-                                ghiChu = $"Chưa đủ 36 tháng ({maternityLeave.StartDate:dd/MM/yyyy}-{endOf36Months:dd/MM/yyyy})";
+                                ghiChu = $"Chưa đủ 36 tháng ({DatePickerHelper.FormatDateForDisplay(maternityLeave.StartDate)}-{DatePickerHelper.FormatDateForDisplay(endOf36Months)})";
                             }
                         }
 
@@ -140,11 +138,12 @@ namespace TaxPersonnelManagement.Services
 
                             if (sickLeave != null)
                             {
-                                ghiChu = $"Đang nghỉ ốm ({sickLeave.StartDate:dd/MM/yyyy}-{sickLeave.EndDate:dd/MM/yyyy})";
+                                ghiChu = $"Đang nghỉ ốm ({DatePickerHelper.FormatDateForDisplay(sickLeave.StartDate)}-{(sickLeave.EndDate.HasValue ? DatePickerHelper.FormatDateForDisplay(sickLeave.EndDate.Value) : "")})";
                             }
                         }
                     }
                     worksheet.Cell(row, 36).Value = ghiChu;
+                    worksheet.Cell(row, 37).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
 
                     // Áp dụng viền và căn chỉnh cho toàn bộ ô trong dòng
                     for (int c = 1; c <= headers.Length; c++)

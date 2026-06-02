@@ -17,6 +17,7 @@
         <converters:MajorUniversityConverter x:Key="MajorUniversityConverter"/>
         <converters:DaysToMonthsDaysConverter x:Key="DaysToMonthsDaysConverter"/>
         <converters:PhoneFormatterConverter x:Key="PhoneFormatterConverter"/>
+        <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
     </Window.Resources>
 
     <Border BorderBrush="#1565C0" BorderThickness="1" CornerRadius="0">
@@ -156,7 +157,7 @@
                                     <!-- Row 1 -->
                                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0 0 0 15">
                                         <TextBlock Text="Ngày tháng năm sinh:" Foreground="#78909C" FontSize="15"/>
-                                        <TextBlock Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                        <TextBlock Text="{Binding DateOfBirth, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Row="0" Grid.Column="1" Margin="0 0 0 15">
                                         <TextBlock Text="Giới tính:" Foreground="#78909C" FontSize="15"/>
@@ -321,14 +322,14 @@
                                         </StackPanel>
                                         <StackPanel Grid.Row="0" Grid.Column="2">
                                             <TextBlock Text="Thời hạn bảo lưu:" Foreground="#78909C" FontSize="15"/>
-                                            <TextBlock Text="{Binding SalaryReservationDeadline, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding SalaryReservationDeadline, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                         
                                         <!-- Divider Row 1 is padding -->
 
                                         <StackPanel Grid.Row="2" Grid.Column="0">
                                             <TextBlock Text="Mốc tính lương lần sau:" Foreground="#78909C" FontSize="15"/>
-                                            <TextBlock Text="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding NextSalaryStepDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                         <StackPanel Grid.Row="2" Grid.Column="1">
                                             <TextBlock Text="Lùi thời gian nâng lương:" Foreground="#78909C" FontSize="15"/>
@@ -336,7 +337,7 @@
                                         </StackPanel>
                                         <StackPanel Grid.Row="2" Grid.Column="2">
                                             <TextBlock Text="Dự kiến lên lương:" Foreground="#78909C" FontSize="15"/>
-                                            <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
@@ -424,7 +425,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -432,7 +433,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -440,7 +441,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Mốc xét lương từ" Binding="{Binding SalaryCalculationDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Mốc xét lương từ" Binding="{Binding SalaryCalculationDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -456,7 +457,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, StringFormat=dd/MM/yyyy}" Width="*">
+                                        <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -570,9 +571,9 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                        <Run Text="{Binding StartDate, StringFormat=dd/MM/yyyy}"/>
+                                                        <Run Text="{Binding StartDate, Converter={StaticResource DateFormatterConverter}}"/>
                                                         <Run Text=" - "/>
-                                                        <Run Text="{Binding EndDate, StringFormat=dd/MM/yyyy}"/>
+                                                        <Run Text="{Binding EndDate, Converter={StaticResource DateFormatterConverter}}"/>
                                                     </TextBlock>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -632,7 +633,7 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Margin="0 0 0 15">
                                             <TextBlock Text="Thời gian công tác tại cơ quan thuế:" Foreground="#78909C" FontSize="15"/>
-                                            <TextBlock Text="{Binding TaxAuthorityStartDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding TaxAuthorityStartDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="#1976D2" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                     </Grid>
                                     
@@ -646,11 +647,11 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Margin="0 0 10 0">
                                             <TextBlock Text="Thời gian công tác tính theo QĐ gần nhất:" Foreground="#78909C" FontSize="15" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding PositionDecisionDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding PositionDecisionDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Margin="0 0 10 0">
                                             <TextBlock Text="Thời điểm tính thời gian công tác:" Foreground="#78909C" FontSize="15" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding DisplayPositionCalculationDate, StringFormat=dd/MM/yyyy}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding DisplayPositionCalculationDate, Converter={StaticResource DateFormatterConverter}}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                         
 
@@ -697,7 +698,7 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                                             <TextBlock Text="Ngày về hưu" Foreground="#78909C" FontSize="15"/>
-                                            <TextBlock Text="{Binding RetirementDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding RetirementDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
                                          <StackPanel Grid.Column="1" HorizontalAlignment="Center">
                                             <TextBlock Text="Số năm công tác" Foreground="#78909C" FontSize="15"/>
@@ -734,11 +735,11 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Ngày vào Đảng:" Foreground="#78909C" FontSize="15"/>
-                                        <TextBlock Text="{Binding PartyEntryDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                        <TextBlock Text="{Binding PartyEntryDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Text="Ngày chính thức:" Foreground="#78909C" FontSize="15"/>
-                                        <TextBlock Text="{Binding PartyOfficialDate, StringFormat=dd/MM/yyyy, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                        <TextBlock Text="{Binding PartyOfficialDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>
@@ -794,7 +795,7 @@
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1">
                                                     <TextBlock Text="Ngày ký QĐ:" Foreground="#546E7A" FontSize="13" Margin="0 0 0 2"/>
-                                                    <TextBlock Text="{Binding DisciplineDecisionDate, StringFormat=dd/MM/yyyy}" FontWeight="Bold" Foreground="#263238" FontSize="16"/>
+                                                    <TextBlock Text="{Binding DisciplineDecisionDate, Converter={StaticResource DateFormatterConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="16"/>
                                                 </StackPanel>
                                             </Grid>
 
@@ -884,7 +885,7 @@
                                                     </Style>
                                                 </DataGridTextColumn.ElementStyle>
                                             </DataGridTextColumn>
-                                            <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, StringFormat=dd/MM/yyyy}" Width="1.5*">
+                                            <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="1.5*">
                                                 <DataGridTextColumn.ElementStyle>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="HorizontalAlignment" Value="Center"/>

@@ -18,6 +18,7 @@
             <converters:NameToInitialsConverter x:Key="NameToInitialsConverter"/>
             <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
             <converters:PhoneFormatterConverter x:Key="PhoneFormatterConverter"/>
+            <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
 
             <!-- ===== STYLE: ContextMenu action đẹp ===== -->
             <Style x:Key="ActionContextMenuStyle" TargetType="ContextMenu">
@@ -428,7 +429,7 @@
                                         </Grid.ColumnDefinitions>
                                         <materialDesign:PackIcon Kind="CalendarBlank" Width="14" Height="14"
                                                                  Foreground="#78909C" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}"
+                                        <TextBlock Grid.Column="1" Text="{Binding DateOfBirth, Converter={StaticResource DateFormatterConverter}}"
                                                    FontSize="13" Foreground="#455A64" VerticalAlignment="Center"/>
                                     </Grid>
                                     <Grid>

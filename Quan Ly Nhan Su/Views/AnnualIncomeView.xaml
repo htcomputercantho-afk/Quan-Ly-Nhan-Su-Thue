@@ -170,6 +170,16 @@
                                 <TextBlock Text="Lưu dữ liệu" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                             </StackPanel>
                         </Button>
+
+                        <Button x:Name="btnClearData" Height="36" Click="BtnClearData_Click" Margin="0 5 10 5"
+                                Style="{DynamicResource MaterialDesignRaisedButton}"
+                                Background="#D32F2F" BorderBrush="#D32F2F" Foreground="White" Padding="15,0"
+                                materialDesign:ButtonAssist.CornerRadius="18">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Xóa dữ liệu năm" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
                     </WrapPanel>
 
                     <!-- Info Message -->

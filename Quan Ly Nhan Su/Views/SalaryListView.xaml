@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -247,7 +248,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding DateOfBirth, StringFormat=dd/MM/yyyy}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     <DataGridTextColumn Header="MÃ NGẠCH" Binding="{Binding RankCode}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     <DataGridTextColumn Header="BẬC LƯƠNG" Binding="{Binding CurrentSalaryStep}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
@@ -272,15 +273,15 @@
 
                     <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
-                    <DataGridTextColumn Header="THỜI ĐIỂM&#x0a;TÍNH BẬC LƯƠNG&#x0a;LẦN SAU" Binding="{Binding NextSalaryStepDate, StringFormat=dd/MM/yyyy}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="THỜI ĐIỂM&#x0a;TÍNH BẬC LƯƠNG&#x0a;LẦN SAU" Binding="{Binding NextSalaryStepDate, Converter={StaticResource DateFormatterConverter}}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
-                    <DataGridTextColumn Header="THÁNG" Binding="{Binding ExpectedSalaryIncreaseDate, StringFormat=MM}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    <DataGridTextColumn Header="THÁNG" Binding="{Binding ExpectedSalaryIncreaseDate, Converter={StaticResource DateFormatterConverter}, ConverterParameter=Month}" Width="100" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
                     
                     <DataGridTemplateColumn Header="DỰ KIẾN&#x0a;LÊN LƯƠNG" Width="130" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border x:Name="brdExpectedDate" Background="#FFF3E0" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                    <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, StringFormat=dd/MM/yyyy}" 
+                                    <TextBlock Text="{Binding ExpectedSalaryIncreaseDate, Converter={StaticResource DateFormatterConverter}}" 
                                                FontWeight="Bold" Foreground="#E65100" FontSize="13"/>
                                 </Border>
                                 <DataTemplate.Triggers>

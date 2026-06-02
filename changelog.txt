@@ -1,3 +1,19 @@
+## v1.4.2 — 2026-06-02
+- [Tính năng] Quá trình lương thông minh:
+    + Cho phép nhập tay và để trống ngày Kết thúc bậc lương.
+    + Tự động tính toán (tự nhảy) ngày Kết thúc của bậc lương liền trước bằng ngày liền trước ngày Bắt đầu của bậc lương tiếp theo (trừ 1 ngày).
+    + Tự động cập nhật lại ngày Kết thúc khi người dùng sửa đổi ngày Bắt đầu hoặc xóa các bậc lương khác.
+- [Tính năng] Kiểm tra trùng lặp thời gian Quá trình lương:
+    + Bắt buộc điền ngày Bắt đầu khi thêm/sửa quá trình lương.
+    + Tự động kiểm tra trùng lặp ngày bắt đầu hoặc đè khoảng thời gian (overlap), hiển thị thông báo lỗi và ngăn chặn lưu dữ liệu lỗi.
+- [Sửa lỗi] Đồng bộ hiển thị Lịch sử nghỉ phép:
+    + Sắp xếp danh sách lịch sử nghỉ phép trong Phiếu thông tin nhân sự (Card View) theo thứ tự ngày bắt đầu mới nhất lên đầu.
+    + Đồng bộ sắp xếp giảm dần theo ngày bắt đầu cho bảng lịch sử nghỉ phép khi xuất báo cáo PDF.
+- [Cập nhật] Định dạng hiển thị ngày tháng chuẩn văn thư hành chính:
+    + Định dạng hiển thị tháng 1 và 2 luôn có số 0 ở trước (ví dụ: 01, 02).
+    + Từ tháng 3 trở đi, tự động ẩn số 0 ở trước khi hiển thị trong các ô nhập ngày tháng (ví dụ: tháng 3 hiển thị là 3 thay vì 03), đồng bộ hiển thị tự động từ cơ sở dữ liệu.
+    + Cập nhật logic gõ nhanh ngày tháng thông minh tương thích với định dạng không có số 0 ở trước (ví dụ: gõ tháng 3 tự động chuyển tiếp thành "3/").
+
 ## v1.4.1 — 2026-06-02
 - [Sửa lỗi] Tối ưu hóa nhập liệu ngày tháng thông minh:
     + Khắc phục triệt để lỗi khi gõ nhanh tháng từ tháng 3 trở đi (3, 4, 5, 6, 7, 8, 9) bị tự động nhảy thêm ký tự "/" không đúng vị trí (do trước đây chỉ mặc định kiểm tra độ dài 5 ký tự và giả định tháng luôn có 2 chữ số).
