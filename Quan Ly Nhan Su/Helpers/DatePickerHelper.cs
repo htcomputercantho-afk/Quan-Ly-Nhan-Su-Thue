@@ -82,14 +82,42 @@ namespace TaxPersonnelManagement.Helpers
                 {
                     success = DateTime.TryParseExact(digits, "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
                 }
+                else if (digits.Length == 7)
+                {
+                    // Try ddMyyyy (e.g., 12/3/2026 -> 1232026) first, then dMMyyyy (e.g., 5/12/2026 -> 5122026)
+                    success = DateTime.TryParseExact(digits, "ddMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    if (!success)
+                    {
+                        success = DateTime.TryParseExact(digits, "dMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    }
+                }
                 else if (digits.Length == 6)
                 {
                     success = DateTime.TryParseExact(digits, "ddMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    if (!success)
+                    {
+                        // Also try dMyyyy (e.g., 1/2/2026 -> 122026)
+                        success = DateTime.TryParseExact(digits, "dMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    }
+                }
+                else if (digits.Length == 5)
+                {
+                    // Try dMMyy (e.g., 5/12/26 -> 51226) first, then ddMyy (e.g., 12/3/26 -> 12326)
+                    success = DateTime.TryParseExact(digits, "dMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    if (!success)
+                    {
+                        success = DateTime.TryParseExact(digits, "ddMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    }
                 }
                 else if (digits.Length == 4)
                 {
                     // Assume ddMM of current year
                     success = DateTime.TryParseExact(digits + DateTime.Now.Year.ToString(), "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    if (!success)
+                    {
+                        // Also try dMyy (e.g., 1/2/26 -> 1226)
+                        success = DateTime.TryParseExact(digits, "dMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                    }
                 }
                 else
                 {
@@ -126,7 +154,58 @@ namespace TaxPersonnelManagement.Helpers
                 if (isNumeric)
                 {
                     string text = textBox.Text;
-                    // If length is exactly 2 (e.g. "12") or 5 (e.g. "12/04"), append "/" safely
+                    
+                    // Split the text by '/' to find day, month, year segments
+                    string[] parts = text.Split('/');
+                    
+                    if (parts.Length == 1)
+                    {
+                        // We are typing the day segment
+                        string dayStr = parts[0];
+                        if (dayStr.Length == 1)
+                        {
+                            if (int.TryParse(dayStr, out int day) && day >= 4)
+                            {
+                                // Single digit day >= 4 is complete (cannot be 40, 50, etc.)
+                                textBox.Text = "0" + dayStr + "/";
+                                textBox.CaretIndex = textBox.Text.Length;
+                                return;
+                            }
+                        }
+                        else if (dayStr.Length == 2)
+                        {
+                            // 2-digit day is complete, append '/' if not present
+                            textBox.Text = dayStr + "/";
+                            textBox.CaretIndex = textBox.Text.Length;
+                            return;
+                        }
+                    }
+                    else if (parts.Length == 2)
+                    {
+                        // We are typing the month segment
+                        string dayStr = parts[0];
+                        string monthStr = parts[1];
+                        
+                        if (monthStr.Length == 1)
+                        {
+                            if (int.TryParse(monthStr, out int month) && month >= 2)
+                            {
+                                // Single digit month >= 2 is complete (cannot be 20, 30, etc.)
+                                textBox.Text = dayStr + "/0" + monthStr + "/";
+                                textBox.CaretIndex = textBox.Text.Length;
+                                return;
+                            }
+                        }
+                        else if (monthStr.Length == 2)
+                        {
+                            // 2-digit month is complete, append '/'
+                            textBox.Text = dayStr + "/" + monthStr + "/";
+                            textBox.CaretIndex = textBox.Text.Length;
+                            return;
+                        }
+                    }
+                    
+                    // Fallback to original logic if needed
                     if ((text.Length == 2 || text.Length == 5) && !text.EndsWith("/"))
                     {
                         textBox.Text = text + "/";

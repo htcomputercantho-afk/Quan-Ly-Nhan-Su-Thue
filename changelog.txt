@@ -1,3 +1,9 @@
+## v1.4.1 — 2026-06-02
+- [Sửa lỗi] Tối ưu hóa nhập liệu ngày tháng thông minh:
+    + Khắc phục triệt để lỗi khi gõ nhanh tháng từ tháng 3 trở đi (3, 4, 5, 6, 7, 8, 9) bị tự động nhảy thêm ký tự "/" không đúng vị trí (do trước đây chỉ mặc định kiểm tra độ dài 5 ký tự và giả định tháng luôn có 2 chữ số).
+    + Tự động nhận diện và điền thêm số `0` ở trước đối với ngày đơn lẻ (từ 4 trở lên) và tháng đơn lẻ (từ 2 trở lên), đồng thời thêm dấu `/` chuyển tiếp thông minh (ví dụ: gõ `4` tự động thành `04/`, gõ tiếp `3` tự động thành `04/03/`).
+    + Nâng cấp bộ lọc/phân tích chuỗi ngày nhập lỗi (DateValidationError) hỗ trợ nhận diện đầy đủ các định dạng ngày bất thường từ 5 đến 7 chữ số (ví dụ: `1232026` tự động phân tách thành `12/03/2026`).
+
 ## v1.4.0 — 2026-05-31
 - [Tính năng] Tab Xếp loại nhân sự (Tab 9):
     + Quản lý lịch sử xếp loại chi tiết theo năm của nhân sự (Năm bắt đầu từ 1980 đến nay, tự động cập nhật năm mới theo thời gian thực).
