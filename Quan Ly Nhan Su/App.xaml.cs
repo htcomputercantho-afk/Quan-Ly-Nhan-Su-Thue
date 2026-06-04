@@ -271,6 +271,7 @@ namespace TaxPersonnelManagement
                             SalaryStep TEXT,
                             Coefficient TEXT,
                             Percentage REAL NOT NULL DEFAULT 0,
+                            ExceedFramePercent REAL NOT NULL DEFAULT 0,
                             DecisionNumber TEXT,
                             DecisionDate TEXT,
                             Note TEXT,
@@ -285,6 +286,7 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN Percentage REAL DEFAULT 0"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN SalaryCalculationDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN StartDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN ExceedFramePercent REAL DEFAULT 0"); } catch { }
                     // Remove old columns that no longer exist (SQLite does not support DROP COLUMN in older versions, skip gracefully)
 
                     // Manual Migration for Tab 7 Fields (Reward Info)

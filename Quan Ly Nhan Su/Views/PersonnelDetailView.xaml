@@ -1529,10 +1529,11 @@
                             <materialDesign:Card Padding="10" Margin="0 0 0 10" UniformCornerRadius="4">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.3*"/>
-                                        <ColumnDefinition Width="1.1*"/>
-                                        <ColumnDefinition Width="0.9*"/>
+                                        <ColumnDefinition Width="1.2*"/>
+                                        <ColumnDefinition Width="1.0*"/>
                                         <ColumnDefinition Width="0.8*"/>
+                                        <ColumnDefinition Width="0.7*"/>
+                                        <ColumnDefinition Width="0.9*"/> <!-- % vượt khung -->
                                         <ColumnDefinition Width="1.2*"/>
                                         <ColumnDefinition Width="1.2*"/>
                                         <ColumnDefinition Width="1.2*"/>
@@ -1560,32 +1561,36 @@
                                         <TextBlock Text="%" FontSize="12.5" FontWeight="Bold" Foreground="#333" ToolTip="Phần trăm được hưởng"/>
                                         <TextBox x:Name="txtSalaryHistPercent" Style="{StaticResource ModernTextBox}" Text="100"/>
                                     </StackPanel>
+                                    <StackPanel Grid.Column="4" Margin="3">
+                                        <TextBlock Text="% vượt khung" FontSize="12.5" FontWeight="Bold" Foreground="#333" ToolTip="Phần trăm vượt khung"/>
+                                        <TextBox x:Name="txtSalaryHistExceedPercent" Style="{StaticResource ModernTextBox}" Text="0"/>
+                                    </StackPanel>
 
                                     <!-- Group 2: Dates -->
-                                    <StackPanel Grid.Column="4" Margin="3">
+                                    <StackPanel Grid.Column="5" Margin="3">
                                         <TextBlock Text="Bắt đầu" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
                                         <DatePicker x:Name="dpSalaryHistStart" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="5" Margin="3">
+                                    <StackPanel Grid.Column="6" Margin="3">
                                         <TextBlock Text="Kết thúc" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
                                         <DatePicker x:Name="dpSalaryHistEnd" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="6" Margin="3">
+                                    <StackPanel Grid.Column="7" Margin="3">
                                         <TextBlock Text="Mốc xét" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
                                         <DatePicker x:Name="dpSalaryHistCalc" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
                                     </StackPanel>
 
                                     <!-- Group 3: Decision -->
-                                    <StackPanel Grid.Column="7" Margin="3">
+                                    <StackPanel Grid.Column="8" Margin="3">
                                         <TextBlock Text="Số VB/QĐ" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
                                         <TextBox x:Name="txtSalaryHistDecisionNo" Style="{StaticResource ModernTextBox}"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="8" Margin="3">
+                                    <StackPanel Grid.Column="9" Margin="3">
                                         <TextBlock Text="Ngày ký QĐ" FontSize="12.5" FontWeight="Bold" Foreground="#333"/>
                                         <DatePicker x:Name="dpSalaryHistDecisionDate" Style="{StaticResource ModernDatePicker}" helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
                                     </StackPanel>
 
-                                    <Button Grid.Column="9" x:Name="btnAddSalaryHistory" Click="btnAddSalaryHistory_Click" 
+                                    <Button Grid.Column="10" x:Name="btnAddSalaryHistory" Click="btnAddSalaryHistory_Click" 
                                             VerticalAlignment="Bottom" Margin="5 0 0 3" Padding="10 0" Height="36"
                                             Background="{DynamicResource PrimaryHueMidBrush}" BorderThickness="0"
                                             ToolTip="Thêm vào bảng">
@@ -1667,6 +1672,15 @@
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
                                         <DataGridTextColumn Header="%" Binding="{Binding Percentage, StringFormat={}{0}%}" Width="50">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="% Vượt khung" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="80">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>

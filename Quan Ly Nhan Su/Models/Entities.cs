@@ -248,6 +248,7 @@ namespace TaxPersonnelManagement.Models
         public string? SalaryStep { get; set; } // Bậc lương
         public string? Coefficient { get; set; } // Hệ số
         public double Percentage { get; set; } = 100; // Phần trăm được hưởng (Default 100%)
+        public double ExceedFramePercent { get; set; } // % Vượt khung
         public string? DecisionNumber { get; set; } // Số VB/QĐ
         public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
 

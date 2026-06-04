@@ -1698,6 +1698,7 @@ namespace TaxPersonnelManagement.Views
                     SalaryStep = r.SalaryStep,
                     Coefficient = r.Coefficient,
                     Percentage = r.Percentage,
+                    ExceedFramePercent = r.ExceedFramePercent,
                     DecisionNumber = r.DecisionNumber,
                     DecisionDate = r.DecisionDate,
                     Note = r.Note
@@ -1728,6 +1729,7 @@ namespace TaxPersonnelManagement.Views
                     tempEdit.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
                     tempEdit.Coefficient = txtSalaryHistCoeff.Text;
                     tempEdit.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
+                    tempEdit.ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0;
                     tempEdit.DecisionNumber = txtSalaryHistDecisionNo.Text;
                     tempEdit.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
 
@@ -1745,6 +1747,7 @@ namespace TaxPersonnelManagement.Views
                     SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
                     Coefficient = txtSalaryHistCoeff.Text,
                     Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                    ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0,
                     DecisionNumber = txtSalaryHistDecisionNo.Text,
                     DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
                     PersonnelId = _personnel.Id
@@ -1771,6 +1774,7 @@ namespace TaxPersonnelManagement.Views
                 _editingSalaryRecord.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
                 _editingSalaryRecord.Coefficient = txtSalaryHistCoeff.Text;
                 _editingSalaryRecord.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
+                _editingSalaryRecord.ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0;
                 _editingSalaryRecord.DecisionNumber = txtSalaryHistDecisionNo.Text;
                 _editingSalaryRecord.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
 
@@ -1788,6 +1792,7 @@ namespace TaxPersonnelManagement.Views
                     SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
                     Coefficient = txtSalaryHistCoeff.Text,
                     Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                    ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0,
                     DecisionNumber = txtSalaryHistDecisionNo.Text,
                     DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
                     PersonnelId = _personnel.Id
@@ -1806,6 +1811,7 @@ namespace TaxPersonnelManagement.Views
             cboSalaryHistStep.ItemsSource = null;
             txtSalaryHistCoeff.Clear();
             txtSalaryHistPercent.Text = "100";
+            txtSalaryHistExceedPercent.Text = "0";
             txtSalaryHistDecisionNo.Clear();
             dpSalaryHistDecisionDate.SelectedDate = null;
         }
@@ -1835,6 +1841,7 @@ namespace TaxPersonnelManagement.Views
                 }
                 txtSalaryHistCoeff.Text = item.Coefficient;
                 txtSalaryHistPercent.Text = item.Percentage.ToString();
+                txtSalaryHistExceedPercent.Text = item.ExceedFramePercent.ToString();
                 txtSalaryHistDecisionNo.Text = item.DecisionNumber;
                 dpSalaryHistDecisionDate.SelectedDate = item.DecisionDate;
 

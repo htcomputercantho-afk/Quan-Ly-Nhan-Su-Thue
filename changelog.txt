@@ -1,4 +1,7 @@
-## v1.4.2 — 2026-06-02
+## v1.4.2 — 2026-06-04
+- [Tính năng] Diễn biến quá trình lương:
+    + Bổ sung trường "% vượt khung" vào Diễn biến quá trình lương trong cơ sở dữ liệu, tự động chạy cập nhật cấu trúc bảng dữ liệu khi khởi động app.
+    + Thêm ô nhập liệu và hiển thị cột "% Vượt khung" tại bảng lịch sử trang Chi tiết cán bộ và cửa sổ Xem thẻ thông tin cán bộ.
 - [Tính năng] Quá trình lương thông minh:
     + Cho phép nhập tay và để trống ngày Kết thúc bậc lương.
     + Tự động tính toán (tự nhảy) ngày Kết thúc của bậc lương liền trước bằng ngày liền trước ngày Bắt đầu của bậc lương tiếp theo (trừ 1 ngày).
@@ -6,6 +9,11 @@
 - [Tính năng] Kiểm tra trùng lặp thời gian Quá trình lương:
     + Bắt buộc điền ngày Bắt đầu khi thêm/sửa quá trình lương.
     + Tự động kiểm tra trùng lặp ngày bắt đầu hoặc đè khoảng thời gian (overlap), hiển thị thông báo lỗi và ngăn chặn lưu dữ liệu lỗi.
+- [Giao diện] Đồng bộ hóa giao diện Chi tiết thu nhập tháng:
+    + Đồng bộ thiết kế thẻ bo tròn (mini-card) màu xám nhạt (`#F8F9FA`) viền mỏng cho cả dòng Lương giống như dòng Làm thêm giờ và Thu nhập khác.
+    + Khi chọn dòng (Selected Row), các thẻ tự động chuyển sang màu nền trắng, viền xám đậm và chữ màu xanh đậm để tăng tương phản, dễ đọc.
+    + Khi sửa dòng Làm thêm giờ và Thu nhập khác, hệ thống tự động gọi hộp thoại EditMonthlyIncomeDialog chuyên nghiệp thay vì sửa trực tiếp trên bảng.
+    + Tối ưu hóa trình chỉnh sửa trực tiếp của dòng Lương: ẩn ô nhập Ghi chú và hỗ trợ tự động định dạng dấu phân cách phần nghìn (tiền tệ) thời gian thực ngay khi gõ.
 - [Sửa lỗi] Đồng bộ hiển thị Lịch sử nghỉ phép:
     + Sắp xếp danh sách lịch sử nghỉ phép trong Phiếu thông tin nhân sự (Card View) theo thứ tự ngày bắt đầu mới nhất lên đầu.
     + Đồng bộ sắp xếp giảm dần theo ngày bắt đầu cho bảng lịch sử nghỉ phép khi xuất báo cáo PDF.

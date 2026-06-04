@@ -251,9 +251,41 @@ namespace TaxPersonnelManagement.Views
 
         private void DgMonthlyIncome_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
         {
-            if (e.Row.Item is AnnualIncomeRowViewModel row && row.IsTotalRow)
+            if (e.Row.Item is AnnualIncomeRowViewModel row)
             {
-                e.Cancel = true; // Prevent editing the total row
+                if (row.IsTotalRow)
+                {
+                    e.Cancel = true; // Prevent editing the total row
+                    return;
+                }
+
+                if (row.IncomeType == "Làm thêm giờ" || row.IncomeType == "Thu nhập khác")
+                {
+                    e.Cancel = true; // Cancel default inline editing
+                    
+                    int month = 0;
+                    var headerStr = e.Column.Header?.ToString() ?? "";
+                    if (headerStr.StartsWith("Tháng "))
+                    {
+                        int.TryParse(headerStr.Substring(6), out month);
+                    }
+
+                    if (month >= 1 && month <= 12)
+                    {
+                        string currentNote = row.GetNote(month);
+                        var dialog = new EditMonthlyIncomeDialog(row.IncomeType, month, currentNote);
+                        if (Window.GetWindow(this) is Window parent) dialog.Owner = parent;
+                        if (dialog.ShowDialog() == true)
+                        {
+                            string newNote = dialog.ResultNote;
+                            row.SetNote(month, newNote);
+                            
+                            // Trigger property changes to update UI
+                            row.TriggerMonthChanged(month);
+                            UpdateTotals();
+                        }
+                    }
+                }
             }
         }
 
@@ -393,6 +425,40 @@ namespace TaxPersonnelManagement.Views
                 var warning = new WarningWindow("Thông báo", "Vui lòng chọn một công chức từ danh sách trước.");
                 warning.Owner = Window.GetWindow(this);
                 warning.ShowDialog();
+            }
+        }
+
+        private void AmountTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox)
+            {
+                textBox.TextChanged -= AmountTextBox_TextChanged;
+                try
+                {
+                    string clean = Regex.Replace(textBox.Text, @"[^0-9]", "");
+                    if (decimal.TryParse(clean, out decimal parsed))
+                    {
+                        string formatted = parsed.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+                        
+                        int oldSelectionStart = textBox.SelectionStart;
+                        int oldLength = textBox.Text.Length;
+
+                        textBox.Text = formatted;
+
+                        int newLength = formatted.Length;
+                        int newSelectionStart = oldSelectionStart + (newLength - oldLength);
+                        textBox.SelectionStart = Math.Max(0, Math.Min(newSelectionStart, newLength));
+                    }
+                    else
+                    {
+                        textBox.Text = "";
+                    }
+                }
+                catch { }
+                finally
+                {
+                    textBox.TextChanged += AmountTextBox_TextChanged;
+                }
             }
         }
 
@@ -787,6 +853,14 @@ namespace TaxPersonnelManagement.Views
             };
         }
 
+
+        public void TriggerMonthChanged(int month)
+        {
+            OnPropertyChanged($"M{month}Amount");
+            OnPropertyChanged($"M{month}Note");
+            OnPropertyChanged($"M{month}Breakdown");
+            OnPropertyChanged("Total");
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? name = null)

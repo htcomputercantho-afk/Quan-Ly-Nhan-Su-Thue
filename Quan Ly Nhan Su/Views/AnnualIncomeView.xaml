@@ -197,6 +197,7 @@
                         
                         <DataGrid.Resources>
                             <converters:MathSubtractConverter x:Key="MathSubtractConverter"/>
+                        <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter"/>
                             <!-- TextBlock Style for Amount -->
                             <Style x:Key="MonthAmountStyle" TargetType="TextBlock">
                                 <Setter Property="FontWeight" Value="SemiBold"/>
@@ -207,6 +208,12 @@
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
                                         <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -226,6 +233,12 @@
                                     <DataTrigger Binding="{Binding IncomeType}" Value="Làm thêm giờ">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                        <Setter Property="Foreground" Value="#E2E8F0"/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
 
@@ -236,13 +249,49 @@
                                 <Setter Property="ItemTemplate">
                                     <Setter.Value>
                                         <DataTemplate>
-                                            <StackPanel Margin="0 0 0 6" HorizontalAlignment="Stretch">
-                                                <!-- Amount (Top, Bold, Right-aligned, Standard Foreground) -->
-                                                <TextBlock Text="{Binding FormattedAmount}" FontWeight="SemiBold" TextAlignment="Right"/>
-                                                <!-- Reason (Bottom, Gray, Italic, Right-aligned) -->
-                                                <TextBlock Text="{Binding Reason}" Foreground="Gray" FontStyle="Italic" TextWrapping="Wrap" FontSize="11" TextAlignment="Right"
-                                                           MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=15}"/>
-                                            </StackPanel>
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding FormattedAmount}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    
+                                                    <!-- Reason -->
+                                                    <TextBlock Text="{Binding Reason}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
                                         </DataTemplate>
                                     </Setter.Value>
                                 </Setter>
@@ -278,6 +327,9 @@
                                 <Setter Property="TextWrapping" Value="Wrap"/>
                                 <Setter Property="AcceptsReturn" Value="True"/>
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
                                         <Setter Property="materialDesign:HintAssist.Hint" Value="Nhập: [Số tiền] - [Nội dung] (Mỗi khoản 1 dòng)"/>
                                         <Setter Property="Foreground" Value="#333333"/>
@@ -317,8 +369,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M1Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M1Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M1Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M1Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M1Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M1Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M1Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -326,7 +435,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M1Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M1Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M1Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -338,8 +447,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M2Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M2Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M2Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M2Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M2Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M2Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M2Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -347,7 +513,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M2Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M2Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M2Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -359,8 +525,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M3Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M3Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M3Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M3Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M3Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M3Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M3Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -368,7 +591,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M3Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M3Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M3Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -380,8 +603,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M4Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M4Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M4Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M4Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M4Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M4Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M4Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -389,7 +669,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M4Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M4Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M4Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -401,8 +681,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M5Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M5Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M5Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M5Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M5Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M5Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M5Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -410,7 +747,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M5Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M5Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M5Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -422,8 +759,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M6Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M6Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M6Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M6Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M6Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M6Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M6Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -431,7 +825,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M6Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M6Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M6Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -443,8 +837,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M7Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M7Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M7Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M7Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M7Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M7Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M7Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -452,7 +903,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M7Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M7Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M7Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -464,8 +915,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M8Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M8Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M8Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M8Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M8Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M8Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M8Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -473,7 +981,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M8Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M8Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M8Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -485,8 +993,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M9Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M9Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M9Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M9Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M9Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M9Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M9Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -494,7 +1059,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M9Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M9Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M9Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -506,8 +1071,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M10Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M10Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M10Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M10Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M10Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M10Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M10Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -515,7 +1137,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M10Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M10Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M10Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -527,8 +1149,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M11Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M11Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M11Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M11Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M11Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M11Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M11Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -536,7 +1215,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M11Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M11Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M11Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -548,8 +1227,65 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
+                                            <!-- Card Border for Lương -->
+                                            <Border CornerRadius="6" BorderThickness="1" BorderBrush="#E0E2E5" Background="#F8F9FA" Padding="8,5" Margin="0,2,0,3">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IncomeType}" Value="Lương">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                <Setter Property="Background" Value="#FFFFFF"/>
+                                                                <Setter Property="BorderBrush" Value="#CBD5E0"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel>
+                                                    <!-- Amount -->
+                                                    <TextBlock Text="{Binding M12Amount, StringFormat='{}{0:N0} đ'}" FontWeight="Bold" FontSize="11.5" HorizontalAlignment="Right">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#1976D2"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#0D47A1"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                    <!-- Note -->
+                                                    <TextBlock Text="{Binding M12Note}" FontSize="10.5" HorizontalAlignment="Right" TextWrapping="Wrap" TextAlignment="Right"
+                                                               MaxWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=25}">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="#4A5568"/>
+                                                                <Setter Property="FontStyle" Value="Italic"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
+                                                                        <Setter Property="Foreground" Value="#2D3748"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M12Note}" Value="{x:Null}">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding M12Note}" Value="">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Original amount/note (only visible for Total row) -->
                                             <TextBlock Text="{Binding M12Amount, StringFormat='{}{0:N0} đ'}" Style="{StaticResource MonthAmountStyle}"/>
                                             <TextBlock Text="{Binding M12Note}" Style="{StaticResource MonthNoteStyle}"/>
+                                            
+                                            <!-- ItemsControl for breakdowns (only visible for Overtime and Other Income) -->
                                             <ItemsControl ItemsSource="{Binding M12Breakdown}" Style="{StaticResource MonthBreakdownStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -557,7 +1293,7 @@
                                 <DataGridTemplateColumn.CellEditingTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
-                                            <TextBox Text="{Binding M12Amount, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
+                                            <TextBox Text="{Binding M12Amount, Converter={StaticResource CurrencyFormatConverter}, UpdateSourceTrigger=LostFocus}" TextChanged="AmountTextBox_TextChanged" materialDesign:HintAssist.Hint="Tiền" Style="{StaticResource MonthAmountTextBoxStyle}"/>
                                             <TextBox Text="{Binding M12Note, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Ghi chú" Style="{StaticResource MonthNoteTextBoxStyle}"/>
                                         </StackPanel>
                                     </DataTemplate>
