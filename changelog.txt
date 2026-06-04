@@ -1,4 +1,4 @@
-## v1.4.2 — 2026-06-04
+## v1.4.3 — 2026-06-04
 - [Tính năng] Diễn biến quá trình lương:
     + Bổ sung trường "% vượt khung" vào Diễn biến quá trình lương trong cơ sở dữ liệu, tự động chạy cập nhật cấu trúc bảng dữ liệu khi khởi động app.
     + Thêm ô nhập liệu và hiển thị cột "% Vượt khung" tại bảng lịch sử trang Chi tiết cán bộ và cửa sổ Xem thẻ thông tin cán bộ.
