@@ -281,7 +281,7 @@
                                     
                                     <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                                         <TextBlock Text="Mã ngạch" Foreground="#78909C" FontSize="15" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding RankCode, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding RankDisplayName, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                     
                                     <Border Grid.Column="1" Width="1" Background="#EEEEEE" Margin="0 5"/>

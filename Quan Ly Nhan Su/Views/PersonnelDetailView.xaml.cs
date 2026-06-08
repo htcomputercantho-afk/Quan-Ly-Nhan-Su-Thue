@@ -644,7 +644,21 @@ namespace TaxPersonnelManagement.Views
                 {
                     var steps = context.RankSalarySpecs
                                        .Where(s => s.RankCode == rankCode)
-                                       .OrderBy(s => s.SalaryStep)
+                                       .ToList()
+                                       .OrderBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 0 && int.TryParse(parts[0], out int val))
+                                               return val;
+                                           return 999;
+                                       })
+                                       .ThenBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 1 && int.TryParse(parts[1], out int val))
+                                               return val;
+                                           return 999;
+                                       })
                                        .ToList();
 
                     cboSalaryHistStep.ItemsSource = steps;
@@ -671,7 +685,21 @@ namespace TaxPersonnelManagement.Views
                 {
                     var steps = context.RankSalarySpecs
                                        .Where(s => s.RankCode == rankCode)
-                                       .OrderBy(s => s.SalaryStep)
+                                       .ToList()
+                                       .OrderBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 0 && int.TryParse(parts[0], out int val))
+                                               return val;
+                                           return 999;
+                                       })
+                                       .ThenBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 1 && int.TryParse(parts[1], out int val))
+                                               return val;
+                                           return 999;
+                                       })
                                        .ToList();
                     steps.Insert(0, new RankSalarySpec { RankCode = rankCode, SalaryStep = "", Coefficient = 0 });
 

@@ -1,0 +1,291 @@
+<UserControl x:Class="TaxPersonnelManagement.Views.EvaluationListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
+             Language="vi-VN"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="1200">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            
+            <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
+            <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+            <converters:NameToInitialsConverter x:Key="NameToInitialsConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/> <!-- Filters -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 20">
+            <materialDesign:PackIcon Kind="Certificate" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+            <TextBlock Text="THEO DÕI XẾP LOẠI CÔNG CHỨC" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Filter Toolbar Card -->
+        <materialDesign:Card Grid.Row="1" Margin="0 0 0 20" Padding="16" UniformCornerRadius="8">
+            <Grid>
+                <!-- Row layout for responsive wrap -->
+                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Search Box -->
+                    <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="220" Height="40">
+                            <TextBox x:Name="txtSearch" 
+                                     materialDesign:HintAssist.Hint="Tìm kiếm họ tên, CCCD..." 
+                                     materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                     BorderThickness="0" Background="Transparent"
+                                     VerticalContentAlignment="Center" Padding="8 0 8 0"
+                                     FontSize="14" Foreground="#374151"
+                                     TextChanged="txtSearch_TextChanged"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Department Filter -->
+                    <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="Domain" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <ComboBox x:Name="cbDepartment" Width="200" Height="40"
+                                  materialDesign:HintAssist.Hint="Tất cả bộ phận"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White" Padding="10 0"
+                                  VerticalAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  SelectionChanged="cbFilter_SelectionChanged">
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Month Filter -->
+                    <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="CalendarMonth" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <ComboBox x:Name="cbMonth" Width="140" Height="40"
+                                  materialDesign:HintAssist.Hint="Tất cả các tháng"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White" Padding="10 0"
+                                  VerticalAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  SelectionChanged="cbFilter_SelectionChanged">
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Year Filter -->
+                    <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="CalendarRange" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <ComboBox x:Name="cbYear" Width="140" Height="40"
+                                  materialDesign:HintAssist.Hint="Tất cả các năm"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White" Padding="10 0"
+                                  VerticalAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  SelectionChanged="cbFilter_SelectionChanged">
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Export Button -->
+                    <Button Height="36" Margin="10 0 0 10"
+                            Style="{DynamicResource MaterialDesignRaisedButton}"
+                            materialDesign:ButtonAssist.CornerRadius="18"
+                            Background="#2E7D32" BorderThickness="0" Foreground="White"
+                            ToolTip="Xuất danh sách xếp loại ra file Excel"
+                            Click="btnExport_Click"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileExcel" VerticalAlignment="Center" Margin="0 0 8 0" Width="20" Height="20"/>
+                            <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+            </Grid>
+        </materialDesign:Card>
+
+        <!-- Data Grid -->
+        <materialDesign:Card Grid.Row="2" Style="{DynamicResource MaterialDesignCard}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <DataGrid x:Name="dgEvaluation" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="True" 
+                          CanUserAddRows="False" HeadersVisibility="Column"
+                          BorderThickness="0" VerticalGridLinesBrush="Transparent" HorizontalGridLinesBrush="#EEEEEE"
+                          GridLinesVisibility="Horizontal" 
+                          AlternationCount="2" AlternatingRowBackground="#FAFAFA"
+                          MinRowHeight="54" VerticalContentAlignment="Center"
+                          SelectionMode="Single"
+                          FrozenColumnCount="2"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Padding" Value="8 12"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="Padding" Value="4"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style x:Key="CenterAlignedColumn" TargetType="TextBlock">
+                             <Setter Property="HorizontalAlignment" Value="Center"/>
+                             <Setter Property="VerticalAlignment" Value="Center"/>
+                             <Setter Property="TextWrapping" Value="Wrap"/>
+                             <Setter Property="FontSize" Value="13"/>
+                        </Style>
+                        <Style x:Key="LeftAlignedColumn" TargetType="TextBlock">
+                             <Setter Property="HorizontalAlignment" Value="Left"/>
+                             <Setter Property="VerticalAlignment" Value="Center"/>
+                             <Setter Property="TextWrapping" Value="Wrap"/>
+                             <Setter Property="FontSize" Value="13"/>
+                        </Style>
+                        <Style x:Key="WrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                             <Setter Property="MinHeight" Value="60"/>
+                             <Setter Property="FontSize" Value="14"/>
+                             <Setter Property="ContentTemplate">
+                                 <Setter.Value>
+                                     <DataTemplate>
+                                         <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Padding="2"/>
+                                     </DataTemplate>
+                                 </Setter.Value>
+                             </Setter>
+                        </Style>
+                    </DataGrid.Resources>
+                    
+                    <DataGrid.Columns>
+                        <!-- STT -->
+                        <DataGridTemplateColumn Header="STT" Width="60" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding STT}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#546E7A"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        
+                        <!-- Họ và Tên -->
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="200" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <!-- Avatar circle -->
+                                        <Grid Width="32" Height="32" Margin="0 0 8 0" VerticalAlignment="Center">
+                                            <Ellipse Fill="{DynamicResource PrimaryHueMidBrush}"/>
+                                            <TextBlock Text="{Binding Personnel.FullName, Converter={StaticResource NameToInitialsConverter}}"
+                                                       Foreground="White" FontWeight="Bold" FontSize="13"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse>
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding Personnel.AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
+                                                </Ellipse.Fill>
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Personnel.AvatarBase64}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Personnel.AvatarBase64}" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                        </Grid>
+                                        <TextBlock Text="{Binding Personnel.FullName}" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="Wrap" FontSize="13"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Số CCCD -->
+                        <DataGridTextColumn Header="SỐ CCCD" Binding="{Binding Personnel.IdentityCardNumber}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+
+                        <!-- Xếp loại -->
+                        <DataGridTemplateColumn Header="XẾP LOẠI" Width="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="brdRating" Background="#F5F5F5" CornerRadius="12" Padding="12 4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 4">
+                                        <TextBlock x:Name="txtRatingText" Text="{Binding Rating}" Foreground="#455A64" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding Rating}" Value="Hoàn thành xuất sắc nhiệm vụ">
+                                            <Setter TargetName="brdRating" Property="Background" Value="#E8F5E9"/>
+                                            <Setter TargetName="txtRatingText" Property="Foreground" Value="#2E7D32"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Rating}" Value="Hoàn thành tốt nhiệm vụ">
+                                            <Setter TargetName="brdRating" Property="Background" Value="#E3F2FD"/>
+                                            <Setter TargetName="txtRatingText" Property="Foreground" Value="#1565C0"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Rating}" Value="Hoàn thành nhiệm vụ">
+                                            <Setter TargetName="brdRating" Property="Background" Value="#FFF8E1"/>
+                                            <Setter TargetName="txtRatingText" Property="Foreground" Value="#F57F17"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Rating}" Value="Không hoàn thành nhiệm vụ">
+                                            <Setter TargetName="brdRating" Property="Background" Value="#FFEBEE"/>
+                                            <Setter TargetName="txtRatingText" Property="Foreground" Value="#C62828"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Số QĐ -->
+                        <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+
+                        <!-- Ngày ký QĐ -->
+                        <DataGridTextColumn Header="NGÀY KÝ QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+
+                        <!-- Đơn vị ra QĐ -->
+                        <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionAgency}" Width="*" MinWidth="180" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Pagination Footer -->
+                <Grid Grid.Row="1" Margin="15 8">
+                    <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 bản ghi xếp loại" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="btnPrevPage" Click="BtnPrevPage_Click" 
+                                Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">
+                            <materialDesign:PackIcon Kind="ChevronLeft" Foreground="#607D8B"/>
+                        </Button>
+                        <TextBlock x:Name="txtPageInfo" Text="1 / 1" VerticalAlignment="Center" Margin="10 0" FontWeight="Bold" Foreground="#455A64"/>
+                        <Button x:Name="btnNextPage" Click="BtnNextPage_Click" 
+                                Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30">
+                            <materialDesign:PackIcon Kind="ChevronRight" Foreground="#607D8B"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </materialDesign:Card>
+    </Grid>
+</UserControl>

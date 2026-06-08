@@ -1,3 +1,15 @@
+## v1.5.0 — 2026-06-08
+- [Tính năng] Thêm tab menu trái "Xếp loại":
+    + Hiển thị danh sách kết quả đánh giá, xếp loại chất lượng của công chức.
+    + Thêm các bộ lọc trên đầu trang: Ô tìm kiếm (theo Tên, CCCD), lọc theo bộ phận (phòng ban), lọc theo tháng, lọc theo năm.
+    + Hỗ trợ phân trang 20 dòng/trang chuyên nghiệp.
+- [Tính năng] Xuất báo cáo Excel kết quả xếp loại chất lượng chuẩn mẫu:
+    + Định dạng tiêu đề Cơ quan quản lý, tiêu đề danh sách gộp cột và năm báo cáo tự động.
+    + Tiêu đề bảng gộp 2 hàng phân chia chi tiết các mức xếp loại (Xuất sắc, Tốt, Hoàn thành, Không hoàn thành).
+    + Tự động nhóm danh sách và chèn dòng phân cách in đậm theo từng bộ phận (Tổ/Phòng ban).
+    + Đánh dấu mức xếp loại đạt được bằng số 1 ở cột tương ứng thay vì hiển thị text.
+    + Tự động tổng hợp thông tin Quyết định (số QĐ, ngày ký, cơ quan ban hành) vào cột Ghi chú.
+
 ## v1.4.3 — 2026-06-04
 - [Tính năng] Diễn biến quá trình lương:
     + Bổ sung trường "% vượt khung" vào Diễn biến quá trình lương trong cơ sở dữ liệu, tự động chạy cập nhật cấu trúc bảng dữ liệu khi khởi động app.

@@ -443,6 +443,8 @@ namespace TaxPersonnelManagement.Models
     {
         [Key]
         public int Id { get; set; }
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
         public int PersonnelId { get; set; }
         public virtual Personnel? Personnel { get; set; }
         public int Year { get; set; }

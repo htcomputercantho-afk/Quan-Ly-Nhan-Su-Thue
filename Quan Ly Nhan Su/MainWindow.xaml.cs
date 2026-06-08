@@ -146,6 +146,12 @@ namespace TaxPersonnelManagement
             MainFrame.Navigate(new EmulationRewardView());
         }
 
+        private void NavigateEvaluation(object sender, RoutedEventArgs e)
+        {
+            UpdateMenuState(btnEvaluation);
+            MainFrame.Navigate(new EvaluationListView());
+        }
+
         private void NavigatePositionDuration(object sender, RoutedEventArgs e)
         {
             UpdateMenuState(btnPositionDuration);
@@ -186,6 +192,7 @@ namespace TaxPersonnelManagement
             btnLeaveDetail.Background = transparent;
             btnPositionDuration.Background = transparent;
             btnEmulationReward.Background = transparent;
+            btnEvaluation.Background = transparent;
             btnUsers.Background = transparent;
             btnBackupRestore.Background = transparent;
 
@@ -212,6 +219,7 @@ namespace TaxPersonnelManagement
             txtLeaveDetail.Visibility = Visibility.Collapsed;
             txtPositionDuration.Visibility = Visibility.Collapsed;
             txtEmulationReward.Visibility = Visibility.Collapsed;
+            txtEvaluation.Visibility = Visibility.Collapsed;
             txtUsers.Visibility = Visibility.Collapsed;
             txtBackupRestore.Visibility = Visibility.Collapsed;
             txtLogout.Visibility = Visibility.Collapsed;
@@ -219,7 +227,7 @@ namespace TaxPersonnelManagement
             txtVersion.Visibility = Visibility.Collapsed;
             imgLogo.Margin = new Thickness(0);
 
-            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnUsers, btnBackupRestore, btnLogout };
+            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnUsers, btnBackupRestore, btnLogout };
             foreach (var btn in buttons)
             {
                 btn.Padding = new Thickness(0);
@@ -243,6 +251,7 @@ namespace TaxPersonnelManagement
             txtLeaveDetail.Visibility = Visibility.Visible;
             txtPositionDuration.Visibility = Visibility.Visible;
             txtEmulationReward.Visibility = Visibility.Visible;
+            txtEvaluation.Visibility = Visibility.Visible;
             txtUsers.Visibility = Visibility.Visible;
             txtBackupRestore.Visibility = Visibility.Visible;
             txtLogout.Visibility = Visibility.Visible;
@@ -250,7 +259,7 @@ namespace TaxPersonnelManagement
             txtVersion.Visibility = Visibility.Visible;
             imgLogo.Margin = new Thickness(0, 0, 10, 0);
 
-            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnUsers, btnBackupRestore, btnLogout };
+            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnUsers, btnBackupRestore, btnLogout };
             foreach (var btn in buttons)
             {
                 btn.Padding = new Thickness(25, 0, 25, 0);
