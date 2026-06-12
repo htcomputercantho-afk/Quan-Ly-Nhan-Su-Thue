@@ -106,6 +106,7 @@ namespace TaxPersonnelManagement.Models
 
         // Tab 5: Leave Info
         public int TotalAnnualLeaveDays { get; set; } = 12; // Mặc định 12 ngày
+        public DateTime? LeaveCalculationDate { get; set; } // Ngày tính thâm niên công tác (nhập tay)
         public List<LeaveHistory> LeaveHistories { get; set; } = new List<LeaveHistory>();
 
         // Tab 4: Party Info

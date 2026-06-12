@@ -1,3 +1,9 @@
+## v1.5.1 — 2026-06-12
+- [Tối ưu] Loại bỏ bộ lọc theo tháng dư thừa tại màn hình Xếp loại do đánh giá thi đua chỉ thực hiện theo năm.
+- [Tính năng] Cải tiến xuất/nhập Excel xếp loại:
+    + Xuất Excel: Bỏ qua cột Ghi chú (để trống dữ liệu cột Ghi chú) theo đúng mẫu thiết kế.
+    + Nhập Excel: Bỏ qua việc đọc và phân tích cột Ghi chú khi import file mẫu chuẩn.
+
 ## v1.5.0 — 2026-06-08
 - [Tính năng] Thêm tab menu trái "Xếp loại":
     + Hiển thị danh sách kết quả đánh giá, xếp loại chất lượng của công chức.

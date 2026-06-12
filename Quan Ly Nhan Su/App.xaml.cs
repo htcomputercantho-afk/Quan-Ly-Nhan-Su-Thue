@@ -106,20 +106,7 @@ namespace TaxPersonnelManagement
                     DebugLog("Ensuring Database Created...");
                     context.Database.EnsureCreated();
 
-                    // Update existing records with default Identity Place if empty
-                    var emptyIdentityPersonnel = context.Personnel
-                        .Where(p => string.IsNullOrEmpty(p.IdentityCardPlace) || p.IdentityCardPlace == "---")
-                        .ToList();
 
-                    if (emptyIdentityPersonnel.Any())
-                    {
-                        foreach (var p in emptyIdentityPersonnel)
-                        {
-                            p.IdentityCardPlace = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
-                        }
-                        context.SaveChanges();
-                        DebugLog($"Updated {emptyIdentityPersonnel.Count} personnel records with default Identity Place.");
-                    }
 
                     // Detect if migration is pending and perform auto-backup
                     if (IsSchemaUpdatePending(context))
@@ -172,6 +159,8 @@ namespace TaxPersonnelManagement
 
                     // Manual Migration for Tab 5 Fields (Leave Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN TotalAnnualLeaveDays INTEGER DEFAULT 12"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN LeaveYearsWorked TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN LeaveCalculationDate TEXT"); } catch { }
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS LeaveHistories (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -357,6 +346,20 @@ namespace TaxPersonnelManagement
                             DecisionAgency TEXT,
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
+                    // Update existing records with default Identity Place if empty
+                    var emptyIdentityPersonnel = context.Personnel
+                        .Where(p => string.IsNullOrEmpty(p.IdentityCardPlace) || p.IdentityCardPlace == "---")
+                        .ToList();
+
+                    if (emptyIdentityPersonnel.Any())
+                    {
+                        foreach (var p in emptyIdentityPersonnel)
+                        {
+                            p.IdentityCardPlace = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
+                        }
+                        context.SaveChanges();
+                        DebugLog($"Updated {emptyIdentityPersonnel.Count} personnel records with default Identity Place.");
+                    }
 
                     // Ensure holidays for current and next year
                     EnsureHolidaysSeeded(context);
@@ -498,6 +501,8 @@ namespace TaxPersonnelManagement
                                         LanguageSkillLevel TEXT,
                                         AvatarBase64 TEXT,
                                         TotalAnnualLeaveDays INTEGER DEFAULT 12,
+                                        LeaveYearsWorked TEXT,
+                                        LeaveCalculationDate TEXT,
                                         CurrentSalaryStep TEXT,
                                         CurrentSalaryCoefficient REAL DEFAULT 0,
                                         ExceedFramePercent REAL DEFAULT 0,
@@ -529,7 +534,7 @@ namespace TaxPersonnelManagement
                                         SocialSecurityNumber, Email, BirthPlace, Ethnicity, Religion, Department, Position,
                                         RankCode, RankName, TaxAuthorityStartDate, StartDate, Status, EducationLevel, Major,
                                         University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64,
-                                        TotalAnnualLeaveDays, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
+                                        TotalAnnualLeaveDays, LeaveYearsWorked, LeaveCalculationDate, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
                                         PositionAllowance, SalaryReservationDeadline, NextSalaryStepDate, SalaryIncreaseDelayType,
                                         ExpectedSalaryIncreaseDate, SalaryHistoryLog, EmulationTitles, RewardForms,
                                         DisciplineType, DisciplineDecisionNumber, DisciplineDecisionDate, DisciplineReason,
@@ -541,7 +546,7 @@ namespace TaxPersonnelManagement
                                         SocialSecurityNumber, Email, BirthPlace, Ethnicity, Religion, Department, Position,
                                         RankCode, RankName, TaxAuthorityStartDate, StartDate, Status, EducationLevel, Major,
                                         University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64,
-                                        TotalAnnualLeaveDays, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
+                                        TotalAnnualLeaveDays, LeaveYearsWorked, LeaveCalculationDate, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
                                         PositionAllowance, SalaryReservationDeadline, NextSalaryStepDate, SalaryIncreaseDelayType,
                                         ExpectedSalaryIncreaseDate, SalaryHistoryLog, EmulationTitles, RewardForms,
                                         DisciplineType, DisciplineDecisionNumber, DisciplineDecisionDate, DisciplineReason,

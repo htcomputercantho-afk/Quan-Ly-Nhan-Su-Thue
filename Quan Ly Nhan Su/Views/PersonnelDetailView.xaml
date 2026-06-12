@@ -999,6 +999,8 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="15"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="15"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Row 1 -->
@@ -1027,6 +1029,16 @@
                             <StackPanel Grid.Row="2" Grid.Column="4">
                                 <TextBlock Text="Nghỉ thai sản" Style="{StaticResource ModernLabel}"/>
                                 <TextBox x:Name="txtMaternityLeaveTaken" Text="0" IsReadOnly="True" Background="#FAFAFA" Style="{StaticResource ModernTextBox}"/>
+                            </StackPanel>
+
+                            <!-- Row 3 -->
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <TextBlock Text="Ngày tính thâm niên công tác" Style="{StaticResource ModernLabel}"/>
+                                <DatePicker x:Name="dpLeaveCalculationDate"
+                                            Style="{StaticResource ModernDatePicker}"
+                                            SelectedDateChanged="OnLeaveCalculationDateChanged"
+                                            helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                            materialDesign:TextFieldAssist.HasClearButton="True"/>
                             </StackPanel>
                         </Grid>
 

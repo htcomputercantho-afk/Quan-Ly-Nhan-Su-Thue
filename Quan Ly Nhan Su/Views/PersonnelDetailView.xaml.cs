@@ -124,7 +124,7 @@ namespace TaxPersonnelManagement.Views
                 RefreshSalaryHistoryGrid();
 
                 // Tab 5: Leave Info
-                // txtTotalAnnualLeave.Text = _personnel.TotalAnnualLeaveDays.ToString(); // Handled by CalculateAnnualLeave
+                dpLeaveCalculationDate.SelectedDate = _personnel.LeaveCalculationDate;
                 // Ensure list is not null
                 if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
                 RefreshLeaveHistoryGrid();
@@ -883,6 +883,7 @@ namespace TaxPersonnelManagement.Views
 
                         // Tab 5 Leave
                         TotalAnnualLeaveDays = int.TryParse(txtTotalAnnualLeave.Text, out int leaves) ? leaves : 12,
+                        LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate,
                     };
 
                     // Copy Leave Histories if any (Handling the case where _personnel was initialized by btnAddLeave)
@@ -1047,6 +1048,7 @@ namespace TaxPersonnelManagement.Views
                         {
                             existingP.TotalAnnualLeaveDays = totalLeave;
                         }
+                        existingP.LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate;
 
                         // Sync Leave History
                         if (_personnel.LeaveHistories != null)
@@ -1344,6 +1346,7 @@ namespace TaxPersonnelManagement.Views
                 txtSickLeaveTaken.Text = "0";
                 txtUnpaidLeaveTaken.Text = "0";
                 txtMaternityLeaveTaken.Text = "0";
+                dpLeaveCalculationDate.SelectedDate = null;
 
                 dpLeaveStartDate.SelectedDate = null;
                 dpLeaveEndDate.SelectedDate = null;
@@ -1535,14 +1538,21 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        private void OnLeaveCalculationDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculateAnnualLeave(DateTime.Now);
+        }
+
         private void CalculateAnnualLeave(DateTime now)
         {
             // Rule: Total Annual Leave = (Years Worked / 5) + 12
             int totalLeave = 12;
 
-            if (dpStartDate.SelectedDate.HasValue)
+            DateTime? targetStartDate = dpLeaveCalculationDate.SelectedDate ?? dpStartDate.SelectedDate;
+
+            if (targetStartDate.HasValue)
             {
-                DateTime start = dpStartDate.SelectedDate.Value;
+                DateTime start = targetStartDate.Value;
 
                 // Calculate full years worked
                 // Simple approximation or strict year difference?
@@ -1559,7 +1569,7 @@ namespace TaxPersonnelManagement.Views
             // Update Model and UI
             if (_personnel != null) _personnel.TotalAnnualLeaveDays = totalLeave;
             txtTotalAnnualLeave.Text = totalLeave.ToString();
-            UpdateLeaveStatistics(totalLeave); // Pass calculated total explicitly
+            UpdateLeaveStatistics(); // Recalculate and display statistics for the current selected year
         }
 
         private string CalculateDetailedDateDifference(DateTime startDate, DateTime endDate)

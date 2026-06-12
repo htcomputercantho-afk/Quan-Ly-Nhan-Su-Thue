@@ -9,6 +9,8 @@ using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Helpers;
 using Microsoft.Win32;
 using ClosedXML.Excel;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -88,16 +90,6 @@ namespace TaxPersonnelManagement.Views
                 MessageBox.Show($"Lỗi tải danh mục bộ phận: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            // 2. Month Filter
-            var months = new List<FilterItem>();
-            months.Add(new FilterItem { Label = "-- Tất cả các tháng --", Value = 0 });
-            for (int i = 1; i <= 12; i++)
-            {
-                months.Add(new FilterItem { Label = $"Tháng {i}", Value = i });
-            }
-            cbMonth.ItemsSource = months;
-            cbMonth.SelectedIndex = 0;
-
             // 3. Year Filter
             var years = new List<FilterItem>();
             years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
@@ -116,13 +108,17 @@ namespace TaxPersonnelManagement.Views
             }
 
             int currentYear = DateTime.Now.Year;
-            for (int y = currentYear - 5; y <= currentYear + 2; y++)
+            HashSet<int> allYears = new HashSet<int>();
+            for (int y = 1980; y <= currentYear; y++)
             {
-                if (!dbYears.Contains(y))
-                    dbYears.Add(y);
+                allYears.Add(y);
+            }
+            foreach (var y in dbYears)
+            {
+                allYears.Add(y);
             }
 
-            foreach (var y in dbYears.OrderByDescending(x => x))
+            foreach (var y in allYears.OrderByDescending(x => x))
             {
                 years.Add(new FilterItem { Label = $"Năm {y}", Value = y });
             }
@@ -136,7 +132,6 @@ namespace TaxPersonnelManagement.Views
             {
                 string search = txtSearch.Text.Trim();
                 string? dept = cbDepartment.SelectedItem as string;
-                int month = (cbMonth.SelectedItem as FilterItem)?.Value ?? 0;
                 int year = (cbYear.SelectedItem as FilterItem)?.Value ?? 0;
 
                 using (var context = new AppDbContext())
@@ -159,11 +154,6 @@ namespace TaxPersonnelManagement.Views
                     if (!string.IsNullOrEmpty(dept) && dept != "-- Tất cả bộ phận --")
                     {
                         filtered = filtered.Where(e => e.Personnel != null && e.Personnel.Department == dept);
-                    }
-
-                    if (month > 0)
-                    {
-                        filtered = filtered.Where(e => e.DecisionDate.HasValue && e.DecisionDate.Value.Month == month);
                     }
 
                     if (year > 0)
@@ -309,11 +299,7 @@ namespace TaxPersonnelManagement.Views
             if (cbYear.SelectedItem is FilterItem yi && yi.Value > 0)
                 yearPart = $"_Nam{yi.Value}";
 
-            string monthPart = "";
-            if (cbMonth.SelectedItem is FilterItem mi && mi.Value > 0)
-                monthPart = $"_Thang{mi.Value}";
-
-            return $"DanhSachXepLoai{yearPart}{monthPart}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return $"DanhSachXepLoai{yearPart}_{DateTime.Now:yyyyMMdd}.xlsx";
         }
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
@@ -354,8 +340,9 @@ namespace TaxPersonnelManagement.Views
 
                         // Row 3: Merged title
                         int filterYear = (cbYear.SelectedItem as FilterItem)?.Value ?? 0;
-                        string yearPartText = filterYear > 0 ? filterYear.ToString() : DateTime.Now.Year.ToString();
-                        string title = $"DANH SÁCH KẾT QUẢ ĐÁNH GIÁ, XẾP LOẠI CHẤT LƯỢNG CÔNG CHỨC NĂM {yearPartText}";
+                        string title = filterYear > 0 
+                            ? $"DANH SÁCH KẾT QUẢ ĐÁNH GIÁ, XẾP LOẠI CHẤT LƯỢNG CÔNG CHỨC NĂM {filterYear}"
+                            : "DANH SÁCH KẾT QUẢ ĐÁNH GIÁ, XẾP LOẠI CHẤT LƯỢNG CÔNG CHỨC QUA CÁC NĂM";
                         
                         var titleRange = worksheet.Range("A3:I3");
                         titleRange.Merge();
@@ -490,12 +477,6 @@ namespace TaxPersonnelManagement.Views
                                     worksheet.Cell(currentRow, 8).Value = 1;
                                 }
 
-                                // Compile Note
-                                var notesList = new List<string>();
-                                if (!string.IsNullOrEmpty(item.DecisionNumber)) notesList.Add($"QĐ số {item.DecisionNumber}");
-                                if (item.DecisionDate.HasValue) notesList.Add($"ngày {DatePickerHelper.FormatDateForDisplay(item.DecisionDate.Value)}");
-                                if (!string.IsNullOrEmpty(item.DecisionAgency)) notesList.Add($"của {item.DecisionAgency}");
-                                worksheet.Cell(currentRow, 9).Value = string.Join(" ", notesList);
 
                                 // Style and borders
                                 for (int c = 1; c <= 9; c++)
@@ -541,6 +522,433 @@ namespace TaxPersonnelManagement.Views
             {
                 MessageBox.Show($"Có lỗi khi xuất Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private async void btnImport_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new OpenFileDialog();
+            dlg.DefaultExt = ".xlsx";
+            dlg.Filter = "Excel Documents (.xlsx)|*.xlsx";
+
+            if (dlg.ShowDialog() == true)
+            {
+                string filePath = dlg.FileName;
+                try
+                {
+                    // Hiện hiệu ứng loading
+                    LoadingOverlay.Visibility = Visibility.Visible;
+
+                    // Open and parse the Excel file in a background thread to avoid UI freezing
+                    var result = await Task.Run(() => ParseEvaluationExcel(filePath));
+
+                    // Ẩn hiệu ứng loading sau khi đọc xong
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                    if (result.Items == null || !result.Items.Any())
+                    {
+                        MessageBox.Show("Không tìm thấy dữ liệu xếp loại hợp lệ trong file Excel.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // Confirm before saving
+                    string confirmMsg = $"Tìm thấy {result.Items.Count} dòng dữ liệu xếp loại.\n" +
+                                        $"- Định dạng file: {(result.IsExportedFormat ? "Mẫu chuẩn (Exported)" : "Danh sách tùy chỉnh (List)")}\n" +
+                                        $"- Năm đánh giá phát hiện: {result.DetectedYear}\n\n" +
+                                        "Bạn có chắc chắn muốn nhập dữ liệu này vào hệ thống? (Nếu đã tồn tại bản ghi cùng nhân sự và năm, hệ thống sẽ cập nhật xếp loại và thông tin quyết định mới nhất)";
+
+                    var confirmDialog = new ConfirmDialog(confirmMsg);
+                    if (Window.GetWindow(this) is Window parentWindow) confirmDialog.Owner = parentWindow;
+
+                    if (confirmDialog.ShowDialog() == true)
+                    {
+                        // Hiện hiệu ứng loading khi lưu vào database
+                        LoadingOverlay.Visibility = Visibility.Visible;
+
+                        int successCount = 0;
+                        int notFoundCount = 0;
+                        int errorCount = 0;
+                        var unmatchedNames = new List<string>();
+
+                        await Task.Run(() =>
+                        {
+                            using (var db = new AppDbContext())
+                            {
+                                // Load all personnel to memory for fast lookup
+                                var allPersonnel = db.Personnel.ToList();
+
+                                foreach (var item in result.Items)
+                                {
+                                    try
+                                    {
+                                        // Find personnel by CCCD first
+                                        Personnel? person = null;
+                                        if (!string.IsNullOrEmpty(item.CCCD))
+                                        {
+                                            person = allPersonnel.FirstOrDefault(p => p.IdentityCardNumber == item.CCCD);
+                                        }
+
+                                        // Fallback to FullName (normalized spacing)
+                                        if (person == null && !string.IsNullOrEmpty(item.FullName))
+                                        {
+                                            string normItemName = Regex.Replace(item.FullName.Trim(), @"\s+", " ");
+                                            person = allPersonnel.FirstOrDefault(p => 
+                                                Regex.Replace(p.FullName.Trim(), @"\s+", " ").Equals(normItemName, StringComparison.OrdinalIgnoreCase));
+                                        }
+
+                                        if (person != null)
+                                        {
+                                            // Check if EvaluationRecord already exists for this person and year
+                                            var record = db.EvaluationRecords.FirstOrDefault(r => r.PersonnelId == person.Id && r.Year == item.Year);
+                                            if (record != null)
+                                            {
+                                                // Update existing
+                                                record.Rating = item.Rating;
+                                                record.DecisionNumber = item.DecisionNumber;
+                                                record.DecisionDate = item.DecisionDate;
+                                                record.DecisionAgency = item.DecisionAgency;
+                                            }
+                                            else
+                                            {
+                                                // Create new
+                                                db.EvaluationRecords.Add(new EvaluationRecord
+                                                {
+                                                    PersonnelId = person.Id,
+                                                    Year = item.Year,
+                                                    Rating = item.Rating,
+                                                    DecisionNumber = item.DecisionNumber,
+                                                    DecisionDate = item.DecisionDate,
+                                                    DecisionAgency = item.DecisionAgency
+                                                });
+                                            }
+                                            successCount++;
+                                        }
+                                        else
+                                        {
+                                            notFoundCount++;
+                                            unmatchedNames.Add(item.FullName);
+                                        }
+                                    }
+                                    catch (Exception)
+                                    {
+                                        errorCount++;
+                                    }
+                                }
+
+                                if (successCount > 0)
+                                {
+                                    db.SaveChanges();
+                                }
+                            }
+                        });
+
+                        // Refresh view
+                        LoadFilterOptions();
+                        LoadData();
+
+                        // Ẩn hiệu ứng loading sau khi hoàn thành
+                        LoadingOverlay.Visibility = Visibility.Collapsed;
+
+                        string subMsg = $"Đã nhập thành công: {successCount} dòng.\n";
+                        if (notFoundCount > 0)
+                        {
+                            var distinctUnmatched = unmatchedNames.Distinct().ToList();
+                            string unmatchedListStr = distinctUnmatched.Count <= 5 
+                                ? string.Join(", ", distinctUnmatched) 
+                                : string.Join(", ", distinctUnmatched.Take(5)) + $" và {distinctUnmatched.Count - 5} người khác";
+                            
+                            subMsg += $"Không tìm thấy nhân sự (bỏ qua): {notFoundCount} dòng ({unmatchedListStr}).\n";
+                        }
+                        if (errorCount > 0)
+                        {
+                            subMsg += $"Bị lỗi dòng dữ liệu: {errorCount} dòng.";
+                        }
+
+                        var successWindow = new SuccessWindow("Nhập dữ liệu Excel thành công!", subMsg);
+                        if (Window.GetWindow(this) is Window p) successWindow.Owner = p;
+                        successWindow.ShowDialog();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Ẩn hiệu ứng loading nếu xảy ra lỗi
+                    LoadingOverlay.Visibility = Visibility.Collapsed;
+                    MessageBox.Show($"Lỗi khi đọc file Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private class ParseResult
+        {
+            public List<EvaluationImportItem> Items { get; set; } = new List<EvaluationImportItem>();
+            public bool IsExportedFormat { get; set; }
+            public int DetectedYear { get; set; }
+        }
+
+        private class EvaluationImportItem
+        {
+            public string FullName { get; set; } = string.Empty;
+            public string CCCD { get; set; } = string.Empty;
+            public string Rating { get; set; } = string.Empty;
+            public int Year { get; set; }
+            public string? DecisionNumber { get; set; }
+            public DateTime? DecisionDate { get; set; }
+            public string? DecisionAgency { get; set; }
+        }
+
+        private bool HasMark(IXLCell cell)
+        {
+            if (cell.IsEmpty()) return false;
+            string val = cell.Value.ToString().Trim();
+            return !string.IsNullOrEmpty(val) && val != "0";
+        }
+
+        private ParseResult ParseEvaluationExcel(string filePath)
+        {
+            var result = new ParseResult();
+
+            using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+            using (var workbook = new XLWorkbook(stream))
+            {
+                if (workbook.Worksheets.Count == 0) return result;
+                var worksheet = workbook.Worksheet(1);
+                var range = worksheet.RangeUsed();
+                if (range == null) return result;
+
+                // Detect format
+                bool isExportedFormat = false;
+                int headerRowIndex = -1;
+
+                // We search for headers in the first 15 rows
+                int maxRow = Math.Min(15, worksheet.LastRowUsed().RowNumber());
+                int maxCol = Math.Min(15, worksheet.LastColumnUsed().ColumnNumber());
+
+                for (int r = 1; r <= maxRow; r++)
+                {
+                    for (int c = 1; c <= maxCol; c++)
+                    {
+                        string val = worksheet.Cell(r, c).Value.ToString().Trim().ToLower();
+                        if (val.Contains("hoàn thành xuất sắc nhiệm vụ") || val.Contains("hoàn thành tốt nhiệm vụ"))
+                        {
+                            isExportedFormat = true;
+                            headerRowIndex = r - 1; // row 5 typically
+                            break;
+                        }
+                    }
+                    if (isExportedFormat) break;
+                }
+
+                int detectedYear = DateTime.Now.Year;
+                // Try to find the year in the first 10 rows (e.g., "NĂM 2026")
+                for (int r = 1; r <= 10; r++)
+                {
+                    for (int c = 1; c <= maxCol; c++)
+                    {
+                        string val = worksheet.Cell(r, c).Value.ToString();
+                        var matchYear = Regex.Match(val, @"NĂM\s*(\d{4})", RegexOptions.IgnoreCase);
+                        if (matchYear.Success)
+                        {
+                            detectedYear = int.Parse(matchYear.Groups[1].Value);
+                            break;
+                        }
+                    }
+                }
+
+                result.DetectedYear = detectedYear;
+                result.IsExportedFormat = isExportedFormat;
+
+                int nameCol = -1;
+                int cccdCol = -1;
+                int yearCol = -1;
+                int ratingCol = -1;
+                int decNoCol = -1;
+                int decDateCol = -1;
+                int decAgencyCol = -1;
+
+                if (!isExportedFormat)
+                {
+                    // Search for list format headers
+                    for (int r = 1; r <= Math.Min(10, worksheet.LastRowUsed().RowNumber()); r++)
+                    {
+                        for (int c = 1; c <= worksheet.LastColumnUsed().ColumnNumber(); c++)
+                        {
+                            string val = worksheet.Cell(r, c).Value.ToString().Trim().ToLower();
+                            if (val == "họ và tên" || val == "họ tên" || val == "tên" || val == "tên công chức" || val == "họ và tên công chức")
+                            {
+                                nameCol = c;
+                                headerRowIndex = r;
+                            }
+                            else if (val == "cccd" || val == "số cccd" || val == "số định danh" || val == "mã định danh")
+                            {
+                                cccdCol = c;
+                            }
+                            else if (val == "năm" || val == "năm đánh giá" || val == "năm xếp loại")
+                            {
+                                yearCol = c;
+                            }
+                            else if (val == "xếp loại" || val == "kết quả xếp loại" || val == "đánh giá" || val == "kết quả")
+                            {
+                                ratingCol = c;
+                            }
+                            else if (val == "số quyết định" || val == "số qđ")
+                            {
+                                decNoCol = c;
+                            }
+                            else if (val == "ngày quyết định" || val == "ngày qđ" || val == "ngày ký qđ")
+                            {
+                                decDateCol = c;
+                            }
+                            else if (val == "cơ quan quyết định" || val == "cơ quan ban hành" || val == "nơi ký" || val == "đơn vị ra qđ")
+                            {
+                                decAgencyCol = c;
+                            }
+                        }
+                        if (nameCol != -1 && ratingCol != -1)
+                        {
+                            break; // Found headers
+                        }
+                    }
+                }
+
+                int startRow = isExportedFormat ? headerRowIndex + 2 : headerRowIndex + 1;
+                int lastRow = worksheet.LastRowUsed().RowNumber();
+
+                for (int r = startRow; r <= lastRow; r++)
+                {
+                    try
+                    {
+                        if (isExportedFormat)
+                        {
+                            string name = worksheet.Cell(r, 2).Value.ToString().Trim();
+                            string cccd = worksheet.Cell(r, 4).Value.ToString().Trim();
+
+                            // Skip empty rows
+                            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(cccd))
+                                continue;
+
+                            // Normalize name spacing
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                name = Regex.Replace(name, @"\s+", " ");
+                            }
+
+                            // Clean CCCD formatting
+                            if (!string.IsNullOrEmpty(cccd))
+                            {
+                                cccd = Regex.Replace(cccd, @"\s+", "");
+                                if (cccd.EndsWith(".0")) cccd = cccd.Substring(0, cccd.Length - 2);
+                            }
+
+                            // Check if this is a Department header row
+                            if (string.IsNullOrEmpty(cccd) && (name.Contains("Tổ") || name.Contains("Ban") || name.Contains("Phòng")))
+                            {
+                                continue; // Skip department group row
+                            }
+
+                            string rating = "";
+                            if (HasMark(worksheet.Cell(r, 5))) rating = "Hoàn thành xuất sắc nhiệm vụ";
+                            else if (HasMark(worksheet.Cell(r, 6))) rating = "Hoàn thành tốt nhiệm vụ";
+                            else if (HasMark(worksheet.Cell(r, 7))) rating = "Hoàn thành nhiệm vụ";
+                            else if (HasMark(worksheet.Cell(r, 8))) rating = "Không hoàn thành nhiệm vụ";
+
+                            if (string.IsNullOrEmpty(rating))
+                                continue; // Skip if no rating is selected
+
+                            string? decNo = null;
+                            DateTime? decDate = null;
+                            string? decAgency = null;
+                            int rowYear = detectedYear;
+
+                            result.Items.Add(new EvaluationImportItem
+                            {
+                                FullName = name,
+                                CCCD = cccd,
+                                Rating = rating,
+                                Year = rowYear,
+                                DecisionNumber = decNo,
+                                DecisionDate = decDate,
+                                DecisionAgency = decAgency
+                            });
+                        }
+                        else
+                        {
+                            // List format
+                            if (nameCol == -1 || ratingCol == -1) continue;
+
+                            string name = worksheet.Cell(r, nameCol).Value.ToString().Trim();
+                            string ratingText = worksheet.Cell(r, ratingCol).Value.ToString().Trim();
+
+                            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(ratingText)) continue;
+
+                            // Normalize name spacing
+                            if (!string.IsNullOrEmpty(name))
+                            {
+                                name = Regex.Replace(name, @"\s+", " ");
+                            }
+
+                            // Map ratingText to standard ratings
+                            string rating = "";
+                            if (ratingText.Contains("xuất sắc", StringComparison.OrdinalIgnoreCase)) rating = "Hoàn thành xuất sắc nhiệm vụ";
+                            else if (ratingText.Contains("tốt", StringComparison.OrdinalIgnoreCase)) rating = "Hoàn thành tốt nhiệm vụ";
+                            else if (ratingText.Contains("không hoàn thành", StringComparison.OrdinalIgnoreCase)) rating = "Không hoàn thành nhiệm vụ";
+                            else if (ratingText.Contains("hoàn thành", StringComparison.OrdinalIgnoreCase)) rating = "Hoàn thành nhiệm vụ";
+                            else continue;
+
+                            string cccd = cccdCol != -1 ? worksheet.Cell(r, cccdCol).Value.ToString().Trim() : "";
+                            if (!string.IsNullOrEmpty(cccd))
+                            {
+                                cccd = Regex.Replace(cccd, @"\s+", "");
+                                if (cccd.EndsWith(".0")) cccd = cccd.Substring(0, cccd.Length - 2);
+                            }
+
+                            int rowYear = detectedYear;
+                            if (yearCol != -1 && !worksheet.Cell(r, yearCol).IsEmpty())
+                            {
+                                if (int.TryParse(worksheet.Cell(r, yearCol).Value.ToString().Trim(), out int y))
+                                {
+                                    rowYear = y;
+                                }
+                            }
+
+                            string? decNo = decNoCol != -1 ? worksheet.Cell(r, decNoCol).Value.ToString().Trim() : null;
+                            DateTime? decDate = null;
+                            if (decDateCol != -1 && !worksheet.Cell(r, decDateCol).IsEmpty())
+                            {
+                                var cell = worksheet.Cell(r, decDateCol);
+                                if (cell.DataType == XLDataType.DateTime)
+                                {
+                                    decDate = cell.GetDateTime();
+                                }
+                                else
+                                {
+                                    string dtStr = cell.Value.ToString().Trim();
+                                    if (DateTime.TryParse(dtStr, out DateTime dDate))
+                                    {
+                                        decDate = dDate;
+                                    }
+                                }
+                            }
+                            string? decAgency = decAgencyCol != -1 ? worksheet.Cell(r, decAgencyCol).Value.ToString().Trim() : null;
+
+                            result.Items.Add(new EvaluationImportItem
+                            {
+                                FullName = name,
+                                CCCD = cccd,
+                                Rating = rating,
+                                Year = rowYear,
+                                DecisionNumber = decNo,
+                                DecisionDate = decDate,
+                                DecisionAgency = decAgency
+                            });
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Ignore row error
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
