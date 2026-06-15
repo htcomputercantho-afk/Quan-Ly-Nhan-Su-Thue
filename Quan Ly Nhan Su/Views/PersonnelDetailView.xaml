@@ -1033,7 +1033,7 @@
 
                             <!-- Row 3 -->
                             <StackPanel Grid.Row="4" Grid.Column="0">
-                                <TextBlock Text="Ngày tính thâm niên công tác" Style="{StaticResource ModernLabel}"/>
+                                <TextBlock Text="Ngày tính phép" Style="{StaticResource ModernLabel}"/>
                                 <DatePicker x:Name="dpLeaveCalculationDate"
                                             Style="{StaticResource ModernDatePicker}"
                                             SelectedDateChanged="OnLeaveCalculationDateChanged"

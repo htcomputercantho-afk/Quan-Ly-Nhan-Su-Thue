@@ -1,3 +1,17 @@
+## v1.5.2 — 2026-06-15
+- [Tính năng] Cho phép chỉnh sửa trực tiếp (nhập tay) thông tin Quyết định trên bảng Xếp loại:
+    + Áp dụng cho 3 cột: Số QĐ, Ngày ký QĐ, Đơn vị ra QĐ.
+    + Tự động lưu thay đổi xuống cơ sở dữ liệu ngay khi kết thúc chỉnh sửa hoặc nhấp chuột ra ngoài.
+    + Tự động kiểm tra định dạng ngày tháng hợp lệ đối với cột Ngày ký QĐ và hiển thị cảnh báo nếu nhập sai.
+- [Giao diện] Đồng bộ hóa toàn bộ các thông báo/cảnh báo trên màn hình Xếp loại:
+    + Thay thế hộp thoại MessageBox mặc định bằng WarningWindow tùy chỉnh đẹp mắt, đồng bộ và chuyên nghiệp.
+    + Khi chỉnh sửa năm xếp loại bị trùng hoặc ngày ký quyết định không hợp lệ, hệ thống sẽ hiển thị WarningWindow và tự động hoàn tác (revert) về dữ liệu cũ từ cơ sở dữ liệu cho dòng hiện tại.
+- [Tối ưu UX] Trải nghiệm chỉnh sửa trực tiếp (inline editing) mượt mà:
+    + Tích hợp tính năng chạm một lần để sửa ngay (Single-click Editing) trên bảng dữ liệu, thay thế cho cơ chế double-click phức tạp.
+    + Tự động xổ danh sách lựa chọn của ComboBox NĂM ngay khi kích hoạt sửa.
+    + Tự động di chuyển con trỏ chuột và bôi đen toàn bộ nội dung ô nhập của DatePicker NGÀY KÝ QĐ giúp người dùng gõ đè ngày mới lập tức.
+- [Giao diện] Đổi nhãn "Ngày tính thâm niên công tác" thành "Ngày tính phép" tại màn hình chi tiết cán bộ cho rõ nghĩa hơn.
+
 ## v1.5.1 — 2026-06-12
 - [Tối ưu] Loại bỏ bộ lọc theo tháng dư thừa tại màn hình Xếp loại do đánh giá thi đua chỉ thực hiện theo năm.
 - [Tính năng] Cải tiến xuất/nhập Excel xếp loại:

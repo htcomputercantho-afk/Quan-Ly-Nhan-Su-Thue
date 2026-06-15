@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
+             xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
              Language="vi-VN"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200">
@@ -168,7 +169,8 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <DataGrid x:Name="dgEvaluation" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="True" 
+                <DataGrid x:Name="dgEvaluation" Grid.Row="0" AutoGenerateColumns="False" IsReadOnly="False" 
+                          CellEditEnding="dgEvaluation_CellEditEnding"
                           CanUserAddRows="False" HeadersVisibility="Column"
                           BorderThickness="0" VerticalGridLinesBrush="Transparent" HorizontalGridLinesBrush="#F1F5F9"
                           GridLinesVisibility="Horizontal" 
@@ -213,6 +215,7 @@
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="DataGridCell_PreviewMouseLeftButtonDown"/>
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="#EFF6FF"/>
@@ -253,7 +256,7 @@
                     
                     <DataGrid.Columns>
                         <!-- STT -->
-                        <DataGridTemplateColumn Header="STT" Width="60" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="STT" IsReadOnly="True" Width="60" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding STT}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#64748B"/>
@@ -261,8 +264,26 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         
+                        <!-- Năm áp dụng -->
+                        <DataGridTemplateColumn Header="NĂM" Width="90" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Year}" Style="{StaticResource CenterAlignedColumn}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <ComboBox SelectedItem="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              ItemsSource="{Binding AvailableYears, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              Style="{DynamicResource MaterialDesignComboBox}"
+                                              VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                              Loaded="ComboBox_Loaded"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
+
                         <!-- Họ và Tên -->
-                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" IsReadOnly="True" Width="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8 0">
@@ -298,10 +319,10 @@
                         </DataGridTemplateColumn>
 
                         <!-- Số CCCD -->
-                        <DataGridTextColumn Header="SỐ CCCD" Binding="{Binding Personnel.IdentityCardNumber}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                        <DataGridTextColumn Header="SỐ CCCD" IsReadOnly="True" Binding="{Binding Personnel.IdentityCardNumber}" Width="130" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
                         <!-- Xếp loại -->
-                        <DataGridTemplateColumn Header="XẾP LOẠI" Width="240" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="XẾP LOẠI" IsReadOnly="True" Width="240" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdRating" Background="#F1F5F9" CornerRadius="6" Padding="10 6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 4">
@@ -333,7 +354,22 @@
                         <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
                         <!-- Ngày ký QĐ -->
-                        <DataGridTextColumn Header="NGÀY KÝ QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="120" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                        <DataGridTemplateColumn Header="NGÀY KÝ QĐ" Width="150" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Style="{StaticResource CenterAlignedColumn}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <DatePicker SelectedDate="{Binding DecisionDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Style="{DynamicResource MaterialDesignOutlinedDatePicker}"
+                                                helpers:DatePickerHelper.FixCalendarLocale="True"
+                                                helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                                Loaded="DatePicker_Loaded"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
 
                         <!-- Đơn vị ra QĐ -->
                         <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionAgency}" Width="*" MinWidth="180" ElementStyle="{StaticResource CenterAlignedColumn}" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>

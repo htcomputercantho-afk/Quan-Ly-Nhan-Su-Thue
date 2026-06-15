@@ -21,6 +21,7 @@ namespace TaxPersonnelManagement.Views
         private const int PageSize = 20;
         private int _totalPages = 1;
         private System.Windows.Threading.DispatcherTimer? _searchDebounceTimer;
+        public List<int> AvailableYears { get; set; } = new List<int>();
 
         public EvaluationListView()
         {
@@ -87,7 +88,9 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tải danh mục bộ phận: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                var warning = new WarningWindow($"Lỗi tải danh mục bộ phận: {ex.Message}", "Lỗi");
+                if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                warning.ShowDialog();
             }
 
             // 3. Year Filter
@@ -118,7 +121,9 @@ namespace TaxPersonnelManagement.Views
                 allYears.Add(y);
             }
 
-            foreach (var y in allYears.OrderByDescending(x => x))
+            AvailableYears = allYears.OrderByDescending(x => x).ToList();
+
+            foreach (var y in AvailableYears)
             {
                 years.Add(new FilterItem { Label = $"Năm {y}", Value = y });
             }
@@ -210,7 +215,9 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi tải dữ liệu xếp loại: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                var warning = new WarningWindow($"Lỗi tải dữ liệu xếp loại: {ex.Message}", "Lỗi");
+                if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                warning.ShowDialog();
             }
         }
 
@@ -293,6 +300,257 @@ namespace TaxPersonnelManagement.Views
             LoadData();
         }
 
+        private T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = System.Windows.Media.VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is T t)
+                    return t;
+                else
+                {
+                    T? childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
+        }
+
+        private T? FindVisualParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            DependencyObject parentObject = System.Windows.Media.VisualTreeHelper.GetParent(child);
+            if (parentObject == null) return null;
+            if (parentObject is T parent)
+                return parent;
+            else
+                return FindVisualParent<T>(parentObject);
+        }
+
+        private void DataGridCell_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is DataGridCell cell && !cell.IsEditing && !cell.IsReadOnly)
+            {
+                var grid = FindVisualParent<DataGrid>(cell);
+                if (grid != null)
+                {
+                    cell.Focus();
+                    grid.BeginEdit();
+                }
+            }
+        }
+
+        private void ComboBox_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is ComboBox cb)
+            {
+                cb.IsDropDownOpen = true;
+            }
+        }
+
+        private void DatePicker_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is DatePicker dp)
+            {
+                var textBox = FindVisualChild<TextBox>(dp);
+                if (textBox != null)
+                {
+                    textBox.Focus();
+                    textBox.SelectAll();
+                }
+            }
+        }
+
+        private void dgEvaluation_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            if (e.EditAction == DataGridEditAction.Cancel)
+                return;
+
+            var record = e.Row.Item as EvaluationRecord;
+            if (record == null)
+                return;
+
+            string header = e.Column.Header?.ToString() ?? "";
+            bool isUpdated = false;
+
+            if (header == "SỐ QĐ")
+            {
+                var textBox = e.EditingElement as TextBox;
+                if (textBox != null)
+                {
+                    string newValue = textBox.Text.Trim();
+                    string? val = string.IsNullOrEmpty(newValue) ? null : newValue;
+                    if (record.DecisionNumber != val)
+                    {
+                        record.DecisionNumber = val;
+                        isUpdated = true;
+                    }
+                }
+            }
+            else if (header == "NĂM")
+            {
+                var comboBox = FindVisualChild<ComboBox>(e.EditingElement);
+                if (comboBox != null && comboBox.SelectedItem is int newYear)
+                {
+                    int oldYear = 0;
+                    using (var db = new AppDbContext())
+                    {
+                        var originalRecord = db.EvaluationRecords.AsNoTracking().FirstOrDefault(r => r.Id == record.Id);
+                        if (originalRecord != null)
+                        {
+                            oldYear = originalRecord.Year;
+                        }
+
+                        // Check if duplicate year for this personnel
+                        bool exists = db.EvaluationRecords.Any(r => r.PersonnelId == record.PersonnelId && r.Year == newYear && r.Id != record.Id);
+                        if (exists)
+                        {
+                            var warning = new WarningWindow($"Nhân sự này đã có bản ghi xếp loại cho năm {newYear}!", "Thông báo");
+                            if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                            warning.ShowDialog();
+
+                            if (oldYear > 0)
+                            {
+                                record.Year = oldYear;
+                            }
+
+                            // Force refresh display safely after edit transaction is complete
+                            Dispatcher.BeginInvoke(new Action(() => 
+                            {
+                                try
+                                {
+                                    var view = System.Windows.Data.CollectionViewSource.GetDefaultView(dgEvaluation.ItemsSource) as System.ComponentModel.IEditableCollectionView;
+                                    if (view != null)
+                                    {
+                                        if (view.IsEditingItem)
+                                        {
+                                            view.CancelEdit();
+                                        }
+                                        dgEvaluation.Items.Refresh();
+                                    }
+                                }
+                                catch (Exception refreshEx)
+                                {
+                                    App.DebugLog("Error refreshing DataGrid: " + refreshEx.Message);
+                                }
+                            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                            return;
+                        }
+                    }
+
+                    if (oldYear != newYear)
+                    {
+                        record.Year = newYear;
+                        isUpdated = true;
+                    }
+                }
+            }
+            else if (header == "NGÀY KÝ QĐ")
+            {
+                var datePicker = FindVisualChild<DatePicker>(e.EditingElement);
+                if (datePicker != null)
+                {
+                    // Validate if the DatePicker has a validation error
+                    if (Validation.GetHasError(datePicker))
+                    {
+                        var warning = new WarningWindow("Định dạng ngày tháng không hợp lệ (Ví dụ hợp lệ: 15/06/2026)", "Thông báo");
+                        if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                        warning.ShowDialog();
+
+                        using (var db = new AppDbContext())
+                        {
+                            var originalRecord = db.EvaluationRecords.AsNoTracking().FirstOrDefault(r => r.Id == record.Id);
+                            if (originalRecord != null)
+                            {
+                                record.DecisionDate = originalRecord.DecisionDate;
+                            }
+                        }
+
+                        // Force refresh display safely after edit transaction is complete
+                        Dispatcher.BeginInvoke(new Action(() => 
+                        {
+                            try
+                            {
+                                var view = System.Windows.Data.CollectionViewSource.GetDefaultView(dgEvaluation.ItemsSource) as System.ComponentModel.IEditableCollectionView;
+                                if (view != null)
+                                {
+                                    if (view.IsEditingItem)
+                                    {
+                                        view.CancelEdit();
+                                    }
+                                    dgEvaluation.Items.Refresh();
+                                }
+                            }
+                            catch (Exception refreshEx)
+                            {
+                                App.DebugLog("Error refreshing DataGrid: " + refreshEx.Message);
+                            }
+                        }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+                        return;
+                    }
+
+                    record.DecisionDate = datePicker.SelectedDate;
+                    isUpdated = true;
+                }
+            }
+            else if (header == "ĐƠN VỊ RA QĐ")
+            {
+                var textBox = e.EditingElement as TextBox;
+                if (textBox != null)
+                {
+                    string newValue = textBox.Text.Trim();
+                    string? val = string.IsNullOrEmpty(newValue) ? null : newValue;
+                    if (record.DecisionAgency != val)
+                    {
+                        record.DecisionAgency = val;
+                        isUpdated = true;
+                    }
+                }
+            }
+
+            if (isUpdated)
+            {
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var dbRecord = db.EvaluationRecords.FirstOrDefault(r => r.Id == record.Id);
+                        if (dbRecord != null)
+                        {
+                            dbRecord.Year = record.Year;
+                            dbRecord.DecisionNumber = record.DecisionNumber;
+                            dbRecord.DecisionDate = record.DecisionDate;
+                            dbRecord.DecisionAgency = record.DecisionAgency;
+                            db.SaveChanges();
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var warning = new WarningWindow($"Lỗi lưu dữ liệu tự động: {ex.Message}", "Lỗi");
+                    if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                    warning.ShowDialog();
+                }
+
+                // Force refresh display safely after edit transaction is complete
+                Dispatcher.BeginInvoke(new Action(() => 
+                {
+                    try
+                    {
+                        var view = System.Windows.Data.CollectionViewSource.GetDefaultView(dgEvaluation.ItemsSource) as System.ComponentModel.IEditableCollectionView;
+                        if (view != null && !view.IsEditingItem && !view.IsAddingNew)
+                        {
+                            dgEvaluation.Items.Refresh();
+                        }
+                    }
+                    catch (Exception refreshEx)
+                    {
+                        App.DebugLog("Error refreshing DataGrid: " + refreshEx.Message);
+                    }
+                }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }
+        }
+
         private string GenerateExportFileName()
         {
             string yearPart = "";
@@ -309,7 +567,9 @@ namespace TaxPersonnelManagement.Views
                 var data = _fullEvaluationList;
                 if (data == null || !data.Any())
                 {
-                    MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    var warning = new WarningWindow("Không có dữ liệu để xuất!", "Thông báo");
+                    if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                    warning.ShowDialog();
                     return;
                 }
 
@@ -520,7 +780,9 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Có lỗi khi xuất Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                var warning = new WarningWindow($"Có lỗi khi xuất Excel: {ex.Message}", "Lỗi");
+                if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                warning.ShowDialog();
             }
         }
 
@@ -546,7 +808,9 @@ namespace TaxPersonnelManagement.Views
 
                     if (result.Items == null || !result.Items.Any())
                     {
-                        MessageBox.Show("Không tìm thấy dữ liệu xếp loại hợp lệ trong file Excel.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        var warning = new WarningWindow("Không tìm thấy dữ liệu xếp loại hợp lệ trong file Excel.", "Thông báo");
+                        if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                        warning.ShowDialog();
                         return;
                     }
 
@@ -672,7 +936,9 @@ namespace TaxPersonnelManagement.Views
                 {
                     // Ẩn hiệu ứng loading nếu xảy ra lỗi
                     LoadingOverlay.Visibility = Visibility.Collapsed;
-                    MessageBox.Show($"Lỗi khi đọc file Excel: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    var warning = new WarningWindow($"Lỗi khi đọc file Excel: {ex.Message}", "Lỗi");
+                    if (Window.GetWindow(this) is Window p) warning.Owner = p;
+                    warning.ShowDialog();
                 }
             }
         }
