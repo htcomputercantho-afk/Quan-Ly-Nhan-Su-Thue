@@ -307,7 +307,7 @@ namespace TaxPersonnelManagement.Views
                 DependencyObject child = System.Windows.Media.VisualTreeHelper.GetChild(obj, i);
                 if (child != null && child is T t)
                     return t;
-                else
+                else if (child != null)
                 {
                     T? childOfChild = FindVisualChild<T>(child);
                     if (childOfChild != null)
@@ -985,8 +985,8 @@ namespace TaxPersonnelManagement.Views
                 int headerRowIndex = -1;
 
                 // We search for headers in the first 15 rows
-                int maxRow = Math.Min(15, worksheet.LastRowUsed().RowNumber());
-                int maxCol = Math.Min(15, worksheet.LastColumnUsed().ColumnNumber());
+                int maxRow = Math.Min(15, worksheet.LastRowUsed()?.RowNumber() ?? 1);
+                int maxCol = Math.Min(15, worksheet.LastColumnUsed()?.ColumnNumber() ?? 1);
 
                 for (int r = 1; r <= maxRow; r++)
                 {
@@ -1033,9 +1033,9 @@ namespace TaxPersonnelManagement.Views
                 if (!isExportedFormat)
                 {
                     // Search for list format headers
-                    for (int r = 1; r <= Math.Min(10, worksheet.LastRowUsed().RowNumber()); r++)
+                    for (int r = 1; r <= Math.Min(10, worksheet.LastRowUsed()?.RowNumber() ?? 1); r++)
                     {
-                        for (int c = 1; c <= worksheet.LastColumnUsed().ColumnNumber(); c++)
+                        for (int c = 1; c <= (worksheet.LastColumnUsed()?.ColumnNumber() ?? 1); c++)
                         {
                             string val = worksheet.Cell(r, c).Value.ToString().Trim().ToLower();
                             if (val == "họ và tên" || val == "họ tên" || val == "tên" || val == "tên công chức" || val == "họ và tên công chức")
@@ -1076,7 +1076,7 @@ namespace TaxPersonnelManagement.Views
                 }
 
                 int startRow = isExportedFormat ? headerRowIndex + 2 : headerRowIndex + 1;
-                int lastRow = worksheet.LastRowUsed().RowNumber();
+                int lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 1;
 
                 for (int r = startRow; r <= lastRow; r++)
                 {
