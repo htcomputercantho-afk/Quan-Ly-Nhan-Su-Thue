@@ -181,7 +181,8 @@ namespace TaxPersonnelManagement.Views
                         "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                     };
 
-                    _fullEvaluationList = filtered.OrderBy(e => 
+                    _fullEvaluationList = filtered.OrderByDescending(e => e.Year)
+                    .ThenBy(e => 
                     {
                         string d = (e.Personnel?.Department ?? "").Trim();
                         int idx = deptOrder.FindIndex(o => o.Equals(d, StringComparison.OrdinalIgnoreCase));
@@ -206,7 +207,6 @@ namespace TaxPersonnelManagement.Views
                         return 99;
                     })
                     .ThenBy(e => e.Personnel?.FullName)
-                    .ThenByDescending(e => e.Year)
                     .ToList();
 
                     _currentPage = 1;
@@ -940,6 +940,17 @@ namespace TaxPersonnelManagement.Views
                     if (Window.GetWindow(this) is Window p) warning.Owner = p;
                     warning.ShowDialog();
                 }
+            }
+        }
+
+        private void btnBulkDecision_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new BulkDecisionDialog();
+            dialog.Owner = Window.GetWindow(this);
+            if (dialog.ShowDialog() == true)
+            {
+                LoadFilterOptions();
+                LoadData();
             }
         }
 

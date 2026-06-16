@@ -1,3 +1,18 @@
+## v1.5.3 — 2026-06-16
+- [Tính năng] Quyết định xếp loại hàng loạt:
+    + Bổ sung nút "Quyết định hàng loạt" tại màn hình quản lý Xếp loại để cập nhật thông tin Quyết định cho toàn bộ nhân sự xếp loại trong năm được chọn.
+    + Hỗ trợ giao diện cửa sổ nhập liệu BulkDecisionDialog dạng thẻ góc bo tròn và hiệu ứng đổ bóng mờ premium.
+    + Kiểm tra điều kiện thông minh: Tự động cảnh báo nếu chưa có dữ liệu xếp loại cho năm được chọn và xác nhận số lượng cán bộ sẽ được cập nhật.
+- [Tối ưu UX] Ghi nhớ vị trí cuộn thông minh (Scroll Memory):
+    + Lưu chính xác chỉ số `VerticalOffset` của ScrollViewer trên bảng DataGrid danh sách trước khi vào xem/sửa chi tiết.
+    + Phục hồi chính xác vị trí cuộn tuyệt đối khi quay về trang danh sách (ở đầu vẫn ở đầu, ở giữa vẫn ở giữa, ở cuối vẫn ở cuối) bằng cách đồng bộ sự kiện Loaded và phân trang, loại bỏ hiện tượng nhảy vị trí hoặc đẩy xuống đáy viewport.
+    + Khóa cột Năm xếp loại thành chỉ đọc (Read-only) tránh vô tình sửa đổi làm lệch nhóm năm.
+- [Tính năng] Đồng bộ công thức ngày nghỉ phép năm mới:
+    + Cập nhật công thức: `Số năm tính phép = Năm hiện tại - Năm tính phép + 1`, chuẩn hóa số ngày phép tổng cộng = `(Số năm / 5) + 12`.
+    + Đồng bộ thống nhất công thức này giữa màn hình Chi tiết cán bộ và Báo cáo phép năm (LeaveDetailView).
+- [Giao diện] Cải tiến bố cục Tab chuyên nghiệp:
+    + Khắc phục triệt để lỗi hoán đổi/nhảy vị trí của các dòng Tab trên màn hình Chi tiết cán bộ khi thay đổi kích thước cửa sổ thông qua Custom ControlTemplate sử dụng WrapPanel làm Host.
+
 ## v1.5.2 — 2026-06-15
 - [Tính năng] Cho phép chỉnh sửa trực tiếp (nhập tay) thông tin Quyết định trên bảng Xếp loại:
     + Áp dụng cho 3 cột: Số QĐ, Ngày ký QĐ, Đơn vị ra QĐ.

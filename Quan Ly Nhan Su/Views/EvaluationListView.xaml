@@ -144,6 +144,20 @@
                         </StackPanel>
                     </Button>
 
+                    <!-- Bulk Decision Button -->
+                    <Button Height="40" Margin="8 0 0 10"
+                            Style="{DynamicResource MaterialDesignRaisedButton}"
+                            materialDesign:ButtonAssist.CornerRadius="8"
+                            Background="#7B1FA2" BorderThickness="0" Foreground="White"
+                            ToolTip="Cập nhật quyết định khen thưởng xếp loại hàng loạt cho các nhân sự trong năm"
+                            Click="btnBulkDecision_Click"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ClipboardEditOutline" VerticalAlignment="Center" Margin="0 0 8 0" Width="18" Height="18"/>
+                            <TextBlock Text="Quyết định hàng loạt" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
+                        </StackPanel>
+                    </Button>
+
                     <!-- Export Button -->
                     <Button Height="40" Margin="8 0 0 10"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
@@ -265,21 +279,12 @@
                         </DataGridTemplateColumn>
                         
                         <!-- Năm áp dụng -->
-                        <DataGridTemplateColumn Header="NĂM" Width="90" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="NĂM" IsReadOnly="True" Width="90" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Year}" Style="{StaticResource CenterAlignedColumn}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.CellEditingTemplate>
-                                <DataTemplate>
-                                    <ComboBox SelectedItem="{Binding Year, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                              ItemsSource="{Binding AvailableYears, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                              Style="{DynamicResource MaterialDesignComboBox}"
-                                              VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                                              Loaded="ComboBox_Loaded"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellEditingTemplate>
                         </DataGridTemplateColumn>
 
                         <!-- Họ và Tên -->

@@ -421,15 +421,14 @@ namespace TaxPersonnelManagement.Views
         private int CalculateTotalAnnualLeave(Personnel p, int selectedYear)
         {
             int baseDays = 12;
-            if (p.TaxAuthorityStartDate.HasValue || p.StartDate.HasValue)
+            // Get the calculation start date: priority is LeaveCalculationDate, then TaxAuthorityStartDate, then StartDate
+            DateTime? targetStart = p.LeaveCalculationDate ?? p.TaxAuthorityStartDate ?? p.StartDate;
+
+            if (targetStart.HasValue)
             {
-                DateTime start = p.TaxAuthorityStartDate ?? p.StartDate!.Value;
-                int years = selectedYear - start.Year;
-                if (selectedYear == DateTime.Now.Year)
-                {
-                    DateTime now = DateTime.Now;
-                    if (now < start.AddYears(years)) years--;
-                }
+                DateTime start = targetStart.Value;
+                // Formula: Số năm tính ngày phép = Năm hiện tại - Năm tính phép + 1
+                int years = selectedYear - start.Year + 1;
                 if (years < 0) years = 0;
                 baseDays += (years / 5);
             }

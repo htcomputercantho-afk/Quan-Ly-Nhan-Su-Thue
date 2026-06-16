@@ -20,6 +20,7 @@ namespace TaxPersonnelManagement.Views
         private const int PageSize = 20;
         private int _totalPages = 1;
         private System.Windows.Threading.DispatcherTimer? _searchDebounceTimer;
+        private double? _savedScrollOffset = null; // Ghi nhớ vị trí cuộn trước khi update
 
         public int? TargetPersonnelId { get; set; }
 
@@ -57,7 +58,18 @@ namespace TaxPersonnelManagement.Views
                 LoadData();
 
                 // Responsive: kiểm tra ngay khi load và mỗi khi resize
-                this.Loaded += (s, e) => { IsCompact = this.ActualWidth < 1400; ApplyCompactMode(); };
+                this.Loaded += (s, e) =>
+                {
+                    IsCompact = this.ActualWidth < 1400;
+                    ApplyCompactMode();
+                    if (TargetPersonnelId.HasValue)
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            RestoreScrollAndSelection();
+                        }), System.Windows.Threading.DispatcherPriority.Loaded);
+                    }
+                };
                 this.SizeChanged += (s, e) => { IsCompact = e.NewSize.Width < 1400; ApplyCompactMode(); };
             }
             catch (Exception ex)
@@ -298,17 +310,10 @@ namespace TaxPersonnelManagement.Views
             // Handle Target Selection and Scroll
             if (TargetPersonnelId.HasValue)
             {
-                var targetItem = pageItems.FirstOrDefault(p => p.Id == TargetPersonnelId.Value);
-                if (targetItem != null)
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    // Use Dispatcher to ensure the DataGrid has loaded the items
-                    Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        dgPersonnel.SelectedItem = targetItem;
-                        dgPersonnel.ScrollIntoView(targetItem);
-                        TargetPersonnelId = null; // Reset after focusing
-                    }), System.Windows.Threading.DispatcherPriority.Background);
-                }
+                    RestoreScrollAndSelection();
+                }), System.Windows.Threading.DispatcherPriority.Background);
             }
 
             if (totalItems == 0)
@@ -327,8 +332,8 @@ namespace TaxPersonnelManagement.Views
             btnPrevPage.IsEnabled = _currentPage > 1;
             btnNextPage.IsEnabled = _currentPage < _totalPages;
 
-            // Scroll DataGrid to top on page change
-            if (pageItems.Count > 0)
+            // Scroll DataGrid to top on page change (only if not restoring scroll/target)
+            if (pageItems.Count > 0 && !TargetPersonnelId.HasValue)
             {
                 dgPersonnel.ScrollIntoView(pageItems[0]);
             }
@@ -402,6 +407,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (Application.Current.MainWindow is MainWindow mw)
             {
+                _savedScrollOffset = null; // Thêm mới thì không khôi phục cuộn
                 mw.NavigateToPersonnelDetail(null);
             }
         }
@@ -424,6 +430,13 @@ namespace TaxPersonnelManagement.Views
             int? id = sender is Button btn ? btn.Tag as int?
                      : sender is MenuItem mi ? mi.Tag as int? : null;
             if (id == null) return;
+
+            // Lưu lại vị trí cuộn hiện tại trước khi chuyển hướng sang màn hình update
+            var scrollViewer = FindVisualChild<ScrollViewer>(dgPersonnel);
+            if (scrollViewer != null)
+            {
+                _savedScrollOffset = scrollViewer.VerticalOffset;
+            }
 
             using (var context = new AppDbContext())
             {
@@ -622,6 +635,64 @@ namespace TaxPersonnelManagement.Views
             double nameWidth = Math.Max(nameMinWidth, available - fixedColumnsTotal);
 
             dgPersonnel.Columns[1].Width = new DataGridLength(nameWidth);
+        }
+
+        private void RestoreScrollAndSelection()
+        {
+            if (!TargetPersonnelId.HasValue) return;
+
+            var pageItems = dgPersonnel.ItemsSource as List<Personnel>;
+            if (pageItems == null) return;
+
+            var targetItem = pageItems.FirstOrDefault(p => p.Id == TargetPersonnelId.Value);
+            if (targetItem == null)
+            {
+                // Target item not found in the current page, clear target and saved offset
+                TargetPersonnelId = null;
+                _savedScrollOffset = null;
+                return;
+            }
+
+            dgPersonnel.SelectedItem = targetItem;
+            dgPersonnel.UpdateLayout();
+
+            var scrollViewer = FindVisualChild<ScrollViewer>(dgPersonnel);
+            if (scrollViewer != null)
+            {
+                if (_savedScrollOffset.HasValue)
+                {
+                    scrollViewer.ScrollToVerticalOffset(_savedScrollOffset.Value);
+                    _savedScrollOffset = null; // Clear offset since we successfully restored it
+                }
+                else
+                {
+                    dgPersonnel.ScrollIntoView(targetItem);
+                    dgPersonnel.UpdateLayout();
+                    int itemIndex = dgPersonnel.Items.IndexOf(targetItem);
+                    if (itemIndex != -1)
+                    {
+                        scrollViewer.ScrollToVerticalOffset(Math.Max(0, itemIndex - 1));
+                    }
+                }
+                TargetPersonnelId = null; // Clear target only when we successfully restored scroll/viewport
+            }
+        }
+
+        private T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = System.Windows.Media.VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is T t)
+                    return t;
+                else if (child != null)
+                {
+                    T? childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
         }
     }
 }

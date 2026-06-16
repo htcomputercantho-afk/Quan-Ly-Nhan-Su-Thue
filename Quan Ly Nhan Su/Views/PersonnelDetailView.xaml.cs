@@ -1554,11 +1554,8 @@ namespace TaxPersonnelManagement.Views
             {
                 DateTime start = targetStartDate.Value;
 
-                // Calculate full years worked
-                // Simple approximation or strict year difference?
-                // Using strict year diff logic:
-                int years = now.Year - start.Year;
-                if (now < start.AddYears(years)) years--;
+                // New formula: Số năm tính ngày phép = Năm hiện tại - Năm tính phép + 1
+                int years = now.Year - start.Year + 1;
 
                 if (years < 0) years = 0;
 

@@ -1,0 +1,196 @@
+<Window x:Class="TaxPersonnelManagement.Views.BulkDecisionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
+        mc:Ignorable="d"
+        Title="Nhập quyết định hàng loạt" Width="480" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Language="vi-VN">
+
+    <Window.Resources>
+        <!-- Custom Purple Button Style -->
+        <Style x:Key="PurpleButtonStyle" TargetType="Button" BasedOn="{StaticResource PremiumButtonStyle}">
+            <Setter Property="Background" Value="#7B1FA2"/>
+            <Setter Property="BorderBrush" Value="#7B1FA2"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                     <Setter Property="Background" Value="#6A1B9A"/>
+                     <Setter Property="BorderBrush" Value="#6A1B9A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Custom Gray Outline Button Style -->
+        <Style x:Key="GrayOutlineButtonStyle" TargetType="Button" BasedOn="{StaticResource PremiumOutlineButtonStyle}">
+            <Setter Property="BorderBrush" Value="#8A9099"/>
+            <Setter Property="Foreground" Value="#555555"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F1F5F9"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Modern DatePicker Style (matching PersonnelDetailView) -->
+        <Style x:Key="ModernDatePicker" TargetType="DatePicker">
+            <Setter Property="Language" Value="vi-VN"/>
+            <Setter Property="helpers:DatePickerHelper.FixCalendarLocale" Value="True"/>
+            <Setter Property="helpers:DatePickerHelper.EnableSmartDateEntry" Value="True"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#D0D0D0"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Padding" Value="10 0"/>
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox x:Name="PART_TextBox" 
+                                                   Grid.Column="0"
+                                                   HorizontalContentAlignment="Stretch"
+                                                   VerticalContentAlignment="Center"
+                                                   Background="Transparent" 
+                                                   BorderThickness="0"
+                                                   Padding="{TemplateBinding Padding}"
+                                                   Foreground="{TemplateBinding Foreground}"
+                                                   FontWeight="{TemplateBinding FontWeight}"
+                                                   Focusable="True">
+                                    <DatePickerTextBox.Template>
+                                        <ControlTemplate TargetType="{x:Type DatePickerTextBox}">
+                                            <Grid>
+                                                <ScrollViewer x:Name="PART_ContentHost" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                <TextBlock x:Name="Watermark" Text="Chọn ngày ký (dd/MM/yyyy)" 
+                                                           IsHitTestVisible="False" 
+                                                           Foreground="#AAAAAA" Margin="10 0 0 0"
+                                                           VerticalAlignment="Center" 
+                                                           Visibility="Hidden"
+                                                           FontSize="13.5"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="Text" Value="">
+                                                    <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </DatePickerTextBox.Template>
+                                </DatePickerTextBox>
+
+                                <Button x:Name="PART_Button" 
+                                        Grid.Column="1" 
+                                        Width="30"
+                                        Padding="0"
+                                        Margin="0 0 5 0"
+                                        Background="Transparent" 
+                                        BorderThickness="0"
+                                        Foreground="#7B1FA2"
+                                        Style="{DynamicResource MaterialDesignToolButton}">
+                                    <materialDesign:PackIcon Kind="CalendarMonth" Width="18" Height="18"/>
+                                </Button>
+
+                                <Popup x:Name="PART_Popup" 
+                                       AllowsTransparency="True" 
+                                       Placement="Bottom" 
+                                       StaysOpen="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="16" BorderBrush="#E2E8F0" BorderThickness="1" Margin="15">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="25" ShadowDepth="5" Opacity="0.15" Color="#000000"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Content -->
+                <RowDefinition Height="Auto"/> <!-- Footer -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="24 22 24 10" MouseDown="Header_MouseDown" Background="Transparent" Cursor="SizeAll">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="5" Height="24" CornerRadius="2.5" Background="#7B1FA2" Margin="0 0 12 0"/>
+                    <StackPanel>
+                        <TextBlock Text="Quyết Định Hàng Loạt" FontSize="18.5" FontWeight="Bold" Foreground="#1E293B"/>
+                        <TextBlock Text="Cập nhật QĐ cho tất cả xếp loại trong năm được chọn" FontSize="11" Foreground="#64748B" Margin="0 2 0 0"/>
+                    </StackPanel>
+                </StackPanel>
+                
+                <Button Grid.Column="1" Click="btnClose_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="32" Height="32" Foreground="#94A3B8" ToolTip="Đóng" Cursor="Hand">
+                    <materialDesign:PackIcon Kind="Close" Width="20" Height="20"/>
+                </Button>
+            </Grid>
+            
+            <!-- Content -->
+            <StackPanel Grid.Row="1" Margin="24 12 24 16">
+                <!-- Năm áp dụng -->
+                <TextBlock Text="NĂM ÁP DỤNG" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <ComboBox x:Name="cboYear" Style="{StaticResource ModernComboBox}"
+                          materialDesign:HintAssist.Hint="Chọn năm áp dụng xếp loại"
+                          Margin="0 0 0 16"/>
+
+                <!-- Số Quyết định -->
+                <TextBlock Text="SỐ QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBox x:Name="txtDecisionNumber" Style="{StaticResource ModernTextBox}"
+                         materialDesign:HintAssist.Hint="Nhập số quyết định (ví dụ: 123/QĐ-TCT)"
+                         Margin="0 0 0 16"/>
+
+                <!-- Ngày ký Quyết định -->
+                <TextBlock Text="NGÀY KÝ QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <DatePicker x:Name="dpDecisionDate" Style="{StaticResource ModernDatePicker}"
+                            Margin="0 0 0 16"/>
+
+                <!-- Đơn vị ra Quyết định -->
+                <TextBlock Text="ĐƠN VỊ RA QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBox x:Name="txtDecisionAgency" Style="{StaticResource ModernTextBox}"
+                         materialDesign:HintAssist.Hint="Nhập đơn vị ra quyết định (ví dụ: Thuế cơ sở 1)"
+                         Margin="0 0 0 10"/>
+            </StackPanel>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="0 0 16 16" Padding="24 16">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="HỦY BỎ" Click="btnClose_Click" Style="{StaticResource GrayOutlineButtonStyle}" 
+                            Width="105" Height="40" Margin="0 0 12 0" FontSize="13" FontWeight="Bold"/>
+                    <Button Content="CẬP NHẬT" Click="btnSave_Click" Style="{StaticResource PurpleButtonStyle}" 
+                            Width="125" Height="40" FontSize="13" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -333,6 +333,31 @@
             <TabControl.Resources>
                 <Style TargetType="TabItem" BasedOn="{StaticResource ModernTabItem}"/>
             </TabControl.Resources>
+            <TabControl.Style>
+                <Style TargetType="TabControl">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabControl">
+                                <Grid KeyboardNavigation.TabNavigation="Local">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <!-- Tab Headers Panel using WrapPanel directly -->
+                                    <WrapPanel IsItemsHost="True" Grid.Row="0" Margin="0 0 0 15" KeyboardNavigation.TabIndex="1"/>
+                                    
+                                    <!-- Content Panel -->
+                                    <Border Grid.Row="1" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}"
+                                            KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained">
+                                        <ContentPresenter x:Name="PART_SelectedContentHost" ContentSource="SelectedContent"/>
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Style>
 
             <!-- Tab 1: General Information -->
             <TabItem Header="1. Thông tin cá nhân">
