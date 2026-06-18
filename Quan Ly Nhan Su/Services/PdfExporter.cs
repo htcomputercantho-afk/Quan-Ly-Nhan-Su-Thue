@@ -136,6 +136,8 @@ namespace TaxPersonnelManagement.Services
                     LabelValue(c, "SĐT:", p.PhoneNumber);
                     LabelValue(c, "CCCD:", p.IdentityCardNumber);
                     LabelValue(c, "BHXH:", p.SocialSecurityNumber);
+                    LabelValue(c, "Dân tộc:", p.Ethnicity);
+                    LabelValue(c, "Quê quán:", p.Hometown);
                 });
                 row.RelativeItem().Column(c =>
                 {
@@ -143,6 +145,8 @@ namespace TaxPersonnelManagement.Services
                     LabelValue(c, "Email:", p.Email);
                     LabelValue(c, "Nơi cấp:", p.IdentityCardPlace);
                     LabelValue(c, "Nơi sinh:", p.BirthPlace);
+                    LabelValue(c, "Tôn giáo:", p.Religion);
+                    LabelValue(c, "Nơi ở hiện nay:", p.CurrentResidence);
                 });
             });
         }

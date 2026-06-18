@@ -128,6 +128,7 @@ namespace TaxPersonnelManagement
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
                             Name TEXT NOT NULL
                         );");
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN DepartmentName TEXT"); } catch { }
 
                     // Manual Migration for Ranks table
                     context.Database.ExecuteSqlRaw(@"
@@ -143,6 +144,10 @@ namespace TaxPersonnelManagement
                         context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN AvatarBase64 TEXT");
                     }
                     catch { /* Column likely exists */ }
+
+                    // Manual Migration for Hometown and CurrentResidence
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN Hometown TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN CurrentResidence TEXT"); } catch { }
 
                     // Manual Migration for Tab 2 Fields (Position History)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PositionDecisionDate TEXT"); } catch { }
@@ -483,6 +488,8 @@ namespace TaxPersonnelManagement
                                         SocialSecurityNumber TEXT,
                                         Email TEXT,
                                         BirthPlace TEXT,
+                                        Hometown TEXT,
+                                        CurrentResidence TEXT,
                                         Ethnicity TEXT,
                                         Religion TEXT,
                                         Department TEXT,
@@ -531,7 +538,7 @@ namespace TaxPersonnelManagement
                                 context.Database.ExecuteSqlRaw(@"
                                     INSERT INTO Personnel (
                                         Id, StaffId, FullName, DateOfBirth, Gender, PhoneNumber, IdentityCardNumber, IdentityCardPlace,
-                                        SocialSecurityNumber, Email, BirthPlace, Ethnicity, Religion, Department, Position,
+                                        SocialSecurityNumber, Email, BirthPlace, Hometown, CurrentResidence, Ethnicity, Religion, Department, Position,
                                         RankCode, RankName, TaxAuthorityStartDate, StartDate, Status, EducationLevel, Major,
                                         University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64,
                                         TotalAnnualLeaveDays, LeaveYearsWorked, LeaveCalculationDate, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,
@@ -543,7 +550,7 @@ namespace TaxPersonnelManagement
                                     )
                                     SELECT 
                                         Id, StaffId, FullName, DateOfBirth, Gender, PhoneNumber, IdentityCardNumber, IdentityCardPlace,
-                                        SocialSecurityNumber, Email, BirthPlace, Ethnicity, Religion, Department, Position,
+                                        SocialSecurityNumber, Email, BirthPlace, Hometown, CurrentResidence, Ethnicity, Religion, Department, Position,
                                         RankCode, RankName, TaxAuthorityStartDate, StartDate, Status, EducationLevel, Major,
                                         University, StateManagementLevel, PoliticalTheoryLevel, ITSkillLevel, LanguageSkillLevel, AvatarBase64,
                                         TotalAnnualLeaveDays, LeaveYearsWorked, LeaveCalculationDate, CurrentSalaryStep, CurrentSalaryCoefficient, ExceedFramePercent,

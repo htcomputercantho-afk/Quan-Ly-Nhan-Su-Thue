@@ -164,6 +164,19 @@
                           materialDesign:HintAssist.Hint="Chọn năm áp dụng xếp loại"
                           Margin="0 0 0 16"/>
 
+                <!-- Đối tượng áp dụng -->
+                <TextBlock Text="ĐỐI TƯỢNG ÁP DỤNG" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <ComboBox x:Name="cboTargetAudience" Style="{StaticResource ModernComboBox}"
+                          materialDesign:HintAssist.Hint="Chọn đối tượng áp dụng"
+                          Margin="0 0 0 16">
+                    <ComboBoxItem Content="Toàn bộ công chức, người lao động" IsSelected="True"/>
+                    <ComboBoxItem Content="Trưởng Thuế cơ sở"/>
+                    <ComboBoxItem Content="Phó Trưởng Thuế cơ sở"/>
+                    <ComboBoxItem Content="Tổ trưởng"/>
+                    <ComboBoxItem Content="Phó Tổ trưởng"/>
+                    <ComboBoxItem Content="Công chức"/>
+                </ComboBox>
+
                 <!-- Số Quyết định -->
                 <TextBlock Text="SỐ QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
                 <TextBox x:Name="txtDecisionNumber" Style="{StaticResource ModernTextBox}"

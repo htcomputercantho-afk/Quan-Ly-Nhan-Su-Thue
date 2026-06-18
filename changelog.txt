@@ -1,3 +1,34 @@
+## v1.5.6 — 2026-06-18
+- [Tính năng] Bổ sung thông tin "Quê quán" và "Nơi ở hiện nay" vào hồ sơ cán bộ:
+    + Cập nhật CSDL SQLite và Entities model tự động thêm 2 cột mới `Hometown` và `CurrentResidence`.
+    + Giao diện nhập liệu chi tiết cán bộ bổ sung các ô nhập Quê quán và Nơi ở hiện nay.
+    + Giao diện xem chi tiết hồ sơ (Profile Dialog) hiển thị đầy đủ và thẩm mỹ Dân tộc, Tôn giáo, Quê quán, Nơi ở hiện nay.
+    + Hỗ trợ kết xuất thông tin mới này ra file Excel (.xlsx) và file PDF (.pdf).
+- [Tính năng] Liên kết động Chức vụ với Bộ phận áp dụng:
+    + Trong hộp thoại quản lý Chức vụ, cho phép chọn Bộ phận áp dụng khi thêm hoặc sửa chức vụ.
+    + Bộ lọc danh sách chức vụ khi thêm/chỉnh sửa cán bộ tự động lọc động dựa trên Bộ phận được chọn.
+    + Thiết kế lại giao diện hộp thoại ComboBox chọn bộ phận bằng Style tùy chỉnh `DialogComboBox` phẳng, hiện đại, không viền xám thừa.
+
+## v1.5.5 — 2026-06-17
+- [Tính năng] Bổ sung bộ lọc Xếp loại (Rating Filter) tại màn hình Xếp loại:
+    + Thêm ComboBox lọc "XẾP LOẠI" trên thanh công cụ quản lý Xếp loại công chức (`EvaluationListView`).
+    + Hỗ trợ các tiêu chí lọc bao gồm: "-- Tất cả xếp loại --", "Hoàn thành xuất sắc nhiệm vụ", "Hoàn thành tốt nhiệm vụ", "Hoàn thành nhiệm vụ", và "Không hoàn thành nhiệm vụ".
+    + Tích hợp đầy đủ vào cơ chế tải dữ liệu thời gian thực: Tự động cập nhật danh sách ngay khi thay đổi bộ lọc, kết hợp đồng bộ cùng bộ lọc Tìm kiếm, Bộ phận và Năm.
+- [Giao diện] Tối ưu hóa bố cục thanh bộ lọc và các nút thao tác:
+    + Tổ chức các phần tử thành hai nhóm độc lập (Nhóm Bộ lọc & Nhóm Nút hành động) bên trong một WrapPanel chung của Card.
+    + Nhóm Bộ lọc được định cấu hình độ rộng an toàn và tăng lên (Tìm kiếm: 240, Bộ phận: 300, Năm: 200, Xếp loại: 240) để tránh triệt để việc bị cắt bớt hoặc hiển thị dấu ba chấm "..." đối với các nhãn tiếng Việt dài.
+    + Nhóm Nút hành động bao gồm đầy đủ ba nút thao tác ("Nhập Excel", "Quyết định hàng loạt", "Xuất Excel") đi liền nhau. Nhờ cấu trúc WrapPanel thông minh này, khi cửa sổ đủ rộng, tất cả bộ lọc và nút sẽ nằm thẳng hàng trên cùng một dòng; khi thu nhỏ cửa sổ, toàn bộ nhóm nút sẽ tự động ngắt dòng và di chuyển xuống hàng thứ hai dưới dạng một khối thống nhất, tạo nên bố cục cân đối, gọn gàng và sạch đẹp.
+
+## v1.5.4 — 2026-06-17
+- [Tính năng] Cấu hình đối tượng áp dụng cho Quyết định hàng loạt:
+    + Bổ sung mục lựa chọn "ĐỐI TƯỢNG ÁP DỤNG" vào hộp thoại Quyết định hàng loạt (`BulkDecisionDialog`).
+    + Cho phép người dùng lọc cập nhật quyết định theo các nhóm chức vụ: Trưởng Thuế cơ sở (bao gồm cả Quyền Trưởng Thuế), Phó Trưởng Thuế cơ sở, Tổ trưởng, Phó Tổ trưởng, Công chức, hoặc áp dụng cho Toàn bộ công chức, người lao động.
+    + Logic kiểm tra thông minh: Tự động cảnh báo nếu không tìm thấy nhân sự thuộc năm và đối tượng chức vụ đã chọn trước khi áp dụng.
+    + Khắc phục lỗi bảo toàn dữ liệu: Khi cập nhật hàng loạt, các trường bị bỏ trống trên dialog sẽ được giữ nguyên thông tin cũ trong CSDL của cán bộ, không bị ghi đè thành rỗng. Thêm validation cảnh báo chặn lưu nếu bỏ trống tất cả các trường thông tin quyết định.
+- [Giao diện] Bổ sung cột "BỘ PHẬN" hiển thị kết hợp Chức vụ vào bảng Xếp loại:
+    + Hiển thị thông tin phòng ban/tổ công tác (`Personnel.Department`) kết hợp chức vụ (`Personnel.Position`) được xếp dạng 2 dòng chuyên nghiệp ngay trên lưới danh sách xếp loại chất lượng (`EvaluationListView`).
+    + Cột sử dụng màu sắc chủ đạo xanh dịu nhạt (`#E3F2FD`) và chữ đậm (`#1565C0`) cho tên phòng ban để phân tách rõ ràng với thông tin chức vụ.
+
 ## v1.5.3 — 2026-06-16
 - [Tính năng] Quyết định xếp loại hàng loạt:
     + Bổ sung nút "Quyết định hàng loạt" tại màn hình quản lý Xếp loại để cập nhật thông tin Quyết định cho toàn bộ nhân sự xếp loại trong năm được chọn.

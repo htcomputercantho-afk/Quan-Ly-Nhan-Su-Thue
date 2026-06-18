@@ -152,6 +152,9 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     
                                     <!-- Row 1 -->
@@ -186,13 +189,35 @@
                                         <TextBlock Text="{Binding IdentityCardPlace, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Row="4" Grid.Column="0">
+                                    <StackPanel Grid.Row="4" Grid.Column="0" Margin="0 0 0 15">
                                         <TextBlock Text="Mã số BHXH:" Foreground="#78909C" FontSize="15"/>
                                         <TextBlock Text="{Binding SocialSecurityNumber, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Row="4" Grid.Column="1">
+                                    <StackPanel Grid.Row="4" Grid.Column="1" Margin="0 0 0 15">
                                         <TextBlock Text="Nơi sinh:" Foreground="#78909C" FontSize="15"/>
                                         <TextBlock Text="{Binding BirthPlace, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <!-- Row 5: Dân tộc & Tôn giáo -->
+                                    <StackPanel Grid.Row="5" Grid.Column="0" Margin="0 0 0 15">
+                                        <TextBlock Text="Dân tộc:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding Ethnicity, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="5" Grid.Column="1" Margin="0 0 0 15">
+                                        <TextBlock Text="Tôn giáo:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding Religion, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <!-- Row 6: Quê quán -->
+                                    <StackPanel Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 15">
+                                        <TextBlock Text="Quê quán:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding Hometown, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
+                                    </StackPanel>
+
+                                    <!-- Row 7: Nơi ở hiện nay -->
+                                    <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2">
+                                        <TextBlock Text="Nơi ở hiện nay:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding CurrentResidence, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#263238" FontSize="17" Margin="0 4 0 0"/>
                                     </StackPanel>
                                 </Grid>
                             </StackPanel>

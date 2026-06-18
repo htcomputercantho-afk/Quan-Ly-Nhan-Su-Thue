@@ -4,6 +4,89 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="Quản lý Chức vụ" Height="450" Width="550" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" Background="Transparent" AllowsTransparency="True">
 
+    <Window.Resources>
+        <Style x:Key="DialogComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="15 0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="Background" Value="#F7FAFC"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#4A5568"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="35"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                    <ToggleButton x:Name="toggleButton" Grid.ColumnSpan="2" Focusable="False"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press" Background="Transparent" BorderThickness="0">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent">
+                                                    <materialDesign:PackIcon Kind="ChevronDown" Width="20" Height="20" Foreground="#A0AEC0"
+                                                                             HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" 
+                                           Focusable="False" PopupAnimation="Slide">
+                                        <Grid x:Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                            <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" CornerRadius="8">
+                                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                                </ScrollViewer>
+                                            </Border>
+                                        </Grid>
+                                    </Popup>
+                                </Grid>
+                            </Border>
+                            <TextBlock x:Name="Placeholder" Text="Bộ phận áp dụng" Foreground="#A0AEC0" 
+                                       IsHitTestVisible="False" Margin="15 0" VerticalAlignment="Center" FontSize="13" Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="false">
+                                <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95"/>
+                            </Trigger>
+                            <Trigger Property="SelectedItem" Value="{x:Null}">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#E3F2FD"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1565C0"/>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
     <Border Background="White" CornerRadius="16" BorderThickness="0">
         <Border.Effect>
             <DropShadowEffect BlurRadius="30" ShadowDepth="10" Opacity="0.15" Color="#000"/>
@@ -35,10 +118,11 @@
             <Grid Grid.Row="1" Margin="25 5 25 20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="180"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <Border CornerRadius="8" Background="#F7FAFC" BorderThickness="1" BorderBrush="#E2E8F0" Height="50">
+                <Border Grid.Column="0" CornerRadius="8" Background="#F7FAFC" BorderThickness="1" BorderBrush="#E2E8F0" Height="50" Margin="0 0 10 0">
                     <Grid>
                         <TextBox x:Name="txtPositionName" 
                                  materialDesign:HintAssist.Hint="Nhập tên chức vụ mới..." 
@@ -51,8 +135,13 @@
                                  Background="Transparent"/>
                     </Grid>
                 </Border>
+
+                <ComboBox Grid.Column="1" x:Name="cboDepartment"
+                          Style="{StaticResource DialogComboBox}"
+                          materialDesign:HintAssist.Hint="Bộ phận áp dụng"
+                          Margin="0 0 10 0"/>
                 
-                <Button Grid.Column="1" x:Name="btnAdd" Click="btnAdd_Click" Margin="10 0 0 0" Height="50" Width="50" 
+                <Button Grid.Column="2" x:Name="btnAdd" Click="btnAdd_Click" Height="50" Width="50" 
                         Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="{DynamicResource PrimaryHueMidBrush}" 
                         Style="{DynamicResource MaterialDesignFloatingActionMiniButton}"
                         ToolTip="Thêm chức vụ">
@@ -121,7 +210,10 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <materialDesign:PackIcon Kind="BadgeAccount" Foreground="#718096" Width="20" Height="20" Margin="0 0 12 0" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15" FontWeight="Medium" Foreground="#2D3748" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium" Foreground="#2D3748" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding DepartmentDisplayName}" FontSize="11.5" Foreground="#718096" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                                        </StackPanel>
                                      </Grid>
                                     
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">

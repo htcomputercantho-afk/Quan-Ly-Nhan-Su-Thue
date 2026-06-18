@@ -17,7 +17,39 @@ namespace TaxPersonnelManagement.Views
         public AddPositionDialog()
         {
             InitializeComponent();
+            LoadDepartments();
             LoadPositions();
+        }
+
+        private void LoadDepartments()
+        {
+            var deptList = new List<string> {
+                "-- Tất cả bộ phận --",
+                "Ban lãnh đạo",
+                "Các tổ"
+            };
+
+            using (var context = new AppDbContext())
+            {
+                try { context.Database.EnsureCreated(); } catch { }
+
+                var dbDepts = context.Departments
+                                     .Select(d => d.Name)
+                                     .Where(n => !string.IsNullOrEmpty(n))
+                                     .Distinct()
+                                     .ToList();
+
+                foreach (var d in dbDepts)
+                {
+                    if (!deptList.Contains(d, System.StringComparer.OrdinalIgnoreCase))
+                    {
+                        deptList.Add(d);
+                    }
+                }
+            }
+
+            cboDepartment.ItemsSource = deptList;
+            cboDepartment.SelectedIndex = 0;
         }
 
         private void LoadPositions()
@@ -61,17 +93,26 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
+            string? selectedDept = cboDepartment.SelectedItem?.ToString();
+            if (selectedDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(selectedDept))
+            {
+                selectedDept = null;
+            }
+
             using (var context = new AppDbContext())
             {
                 if (_editingPosition == null)
                 {
-                    if (context.Positions.Any(d => d.Name == newName))
+                    bool exists = context.Positions.AsEnumerable().Any(d => 
+                        d.Name.Equals(newName, System.StringComparison.OrdinalIgnoreCase) && 
+                        (d.DepartmentName ?? "").Equals(selectedDept ?? "", System.StringComparison.OrdinalIgnoreCase));
+                    if (exists)
                     {
-                        new WarningWindow("Chức vụ này đã tồn tại!", "Thông báo").ShowDialog();
+                        new WarningWindow("Chức vụ này thuộc bộ phận đã chọn đã tồn tại!", "Thông báo").ShowDialog();
                         return;
                     }
 
-                    var newPos = new Position { Name = newName };
+                    var newPos = new Position { Name = newName, DepartmentName = selectedDept };
                     context.Positions.Add(newPos);
                 }
                 else
@@ -80,6 +121,7 @@ namespace TaxPersonnelManagement.Views
                     if (p != null)
                     {
                         p.Name = newName;
+                        p.DepartmentName = selectedDept;
                     }
                     _editingPosition = null;
                 }
@@ -87,6 +129,7 @@ namespace TaxPersonnelManagement.Views
             }
 
             txtPositionName.Clear();
+            cboDepartment.SelectedIndex = 0;
             txtPositionName.Focus();
 
             // Reset button visual
@@ -104,6 +147,33 @@ namespace TaxPersonnelManagement.Views
                 _editingPosition = pos;
                 txtPositionName.Text = pos.Name;
                 txtPositionName.Focus();
+
+                if (string.IsNullOrEmpty(pos.DepartmentName))
+                {
+                    cboDepartment.SelectedIndex = 0;
+                }
+                else
+                {
+                    bool found = false;
+                    foreach (var item in cboDepartment.Items)
+                    {
+                        if (item?.ToString()?.Equals(pos.DepartmentName, System.StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            cboDepartment.SelectedItem = item;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        if (cboDepartment.ItemsSource is List<string> deptsList)
+                        {
+                            var newList = new List<string>(deptsList) { pos.DepartmentName };
+                            cboDepartment.ItemsSource = newList;
+                            cboDepartment.SelectedItem = pos.DepartmentName;
+                        }
+                    }
+                }
 
                 // Change button to indicate Update
                 btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentSave, Width = 24, Height = 24 };

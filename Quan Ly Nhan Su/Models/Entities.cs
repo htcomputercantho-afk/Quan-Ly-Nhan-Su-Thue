@@ -51,6 +51,8 @@ namespace TaxPersonnelManagement.Models
         public string? SocialSecurityNumber { get; set; } // Mã BHXH
         public string? Email { get; set; }
         public string? BirthPlace { get; set; } // Nơi sinh
+        public string? Hometown { get; set; } // Quê quán
+        public string? CurrentResidence { get; set; } // Nơi ở hiện nay
         public string? Ethnicity { get; set; } // Dân tộc
         public string? Religion { get; set; } // Tôn giáo
 
@@ -201,6 +203,10 @@ namespace TaxPersonnelManagement.Models
         public int Id { get; set; }
         [Required]
         public string Name { get; set; } = string.Empty; // Tên chức vụ
+        public string? DepartmentName { get; set; } // Bộ phận trực thuộc (nullable)
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string DepartmentDisplayName => string.IsNullOrEmpty(DepartmentName) ? "Tất cả bộ phận" : DepartmentName;
     }
 
     /// <summary>

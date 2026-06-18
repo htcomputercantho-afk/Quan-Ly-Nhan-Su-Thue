@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 
@@ -72,13 +73,28 @@ namespace TaxPersonnelManagement.Views
             }
 
             int selectedYear = (int)cboYear.SelectedItem;
+            string selectedTarget = (cboTargetAudience.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "Toàn bộ công chức, người lao động";
             int recordCount = 0;
 
             try
             {
                 using (var db = new AppDbContext())
                 {
-                    recordCount = db.EvaluationRecords.Count(r => r.Year == selectedYear);
+                    var query = db.EvaluationRecords.Include(r => r.Personnel).Where(r => r.Year == selectedYear);
+                    if (selectedTarget != "Toàn bộ công chức, người lao động")
+                    {
+                        if (selectedTarget == "Trưởng Thuế cơ sở")
+                        {
+                            query = query.Where(r => r.Personnel != null && 
+                                                    (r.Personnel.Position == "Trưởng Thuế cơ sở" || 
+                                                     r.Personnel.Position == "Quyền Trưởng Thuế cơ sở"));
+                        }
+                        else
+                        {
+                            query = query.Where(r => r.Personnel != null && r.Personnel.Position == selectedTarget);
+                        }
+                    }
+                    recordCount = query.Count();
                 }
             }
             catch (Exception ex)
@@ -91,30 +107,63 @@ namespace TaxPersonnelManagement.Views
 
             if (recordCount == 0)
             {
-                var warning = new WarningWindow($"Không tìm thấy nhân sự nào được xếp loại trong năm {selectedYear}!", "Thông báo");
+                string targetMsg = selectedTarget == "Toàn bộ công chức, người lao động" ? "" : $" có chức vụ '{selectedTarget}'";
+                var warning = new WarningWindow($"Không tìm thấy nhân sự nào{targetMsg} trong năm {selectedYear}!", "Thông báo");
                 warning.Owner = this;
                 warning.ShowDialog();
                 return;
             }
 
-            var confirm = new ConfirmWindow($"Bạn có chắc chắn muốn cập nhật thông tin quyết định cho {recordCount} nhân sự thuộc năm {selectedYear}?", "Xác nhận cập nhật");
+            string? decNo = string.IsNullOrWhiteSpace(txtDecisionNumber.Text) ? null : txtDecisionNumber.Text.Trim();
+            DateTime? decDate = dpDecisionDate.SelectedDate;
+            string? decAgency = string.IsNullOrWhiteSpace(txtDecisionAgency.Text) ? null : txtDecisionAgency.Text.Trim();
+
+            if (decNo == null && decDate == null && decAgency == null)
+            {
+                var warning = new WarningWindow("Vui lòng nhập ít nhất một thông tin quyết định (Số quyết định, Ngày ký, hoặc Đơn vị ra quyết định) để cập nhật!", "Thông báo");
+                warning.Owner = this;
+                warning.ShowDialog();
+                return;
+            }
+
+            string targetDesc = selectedTarget == "Toàn bộ công chức, người lao động" ? "toàn bộ công chức, người lao động" : $"chức vụ '{selectedTarget}'";
+            var confirm = new ConfirmWindow($"Bạn có chắc chắn muốn cập nhật thông tin quyết định cho {recordCount} nhân sự thuộc năm {selectedYear} có {targetDesc}?", "Xác nhận cập nhật");
             confirm.Owner = this;
             if (confirm.ShowDialog() == true)
             {
-                string? decNo = string.IsNullOrWhiteSpace(txtDecisionNumber.Text) ? null : txtDecisionNumber.Text.Trim();
-                DateTime? decDate = dpDecisionDate.SelectedDate;
-                string? decAgency = string.IsNullOrWhiteSpace(txtDecisionAgency.Text) ? null : txtDecisionAgency.Text.Trim();
-
                 try
                 {
                     using (var db = new AppDbContext())
                     {
-                        var records = db.EvaluationRecords.Where(r => r.Year == selectedYear).ToList();
+                        var query = db.EvaluationRecords.Include(r => r.Personnel).Where(r => r.Year == selectedYear);
+                        if (selectedTarget != "Toàn bộ công chức, người lao động")
+                        {
+                            if (selectedTarget == "Trưởng Thuế cơ sở")
+                            {
+                                query = query.Where(r => r.Personnel != null && 
+                                                        (r.Personnel.Position == "Trưởng Thuế cơ sở" || 
+                                                         r.Personnel.Position == "Quyền Trưởng Thuế cơ sở"));
+                            }
+                            else
+                            {
+                                query = query.Where(r => r.Personnel != null && r.Personnel.Position == selectedTarget);
+                            }
+                        }
+                        var records = query.ToList();
                         foreach (var r in records)
                         {
-                            r.DecisionNumber = decNo;
-                            r.DecisionDate = decDate;
-                            r.DecisionAgency = decAgency;
+                            if (decNo != null)
+                            {
+                                r.DecisionNumber = decNo;
+                            }
+                            if (decDate.HasValue)
+                            {
+                                r.DecisionDate = decDate;
+                            }
+                            if (decAgency != null)
+                            {
+                                r.DecisionAgency = decAgency;
+                            }
                         }
                         db.SaveChanges();
                     }

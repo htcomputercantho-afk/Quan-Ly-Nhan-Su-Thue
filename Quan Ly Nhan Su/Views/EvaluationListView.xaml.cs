@@ -129,6 +129,18 @@ namespace TaxPersonnelManagement.Views
             }
             cbYear.ItemsSource = years;
             cbYear.SelectedIndex = 0;
+
+            // 2. Rating Filter
+            var ratings = new List<string>
+            {
+                "-- Tất cả xếp loại --",
+                "Hoàn thành xuất sắc nhiệm vụ",
+                "Hoàn thành tốt nhiệm vụ",
+                "Hoàn thành nhiệm vụ",
+                "Không hoàn thành nhiệm vụ"
+            };
+            cbRating.ItemsSource = ratings;
+            cbRating.SelectedIndex = 0;
         }
 
         private void LoadData()
@@ -138,6 +150,7 @@ namespace TaxPersonnelManagement.Views
                 string search = txtSearch.Text.Trim();
                 string? dept = cbDepartment.SelectedItem as string;
                 int year = (cbYear.SelectedItem as FilterItem)?.Value ?? 0;
+                string? rating = cbRating?.SelectedItem as string;
 
                 using (var context = new AppDbContext())
                 {
@@ -164,6 +177,11 @@ namespace TaxPersonnelManagement.Views
                     if (year > 0)
                     {
                         filtered = filtered.Where(e => e.Year == year);
+                    }
+
+                    if (!string.IsNullOrEmpty(rating) && rating != "-- Tất cả xếp loại --")
+                    {
+                        filtered = filtered.Where(e => e.Rating == rating);
                     }
 
                     // Sort order: Department, then Position, then FullName, then Year desc

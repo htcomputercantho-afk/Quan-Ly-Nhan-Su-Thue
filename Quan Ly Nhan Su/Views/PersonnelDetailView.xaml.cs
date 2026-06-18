@@ -18,7 +18,7 @@ namespace TaxPersonnelManagement.Views
         private bool _isAvatarChanged = false;
         private bool _isRefreshing = false;
         private bool _isFormatting = false;
-        private List<string> _allPositions = new List<string>();
+        private List<Position> _allPositions = new List<Position>();
         private SalaryRecord? _editingSalaryRecord;
         private EvaluationRecord? _editingEvaluationRecord;
 
@@ -55,6 +55,8 @@ namespace TaxPersonnelManagement.Views
                 txtEmail.Text = _personnel.Email;
                 txtSocialInsurance.Text = _personnel.SocialSecurityNumber;
                 txtBirthPlace.Text = _personnel.BirthPlace;
+                txtHometown.Text = _personnel.Hometown;
+                txtCurrentResidence.Text = _personnel.CurrentResidence;
                 txtEthnicity.Text = _personnel.Ethnicity;
                 txtReligion.Text = _personnel.Religion;
 
@@ -357,19 +359,41 @@ namespace TaxPersonnelManagement.Views
             {
                 filtered = new System.Collections.Generic.List<string>();
             }
-            else if (selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase))
-            {
-                var leadershipPositions = new[] { "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở" };
-                filtered = _allPositions.Where(p => leadershipPositions.Any(lp => lp.Equals(p, StringComparison.OrdinalIgnoreCase))).ToList();
-            }
-            else if (selectedDept.ToUpper().Contains("TỔ"))
-            {
-                var unitPositions = new[] { "Tổ trưởng", "Phó Tổ trưởng", "Công chức" };
-                filtered = _allPositions.Where(p => unitPositions.Any(up => up.Equals(p, StringComparison.OrdinalIgnoreCase))).ToList();
-            }
             else
             {
-                filtered = _allPositions.ToList();
+                var leadershipPositions = new[] { "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở" };
+                var unitPositions = new[] { "Tổ trưởng", "Phó Tổ trưởng", "Công chức" };
+
+                filtered = _allPositions.Where(pos =>
+                {
+                    if (!string.IsNullOrEmpty(pos.DepartmentName))
+                    {
+                        if (pos.DepartmentName.Equals(selectedDept, StringComparison.OrdinalIgnoreCase))
+                            return true;
+
+                        if (pos.DepartmentName.Equals("Các tổ", StringComparison.OrdinalIgnoreCase) &&
+                            selectedDept.Contains("Tổ", StringComparison.OrdinalIgnoreCase))
+                            return true;
+
+                        return false;
+                    }
+
+                    // Fallback for default positions
+                    if (leadershipPositions.Any(lp => lp.Equals(pos.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (unitPositions.Any(up => up.Equals(pos.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return selectedDept.Contains("Tổ", StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    // Custom positions with empty DepartmentName apply to all
+                    return true;
+                })
+                .Select(pos => pos.Name)
+                .ToList();
             }
 
             var currentPos = cboPosition.SelectedItem?.ToString() ?? (_personnel?.Position);
@@ -428,22 +452,23 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                var dbPos = context.Positions.Select(p => p.Name).ToList();
+                var dbPos = context.Positions.ToList();
 
                 // Thêm chức vụ hiện tại của nhân sự đang xem nếu chưa có trong danh mục chính
-                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !dbPos.Contains(_personnel.Position))
+                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !dbPos.Any(p => p.Name.Equals(_personnel.Position, StringComparison.OrdinalIgnoreCase)))
                 {
-                    dbPos.Add(_personnel.Position);
+                    dbPos.Add(new Position { Name = _personnel.Position });
                 }
 
-                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x))
-                                  .Distinct()
+                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x.Name))
+                                  .GroupBy(x => x.Name.ToLower())
+                                  .Select(g => g.First())
                                   .OrderBy(x =>
                                   {
-                                      int idx = posOrder.FindIndex(p => p.Equals(x, StringComparison.OrdinalIgnoreCase));
+                                      int idx = posOrder.FindIndex(p => p.Equals(x.Name, StringComparison.OrdinalIgnoreCase));
                                       return idx == -1 ? 999 : idx;
                                   })
-                                  .ThenBy(x => x)
+                                  .ThenBy(x => x.Name)
                                   .ToList();
 
                 UpdatePositionFilter();
@@ -825,6 +850,8 @@ namespace TaxPersonnelManagement.Views
                         Email = txtEmail.Text,
                         SocialSecurityNumber = txtSocialInsurance.Text,
                         BirthPlace = txtBirthPlace.Text,
+                        Hometown = txtHometown.Text,
+                        CurrentResidence = txtCurrentResidence.Text,
                         Ethnicity = txtEthnicity.Text,
                         Religion = txtReligion.Text,
 
@@ -944,6 +971,8 @@ namespace TaxPersonnelManagement.Views
                         existingP.Email = txtEmail.Text;
                         existingP.SocialSecurityNumber = txtSocialInsurance.Text;
                         existingP.BirthPlace = txtBirthPlace.Text;
+                        existingP.Hometown = txtHometown.Text;
+                        existingP.CurrentResidence = txtCurrentResidence.Text;
                         existingP.Ethnicity = txtEthnicity.Text;
                         existingP.Religion = txtReligion.Text;
 
@@ -1270,6 +1299,8 @@ namespace TaxPersonnelManagement.Views
                 txtEmail.Clear();
                 txtSocialInsurance.Clear();
                 txtBirthPlace.Clear();
+                txtHometown.Clear();
+                txtCurrentResidence.Clear();
                 txtEthnicity.Clear();
                 txtReligion.Clear();
 
