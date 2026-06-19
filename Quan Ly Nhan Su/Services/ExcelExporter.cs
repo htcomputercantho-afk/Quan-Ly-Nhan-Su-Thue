@@ -25,7 +25,7 @@ namespace TaxPersonnelManagement.Services
             {
                 var worksheet = workbook.Worksheets.Add("DanhSachNhanSu");
 
-                // Tiêu đề các cột (39 cột)
+                // Tiêu đề các cột (40 cột)
                 string[] headers =
                 {
                     "STT", "Số hiệu CB", "Họ và Tên", // A, B, C
@@ -35,12 +35,12 @@ namespace TaxPersonnelManagement.Services
                     "Bộ phận", "Chức vụ", "Thời gian công tác tại cơ quan thuế", "Số năm công tác", // P, Q, R, S
                     "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // T, U, V
                     "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // W, X, Y, Z
-                    "Ngày vào Đảng", "Ngày chính thức", // AA, AB
-                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AC, AD, AE, AF
-                    "Phụ cấp CV", "Vượt khung %", // AG, AH
-                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AI, AJ, AK
-                    "Ghi chú", // AL
-                    "Ngày về hưu (Dự kiến)" // AM
+                    "Ngày vào Đảng", "Ngày chính thức", "Số năm tuổi Đảng", // AA, AB, AC
+                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AD, AE, AF, AG
+                    "Phụ cấp CV", "Vượt khung %", // AH, AI
+                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AJ, AK, AL
+                    "Ghi chú", // AM
+                    "Ngày về hưu (Dự kiến)" // AN
                 };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -78,7 +78,7 @@ namespace TaxPersonnelManagement.Services
 
                     worksheet.Cell(row, 13).Value = "'" + p.IdentityCardNumber; // Force text to avoid scientific notation
                     worksheet.Cell(row, 14).Value = p.IdentityCardPlace;
-                    worksheet.Cell(row, 15).Value = "'" + p.SocialSecurityNumber;
+                    worksheet.Cell(row, 15).Value = p.SocialSecurityNumber;
 
                     worksheet.Cell(row, 16).Value = p.Department;
                     worksheet.Cell(row, 17).Value = p.Position;
@@ -97,20 +97,21 @@ namespace TaxPersonnelManagement.Services
 
                     worksheet.Cell(row, 27).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
                     worksheet.Cell(row, 28).Value = p.PartyOfficialDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyOfficialDate.Value) : "";
+                    worksheet.Cell(row, 29).Value = p.CalculatedPartyAge;
 
-                    worksheet.Cell(row, 29).Value = p.RankCode;
-                    worksheet.Cell(row, 30).Value = p.RankName;
-                    worksheet.Cell(row, 31).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
-                    worksheet.Cell(row, 32).Value = p.CurrentSalaryCoefficient;
+                    worksheet.Cell(row, 30).Value = p.RankCode;
+                    worksheet.Cell(row, 31).Value = p.RankName;
+                    worksheet.Cell(row, 32).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
+                    worksheet.Cell(row, 33).Value = p.CurrentSalaryCoefficient;
 
-                    worksheet.Cell(row, 33).Value = p.PositionAllowance;
-                    worksheet.Cell(row, 34).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
+                    worksheet.Cell(row, 34).Value = p.PositionAllowance;
+                    worksheet.Cell(row, 35).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
 
-                    worksheet.Cell(row, 35).Value = p.EmulationTitles;
-                    worksheet.Cell(row, 36).Value = p.RewardForms;
-                    worksheet.Cell(row, 37).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
+                    worksheet.Cell(row, 36).Value = p.EmulationTitles;
+                    worksheet.Cell(row, 37).Value = p.RewardForms;
+                    worksheet.Cell(row, 38).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
 
-                    // Cột 38: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
+                    // Cột 39: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
                     string ghiChu = "";
                     if (p.LeaveHistories != null)
                     {
@@ -144,8 +145,8 @@ namespace TaxPersonnelManagement.Services
                             }
                         }
                     }
-                    worksheet.Cell(row, 38).Value = ghiChu;
-                    worksheet.Cell(row, 39).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
+                    worksheet.Cell(row, 39).Value = ghiChu;
+                    worksheet.Cell(row, 40).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
 
                     // Áp dụng viền và căn chỉnh cho toàn bộ ô trong dòng
                     for (int c = 1; c <= headers.Length; c++)

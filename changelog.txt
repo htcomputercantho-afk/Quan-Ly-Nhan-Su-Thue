@@ -1,3 +1,13 @@
+## v1.5.7 — 2026-06-19
+- [Tính năng] Bổ sung thông tin "Số năm tuổi Đảng" vào hồ sơ cán bộ đảng viên:
+    + Tự động tính toán số năm số tháng tuổi Đảng (ví dụ "0 năm 8 tháng") dựa trên Ngày vào Đảng so với ngày hiện tại.
+    + Giao diện nhập liệu hồ sơ chi tiết (PersonnelDetailView) và hộp thoại xem thông tin (PersonnelProfileDialog) hiển thị trực quan thông tin này.
+    + Tích hợp xuất thông tin Số năm tuổi Đảng ra báo cáo PDF và Excel đồng bộ.
+- [Tính năng] Nâng cấp màn hình "Thời gian giữ vị trí công tác":
+    + Bổ sung 2 cột mới: "Tổng thời gian công tác trong ngành Thuế" (tính từ ngày bắt đầu công tác) và "Thời gian còn lại đến khi nghỉ hưu" (tính đến ngày nghỉ hưu dự kiến).
+    + Thêm bộ lọc linh hoạt cho phép người dùng tự do lọc danh sách cán bộ theo khoảng thâm niên (Từ X năm đến dưới Y năm), hoạt động động theo thời điểm tính.
+    + Đồng bộ hóa các cột mới và tiêu đề bộ lọc thâm niên công tác tương ứng vào báo cáo xuất Excel.
+
 ## v1.5.6 — 2026-06-18
 - [Tính năng] Bổ sung thông tin "Quê quán" và "Nơi ở hiện nay" vào hồ sơ cán bộ:
     + Cập nhật CSDL SQLite và Entities model tự động thêm 2 cột mới `Hometown` và `CurrentResidence`.

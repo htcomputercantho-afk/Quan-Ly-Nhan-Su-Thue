@@ -42,7 +42,9 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="20"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
@@ -83,8 +85,32 @@
                                 SelectedDateChanged="dpCalculationDate_SelectedDateChanged"/>
                 </StackPanel>
 
+                <!-- Years Worked Filter -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Filter" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                    <TextBlock Text="Thâm niên từ:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 5 0" Foreground="#555"/>
+                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="55" Height="38">
+                        <TextBox x:Name="txtFromYears"
+                                 BorderThickness="0" Background="Transparent"
+                                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                 FontSize="14" Foreground="#374151"
+                                 TextChanged="txtYearsFilter_TextChanged"
+                                 PreviewTextInput="NumberOnly_PreviewTextInput"/>
+                    </Border>
+                    <TextBlock Text="đến dưới:" VerticalAlignment="Center" FontWeight="Bold" Margin="5 0" Foreground="#555"/>
+                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="55" Height="38">
+                        <TextBox x:Name="txtToYears"
+                                 BorderThickness="0" Background="Transparent"
+                                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                 FontSize="14" Foreground="#374151"
+                                 TextChanged="txtYearsFilter_TextChanged"
+                                 PreviewTextInput="NumberOnly_PreviewTextInput"/>
+                    </Border>
+                    <TextBlock Text="năm" VerticalAlignment="Center" FontWeight="Bold" Margin="5 0 0 0" Foreground="#555"/>
+                </StackPanel>
+
                 <!-- Export Button -->
-                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button x:Name="btnExport" Click="btnExport_Click"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             Background="#2E7D32" BorderThickness="0"
@@ -260,6 +286,50 @@
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding PositionDecisionDate}" Value="{x:Null}">
                                             <Setter TargetName="brdDuration" Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="TỔNG THỜI GIAN CÔNG TÁC&#x0a;TRONG NGÀNH THUẾ" Width="1.5*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="brdTaxDuration" Background="#E8F5E9" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock FontWeight="Bold" Foreground="#2E7D32" FontSize="15">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource DurationConverter}">
+                                                    <Binding Path="TaxAuthorityStartDate"/>
+                                                    <Binding ElementName="dpCalculationDate" Path="SelectedDate"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding TaxAuthorityStartDate}" Value="{x:Null}">
+                                            <Setter TargetName="brdTaxDuration" Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Header="THỜI GIAN CÒN LẠI&#x0a;ĐẾN KHI NGHỈ HƯU" Width="1.5*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border x:Name="brdRetireDuration" Background="#FFEBEE" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock FontWeight="Bold" Foreground="#C62828" FontSize="15">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource DurationConverter}">
+                                                    <Binding ElementName="dpCalculationDate" Path="SelectedDate"/>
+                                                    <Binding Path="RetirementDate"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                    </Border>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding RetirementDate}" Value="{x:Null}">
+                                            <Setter TargetName="brdRetireDuration" Property="Visibility" Value="Collapsed"/>
                                         </DataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>

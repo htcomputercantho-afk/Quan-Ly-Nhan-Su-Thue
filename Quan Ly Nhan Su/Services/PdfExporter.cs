@@ -497,6 +497,7 @@ namespace TaxPersonnelManagement.Services
             {
                 row.RelativeItem().Column(c => LabelValue(c, "Ngày vào Đảng:", FormatDate(p.PartyEntryDate)));
                 row.RelativeItem().Column(c => LabelValue(c, "Ngày chính thức:", FormatDate(p.PartyOfficialDate)));
+                row.RelativeItem().Column(c => LabelValue(c, "Số năm tuổi Đảng:", p.CalculatedPartyAge));
             });
         }
 

@@ -115,6 +115,33 @@ namespace TaxPersonnelManagement.Models
         public DateTime? PartyEntryDate { get; set; } // Ngày vào Đảng
         public DateTime? PartyOfficialDate { get; set; } // Ngày chính thức
 
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string CalculatedPartyAge
+        {
+            get
+            {
+                if (!PartyEntryDate.HasValue) return "";
+
+                DateTime startDate = PartyEntryDate.Value;
+                DateTime endDate = DateTime.Now;
+
+                if (endDate < startDate) return "0 năm 0 tháng";
+
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+
+                return $"{years} năm {months} tháng";
+            }
+        }
+
         // Education
         public string? EducationLevel { get; set; } // Trình độ văn hóa (12/12)
         public string? Major { get; set; } // Chuyên ngành

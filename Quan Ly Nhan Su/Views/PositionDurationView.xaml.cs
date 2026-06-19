@@ -31,6 +31,7 @@ namespace TaxPersonnelManagement.Views
 
         private void dpCalculationDate_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
+            ApplyFilter();
             dgPositionDuration.Items.Refresh();
         }
 
@@ -101,22 +102,79 @@ namespace TaxPersonnelManagement.Views
             ApplyFilter();
         }
 
+        private void txtYearsFilter_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyFilter();
+        }
+
+        private void NumberOnly_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            string proposedText = textBox.Text.Substring(0, textBox.SelectionStart) + 
+                                  e.Text + 
+                                  textBox.Text.Substring(textBox.SelectionStart + textBox.SelectionLength);
+
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"^\d*[\.,]?\d*$");
+            e.Handled = !regex.IsMatch(proposedText);
+        }
+
         private void ApplyFilter()
         {
+            if (txtSearch == null) return;
+
             string keyword = txtSearch.Text.Trim();
-            if (string.IsNullOrEmpty(keyword))
+            DateTime referenceDate = dpCalculationDate.SelectedDate ?? DateTime.Now;
+
+            // Parse years filter
+            double? fromYears = null;
+            if (txtFromYears != null && double.TryParse(txtFromYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromVal))
             {
-                _filteredList = _fullList;
+                fromYears = fromVal;
             }
-            else
+
+            double? toYears = null;
+            if (txtToYears != null && double.TryParse(txtToYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toVal))
             {
-                _filteredList = _fullList.Where(p =>
+                toYears = toVal;
+            }
+
+            var queryList = _fullList.AsEnumerable();
+
+            // 1. Text search filter
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                queryList = queryList.Where(p =>
                     TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.FullName, keyword) ||
                     TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.Department, keyword) ||
                     TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(p.Position, keyword)
-                ).ToList();
+                );
             }
 
+            // 2. Years worked filter
+            if (fromYears.HasValue || toYears.HasValue)
+            {
+                queryList = queryList.Where(p =>
+                {
+                    if (!p.TaxAuthorityStartDate.HasValue) return false;
+                    DateTime start = p.TaxAuthorityStartDate.Value;
+                    if (start > referenceDate) return false;
+
+                    // Calculate working years precisely
+                    double workedYears = (referenceDate - start).TotalDays / 365.2425;
+
+                    if (fromYears.HasValue && workedYears < fromYears.Value)
+                        return false;
+
+                    if (toYears.HasValue && workedYears >= toYears.Value)
+                        return false;
+
+                    return true;
+                });
+            }
+
+            _filteredList = queryList.ToList();
             _currentPage = 1;
             ApplyPagination();
         }
@@ -242,7 +300,7 @@ namespace TaxPersonnelManagement.Views
                         var worksheet = workbook.Worksheets.Add("Thoi gian giu vi tri");
 
                         // Title
-                        var titleRange = worksheet.Range("A1:E1");
+                        var titleRange = worksheet.Range("A1:G1");
                         titleRange.Merge();
                         titleRange.Value = "DANH SÁCH THỜI GIAN GIỮ VỊ TRÍ CÔNG TÁC";
                         titleRange.Style.Font.Bold = true;
@@ -251,14 +309,51 @@ namespace TaxPersonnelManagement.Views
                         titleRange.Style.Font.FontColor = XLColor.DarkBlue;
 
                         // Subtitle with Reference Date
-                        var subtitleRange = worksheet.Range("A2:E2");
+                        var subtitleRange = worksheet.Range("A2:G2");
                         subtitleRange.Merge();
                         subtitleRange.Value = $"(Tính đến ngày: {DatePickerHelper.FormatDateForDisplay(referenceDate)})";
                         subtitleRange.Style.Font.Italic = true;
                         subtitleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
+                        // Add Filter Info if applied
+                        string filterText = "";
+                        double? fromYears = null;
+                        if (txtFromYears != null && double.TryParse(txtFromYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromVal))
+                        {
+                            fromYears = fromVal;
+                        }
+
+                        double? toYears = null;
+                        if (txtToYears != null && double.TryParse(txtToYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toVal))
+                        {
+                            toYears = toVal;
+                        }
+
+                        if (fromYears.HasValue && toYears.HasValue)
+                        {
+                            filterText = $"(Thâm niên công tác từ {fromYears.Value} đến dưới {toYears.Value} năm)";
+                        }
+                        else if (fromYears.HasValue)
+                        {
+                            filterText = $"(Thâm niên công tác từ {fromYears.Value} năm trở lên)";
+                        }
+                        else if (toYears.HasValue)
+                        {
+                            filterText = $"(Thâm niên công tác dưới {toYears.Value} năm)";
+                        }
+
+                        if (!string.IsNullOrEmpty(filterText))
+                        {
+                            var filterRange = worksheet.Range("A3:G3");
+                            filterRange.Merge();
+                            filterRange.Value = filterText;
+                            filterRange.Style.Font.Italic = true;
+                            filterRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            filterRange.Style.Font.Bold = true;
+                        }
+
                         // Headers
-                        string[] headers = { "STT", "Họ và tên", "Bộ phận", "Ngày quyết định", "Thời gian giữ vị trí" };
+                        string[] headers = { "STT", "Họ và tên", "Bộ phận", "Ngày quyết định", "Thời gian giữ vị trí", "Tổng thời gian công tác trong ngành Thuế", "Thời gian còn lại đến khi nghỉ hưu" };
                         for (int i = 0; i < headers.Length; i++)
                         {
                             var cell = worksheet.Cell(4, i + 1);
@@ -305,10 +400,61 @@ namespace TaxPersonnelManagement.Views
                                     durationText = "0 năm 0 tháng";
                                 }
                             }
-
                             worksheet.Cell(row, 5).Value = durationText;
 
-                            for (int col = 1; col <= 5; col++)
+                            // Calculate Tax duration
+                            string taxDurationText = "";
+                            if (item.TaxAuthorityStartDate.HasValue)
+                            {
+                                DateTime start = item.TaxAuthorityStartDate.Value;
+                                if (referenceDate >= start)
+                                {
+                                    int years = referenceDate.Year - start.Year;
+                                    if (start.Date > referenceDate.AddYears(-years)) years--;
+
+                                    DateTime tmpDate = start.AddYears(years);
+                                    int months = 0;
+                                    while (tmpDate.AddMonths(1) <= referenceDate)
+                                    {
+                                        months++;
+                                        tmpDate = tmpDate.AddMonths(1);
+                                    }
+                                    taxDurationText = $"{years} năm {months} tháng";
+                                }
+                                else
+                                {
+                                    taxDurationText = "0 năm 0 tháng";
+                                }
+                            }
+                            worksheet.Cell(row, 6).Value = taxDurationText;
+
+                            // Calculate remaining duration
+                            string remainingDurationText = "";
+                            if (item.RetirementDate.HasValue)
+                            {
+                                DateTime end = item.RetirementDate.Value;
+                                if (end >= referenceDate)
+                                {
+                                    int years = end.Year - referenceDate.Year;
+                                    if (referenceDate.Date > end.AddYears(-years)) years--;
+
+                                    DateTime tmpDate = referenceDate.AddYears(years);
+                                    int months = 0;
+                                    while (tmpDate.AddMonths(1) <= end)
+                                    {
+                                        months++;
+                                        tmpDate = tmpDate.AddMonths(1);
+                                    }
+                                    remainingDurationText = $"{years} năm {months} tháng";
+                                }
+                                else
+                                {
+                                    remainingDurationText = "0 năm 0 tháng";
+                                }
+                            }
+                            worksheet.Cell(row, 7).Value = remainingDurationText;
+
+                            for (int col = 1; col <= 7; col++)
                                 worksheet.Cell(row, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
                             row++;

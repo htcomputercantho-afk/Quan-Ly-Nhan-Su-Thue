@@ -993,6 +993,8 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="20"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Column 1: Entry Date -->
@@ -1001,7 +1003,8 @@
                                     <DatePicker x:Name="dpPartyEntryDate" 
                                                 Style="{StaticResource ModernDatePicker}" 
                                                 helpers:DatePickerHelper.EnableSmartDateEntry="True"
-                                                materialDesign:TextFieldAssist.HasClearButton="True"/>
+                                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                                SelectedDateChanged="dpPartyEntryDate_SelectedDateChanged"/>
                                 </StackPanel>
 
                                 <!-- Column 2: Official Date -->
@@ -1011,6 +1014,15 @@
                                                 Style="{StaticResource ModernDatePicker}" 
                                                 helpers:DatePickerHelper.EnableSmartDateEntry="True"
                                                 materialDesign:TextFieldAssist.HasClearButton="True"/>
+                                </StackPanel>
+
+                                <!-- Column 3: Party Age -->
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="Số năm tuổi Đảng" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyAge" 
+                                             Style="{StaticResource ModernTextBox}" 
+                                             IsReadOnly="True" 
+                                             Background="#F5F5F5"/>
                                 </StackPanel>
                             </Grid>
                         </Grid>

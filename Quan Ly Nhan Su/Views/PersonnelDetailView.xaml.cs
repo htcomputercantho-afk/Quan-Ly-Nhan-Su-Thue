@@ -109,6 +109,7 @@ namespace TaxPersonnelManagement.Views
                 // Tab 4
                 dpPartyEntryDate.SelectedDate = _personnel.PartyEntryDate;
                 dpPartyOfficialDate.SelectedDate = _personnel.PartyOfficialDate;
+                CalculatePartyAge();
 
                 // Tab 6: Salary Info
                 cboSalaryStep.SelectedValue = _personnel.CurrentSalaryStep; // Use SelectedValue
@@ -1342,6 +1343,7 @@ namespace TaxPersonnelManagement.Views
                 // Tab 4
                 dpPartyEntryDate.SelectedDate = null;
                 dpPartyOfficialDate.SelectedDate = null;
+                txtPartyAge.Clear();
 
                 // Tab 6: Salary Info
                 cboSalaryStep.ItemsSource = null;
@@ -1515,6 +1517,44 @@ namespace TaxPersonnelManagement.Views
         private void OnRetirementDateChanged(object? sender, SelectionChangedEventArgs e)
         {
             CalculateRetirementInfo();
+        }
+
+        private void dpPartyEntryDate_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculatePartyAge();
+        }
+
+        private void CalculatePartyAge()
+        {
+            if (txtPartyAge == null) return;
+            if (dpPartyEntryDate.SelectedDate.HasValue)
+            {
+                DateTime startDate = dpPartyEntryDate.SelectedDate.Value;
+                DateTime endDate = DateTime.Now;
+
+                if (endDate < startDate)
+                {
+                    txtPartyAge.Text = "0 năm 0 tháng";
+                    return;
+                }
+
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+
+                txtPartyAge.Text = $"{years} năm {months} tháng";
+            }
+            else
+            {
+                txtPartyAge.Clear();
+            }
         }
 
         private void CalculateRetirementInfo()
