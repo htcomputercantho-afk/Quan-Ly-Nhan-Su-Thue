@@ -1,4 +1,4 @@
-## v1.5.8 — 2026-06-22
+## v1.5.9 — 2026-06-22
 - [Tối ưu] Khắc phục lỗi hiển thị trên màn hình nhỏ tại màn hình "Thời gian giữ vị trí công tác":
     + Thay đổi bố cục Grid cố định của thanh công cụ lọc sang WrapPanel giúp các bộ lọc tự động xuống dòng linh hoạt, không bị che khuất hay mất thông tin.
     + Thiết lập kích thước tối thiểu (MinWidth) cho các cột trên DataGrid hiển thị thông tin như Họ và tên, Bộ phận, Thời gian công tác, Thời gian nghỉ hưu,... để ngăn ngừa việc text bị thu hẹp hoặc cắt ngắn (hiển thị dấu ba chấm).
