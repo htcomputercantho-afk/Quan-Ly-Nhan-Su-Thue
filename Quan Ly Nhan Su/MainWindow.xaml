@@ -54,7 +54,7 @@
                                 Cursor="Hand" ToolTip="Thu gọn/Phóng to menu"
                                 Style="{StaticResource {x:Type Button}}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Image x:Name="imgLogo" Source="/icon.ico" Width="36" Height="36" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
+                                <Image x:Name="imgLogo" Source="/logo.png" Width="36" Height="36" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
                                 <TextBlock x:Name="txtLogo" Text="QUẢN LÝ NHÂN SỰ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>

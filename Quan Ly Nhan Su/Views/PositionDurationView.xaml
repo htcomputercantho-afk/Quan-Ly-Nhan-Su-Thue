@@ -193,8 +193,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="STT"
                                             Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}"
-                                            Width="60"
-                                            HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
+                                            Width="60"/>
 
                         <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*" MinWidth="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
@@ -246,10 +245,10 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="THỜI GIAN CÔNG TÁC&#x0a;THEO QĐ GẦN NHẤT" Width="1.5*" MinWidth="140" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="THỜI GIAN CÔNG TÁC&#x0a;THEO QĐ GẦN NHẤT" Width="1.5*" MinWidth="160" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdDecisionDate" Background="#F5F5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                    <Border x:Name="brdDecisionDate" Background="#F5F5F5" CornerRadius="8" Padding="6,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
                                         <TextBlock Text="{Binding PositionDecisionDate, Converter={StaticResource DateFormatterConverter}}" FontSize="15" Foreground="#616161"/>
                                     </Border>
                                     <DataTemplate.Triggers>
@@ -261,10 +260,10 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="NĂM GIỮ VỊ TRÍ&#x0a;CÔNG TÁC" Width="1.5*" MinWidth="140" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="NĂM GIỮ VỊ TRÍ&#x0a;CÔNG TÁC" Width="1.5*" MinWidth="170" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdDuration" Background="#E1F5FE" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                    <Border x:Name="brdDuration" Background="#E1F5FE" CornerRadius="8" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
                                         <TextBlock FontWeight="Bold" Foreground="#0288D1" FontSize="15">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
@@ -283,10 +282,10 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="TỔNG THỜI GIAN CÔNG TÁC&#x0a;TRONG NGÀNH THUẾ" Width="1.8*" MinWidth="150" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="TỔNG THỜI GIAN CÔNG TÁC&#x0a;TRONG NGÀNH THUẾ" Width="1.8*" MinWidth="170" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdTaxDuration" Background="#E8F5E9" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                    <Border x:Name="brdTaxDuration" Background="#E8F5E9" CornerRadius="8" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
                                         <TextBlock FontWeight="Bold" Foreground="#2E7D32" FontSize="15">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
@@ -305,10 +304,10 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="THỜI GIAN CÒN LẠI&#x0a;ĐẾN KHI NGHỈ HƯU" Width="1.8*" MinWidth="150" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="THỜI GIAN CÒN LẠI&#x0a;ĐẾN KHI NGHỈ HƯU" Width="1.8*" MinWidth="170" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdRetireDuration" Background="#FFEBEE" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                    <Border x:Name="brdRetireDuration" Background="#FFEBEE" CornerRadius="8" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
                                         <TextBlock FontWeight="Bold" Foreground="#C62828" FontSize="15">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
@@ -326,7 +325,7 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="THAO TÁC" Width="70" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="THAO TÁC" Width="70">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Tag="{Binding Id}"

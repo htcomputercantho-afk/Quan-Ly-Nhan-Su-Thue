@@ -8,7 +8,7 @@
      <UseWPF>true</UseWPF>
      <AssemblyName>Quan_Ly_Nhan_Su</AssemblyName>
      <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>1.5.8</Version>
+    <Version>1.5.9</Version>
  
      <PublishSingleFile>true</PublishSingleFile>
      <SelfContained>true</SelfContained>
@@ -34,9 +34,11 @@
  
    <ItemGroup>
      <Resource Include="icon.ico" />
+     <Resource Include="logo.png" />
    </ItemGroup>
  
  </Project>
+
 
 
 
