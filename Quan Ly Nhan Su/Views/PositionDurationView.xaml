@@ -38,19 +38,10 @@
         </StackPanel>
 
         <!-- Filter Toolbar -->
-        <materialDesign:Card Grid.Row="1" Margin="0 0 0 20" Padding="16" UniformCornerRadius="8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
+        <materialDesign:Card Grid.Row="1" Margin="0 0 0 20" Padding="16 16 16 6" UniformCornerRadius="8">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Search Box -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 10">
                     <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
                     <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0" Foreground="#555"/>
                     <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="260" Height="38">
@@ -71,7 +62,7 @@
                 </StackPanel>
 
                 <!-- Calculation Date -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 10">
                     <materialDesign:PackIcon Kind="CalendarClock" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
                     <TextBlock Text="Thời điểm tính:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0" Foreground="#555"/>
                     <DatePicker x:Name="dpCalculationDate" Width="180"
@@ -86,7 +77,7 @@
                 </StackPanel>
 
                 <!-- Years Worked Filter -->
-                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 10">
                     <materialDesign:PackIcon Kind="Filter" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
                     <TextBlock Text="Thâm niên từ:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 5 0" Foreground="#555"/>
                     <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="55" Height="38">
@@ -110,7 +101,7 @@
                 </StackPanel>
 
                 <!-- Export Button -->
-                <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 10">
                     <Button x:Name="btnExport" Click="btnExport_Click"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             Background="#2E7D32" BorderThickness="0"
@@ -122,7 +113,7 @@
                         </StackPanel>
                     </Button>
                 </StackPanel>
-            </Grid>
+            </WrapPanel>
         </materialDesign:Card>
 
         <!-- Data Grid Card -->
@@ -205,7 +196,7 @@
                                             Width="60"
                                             HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
-                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*" MinWidth="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10 4 0 4">
@@ -237,7 +228,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="BỘ PHẬN" Width="2*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="BỘ PHẬN" Width="2.5*" MinWidth="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdDept" Background="#E8EAF6" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,4">
@@ -255,7 +246,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="THỜI GIAN CÔNG TÁC&#x0a;THEO QĐ GẦN NHẤT" Width="1.5*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="THỜI GIAN CÔNG TÁC&#x0a;THEO QĐ GẦN NHẤT" Width="1.5*" MinWidth="140" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdDecisionDate" Background="#F5F5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -270,7 +261,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="NĂM GIỮ VỊ TRÍ&#x0a;CÔNG TÁC" Width="1.5*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="NĂM GIỮ VỊ TRÍ&#x0a;CÔNG TÁC" Width="1.5*" MinWidth="140" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdDuration" Background="#E1F5FE" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -292,7 +283,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="TỔNG THỜI GIAN CÔNG TÁC&#x0a;TRONG NGÀNH THUẾ" Width="1.5*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="TỔNG THỜI GIAN CÔNG TÁC&#x0a;TRONG NGÀNH THUẾ" Width="1.8*" MinWidth="150" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdTaxDuration" Background="#E8F5E9" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -314,7 +305,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn Header="THỜI GIAN CÒN LẠI&#x0a;ĐẾN KHI NGHỈ HƯU" Width="1.5*" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="THỜI GIAN CÒN LẠI&#x0a;ĐẾN KHI NGHỈ HƯU" Width="1.8*" MinWidth="150" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdRetireDuration" Background="#FFEBEE" CornerRadius="8" Padding="12,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
