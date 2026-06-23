@@ -128,11 +128,13 @@ namespace TaxPersonnelManagement.Views
             {
                 filterYear = yr;
                 yearStr = filterYear.ToString();
-                var endOfYear = new DateTime(filterYear, 12, 31);
+                // Dùng biến local vì C# không cho phép capture tham số 'out' trong lambda
+                int localYear = filterYear;
+                var endOfYear = new DateTime(localYear, 12, 31);
                 // Chỉ lấy những nhân sự đã bắt đầu làm việc trong hoặc trước năm đó
                 query = query.Where(p => (p.TaxAuthorityStartDate ?? p.StartDate) <= endOfYear);
                 // Loại trừ nhân sự đã nghỉ hưu trước năm đó
-                query = query.Where(p => !p.RetirementDate.HasValue || p.RetirementDate.Value.Year >= filterYear);
+                query = query.Where(p => !p.RetirementDate.HasValue || p.RetirementDate.Value.Year >= localYear);
             }
 
             return query.ToList();
