@@ -113,11 +113,13 @@ namespace TaxPersonnelManagement.Views
             cardTotal.Height = cardH; cardTotal.Width = cardW;
             cardMaternity.Height = cardH; cardMaternity.Width = cardW;
             cardSick.Height = cardH; cardSick.Width = cardW;
+            cardLeave.Height = cardH; cardLeave.Width = cardW;
 
             // ── Ẩn/hiện icon bên trong card ────────────────────
             iconTotal.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
             iconMaternity.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
             iconSick.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            iconLeave.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
 
             // ── Thu nhỏ font chữ số và label ───────────────────
             double numFont = c ? 18 : 26;
@@ -125,6 +127,7 @@ namespace TaxPersonnelManagement.Views
             txtTotalCount.FontSize = numFont; lblTotal.FontSize = lblFont;
             txtMaternityCount.FontSize = numFont; lblMaternity.FontSize = lblFont;
             txtSickCount.FontSize = numFont; lblSick.FontSize = lblFont;
+            txtLeaveCount.FontSize = numFont; lblLeave.FontSize = lblFont;
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
@@ -253,6 +256,11 @@ namespace TaxPersonnelManagement.Views
                                                                       l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtSickCount.Text = sick.ToString();
 
+                int leave = list.Count(p => p.LeaveHistories != null &&
+                                            p.LeaveHistories.Any(l => l.LeaveType == "Phép năm" &&
+                                                                      l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
+                txtLeaveCount.Text = leave.ToString();
+
                 var displayList = list.AsEnumerable();
                 if (_currentCardFilter == "Maternity")
                 {
@@ -264,6 +272,12 @@ namespace TaxPersonnelManagement.Views
                 {
                     displayList = displayList.Where(p => p.LeaveHistories != null &&
                                                     p.LeaveHistories.Any(l => (l.LeaveType == "Nghỉ ốm" || l.LeaveType.Contains("ốm")) &&
+                                                                              l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
+                }
+                else if (_currentCardFilter == "Leave")
+                {
+                    displayList = displayList.Where(p => p.LeaveHistories != null &&
+                                                    p.LeaveHistories.Any(l => l.LeaveType == "Phép năm" &&
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
 
@@ -367,6 +381,7 @@ namespace TaxPersonnelManagement.Views
             cardTotal.Opacity = _currentCardFilter == "All" ? 1.0 : 0.6;
             cardMaternity.Opacity = _currentCardFilter == "Maternity" ? 1.0 : 0.6;
             cardSick.Opacity = _currentCardFilter == "Sick" ? 1.0 : 0.6;
+            cardLeave.Opacity = _currentCardFilter == "Leave" ? 1.0 : 0.6;
         }
 
         private void cardTotal_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -386,6 +401,13 @@ namespace TaxPersonnelManagement.Views
         private void cardSick_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _currentCardFilter = "Sick";
+            UpdateCardVisuals();
+            LoadData(txtSearch.Text);
+        }
+
+        private void cardLeave_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _currentCardFilter = "Leave";
             UpdateCardVisuals();
             LoadData(txtSearch.Text);
         }
@@ -498,6 +520,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     "Maternity" => $"DanhSach_NghiThaiSan_{DateTime.Now:yyyyMMdd}",
                     "Sick" => $"DanhSach_NghiOm_{DateTime.Now:yyyyMMdd}",
+                    "Leave" => $"DanhSach_NghiPhep_{DateTime.Now:yyyyMMdd}",
                     _ => $"DanhSach_NhanSu_Full_{DateTime.Now:yyyyMMdd}"
                 };
                 dlg.DefaultExt = ".xlsx";

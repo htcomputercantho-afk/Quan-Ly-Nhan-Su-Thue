@@ -135,7 +135,8 @@
                           AlternationCount="2" AlternatingRowBackground="#FAFAFA"
                           MinRowHeight="50" VerticalContentAlignment="Center"
                           SelectionMode="Single"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          FrozenColumnCount="2">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="FontWeight" Value="Bold"/>

@@ -149,6 +149,30 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN Hometown TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN CurrentResidence TEXT"); } catch { }
 
+                    // Manual Migration for TrainingClasses and PersonnelTrainings
+                    try
+                    {
+                        context.Database.ExecuteSqlRaw(@"
+                            CREATE TABLE IF NOT EXISTS TrainingClasses (
+                                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                ClassName TEXT NOT NULL,
+                                ParticipationDate TEXT,
+                                DecisionNumber TEXT,
+                                DecisionDate TEXT,
+                                DecisionUnit TEXT
+                            );");
+
+                        context.Database.ExecuteSqlRaw(@"
+                            CREATE TABLE IF NOT EXISTS PersonnelTrainings (
+                                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                PersonnelId INTEGER NOT NULL,
+                                TrainingClassId INTEGER NOT NULL,
+                                FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE,
+                                FOREIGN KEY (TrainingClassId) REFERENCES TrainingClasses(Id) ON DELETE CASCADE
+                            );");
+                    }
+                    catch { }
+
                     // Manual Migration for Tab 2 Fields (Position History)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PositionDecisionDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PositionCalculationDate TEXT"); } catch { }

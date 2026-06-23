@@ -27,12 +27,13 @@
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/> <!-- KPIs -->
             <RowDefinition Height="Auto"/> <!-- Filters -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Loading Overlay -->
-        <Grid x:Name="LoadingOverlay" Grid.RowSpan="3" Visibility="Collapsed" Panel.ZIndex="1000">
+        <Grid x:Name="LoadingOverlay" Grid.RowSpan="4" Visibility="Collapsed" Panel.ZIndex="1000">
             <Border Background="Black" Opacity="0.15"/>
             <materialDesign:Card UniformCornerRadius="10" Width="220" Height="140" materialDesign:ElevationAssist.Elevation="Dp6" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -44,8 +45,8 @@
                     <TextBlock Text="Vui lòng chờ trong giây lát" FontSize="11.5" Foreground="#64748B" HorizontalAlignment="Center" Margin="0 5 0 0"/>
                 </StackPanel>
             </materialDesign:Card>
-            <!-- Header -->
         </Grid>
+
         <StackPanel Orientation="Horizontal" Margin="0 0 0 24">
             <Border Background="#EFF6FF" CornerRadius="8" Padding="10" Margin="0 0 16 0">
                 <materialDesign:PackIcon Kind="Certificate" Width="26" Height="26" Foreground="#2563EB" VerticalAlignment="Center"/>
@@ -56,8 +57,158 @@
             </StackPanel>
         </StackPanel>
 
+        <!-- KPIs Section -->
+        <WrapPanel x:Name="wpKPIRow" Grid.Row="1" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Left">
+            <!-- Card 1: Total Cán bộ -->
+            <materialDesign:Card x:Name="cardTotal" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
+                <Grid>
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#0078D4" Offset="0.0"/>
+                            <GradientStop Color="#00B7C3" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Grid.Background>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon x:Name="iconTotal" Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                        <TextBlock x:Name="lblTotal" Text="TỔNG SỐ CÁN BỘ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                <materialDesign:Card.Style>
+                    <Style TargetType="materialDesign:Card">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                <Setter Property="Height" Value="65"/>
+                                <Setter Property="Width" Value="200"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </materialDesign:Card.Style>
+            </materialDesign:Card>
+
+            <!-- Card 2: Xuất sắc -->
+            <materialDesign:Card x:Name="cardExcellent" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardExcellent_Click">
+                <Grid>
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#D4AF37" Offset="0.0"/>
+                            <GradientStop Color="#F4D03F" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Grid.Background>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel x:Name="iconExcellent" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 5">
+                            <materialDesign:PackIcon Kind="Star" Width="20" Height="20" Foreground="White"/>
+                            <materialDesign:PackIcon Kind="Star" Width="24" Height="24" Foreground="White" Margin="2 -4 2 0"/>
+                            <materialDesign:PackIcon Kind="Star" Width="20" Height="20" Foreground="White"/>
+                        </StackPanel>
+                        <TextBlock x:Name="lblExcellent" Text="XUẤT SẮC" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="txtExcellentCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                <materialDesign:Card.Style>
+                    <Style TargetType="materialDesign:Card">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                <Setter Property="Height" Value="65"/>
+                                <Setter Property="Width" Value="200"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </materialDesign:Card.Style>
+            </materialDesign:Card>
+
+            <!-- Card 3: Hoàn thành tốt nhiệm vụ -->
+            <materialDesign:Card x:Name="cardGood" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardGood_Click">
+                <Grid>
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#2E7D32" Offset="0.0"/>
+                            <GradientStop Color="#4CAF50" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Grid.Background>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel x:Name="iconGood" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 5">
+                            <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0"/>
+                            <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0"/>
+                            <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0"/>
+                        </StackPanel>
+                        <TextBlock x:Name="lblGood" Text="HOÀN THÀNH TỐT NHIỆM VỤ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="txtGoodCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                <materialDesign:Card.Style>
+                    <Style TargetType="materialDesign:Card">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                <Setter Property="Height" Value="65"/>
+                                <Setter Property="Width" Value="200"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </materialDesign:Card.Style>
+            </materialDesign:Card>
+
+            <!-- Card 4: Hoàn thành nhiệm vụ -->
+            <materialDesign:Card x:Name="cardSatisfactory" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSatisfactory_Click">
+                <Grid>
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#D84315" Offset="0.0"/>
+                            <GradientStop Color="#FF8A65" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Grid.Background>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel x:Name="iconSatisfactory" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 5">
+                            <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0" Opacity="1.0"/>
+                            <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0" Opacity="0.6"/>
+                            <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0" Opacity="0.3"/>
+                        </StackPanel>
+                        <TextBlock x:Name="lblSatisfactory" Text="HOÀN THÀNH NHIỆM VỤ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="txtSatisfactoryCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                <materialDesign:Card.Style>
+                    <Style TargetType="materialDesign:Card">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                <Setter Property="Height" Value="65"/>
+                                <Setter Property="Width" Value="200"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </materialDesign:Card.Style>
+            </materialDesign:Card>
+
+            <!-- Card 5: Không hoàn thành nhiệm vụ -->
+            <materialDesign:Card x:Name="cardUnsatisfactory" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardUnsatisfactory_Click">
+                <Grid>
+                    <Grid.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#D32F2F" Offset="0.0"/>
+                            <GradientStop Color="#EF5350" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Grid.Background>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <materialDesign:PackIcon x:Name="iconUnsatisfactory" Kind="AlertCircle" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                        <TextBlock x:Name="lblUnsatisfactory" Text="KHÔNG HOÀN THÀNH NHIỆM VỤ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="txtUnsatisfactoryCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+                <materialDesign:Card.Style>
+                    <Style TargetType="materialDesign:Card">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                <Setter Property="Height" Value="65"/>
+                                <Setter Property="Width" Value="200"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </materialDesign:Card.Style>
+            </materialDesign:Card>
+        </WrapPanel>
+
         <!-- Filter Toolbar Card -->
-        <materialDesign:Card Grid.Row="1" Margin="0 0 0 20" Padding="16" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
+        <materialDesign:Card Grid.Row="2" Margin="0 0 0 20" Padding="16" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0">
                 <!-- Group 1: Filters -->
                 <StackPanel Orientation="Horizontal" Margin="0 0 16 10" VerticalAlignment="Center">
@@ -195,7 +346,7 @@
         </materialDesign:Card>
 
         <!-- Data Grid Card -->
-        <materialDesign:Card Grid.Row="2" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
+        <materialDesign:Card Grid.Row="3" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>

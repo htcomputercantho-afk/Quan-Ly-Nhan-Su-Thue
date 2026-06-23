@@ -54,7 +54,7 @@
                                 Cursor="Hand" ToolTip="Thu gọn/Phóng to menu"
                                 Style="{StaticResource {x:Type Button}}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Image x:Name="imgLogo" Source="/logo.png" Width="36" Height="36" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
+                                <Image x:Name="imgLogo" Source="/logo.png" Width="48" Height="48" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
                                 <TextBlock x:Name="txtLogo" Text="QUẢN LÝ NHÂN SỰ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
@@ -66,6 +66,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon x:Name="iconDashboard" Kind="ViewDashboard" Width="22" Height="22" Margin="0 0 15 0"/>
                                 <TextBlock x:Name="txtOverview" Text="Tổng quan" FontSize="15" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnStatistics" Click="NavigateStatistics" ToolTip="Thống kê">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon x:Name="iconStatistics" Kind="ChartPie" Width="22" Height="22" Margin="0 0 15 0"/>
+                                <TextBlock x:Name="txtStatistics" Text="Thống kê" FontSize="15" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
         
@@ -115,6 +122,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon x:Name="iconEvaluation" Kind="Certificate" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="txtEvaluation" Text="Xếp loại" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnTraining" Click="NavigateTraining" ToolTip="Đào tạo và Bồi dưỡng">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="School" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtTraining" Text="Đào tạo và Bồi dưỡng" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 

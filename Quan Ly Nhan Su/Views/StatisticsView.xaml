@@ -1,0 +1,570 @@
+<UserControl x:Class="TaxPersonnelManagement.Views.StatisticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:TaxPersonnelManagement.Views"
+             mc:Ignorable="d" 
+             Language="vi-VN"
+             d:DesignHeight="750" d:DesignWidth="1200">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Text styling utilities -->
+            <Style x:Key="CardTitleText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+
+            <Style x:Key="ChartSectionTitle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="#374151"/>
+                <Setter Property="Margin" Value="0 0 0 10"/>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title -->
+            <RowDefinition Height="Auto"/> <!-- Filter Bar -->
+            <RowDefinition Height="*"/>    <!-- Scrollable Content -->
+        </Grid.RowDefinitions>
+
+        <!-- 1. Header -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0 0 0 15">
+            <materialDesign:PackIcon Kind="ChartPie" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+            <TextBlock Text="BÁO CÁO THỐNG KÊ NHÂN SỰ" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- 2. Filter Toolbar -->
+        <materialDesign:Card Grid.Row="1" Margin="0 0 0 15" Padding="16 12 16 4" UniformCornerRadius="8" Background="White">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Search Box -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
+                    <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
+                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="260" Height="36">
+                        <TextBox x:Name="txtSearch"
+                                 materialDesign:HintAssist.Hint="Họ tên hoặc mã cán bộ..."
+                                 materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                 materialDesign:TextFieldAssist.HasClearButton="True"
+                                 BorderThickness="0" Background="Transparent"
+                                 VerticalContentAlignment="Center" Padding="10 0"
+                                 FontSize="13" Foreground="#374151"
+                                 TextChanged="Filter_Changed"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Department Filter -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
+                    <materialDesign:PackIcon Kind="HomeGroup" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <TextBlock Text="Bộ phận:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
+                    <ComboBox x:Name="cbDepartmentFilter" Width="220" Height="36"
+                              Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                              Background="White" Padding="10 6" FontSize="13"
+                              SelectionChanged="Filter_Changed"/>
+                </StackPanel>
+
+                <!-- Year Filter -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
+                    <materialDesign:PackIcon Kind="CalendarRange" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <TextBlock Text="Năm thống kê:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
+                    <ComboBox x:Name="cbYearFilter" Width="140" Height="36"
+                              Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                              Background="White" Padding="10 6" FontSize="13"
+                              SelectionChanged="Filter_Changed"/>
+                </StackPanel>
+
+                <!-- Export Excel Button -->
+                <Button x:Name="btnExportExcel" Margin="0 0 0 8" Height="36"
+                        Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Click="btnExportExcel_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                        <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+        </materialDesign:Card>
+
+        <!-- 3. Scrollable Content -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0 0 5 0">
+            <StackPanel>
+                
+                <!-- ROW 1: KPI Cards -->
+                <Grid Margin="0 0 0 15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Card 1: Total Personnel -->
+                    <materialDesign:Card Grid.Column="0" Margin="0 0 10 0" Padding="20" UniformCornerRadius="12">
+                        <materialDesign:Card.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#0D47A1" Offset="0"/>
+                                <GradientStop Color="#1976D2" Offset="1"/>
+                            </LinearGradientBrush>
+                        </materialDesign:Card.Background>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <materialDesign:PackIcon Kind="AccountGroup" Width="56" Height="56" Foreground="White" Opacity="0.85" VerticalAlignment="Center" Grid.Column="0"/>
+                            <StackPanel Grid.Column="1" Margin="20 0 0 0" VerticalAlignment="Center">
+                                <TextBlock Text="TỔNG SỐ CÔNG CHỨC" Foreground="White" Opacity="0.9" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock x:Name="txtTotalPersonnel" Text="0" Foreground="White" FontSize="36" FontWeight="Black" Margin="0 4 0 0"/>
+                                <TextBlock Text="Đang công tác tại đơn vị" Foreground="White" Opacity="0.7" FontSize="11" Margin="0 2 0 0"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Card 2: Gender Distribution -->
+                    <materialDesign:Card Grid.Column="1" Margin="10 0 0 0" Padding="20" UniformCornerRadius="12" Background="White">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Male Segment -->
+                            <Grid Grid.Column="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Kind="GenderMale" Width="44" Height="44" Foreground="#0288D1" VerticalAlignment="Center" Grid.Column="0" Margin="0 0 15 0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="NAM CÔNG CHỨC" FontSize="12" FontWeight="Bold" Foreground="Gray"/>
+                                    <TextBlock x:Name="txtMaleCount" Text="0 người" FontSize="20" FontWeight="Bold" Foreground="#0288D1" Margin="0 4 0 0"/>
+                                    <TextBlock x:Name="txtMaleRatio" Text="Tỷ lệ: 0%" FontSize="13" Foreground="#555" FontWeight="Medium" Margin="0 2 0 0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Separator -->
+                            <Separator Grid.Column="1" Style="{StaticResource {x:Static MenuItem.SeparatorStyleKey}}" Margin="15 0">
+                                <Separator.LayoutTransform>
+                                    <RotateTransform Angle="90" />
+                                </Separator.LayoutTransform>
+                            </Separator>
+
+                            <!-- Female Segment -->
+                            <Grid Grid.Column="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <materialDesign:PackIcon Kind="GenderFemale" Width="44" Height="44" Foreground="#EC407A" VerticalAlignment="Center" Grid.Column="0" Margin="0 0 15 0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="NỮ CÔNG CHỨC" FontSize="12" FontWeight="Bold" Foreground="Gray"/>
+                                    <TextBlock x:Name="txtFemaleCount" Text="0 người" FontSize="20" FontWeight="Bold" Foreground="#EC407A" Margin="0 4 0 0"/>
+                                    <TextBlock x:Name="txtFemaleRatio" Text="Tỷ lệ: 0%" FontSize="13" Foreground="#555" FontWeight="Medium" Margin="0 2 0 0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
+
+                <!-- ROW 2: Pie/Donut Charts (Education & Party Member) -->
+                <Grid Margin="0 0 0 15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Chart 1: Education -->
+                    <materialDesign:Card Grid.Column="0" Margin="0 0 10 0" Padding="20" UniformCornerRadius="12" Background="White">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0 0 0 15">
+                                <materialDesign:PackIcon Kind="School" Width="22" Height="22" Foreground="#7B1FA2" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <TextBlock Text="TRÌNH ĐỘ HỌC VẤN" Style="{StaticResource CardTitleText}" Foreground="#7B1FA2"/>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Margin="0 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Donut Chart Wrap -->
+                                <Grid Grid.Column="0" Width="170" Height="170" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Canvas x:Name="cvEducation" Width="170" Height="170"/>
+                                    <!-- Center info -->
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="txtEduCenterCount" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#374151"/>
+                                        <TextBlock Text="Cán bộ" FontSize="11" Foreground="#9CA3AF" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Legends -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="25 0 0 0">
+                                    <!-- Sau Đại học -->
+                                    <Grid Margin="0 0 0 12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" Background="#7B1FA2" CornerRadius="3" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="Sau Đại học: " FontSize="13" Foreground="#4B5563"/>
+                                            <TextBlock x:Name="txtPostGradCount" Text="0" FontWeight="Bold" FontSize="13" Foreground="#1F2937"/>
+                                            <TextBlock x:Name="txtPostGradRatio" Text=" (0%)" FontSize="12" Foreground="#6B7280"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Đại học -->
+                                    <Grid Margin="0 0 0 12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" Background="#1565C0" CornerRadius="3" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="Đại học: " FontSize="13" Foreground="#4B5563"/>
+                                            <TextBlock x:Name="txtGradCount" Text="0" FontWeight="Bold" FontSize="13" Foreground="#1F2937"/>
+                                            <TextBlock x:Name="txtGradRatio" Text=" (0%)" FontSize="12" Foreground="#6B7280"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Khác -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" Background="#78909C" CornerRadius="3" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="Trình độ khác: " FontSize="13" Foreground="#4B5563"/>
+                                            <TextBlock x:Name="txtOtherEduCount" Text="0" FontWeight="Bold" FontSize="13" Foreground="#1F2937"/>
+                                            <TextBlock x:Name="txtOtherEduRatio" Text=" (0%)" FontSize="12" Foreground="#6B7280"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Summary Text -->
+                            <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="6" Padding="12 10" Margin="0 10 0 0">
+                                <TextBlock x:Name="txtEducationSummary" FontSize="12.5" TextWrapping="Wrap" Foreground="#475569" FontStyle="Italic" LineHeight="18"/>
+                            </Border>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Chart 2: Party Member -->
+                    <materialDesign:Card Grid.Column="1" Margin="10 0 0 0" Padding="20" UniformCornerRadius="12" Background="White">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0 0 0 15">
+                                <materialDesign:PackIcon Kind="Flag" Width="22" Height="22" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <TextBlock Text="PHÂN BỐ ĐẢNG VIÊN" Style="{StaticResource CardTitleText}" Foreground="#D32F2F"/>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Margin="0 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Donut Chart Wrap -->
+                                <Grid Grid.Column="0" Width="170" Height="170" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Canvas x:Name="cvParty" Width="170" Height="170"/>
+                                    <!-- Center info -->
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="txtPartyCenterCount" Text="0" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#374151"/>
+                                        <TextBlock Text="Cán bộ" FontSize="11" Foreground="#9CA3AF" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Legends -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="25 0 0 0">
+                                    <!-- Đảng viên -->
+                                    <Grid Margin="0 0 0 12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" Background="#D32F2F" CornerRadius="3" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="Đảng viên: " FontSize="13" Foreground="#4B5563"/>
+                                            <TextBlock x:Name="txtPartyMemberCount" Text="0" FontWeight="Bold" FontSize="13" Foreground="#1F2937"/>
+                                            <TextBlock x:Name="txtPartyMemberRatio" Text=" (0%)" FontSize="12" Foreground="#6B7280"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Chưa là Đảng viên -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" Background="#FFA000" CornerRadius="3" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                            <TextBlock Text="Chưa là Đảng viên: " FontSize="13" Foreground="#4B5563"/>
+                                            <TextBlock x:Name="txtNonPartyCount" Text="0" FontWeight="Bold" FontSize="13" Foreground="#1F2937"/>
+                                            <TextBlock x:Name="txtNonPartyRatio" Text=" (0%)" FontSize="12" Foreground="#6B7280"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Summary Text -->
+                            <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="6" Padding="12 10" Margin="0 10 0 0">
+                                <TextBlock x:Name="txtPartySummary" FontSize="12.5" TextWrapping="Wrap" Foreground="#475569" FontStyle="Italic" LineHeight="18"/>
+                            </Border>
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
+
+                <!-- ROW 3: Bar Charts (Age & Seniority) -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Chart 3: Age Distribution -->
+                    <materialDesign:Card Grid.Column="0" Margin="0 0 10 0" Padding="20" UniformCornerRadius="12" Background="White">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0 0 0 15">
+                                <materialDesign:PackIcon Kind="AccountClock" Width="22" Height="22" Foreground="#00796B" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <TextBlock Text="PHÂN BỐ ĐỘ TUỔI" Style="{StaticResource CardTitleText}" Foreground="#00796B"/>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Height="170" Margin="0 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Column 1: Under 30 -->
+                                <Grid Grid.Column="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtAgeVal1" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barAge1" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#4DB6AC" Offset="0"/>
+                                                    <GradientStop Color="#00796B" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="Dưới 30" FontSize="12" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+
+                                <!-- Column 2: 30 - 40 -->
+                                <Grid Grid.Column="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtAgeVal2" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barAge2" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#4DB6AC" Offset="0"/>
+                                                    <GradientStop Color="#00796B" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="30 - 40" FontSize="12" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+
+                                <!-- Column 3: 41 - 50 -->
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtAgeVal3" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barAge3" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#4DB6AC" Offset="0"/>
+                                                    <GradientStop Color="#00796B" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="41 - 50" FontSize="12" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+
+                                <!-- Column 4: Over 50 -->
+                                <Grid Grid.Column="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtAgeVal4" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barAge4" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#4DB6AC" Offset="0"/>
+                                                    <GradientStop Color="#00796B" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="Trên 50" FontSize="12" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Chart 4: Seniority Distribution -->
+                    <materialDesign:Card Grid.Column="1" Margin="10 0 0 0" Padding="20" UniformCornerRadius="12" Background="White">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0 0 0 15">
+                                <materialDesign:PackIcon Kind="Timer" Width="22" Height="22" Foreground="#303F9F" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <TextBlock Text="PHÂN BỐ THÂM NIÊN CÔNG TÁC" Style="{StaticResource CardTitleText}" Foreground="#303F9F"/>
+                            </StackPanel>
+
+                            <Grid Grid.Row="1" Height="170" Margin="0 10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Column 1: Under 5 years -->
+                                <Grid Grid.Column="0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtSenVal1" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barSen1" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#7986CB" Offset="0"/>
+                                                    <GradientStop Color="#303F9F" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="Dưới 5 năm" FontSize="11" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+
+                                <!-- Column 2: 5 - 10 years -->
+                                <Grid Grid.Column="1">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtSenVal2" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barSen2" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#7986CB" Offset="0"/>
+                                                    <GradientStop Color="#303F9F" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="5 - 10 năm" FontSize="11" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+
+                                <!-- Column 3: 11 - 20 years -->
+                                <Grid Grid.Column="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtSenVal3" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barSen3" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#7986CB" Offset="0"/>
+                                                    <GradientStop Color="#303F9F" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="11 - 20 năm" FontSize="11" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+
+                                <!-- Column 4: Over 20 years -->
+                                <Grid Grid.Column="3">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock x:Name="txtSenVal4" Grid.Row="0" Text="0 (0%)" FontSize="11.5" HorizontalAlignment="Center" Margin="0 0 0 4" FontWeight="SemiBold" Foreground="#374151"/>
+                                    <Border Grid.Row="1" Width="32" Height="120" Background="#F3F4F6" CornerRadius="6" VerticalAlignment="Bottom">
+                                        <Border x:Name="barSen4" Width="32" Height="0" CornerRadius="6" VerticalAlignment="Bottom">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                    <GradientStop Color="#7986CB" Offset="0"/>
+                                                    <GradientStop Color="#303F9F" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                    <TextBlock Grid.Row="2" Text="Trên 20 năm" FontSize="11" HorizontalAlignment="Center" Margin="0 6 0 0" Foreground="#4B5563" FontWeight="Medium"/>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
+                
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

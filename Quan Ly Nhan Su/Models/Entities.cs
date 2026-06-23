@@ -487,5 +487,29 @@ namespace TaxPersonnelManagement.Models
         public DateTime? DecisionDate { get; set; }
         public string? DecisionAgency { get; set; }
     }
+
+    public class TrainingClass
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string ClassName { get; set; } = string.Empty; // Tên các lớp, hội nghị
+        public DateTime? ParticipationDate { get; set; } // Ngày tham gia
+        public string? DecisionNumber { get; set; } // Số QĐ
+        public DateTime? DecisionDate { get; set; } // Ngày ra QĐ
+        public string? DecisionUnit { get; set; } // Đơn vị ra QĐ
+        
+        public virtual ICollection<PersonnelTraining> PersonnelTrainings { get; set; } = new List<PersonnelTraining>();
+    }
+
+    public class PersonnelTraining
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; }
+        public virtual Personnel Personnel { get; set; } = null!;
+        public int TrainingClassId { get; set; }
+        public virtual TrainingClass TrainingClass { get; set; } = null!;
+    }
 }
 

@@ -23,6 +23,18 @@ namespace TaxPersonnelManagement.Views
         private System.Windows.Threading.DispatcherTimer? _searchDebounceTimer;
         public List<int> AvailableYears { get; set; } = new List<int>();
 
+        private string _currentCardFilter = "All";
+
+        public static readonly DependencyProperty IsCompactProperty =
+            DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(EvaluationListView),
+                new PropertyMetadata(false));
+
+        public bool IsCompact
+        {
+            get => (bool)GetValue(IsCompactProperty);
+            set => SetValue(IsCompactProperty, value);
+        }
+
         public EvaluationListView()
         {
             InitializeComponent();
@@ -35,6 +47,18 @@ namespace TaxPersonnelManagement.Views
             {
                 _searchDebounceTimer.Stop();
                 LoadData();
+            };
+
+            // Responsive: kiểm tra ngay khi load và mỗi khi resize
+            this.Loaded += (s, e) =>
+            {
+                IsCompact = this.ActualWidth < 1400;
+                ApplyCompactMode();
+            };
+            this.SizeChanged += (s, e) =>
+            {
+                IsCompact = e.NewSize.Width < 1400;
+                ApplyCompactMode();
             };
 
             LoadData();
@@ -179,9 +203,46 @@ namespace TaxPersonnelManagement.Views
                         filtered = filtered.Where(e => e.Year == year);
                     }
 
+                    // Calculate card statistics from filtered list BEFORE rating filter is applied
+                    var baseFiltered = filtered.ToList();
+                    int total = baseFiltered.Count;
+                    int excellent = baseFiltered.Count(e => e.Rating == "Hoàn thành xuất sắc nhiệm vụ");
+                    int good = baseFiltered.Count(e => e.Rating == "Hoàn thành tốt nhiệm vụ");
+                    int satisfactory = baseFiltered.Count(e => e.Rating == "Hoàn thành nhiệm vụ");
+                    int unsatisfactory = baseFiltered.Count(e => e.Rating == "Không hoàn thành nhiệm vụ");
+
+                    int excellentPct = total > 0 ? (int)Math.Round(excellent * 100.0 / total) : 0;
+                    int goodPct = total > 0 ? (int)Math.Round(good * 100.0 / total) : 0;
+                    int satisfactoryPct = total > 0 ? (int)Math.Round(satisfactory * 100.0 / total) : 0;
+                    int unsatisfactoryPct = total > 0 ? (int)Math.Round(unsatisfactory * 100.0 / total) : 0;
+
+                    if (txtTotalCount != null) txtTotalCount.Text = total.ToString();
+                    if (txtExcellentCount != null) txtExcellentCount.Text = $"{excellent} ({excellentPct}%)";
+                    if (txtGoodCount != null) txtGoodCount.Text = $"{good} ({goodPct}%)";
+                    if (txtSatisfactoryCount != null) txtSatisfactoryCount.Text = $"{satisfactory} ({satisfactoryPct}%)";
+                    if (txtUnsatisfactoryCount != null) txtUnsatisfactoryCount.Text = $"{unsatisfactory} ({unsatisfactoryPct}%)";
+
+                    // Sync the active card filter visual state
+                    if (rating == "Hoàn thành xuất sắc nhiệm vụ")
+                        _currentCardFilter = "Excellent";
+                    else if (rating == "Hoàn thành tốt nhiệm vụ")
+                        _currentCardFilter = "Good";
+                    else if (rating == "Hoàn thành nhiệm vụ")
+                        _currentCardFilter = "Satisfactory";
+                    else if (rating == "Không hoàn thành nhiệm vụ")
+                        _currentCardFilter = "Unsatisfactory";
+                    else
+                        _currentCardFilter = "All";
+
+                    UpdateCardVisuals();
+
                     if (!string.IsNullOrEmpty(rating) && rating != "-- Tất cả xếp loại --")
                     {
-                        filtered = filtered.Where(e => e.Rating == rating);
+                        filtered = baseFiltered.Where(e => e.Rating == rating);
+                    }
+                    else
+                    {
+                        filtered = baseFiltered;
                     }
 
                     // Sort order: Department, then Position, then FullName, then Year desc
@@ -316,6 +377,82 @@ namespace TaxPersonnelManagement.Views
         private void cbFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             LoadData();
+        }
+
+        private void ApplyCompactMode()
+        {
+            if (wpKPIRow == null || cardTotal == null || cardExcellent == null || cardGood == null || cardSatisfactory == null || cardUnsatisfactory == null) return;
+            bool c = IsCompact;
+
+            // ── Margin top section ──────────────────────────────
+            wpKPIRow.Margin = c ? new Thickness(0, 0, 0, 2) : new Thickness(0, 0, 0, 10);
+
+            // ── KPI Cards: height + width ───────────────────────
+            double cardH = c ? 54 : 100;
+            double cardW = c ? 160 : 260;
+            cardTotal.Height = cardH; cardTotal.Width = cardW;
+            cardExcellent.Height = cardH; cardExcellent.Width = cardW;
+            cardGood.Height = cardH; cardGood.Width = cardW;
+            cardSatisfactory.Height = cardH; cardSatisfactory.Width = cardW;
+            cardUnsatisfactory.Height = cardH; cardUnsatisfactory.Width = cardW;
+
+            // ── Ẩn/hiện icon bên trong card ────────────────────
+            if (iconTotal != null) iconTotal.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconExcellent != null) iconExcellent.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconGood != null) iconGood.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconSatisfactory != null) iconSatisfactory.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconUnsatisfactory != null) iconUnsatisfactory.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+
+            // ── Thu nhỏ font chữ số và label ───────────────────
+            double numFont = c ? 16 : 26;
+            double lblFont = c ? 10 : 13;
+            if (txtTotalCount != null) txtTotalCount.FontSize = numFont; 
+            if (lblTotal != null) lblTotal.FontSize = lblFont;
+            if (txtExcellentCount != null) txtExcellentCount.FontSize = numFont; 
+            if (lblExcellent != null) lblExcellent.FontSize = lblFont;
+            if (txtGoodCount != null) txtGoodCount.FontSize = numFont; 
+            if (lblGood != null) lblGood.FontSize = lblFont;
+            if (txtSatisfactoryCount != null) txtSatisfactoryCount.FontSize = numFont; 
+            if (lblSatisfactory != null) lblSatisfactory.FontSize = lblFont;
+            if (txtUnsatisfactoryCount != null) txtUnsatisfactoryCount.FontSize = numFont; 
+            if (lblUnsatisfactory != null) lblUnsatisfactory.FontSize = lblFont;
+        }
+
+        private void UpdateCardVisuals()
+        {
+            if (cardTotal == null || cardExcellent == null || cardGood == null || cardSatisfactory == null || cardUnsatisfactory == null)
+                return;
+
+            cardTotal.Opacity = _currentCardFilter == "All" ? 1.0 : 0.6;
+            cardExcellent.Opacity = _currentCardFilter == "Excellent" ? 1.0 : 0.6;
+            cardGood.Opacity = _currentCardFilter == "Good" ? 1.0 : 0.6;
+            cardSatisfactory.Opacity = _currentCardFilter == "Satisfactory" ? 1.0 : 0.6;
+            cardUnsatisfactory.Opacity = _currentCardFilter == "Unsatisfactory" ? 1.0 : 0.6;
+        }
+
+        private void cardTotal_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (cbRating != null) cbRating.SelectedIndex = 0; // "-- Tất cả xếp loại --"
+        }
+
+        private void cardExcellent_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (cbRating != null) cbRating.SelectedItem = "Hoàn thành xuất sắc nhiệm vụ";
+        }
+
+        private void cardGood_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (cbRating != null) cbRating.SelectedItem = "Hoàn thành tốt nhiệm vụ";
+        }
+
+        private void cardSatisfactory_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (cbRating != null) cbRating.SelectedItem = "Hoàn thành nhiệm vụ";
+        }
+
+        private void cardUnsatisfactory_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (cbRating != null) cbRating.SelectedItem = "Không hoàn thành nhiệm vụ";
         }
 
         private T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject

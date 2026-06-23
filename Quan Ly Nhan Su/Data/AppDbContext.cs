@@ -24,6 +24,8 @@ namespace TaxPersonnelManagement.Data
         public DbSet<IncomeRecord> IncomeRecords { get; set; }           // Bảng ghi nhận tổng thu nhập hàng tháng/năm
         public DbSet<PublicHoliday> PublicHolidays { get; set; }         // Bảng danh mục ngày nghỉ lễ
         public DbSet<EvaluationRecord> EvaluationRecords { get; set; }   // Bảng ghi nhận xếp loại năm
+        public DbSet<TrainingClass> TrainingClasses { get; set; }        // Bảng danh mục lớp học/hội nghị đào tạo bồi dưỡng
+        public DbSet<PersonnelTraining> PersonnelTrainings { get; set; }  // Bảng học viên tham gia lớp đào tạo bồi dưỡng
 
 
         /// <summary>

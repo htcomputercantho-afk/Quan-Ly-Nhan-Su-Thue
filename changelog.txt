@@ -1,3 +1,28 @@
+## v1.6.0 — 2026-06-23
+- [Tính năng] Thêm menu "Thống kê" trong Sidebar:
+    + Bổ sung màn hình Báo cáo Thống kê Nhân sự (StatisticsView) chuyên dụng, thiết kế trực quan với bố cục Card hiện đại, tích hợp đầy đủ vào menu điều hướng chính.
+    + Bộ lọc linh hoạt theo Tìm kiếm (Họ tên, Mã cán bộ, CCCD), Bộ phận và Năm thống kê; tự động cập nhật biểu đồ ngay khi thay đổi bộ lọc.
+    + Năm thống kê tự động đưa năm hiện tại lên đầu danh sách; hệ thống tự động phát hiện và bổ sung năm mới theo thời gian thực mỗi khi khởi động.
+- [Thống kê] Biểu đồ và chỉ số thống kê toàn diện:
+    + Thẻ KPI tổng số công chức kèm phân bố giới tính (Nam/Nữ) với tỷ lệ phần trăm hiển thị trực quan.
+    + Biểu đồ tròn Donut Chart vẽ hoàn toàn bằng WPF Path/ArcSegment (không cần thư viện ngoài) cho Trình độ học vấn (Sau Đại học, Đại học, Khác) và Phân bố Đảng viên/Quần chúng.
+    + Biểu đồ cột dọc thể hiện Phân bố Độ tuổi (Dưới 30, 30–40, 41–50, Trên 50) và Thâm niên công tác (Dưới 5 năm, 5–10 năm, 11–20 năm, Trên 20 năm).
+    + Các dòng tóm tắt tự động dưới mỗi biểu đồ giúp đọc nhanh thông tin quan trọng.
+- [Tính năng] Xuất báo cáo Excel thống kê chuyên nghiệp:
+    + Sheet 1 "Thống kê chung": Bảng tổng hợp đầy đủ các chỉ số theo nhóm, header màu xanh, tiêu đề nhóm nổi bật.
+    + Sheet 2 "Danh sách chi tiết": Toàn bộ danh sách nhân sự lọc theo tiêu chí đã chọn, sắp xếp theo Bộ phận và Họ tên, tự động căn chỉnh cột.
+- [Tính năng] Ô "Nghỉ phép hôm nay" trên Dashboard:
+    + Bổ sung thẻ KPI hiển thị số lượng công chức đang nghỉ phép trong ngày hiện tại.
+    + Nhấp vào thẻ sẽ mở cửa sổ popup liệt kê chi tiết danh sách người nghỉ phép hôm đó (Họ tên, Bộ phận, Loại nghỉ).
+- [Giao diện] Màn hình Xếp loại — các thẻ KPI tổng hợp phía trên:
+    + Thêm hàng thẻ thống kê tổng quan (tương tự Dashboard) ngay phía trên danh sách xếp loại, gồm: Tổng số, Hoàn thành xuất sắc, Hoàn thành tốt, Hoàn thành nhiệm vụ, Không hoàn thành.
+- [Tính năng] Tìm kiếm nâng cao theo số CCCD:
+    + Tất cả ô tìm kiếm trong hệ thống (danh sách nhân sự, thống kê, xếp loại,...) đều hỗ trợ tìm kiếm theo số Căn cước công dân để phân biệt người trùng tên.
+- [Tối ưu Code] Dọn dẹp và chuẩn hóa toàn bộ mã nguồn:
+    + Tách logic lọc dữ liệu dùng chung (GetFilteredPersonnel) và phân loại dữ liệu (ClassifyEducation, ClassifyAge, ClassifySeniority) thành các phương thức riêng, loại bỏ hoàn toàn code trùng lặp giữa LoadStatistics() và xuất Excel.
+    + Chuẩn hóa 100% comments trong mã nguồn sang tiếng Việt.
+    + Xóa các file rác (debug.log nội bộ, user.config tạm) khỏi lịch sử commit.
+
 ## v1.5.9 — 2026-06-22
 - [Tối ưu] Khắc phục lỗi hiển thị trên màn hình nhỏ tại màn hình "Thời gian giữ vị trí công tác":
     + Thay đổi bố cục Grid cố định của thanh công cụ lọc sang WrapPanel giúp các bộ lọc tự động xuống dòng linh hoạt, không bị che khuất hay mất thông tin.

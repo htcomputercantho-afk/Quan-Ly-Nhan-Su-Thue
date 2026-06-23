@@ -1,0 +1,312 @@
+<Window x:Class="TaxPersonnelManagement.Views.TrainingClassDetailDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Chi tiết lớp học / Hội nghị" Height="600" Width="800"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Language="vi-VN">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:Base64ToImageConverter xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters" x:Key="Base64ToImageConverter"/>
+            <converters:DateFormatterConverter xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters" x:Key="DateFormatterConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border CornerRadius="12" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="-90" RenderingBias="Quality" ShadowDepth="2" Opacity="0.15"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="55"/>  <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- Class Details Summary -->
+                <RowDefinition Height="Auto"/> <!-- Add Participant Area -->
+                <RowDefinition Height="*"/>    <!-- Participants Grid -->
+                <RowDefinition Height="60"/>   <!-- Footer / Close -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="12 12 0 0" Padding="20 0">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="School" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtTitle" Text="CHI TIẾT LỚP HỌC / HỘI NGHỊ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button HorizontalAlignment="Right" Click="btnClose_Click" Background="Transparent" BorderThickness="0" Padding="0" Width="30" Height="30" Style="{DynamicResource MaterialDesignToolButton}">
+                        <materialDesign:PackIcon Kind="Close" Foreground="White" Width="22" Height="22"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Class Details Summary -->
+            <!-- Class Details Summary -->
+            <materialDesign:Card Grid.Row="1" Margin="20 15 20 10" Padding="20" UniformCornerRadius="8" Background="White" materialDesign:ElevationAssist.Elevation="Dp2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0">
+                        <TextBlock x:Name="lblClassName" Text="Tên lớp học..." FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 15" TextWrapping="Wrap"/>
+                        
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/> <!-- Gap -->
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Ngày tham gia -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0 0 20 0" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="CalendarMonth" Width="20" Height="20" Foreground="#5C6BC0" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <StackPanel>
+                                    <TextBlock Text="NGÀY THAM GIA" FontSize="10.5" FontWeight="Bold" Foreground="#78909C" Margin="0 0 0 1"/>
+                                    <TextBlock x:Name="lblParticipationDate" Text="--/--/----" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Số QĐ -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="FileDocumentOutline" Width="20" Height="20" Foreground="#26A69A" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <StackPanel>
+                                    <TextBlock Text="SỐ QUYẾT ĐỊNH" FontSize="10.5" FontWeight="Bold" Foreground="#78909C" Margin="0 0 0 1"/>
+                                    <TextBlock x:Name="lblDecisionNumber" Text="---" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Ngày ra QĐ -->
+                            <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0 0 20 0" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="CalendarClock" Width="20" Height="20" Foreground="#26A69A" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <StackPanel>
+                                    <TextBlock Text="NGÀY RA QUYẾT ĐỊNH" FontSize="10.5" FontWeight="Bold" Foreground="#78909C" Margin="0 0 0 1"/>
+                                    <TextBlock x:Name="lblDecisionDate" Text="--/--/----" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Đơn vị ra QĐ -->
+                            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Domain" Width="20" Height="20" Foreground="#AB47BC" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                <StackPanel>
+                                    <TextBlock Text="ĐƠN VỊ RA QUYẾT ĐỊNH" FontSize="10.5" FontWeight="Bold" Foreground="#78909C" Margin="0 0 0 1"/>
+                                    <TextBlock x:Name="lblDecisionUnit" Text="---" FontSize="14" FontWeight="SemiBold" Foreground="#374151" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20 0 0 0">
+                        <Button Click="btnEditClass_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="36" Margin="0 0 0 10" Width="135" Padding="0" BorderBrush="#FB8C00" Foreground="#FB8C00">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Sửa thông tin" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="btnDeleteClass_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="36" Width="135" Padding="0" BorderBrush="#E53935" Foreground="#E53935">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="TrashCan" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Xóa lớp" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </materialDesign:Card>
+
+            <!-- Add Participant Area -->
+            <Grid Grid.Row="2" Margin="20 0 20 10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Thêm học viên:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0" Foreground="#555"/>
+                
+                <ComboBox Grid.Column="1" x:Name="cboAddPersonnel" Height="38" Margin="0 0 10 0"
+                          Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                          materialDesign:HintAssist.Hint="Tìm chọn cán bộ công chức..."
+                          IsEditable="True"
+                          IsTextSearchEnabled="False"
+                          TextSearch.TextPath="FullName"
+                          Background="White" VerticalContentAlignment="Center"
+                          Padding="10 0"
+                          TextBoxBase.TextChanged="cboAddPersonnel_TextChanged"
+                          SelectionChanged="cboAddPersonnel_SelectionChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0 4">
+                                <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="14" Foreground="#333333"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 2 0 0">
+                                    <materialDesign:PackIcon Kind="CardAccountDetailsOutline" Width="14" Height="14" Foreground="#888888" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="CCCD: " FontSize="12" Foreground="#888888" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding IdentityCardNumber}" FontSize="12" FontWeight="Medium" Foreground="#666666" VerticalAlignment="Center"/>
+                                    <TextBlock Text="  |  " FontSize="12" Foreground="#CCCCCC" VerticalAlignment="Center"/>
+                                    <materialDesign:PackIcon Kind="Domain" Width="14" Height="14" Foreground="#888888" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="{Binding Department}" FontSize="12" Foreground="#888888" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+
+                <Button Grid.Column="2" x:Name="btnAddParticipant" Click="btnAddParticipant_Click" Height="38" Margin="0 0 10 0" Padding="12 0"
+                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                        Background="{DynamicResource PrimaryHueMidBrush}" BorderThickness="0"
+                        materialDesign:ButtonAssist.CornerRadius="4">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Thêm vào" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Grid.Column="3" x:Name="btnExportExcel" Click="btnExportExcel_Click" Height="38" Padding="12 0"
+                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                        Background="#2E7D32" BorderThickness="0"
+                        materialDesign:ButtonAssist.CornerRadius="4">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="FileExcel" Width="16" Height="16" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Xuất Excel" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- Participants Grid -->
+            <materialDesign:Card Grid.Row="3" Margin="20 0 20 10" Style="{DynamicResource MaterialDesignCard}">
+                <DataGrid x:Name="dgParticipants" AutoGenerateColumns="False" IsReadOnly="True" 
+                          CanUserAddRows="False" HeadersVisibility="Column"
+                          BorderThickness="0"
+                          VerticalGridLinesBrush="Transparent"
+                          HorizontalGridLinesBrush="#EEEEEE"
+                          GridLinesVisibility="Horizontal" 
+                          AlternationCount="2" AlternatingRowBackground="#FAFAFA"
+                          MinRowHeight="45" VerticalContentAlignment="Center"
+                          SelectionMode="Single"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Padding" Value="8"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="TextBlock.TextAlignment" Value="Center"/>
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="Padding" Value="2"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True">
+                                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <!-- STT -->
+                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="50"/>
+
+                        <!-- HỌ VÀ TÊN -->
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*" MinWidth="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10 3 0 3">
+                                        <Grid Width="28" Height="28" Margin="0 0 8 0" VerticalAlignment="Center">
+                                            <Ellipse Fill="{DynamicResource PrimaryHueMidBrush}"/>
+                                            <materialDesign:PackIcon Kind="Account" Width="18" Height="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse>
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
+                                                </Ellipse.Fill>
+                                                <Ellipse.Style>
+                                                    <Style TargetType="Ellipse">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding AvatarBase64}" Value="{x:Null}">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding AvatarBase64}" Value="">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Ellipse.Style>
+                                            </Ellipse>
+                                        </Grid>
+                                        <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="Medium" FontSize="14"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- NGÀY SINH -->
+                        <DataGridTextColumn Header="NGÀY THÁNG NĂM SINH" Binding="{Binding DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="1.5*" MinWidth="140"/>
+
+                        <!-- BỘ PHẬN CÔNG TÁC -->
+                        <DataGridTemplateColumn Header="BỘ PHẬN CÔNG TÁC" Width="2*" MinWidth="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E8EAF6" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold" Foreground="#3949AB"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- HÀNH ĐỘNG -->
+                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Click="btnRemoveParticipant_Click" Tag="{Binding Id}"
+                                            Width="30" Height="30" Background="Transparent" BorderThickness="0" Padding="0"
+                                            Style="{DynamicResource MaterialDesignToolButton}"
+                                            ToolTip="Xóa khỏi lớp" Foreground="#E53935">
+                                        <materialDesign:PackIcon Kind="MinusCircle" Width="18" Height="18"/>
+                                    </Button>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </materialDesign:Card>
+
+            <!-- Footer / Close -->
+            <Border Grid.Row="4" Background="#F1F3F5" CornerRadius="0 0 12 12" BorderBrush="#E5E7EB" BorderThickness="0 1 0 0">
+                <Grid>
+                    <TextBlock x:Name="lblCount" Text="Số lượng: 0 học viên" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="20 0 0 0" FontWeight="SemiBold" Foreground="#555"/>
+                    <Button Click="btnClose_Click" Content="Đóng lại" 
+                            Style="{DynamicResource MaterialDesignRaisedButton}" 
+                            Background="{DynamicResource PrimaryHueMidBrush}" BorderThickness="0" 
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0"
+                            Height="40" Width="110" materialDesign:ButtonAssist.CornerRadius="4"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

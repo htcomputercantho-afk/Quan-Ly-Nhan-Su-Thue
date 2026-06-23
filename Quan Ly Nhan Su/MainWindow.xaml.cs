@@ -9,6 +9,7 @@ namespace TaxPersonnelManagement
         private User? _currentUser;
         private PersonnelDetailView? _personnelDetailCache;
         private DashboardView? _dashboardCache;
+        private StatisticsView? _statisticsCache;
 
 
         /// <summary>
@@ -21,7 +22,7 @@ namespace TaxPersonnelManagement
             InitializeComponent();
             _currentUser = user;
             App.CurrentUser = user; // Lưu thông tin người dùng vào biến toàn cục của Ứng dụng
-            txtWelcome.Text = _currentUser.FullName; // Updated to just set the Name part
+            txtWelcome.Text = _currentUser.FullName; // Hiển thị tên người dùng trên thanh tiêu đề
 
             // Ẩn menu 'Tài khoản' và 'Sao lưu' nếu người dùng không phải là Quản trị viên (Admin)
             if (_currentUser.Role != UserRole.Admin)
@@ -48,7 +49,7 @@ namespace TaxPersonnelManagement
             txtVersion.Text = $"Version {version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
         }
 
-        // For Designer support
+        // Constructor trống dành cho hỗ trợ Visual Designer (không dùng trong runtime)
         public MainWindow()
         {
             InitializeComponent();
@@ -71,7 +72,7 @@ namespace TaxPersonnelManagement
                 {
                     _dashboardCache.PersonnelList.TargetPersonnelId = targetPersonnelId;
                 }
-                // Refresh data to show any updates, but retain the selected filter
+                // Làm mới dữ liệu để hiển thị thay đổi mới nhất, giữ nguyên bộ lọc đang chọn
                 _dashboardCache.PersonnelList.LoadData();
             }
 
@@ -81,6 +82,20 @@ namespace TaxPersonnelManagement
         private void NavigateDashboard(object? sender, RoutedEventArgs? e)
         {
             NavigateToDashboard();
+        }
+
+        private void NavigateStatistics(object sender, RoutedEventArgs e)
+        {
+            UpdateMenuState(btnStatistics);
+            if (_statisticsCache == null)
+            {
+                _statisticsCache = new StatisticsView();
+            }
+            else
+            {
+                _statisticsCache.LoadStatistics();
+            }
+            MainFrame.Navigate(_statisticsCache);
         }
 
         /// <summary>
@@ -118,7 +133,7 @@ namespace TaxPersonnelManagement
         private void NavigatePersonnel(object sender, RoutedEventArgs e)
         {
             NavigateToPersonnelDetail(null);
-            // Note: Users should use "Overview" to see the list.
+            // Ghi chú: Dùng màn hình Tổng quan để xem danh sách nhân sự.
         }
 
 
@@ -152,6 +167,12 @@ namespace TaxPersonnelManagement
             MainFrame.Navigate(new EvaluationListView());
         }
 
+        private void NavigateTraining(object sender, RoutedEventArgs e)
+        {
+            UpdateMenuState(btnTraining);
+            MainFrame.Navigate(new TrainingListView());
+        }
+
         private void NavigatePositionDuration(object sender, RoutedEventArgs e)
         {
             UpdateMenuState(btnPositionDuration);
@@ -160,7 +181,7 @@ namespace TaxPersonnelManagement
 
         private void NavigateUsers(object sender, RoutedEventArgs e)
         {
-            // Only Admin
+            // Chỉ Admin mới có quyền truy cập màn hình quản lý tài khoản
             if (_currentUser == null || _currentUser.Role != UserRole.Admin)
             {
                 MessageBox.Show("Bạn không có quyền truy cập!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -183,9 +204,10 @@ namespace TaxPersonnelManagement
 
         private void UpdateMenuState(System.Windows.Controls.Button activeButton)
         {
-            // Reset all buttons to transparent
+            // Đặt lại nền tất cả các nút menu về trong suốt
             var transparent = System.Windows.Media.Brushes.Transparent;
             btnDashboard.Background = transparent;
+            btnStatistics.Background = transparent;
             btnPersonnel.Background = transparent;
             btnSalary.Background = transparent;
             btnAnnualIncome.Background = transparent;
@@ -193,11 +215,11 @@ namespace TaxPersonnelManagement
             btnPositionDuration.Background = transparent;
             btnEmulationReward.Background = transparent;
             btnEvaluation.Background = transparent;
+            btnTraining.Background = transparent;
             btnUsers.Background = transparent;
             btnBackupRestore.Background = transparent;
 
-            // Set active button background (Semi-transparent white, stronger than hover)
-            // Using a new SolidColorBrush(Color.FromArgb(80, 255, 255, 255)) -> approx 30% opacity
+            // Đánh dấu nút đang active với nền trắng bán trong suốt (~30% opacity)
             activeButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(80, 255, 255, 255));
         }
 
@@ -213,6 +235,7 @@ namespace TaxPersonnelManagement
             colSidebar.Width = new GridLength(70);
             txtLogo.Visibility = Visibility.Collapsed;
             txtOverview.Visibility = Visibility.Collapsed;
+            txtStatistics.Visibility = Visibility.Collapsed;
             txtPersonnel.Visibility = Visibility.Collapsed;
             txtSalary.Visibility = Visibility.Collapsed;
             txtAnnualIncome.Visibility = Visibility.Collapsed;
@@ -220,6 +243,7 @@ namespace TaxPersonnelManagement
             txtPositionDuration.Visibility = Visibility.Collapsed;
             txtEmulationReward.Visibility = Visibility.Collapsed;
             txtEvaluation.Visibility = Visibility.Collapsed;
+            txtTraining.Visibility = Visibility.Collapsed;
             txtUsers.Visibility = Visibility.Collapsed;
             txtBackupRestore.Visibility = Visibility.Collapsed;
             txtLogout.Visibility = Visibility.Collapsed;
@@ -227,7 +251,7 @@ namespace TaxPersonnelManagement
             txtVersion.Visibility = Visibility.Collapsed;
             imgLogo.Margin = new Thickness(0);
 
-            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnUsers, btnBackupRestore, btnLogout };
+            var buttons = new[] { btnDashboard, btnStatistics, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnTraining, btnUsers, btnBackupRestore, btnLogout };
             foreach (var btn in buttons)
             {
                 btn.Padding = new Thickness(0);
@@ -245,6 +269,7 @@ namespace TaxPersonnelManagement
             colSidebar.Width = new GridLength(250);
             txtLogo.Visibility = Visibility.Visible;
             txtOverview.Visibility = Visibility.Visible;
+            txtStatistics.Visibility = Visibility.Visible;
             txtPersonnel.Visibility = Visibility.Visible;
             txtSalary.Visibility = Visibility.Visible;
             txtAnnualIncome.Visibility = Visibility.Visible;
@@ -252,6 +277,7 @@ namespace TaxPersonnelManagement
             txtPositionDuration.Visibility = Visibility.Visible;
             txtEmulationReward.Visibility = Visibility.Visible;
             txtEvaluation.Visibility = Visibility.Visible;
+            txtTraining.Visibility = Visibility.Visible;
             txtUsers.Visibility = Visibility.Visible;
             txtBackupRestore.Visibility = Visibility.Visible;
             txtLogout.Visibility = Visibility.Visible;
@@ -259,7 +285,7 @@ namespace TaxPersonnelManagement
             txtVersion.Visibility = Visibility.Visible;
             imgLogo.Margin = new Thickness(0, 0, 10, 0);
 
-            var buttons = new[] { btnDashboard, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnUsers, btnBackupRestore, btnLogout };
+            var buttons = new[] { btnDashboard, btnStatistics, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnTraining, btnUsers, btnBackupRestore, btnLogout };
             foreach (var btn in buttons)
             {
                 btn.Padding = new Thickness(25, 0, 25, 0);
