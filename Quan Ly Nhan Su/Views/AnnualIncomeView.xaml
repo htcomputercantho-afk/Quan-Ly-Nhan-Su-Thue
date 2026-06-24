@@ -200,7 +200,8 @@
                         <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter"/>
                             <!-- TextBlock Style for Amount -->
                             <Style x:Key="MonthAmountStyle" TargetType="TextBlock">
-                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="Foreground" Value="#2E7D32"/>
                                 <Setter Property="TextAlignment" Value="Right"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
@@ -213,7 +214,7 @@
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=Foreground}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

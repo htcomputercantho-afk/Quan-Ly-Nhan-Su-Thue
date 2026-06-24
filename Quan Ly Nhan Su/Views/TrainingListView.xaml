@@ -150,18 +150,7 @@
                                 </Setter.Value>
                             </Setter>
                         </Style>
-                        <Style x:Key="LeftAlignedWrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                            <Setter Property="MinHeight" Value="60"/>
-                            <Setter Property="FontSize" Value="14"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                            <Setter Property="ContentTemplate">
-                                <Setter.Value>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" Padding="10 2 2 2"/>
-                                    </DataTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
+
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>

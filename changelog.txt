@@ -1,5 +1,10 @@
+## v1.6.0.4 — 2026-06-24
+- [Sửa lỗi] Khắc phục triệt để lỗi hiển thị mờ/khó đọc của số tiền hàng "Tổng cộng (Tháng)" trong màn hình Thu nhập năm khi dòng đó đang được chọn nhưng cửa sổ ứng dụng mất focus (Inactive). Bằng việc binding động Foreground của TextBlock theo Foreground của DataGridCell cha, màu chữ sẽ tự động chuyển sang màu tối/đen khi mất focus để nổi bật rõ ràng trên nền xám nhạt, thay vì bị ép cứng màu trắng như trước.
+- [Giao diện] Sửa lỗi hiển thị mờ ở hàng "Tổng cộng (Tháng)" trong màn hình Thu nhập năm (AnnualIncomeView.xaml), chuyển sang màu xanh lá cây đậm và in đậm để số liệu rõ ràng, dễ đọc hơn khi không được chọn.
+- [Giao diện] Loại bỏ hoàn toàn ô tìm kiếm ở màn hình Báo cáo Thống kê để giao diện gọn gàng, tránh dư thừa và tập trung vào biểu đồ số liệu tổng quan.
+- [Giao diện] Khôi phục tiêu đề cột "TÊN CÁC LỚP, HỘI NGHỊ" và "ĐƠN VỊ RA QĐ" căn giữa theo quy chuẩn hành chính, đồng thời giữ dữ liệu của cột căn lề trái để dễ quan sát và loại bỏ các style dư thừa.
+
 ## v1.6.0.3 — 2026-06-24
-- [Giao diện] Tiêu đề cột "TÊN CÁC LỚP, HỘI NGHỊ" và "ĐƠN VỊ RA QĐ" vẫn giữ căn giữa theo quy chuẩn văn bản hành chính, còn nội dung bên dưới được căn lề trái để dễ quan sát.
 - [Tính năng] Chọn học viên hàng loạt theo Tổ hoặc Chọn toàn bộ:
     + Bổ sung nút "Chọn nhiều..." (icon AccountMultiplePlus) cạnh ô tìm kiếm học viên trong màn hình Chi tiết lớp học / Hội nghị.
     + Thêm Dialog chuyên dụng "Chọn Cán Bộ Công Chức" (PersonnelSelectorDialog) hỗ trợ lọc theo Tổ/Bộ phận và tìm kiếm nhanh theo Họ tên/Số CCCD.

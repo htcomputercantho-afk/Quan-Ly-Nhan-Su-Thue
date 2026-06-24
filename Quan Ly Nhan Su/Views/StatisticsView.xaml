@@ -51,22 +51,6 @@
         <!-- 2. Filter Toolbar -->
         <materialDesign:Card Grid.Row="1" Margin="0 0 0 15" Padding="16 12 16 4" UniformCornerRadius="8" Background="White">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Search Box -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
-                    <materialDesign:PackIcon Kind="Magnify" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                    <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
-                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="260" Height="36">
-                        <TextBox x:Name="txtSearch"
-                                 materialDesign:HintAssist.Hint="Họ tên hoặc mã cán bộ..."
-                                 materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                 materialDesign:TextFieldAssist.HasClearButton="True"
-                                 BorderThickness="0" Background="Transparent"
-                                 VerticalContentAlignment="Center" Padding="10 0"
-                                 FontSize="13" Foreground="#374151"
-                                 TextChanged="Filter_Changed"/>
-                    </Border>
-                </StackPanel>
-
                 <!-- Department Filter -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
                     <materialDesign:PackIcon Kind="HomeGroup" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>

@@ -90,28 +90,14 @@ namespace TaxPersonnelManagement.Views
             LoadStatistics();
         }
 
-        // Sự kiện khi thay đổi TextBox tìm kiếm
-        private void Filter_Changed(object sender, TextChangedEventArgs e)
-        {
-            if (!_isInitialized) return;
-            LoadStatistics();
-        }
+
 
         // Lấy danh sách nhân sự theo các bộ lọc hiện tại
         private List<Personnel> GetFilteredPersonnel(AppDbContext db, out int filterYear, out string departmentStr, out string yearStr)
         {
             var query = db.Personnel.AsQueryable();
 
-            // Lọc theo từ khóa tìm kiếm (tên, mã cán bộ, CCCD)
-            string keyword = txtSearch.Text.Trim();
-            if (!string.IsNullOrEmpty(keyword))
-            {
-                string lower = keyword.ToLower();
-                query = query.Where(p =>
-                    (p.FullName != null && p.FullName.ToLower().Contains(lower)) ||
-                    (p.StaffId != null && p.StaffId.ToLower().Contains(lower)) ||
-                    (p.IdentityCardNumber != null && p.IdentityCardNumber.ToLower().Contains(lower)));
-            }
+
 
             // Lọc theo Bộ phận
             departmentStr = "Tất cả bộ phận";
@@ -393,7 +379,6 @@ namespace TaxPersonnelManagement.Views
                 using (var db = new AppDbContext())
                 {
                     var list = GetFilteredPersonnel(db, out int filterYear, out string departmentStr, out string yearStr);
-                    string keyword = txtSearch.Text.Trim();
 
                     // Tính toán các chỉ số thống kê
                     int total = list.Count;
@@ -463,12 +448,7 @@ namespace TaxPersonnelManagement.Views
                         wsSummary.Cell(3, 1).Style.Font.Bold = true;
                         wsSummary.Cell(3, 2).Value = yearStr;
 
-                        if (!string.IsNullOrEmpty(keyword))
-                        {
-                            wsSummary.Cell(4, 1).Value = "Từ khóa:";
-                            wsSummary.Cell(4, 1).Style.Font.Bold = true;
-                            wsSummary.Cell(4, 2).Value = keyword;
-                        }
+
 
                         // Header bảng thống kê
                         int startRow = 6;
