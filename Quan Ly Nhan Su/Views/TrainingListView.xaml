@@ -169,7 +169,7 @@
                         <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="60"/>
 
                         <!-- TÊN CÁC LỚP, HỘI NGHỊ -->
-                        <DataGridTemplateColumn Header="TÊN CÁC LỚP, HỘI NGHỊ" Width="*" MinWidth="260" HeaderStyle="{StaticResource LeftAlignedWrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="TÊN CÁC LỚP, HỘI NGHỊ" Width="*" MinWidth="260" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding ClassName}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center">
@@ -198,7 +198,7 @@
                         <DataGridTextColumn Header="NGÀY RA QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="140" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
                         <!-- ĐƠN VỊ RA QĐ -->
-                        <DataGridTemplateColumn Header="ĐƠN VỊ RA QĐ" Width="180" HeaderStyle="{StaticResource LeftAlignedWrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="ĐƠN VỊ RA QĐ" Width="180" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DecisionUnit}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" Margin="10,0" VerticalAlignment="Center"/>

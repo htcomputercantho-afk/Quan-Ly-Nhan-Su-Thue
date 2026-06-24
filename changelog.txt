@@ -1,4 +1,5 @@
-## v1.6.0.2 — 2026-06-24
+## v1.6.0.3 — 2026-06-24
+- [Giao diện] Tiêu đề cột "TÊN CÁC LỚP, HỘI NGHỊ" và "ĐƠN VỊ RA QĐ" vẫn giữ căn giữa theo quy chuẩn văn bản hành chính, còn nội dung bên dưới được căn lề trái để dễ quan sát.
 - [Tính năng] Chọn học viên hàng loạt theo Tổ hoặc Chọn toàn bộ:
     + Bổ sung nút "Chọn nhiều..." (icon AccountMultiplePlus) cạnh ô tìm kiếm học viên trong màn hình Chi tiết lớp học / Hội nghị.
     + Thêm Dialog chuyên dụng "Chọn Cán Bộ Công Chức" (PersonnelSelectorDialog) hỗ trợ lọc theo Tổ/Bộ phận và tìm kiếm nhanh theo Họ tên/Số CCCD.
