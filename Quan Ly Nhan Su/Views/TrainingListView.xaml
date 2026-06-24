@@ -150,6 +150,18 @@
                                 </Setter.Value>
                             </Setter>
                         </Style>
+                        <Style x:Key="LeftAlignedWrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="MinHeight" Value="60"/>
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            <Setter Property="ContentTemplate">
+                                <Setter.Value>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" Padding="10 2 2 2"/>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
@@ -157,10 +169,10 @@
                         <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="60"/>
 
                         <!-- TÊN CÁC LỚP, HỘI NGHỊ -->
-                        <DataGridTemplateColumn Header="TÊN CÁC LỚP, HỘI NGHỊ" Width="*" MinWidth="260" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="TÊN CÁC LỚP, HỘI NGHỊ" Width="*" MinWidth="260" HeaderStyle="{StaticResource LeftAlignedWrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding ClassName}" TextWrapping="Wrap" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ClassName}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property="Foreground" Value="#333"/>
@@ -186,10 +198,10 @@
                         <DataGridTextColumn Header="NGÀY RA QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="140" HeaderStyle="{StaticResource WrappedHeaderStyle}"/>
 
                         <!-- ĐƠN VỊ RA QĐ -->
-                        <DataGridTemplateColumn Header="ĐƠN VỊ RA QĐ" Width="180" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                        <DataGridTemplateColumn Header="ĐƠN VỊ RA QĐ" Width="180" HeaderStyle="{StaticResource LeftAlignedWrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding DecisionUnit}" TextWrapping="Wrap" Margin="10,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding DecisionUnit}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" Margin="10,0" VerticalAlignment="Center"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

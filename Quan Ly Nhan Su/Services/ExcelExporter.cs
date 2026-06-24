@@ -35,12 +35,12 @@ namespace TaxPersonnelManagement.Services
                     "Bộ phận", "Chức vụ", "Thời gian công tác tại cơ quan thuế", "Số năm công tác", // P, Q, R, S
                     "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // T, U, V
                     "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // W, X, Y, Z
-                    "Ngày vào Đảng", "Ngày chính thức", "Số năm tuổi Đảng", // AA, AB, AC
-                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AD, AE, AF, AG
-                    "Phụ cấp CV", "Vượt khung %", // AH, AI
-                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AJ, AK, AL
-                    "Ghi chú", // AM
-                    "Ngày về hưu (Dự kiến)" // AN
+                    "Đảng viên", "Ngày vào Đảng", "Ngày chính thức", "Số năm tuổi Đảng", // AA, AB, AC, AD
+                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AE, AF, AG, AH
+                    "Phụ cấp CV", "Vượt khung %", // AI, AJ
+                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AK, AL, AM
+                    "Ghi chú", // AN
+                    "Ngày về hưu (Dự kiến)" // AO
                 };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -95,23 +95,24 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 25).Value = p.LanguageSkillLevel;
                     worksheet.Cell(row, 26).Value = p.ITSkillLevel;
 
-                    worksheet.Cell(row, 27).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
-                    worksheet.Cell(row, 28).Value = p.PartyOfficialDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyOfficialDate.Value) : "";
-                    worksheet.Cell(row, 29).Value = p.CalculatedPartyAge;
+                    worksheet.Cell(row, 27).Value = p.PartyEntryDate.HasValue ? "Đảng viên" : "";
+                    worksheet.Cell(row, 28).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
+                    worksheet.Cell(row, 29).Value = p.PartyOfficialDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyOfficialDate.Value) : "";
+                    worksheet.Cell(row, 30).Value = p.CalculatedPartyAge;
 
-                    worksheet.Cell(row, 30).Value = p.RankCode;
-                    worksheet.Cell(row, 31).Value = p.RankName;
-                    worksheet.Cell(row, 32).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
-                    worksheet.Cell(row, 33).Value = p.CurrentSalaryCoefficient;
+                    worksheet.Cell(row, 31).Value = p.RankCode;
+                    worksheet.Cell(row, 32).Value = p.RankName;
+                    worksheet.Cell(row, 33).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
+                    worksheet.Cell(row, 34).Value = p.CurrentSalaryCoefficient;
 
-                    worksheet.Cell(row, 34).Value = p.PositionAllowance;
-                    worksheet.Cell(row, 35).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
+                    worksheet.Cell(row, 35).Value = p.PositionAllowance;
+                    worksheet.Cell(row, 36).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
 
-                    worksheet.Cell(row, 36).Value = p.EmulationTitles;
-                    worksheet.Cell(row, 37).Value = p.RewardForms;
-                    worksheet.Cell(row, 38).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
+                    worksheet.Cell(row, 37).Value = p.EmulationTitles;
+                    worksheet.Cell(row, 38).Value = p.RewardForms;
+                    worksheet.Cell(row, 39).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
 
-                    // Cột 39: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
+                    // Cột 40: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
                     string ghiChu = "";
                     if (p.LeaveHistories != null)
                     {
@@ -145,8 +146,8 @@ namespace TaxPersonnelManagement.Services
                             }
                         }
                     }
-                    worksheet.Cell(row, 39).Value = ghiChu;
-                    worksheet.Cell(row, 40).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
+                    worksheet.Cell(row, 40).Value = ghiChu;
+                    worksheet.Cell(row, 41).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
 
                     // Áp dụng viền và căn chỉnh cho toàn bộ ô trong dòng
                     for (int c = 1; c <= headers.Length; c++)

@@ -18,6 +18,7 @@ namespace TaxPersonnelManagement.Views
         private TrainingClass? _trainingClass;
         private List<Personnel> _participants = new();
         private bool _isDataChanged = false;
+        private System.Windows.Threading.DispatcherTimer? _filterTimer;
 
         public bool IsDataChanged => _isDataChanged;
 
@@ -63,6 +64,9 @@ namespace TaxPersonnelManagement.Views
                                   .Where(pt => pt.TrainingClassId == _classId)
                                   .Include(pt => pt.Personnel)
                                   .Select(pt => pt.Personnel)
+                                  .ToList()
+                                  .OrderBy(p => p.Department)
+                                  .ThenBy(p => p.FullName)
                                   .ToList();
 
                     _participants = query;
@@ -95,9 +99,10 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var db = new AppDbContext())
                 {
-                    // Load all personnel and order by FullName
+                    // Load all personnel, order by Department, then by FullName
                     var allPersonnel = db.Personnel
-                                         .OrderBy(p => p.FullName)
+                                         .OrderBy(p => p.Department)
+                                         .ThenBy(p => p.FullName)
                                          .ToList();
 
                     var comboSource = allPersonnel.Select(p => new PersonnelComboItem
@@ -129,44 +134,71 @@ namespace TaxPersonnelManagement.Views
 
             string filterText = textBox.Text;
 
-            _isFiltering = true;
-            try
+            // Dừng timer cũ nếu người dùng vẫn đang gõ tiếp
+            _filterTimer?.Stop();
+
+            // Khởi tạo timer mới để trì hoãn việc lọc (debounce) 200ms
+            _filterTimer = new System.Windows.Threading.DispatcherTimer
             {
-                var view = System.Windows.Data.CollectionViewSource.GetDefaultView(cboAddPersonnel.ItemsSource);
-                if (view != null)
+                Interval = TimeSpan.FromMilliseconds(200)
+            };
+
+            _filterTimer.Tick += (s, args) =>
+            {
+                _filterTimer.Stop();
+
+                _isFiltering = true;
+                try
                 {
-                    if (string.IsNullOrWhiteSpace(filterText))
+                    var view = System.Windows.Data.CollectionViewSource.GetDefaultView(cboAddPersonnel.ItemsSource);
+                    if (view != null)
                     {
-                        view.Filter = null;
-                    }
-                    else
-                    {
-                        view.Filter = item =>
+                        // Lưu lại vị trí con trỏ chuột
+                        int selectionStart = textBox.SelectionStart;
+                        int selectionLength = textBox.SelectionLength;
+
+                        if (string.IsNullOrWhiteSpace(filterText))
                         {
-                            if (item is PersonnelComboItem comboItem)
+                            view.Filter = null;
+                        }
+                        else
+                        {
+                            string filterUnsigned = RemoveSign(filterText);
+                            view.Filter = item =>
                             {
-                                return comboItem.FullName.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
-                                       comboItem.Department.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
-                                       comboItem.IdentityCardNumber.Contains(filterText, StringComparison.OrdinalIgnoreCase);
-                            }
-                            return false;
-                        };
-                    }
+                                if (item is PersonnelComboItem comboItem)
+                                {
+                                    string nameUnsigned = RemoveSign(comboItem.FullName);
+                                    string deptUnsigned = RemoveSign(comboItem.Department);
 
-                    cboAddPersonnel.IsDropDownOpen = true;
+                                    return comboItem.FullName.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                                           nameUnsigned.Contains(filterUnsigned, StringComparison.OrdinalIgnoreCase) ||
+                                           comboItem.Department.Contains(filterText, StringComparison.OrdinalIgnoreCase) ||
+                                           deptUnsigned.Contains(filterUnsigned, StringComparison.OrdinalIgnoreCase) ||
+                                           comboItem.IdentityCardNumber.Contains(filterText, StringComparison.OrdinalIgnoreCase);
+                                }
+                                return false;
+                            };
+                        }
 
-                    // Restore text and caret position if WPF cleared it
-                    if (textBox.Text != filterText)
-                    {
-                        textBox.Text = filterText;
-                        textBox.SelectionStart = filterText.Length;
+                        cboAddPersonnel.IsDropDownOpen = true;
+
+                        // Khôi phục lại văn bản và vị trí con trỏ soạn thảo để tránh bị mất chữ/nhảy trỏ
+                        if (textBox.Text != filterText)
+                        {
+                            textBox.Text = filterText;
+                            textBox.SelectionStart = selectionStart;
+                            textBox.SelectionLength = selectionLength;
+                        }
                     }
                 }
-            }
-            finally
-            {
-                _isFiltering = false;
-            }
+                finally
+                {
+                    _isFiltering = false;
+                }
+            };
+
+            _filterTimer.Start();
         }
 
         private void cboAddPersonnel_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -224,6 +256,48 @@ namespace TaxPersonnelManagement.Views
                 var warning = new WarningWindow($"Lỗi thêm học viên: {ex.Message}", "Lỗi");
                 warning.Owner = this;
                 warning.ShowDialog();
+            }
+        }
+
+        private void btnSelectMultiple_Click(object sender, RoutedEventArgs e)
+        {
+            var excludedIds = _participants.Select(p => p.Id).ToList();
+            var dialog = new PersonnelSelectorDialog(excludedIds);
+            dialog.Owner = this;
+            if (dialog.ShowDialog() == true)
+            {
+                var selectedIds = dialog.SelectedPersonnelIds;
+                if (selectedIds != null && selectedIds.Any())
+                {
+                    try
+                    {
+                        using (var db = new AppDbContext())
+                        {
+                            foreach (int personnelId in selectedIds)
+                            {
+                                bool exists = db.PersonnelTrainings.Any(pt => pt.TrainingClassId == _classId && pt.PersonnelId == personnelId);
+                                if (!exists)
+                                {
+                                    db.PersonnelTrainings.Add(new PersonnelTraining
+                                    {
+                                        TrainingClassId = _classId,
+                                        PersonnelId = personnelId
+                                    });
+                                }
+                            }
+                            db.SaveChanges();
+
+                            _isDataChanged = true;
+                            LoadParticipants();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        var warning = new WarningWindow($"Lỗi thêm danh sách học viên: {ex.Message}", "Lỗi");
+                        warning.Owner = this;
+                        warning.ShowDialog();
+                    }
+                }
             }
         }
 
@@ -400,6 +474,31 @@ namespace TaxPersonnelManagement.Views
         {
             DialogResult = _isDataChanged;
             Close();
+        }
+
+        /// <summary>
+        /// Loại bỏ dấu tiếng Việt để phục vụ tìm kiếm không dấu
+        /// </summary>
+        private string RemoveSign(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+
+            string normalizedString = text.Normalize(System.Text.NormalizationForm.FormD);
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+
+            foreach (char c in normalizedString)
+            {
+                System.Globalization.UnicodeCategory unicodeCategory = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            string result = stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC);
+            result = result.Replace('đ', 'd').Replace('Đ', 'D');
+
+            return result;
         }
 
         public class PersonnelComboItem

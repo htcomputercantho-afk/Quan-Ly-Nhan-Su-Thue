@@ -1,3 +1,20 @@
+## v1.6.0.2 — 2026-06-24
+- [Tính năng] Chọn học viên hàng loạt theo Tổ hoặc Chọn toàn bộ:
+    + Bổ sung nút "Chọn nhiều..." (icon AccountMultiplePlus) cạnh ô tìm kiếm học viên trong màn hình Chi tiết lớp học / Hội nghị.
+    + Thêm Dialog chuyên dụng "Chọn Cán Bộ Công Chức" (PersonnelSelectorDialog) hỗ trợ lọc theo Tổ/Bộ phận và tìm kiếm nhanh theo Họ tên/Số CCCD.
+    + Hỗ trợ CheckBox ở đầu bảng và CheckBox "Chọn tất cả" tại dòng tiêu đề:
+        * Khi tích chọn "Chọn tất cả" sẽ tự động chọn toàn bộ cán bộ đang hiển thị theo bộ lọc tổ hoặc tìm kiếm hiện tại.
+        * Hiển thị số lượng chọn trực quan dạng "Đã chọn: X / Y cán bộ".
+    + Nhấn "Xác nhận thêm" để ghi nhận hàng loạt học viên được chọn vào cơ sở dữ liệu cùng lúc.
+- [Tính năng] Sắp xếp danh sách nhân sự theo bộ phận:
+    + Cấu hình sắp xếp danh sách cán bộ hiển thị tại ComboBox tìm chọn học viên, DataGrid danh sách học viên tham gia lớp học và bảng danh sách trong hộp thoại chọn nhiều theo thứ tự **Bộ phận/Tổ công tác** trước, sau đó sắp xếp theo **Họ tên** của cán bộ trong cùng bộ phận. Điều này giúp theo dõi và tìm kiếm học viên tập trung, có hệ thống.
+- [Tính năng] Bổ sung cột Đảng viên vào file Excel xuất từ danh sách nhân sự chính (Tổng quát):
+    + Thêm cột "Đảng viên" vào file Excel xuất ra (nằm sau cột Tin học và trước cột Ngày vào Đảng) hiển thị giá trị "Đảng viên" (nếu đã vào Đảng) hoặc để trống (nếu chưa vào Đảng). Điều này giúp người dùng dễ dàng lọc, phân loại và quản lý trạng thái Đảng viên của công chức trực tiếp trên file Excel.
+- [Sửa lỗi] Sửa lỗi gõ nhanh bị mất chữ/nhảy con trỏ ở ComboBox tìm chọn học viên:
+    + Áp dụng kỹ thuật trì hoãn xử lý (Debounce bằng DispatcherTimer 200ms). Khi gõ phím nhanh liên tục, danh sách lọc sẽ không bị làm mới liên tục gây nghẽn UI, mất ký tự hoặc nhảy con trỏ soạn thảo; bộ lọc chỉ thực thi sau khi người dùng dừng gõ 200ms giúp trải nghiệm gõ phím mượt mà tuyệt đối.
+- [Sửa lỗi] Hỗ trợ tìm kiếm nhân sự không dấu:
+    + Cập nhật logic tìm kiếm tại ComboBox tìm chọn học viên và ô tìm kiếm của hộp thoại chọn nhiều cán bộ. Hệ thống tự động chuyển đổi cả từ khóa tìm kiếm và tên cán bộ/bộ phận sang dạng không dấu khi so sánh, giúp người dùng tìm kiếm nhanh mà không cần gõ dấu tiếng Việt (ví dụ: gõ "triet" vẫn tìm được "Triết", "hung" vẫn tìm được "Hùng").
+
 ## v1.6.0 — 2026-06-23
 - [Tính năng] Thêm menu "Thống kê" trong Sidebar:
     + Bổ sung màn hình Báo cáo Thống kê Nhân sự (StatisticsView) chuyên dụng, thiết kế trực quan với bố cục Card hiện đại, tích hợp đầy đủ vào menu điều hướng chính.
