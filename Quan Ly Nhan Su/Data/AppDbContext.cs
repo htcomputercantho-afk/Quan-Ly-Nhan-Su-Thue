@@ -26,6 +26,8 @@ namespace TaxPersonnelManagement.Data
         public DbSet<EvaluationRecord> EvaluationRecords { get; set; }   // Bảng ghi nhận xếp loại năm
         public DbSet<TrainingClass> TrainingClasses { get; set; }        // Bảng danh mục lớp học/hội nghị đào tạo bồi dưỡng
         public DbSet<PersonnelTraining> PersonnelTrainings { get; set; }  // Bảng học viên tham gia lớp đào tạo bồi dưỡng
+        public DbSet<PlanningRecord> PlanningRecords { get; set; }        // Bảng lưu thông tin quy hoạch cán bộ
+        public DbSet<PlanningTerm> PlanningTerms { get; set; }            // Bảng lưu danh mục nhiệm kỳ quy hoạch
 
 
         /// <summary>

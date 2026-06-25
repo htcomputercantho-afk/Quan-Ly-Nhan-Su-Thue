@@ -33,7 +33,7 @@
                     <Border Width="5" Height="24" CornerRadius="2.5" Background="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 12 0"/>
                     <StackPanel>
                         <TextBlock Text="Chọn Cán Bộ Công Chức" FontSize="18.5" FontWeight="Bold" Foreground="#1E293B"/>
-                        <TextBlock Text="Chọn nhiều cán bộ cùng lúc theo tổ hoặc toàn bộ để thêm vào danh sách" FontSize="11.5" Foreground="#64748B" Margin="0 2 0 0"/>
+                        <TextBlock x:Name="lblSubtitle" Text="Chọn nhiều cán bộ cùng lúc theo tổ hoặc toàn bộ để thêm vào danh sách" FontSize="11.5" Foreground="#64748B" Margin="0 2 0 0"/>
                     </StackPanel>
                 </StackPanel>
                 
@@ -202,9 +202,14 @@
             <!-- Footer -->
             <Border Grid.Row="3" Background="#F8FAFC" CornerRadius="0 0 16 16" BorderBrush="#EDF2F7" BorderThickness="0 1 0 0" Padding="24 16">
                 <Grid>
-                    <TextBlock x:Name="lblSelectionCount" Text="Đã chọn: 0 / 0 cán bộ" VerticalAlignment="Center" HorizontalAlignment="Left" FontWeight="SemiBold" Foreground="#475569"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                     
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock x:Name="lblSelectionCount" Grid.Column="0" Text="Đã chọn: 0 / 0 cán bộ" VerticalAlignment="Center" HorizontalAlignment="Left" FontWeight="SemiBold" Foreground="#475569" TextWrapping="Wrap" Margin="0 0 15 0"/>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                         <Button Content="HỦY BỎ" Click="btnClose_Click" Style="{StaticResource PremiumOutlineButtonStyle}" 
                                 BorderBrush="#8A9099" Foreground="#555555"
                                 Width="105" Height="40" Margin="0 0 12 0" FontSize="13" FontWeight="Bold"/>

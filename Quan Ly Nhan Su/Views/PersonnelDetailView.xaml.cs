@@ -443,12 +443,20 @@ namespace TaxPersonnelManagement.Views
         private void LoadPositions()
         {
             var posOrder = new System.Collections.Generic.List<string> {
+                "Chi cục trưởng",
+                "Quyền Chi cục trưởng",
+                "Phó Chi cục trưởng",
                 "Trưởng Thuế cơ sở",
                 "Quyền Trưởng Thuế cơ sở",
                 "Phó Trưởng Thuế cơ sở",
+                "Đội trưởng",
+                "Trưởng phòng",
+                "Phó Đội trưởng",
+                "Phó Trưởng phòng",
                 "Tổ trưởng",
                 "Phó Tổ trưởng",
-                "Công chức"
+                "Công chức",
+                "Nhân viên"
             };
 
             using (var context = new AppDbContext())

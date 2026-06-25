@@ -375,6 +375,43 @@ namespace TaxPersonnelManagement
                             DecisionAgency TEXT,
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
+
+                    // Manual Migration for PlanningRecords
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS PlanningRecords (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            PersonnelId INTEGER NOT NULL,
+                            PlanningType TEXT NOT NULL,
+                            Status TEXT NOT NULL,
+                            CurrentPosition TEXT,
+                            PlannedPosition TEXT,
+                            PlannedTransitionPosition TEXT,
+                            TrainingLevel TEXT,
+                            PoliticalTheoryLevel TEXT,
+                            PlanningTerm TEXT,
+                            DecisionNumber TEXT,
+                            DecisionDate TEXT,
+                            DecisionUnit TEXT,
+                            Evaluation3Years TEXT,
+                            Note TEXT,
+                            FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                        );");
+
+                    // Manual Migration for PlanningTerms
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS PlanningTerms (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            TermName TEXT NOT NULL UNIQUE
+                        );");
+
+                    // Khởi tạo các nhiệm kỳ quy hoạch mặc định nếu bảng trống
+                    if (!context.PlanningTerms.Any())
+                    {
+                        context.PlanningTerms.Add(new PlanningTerm { TermName = "2021-2026" });
+                        context.PlanningTerms.Add(new PlanningTerm { TermName = "2026-2031" });
+                        context.PlanningTerms.Add(new PlanningTerm { TermName = "2031-2036" });
+                        context.SaveChanges();
+                    }
                     // Update existing records with default Identity Place if empty
                     var emptyIdentityPersonnel = context.Personnel
                         .Where(p => string.IsNullOrEmpty(p.IdentityCardPlace) || p.IdentityCardPlace == "---")

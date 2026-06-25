@@ -1,3 +1,35 @@
+## v1.6.0.6 — 2026-06-26
+- [Tối ưu Code] Refactor phương thức xuất Excel Quy hoạch (ExportToExcel):
+    + Sửa lỗi logic: Tham số `planningType` đã được truyền vào nhưng không được sử dụng, dẫn đến cả 2 tab đều gộp chung toàn bộ dữ liệu Chuyên môn + Đảng khi xuất. Nay mỗi tab chỉ xuất đúng danh sách của mình.
+    + Tên file xuất Excel hiện đính kèm loại quy hoạch rõ ràng: `QuyHoach_ChuyenMon_YYYYMMDD.xlsx` hoặc `QuyHoach_Dang_YYYYMMDD.xlsx`.
+- [Sửa lỗi] Khắc phục ComboBox bộ lọc tại màn hình Quy hoạch không hiển thị chữ sau khi chọn giá trị:
+    + Nguyên nhân: MaterialDesignTheme.ComboBox.xaml override template và foreground của ComboBoxItem, gây mất chữ trong ô chọn khi highlighted.
+    + Giải pháp: Loại bỏ MaterialDesign ComboBox resource khỏi Page.Resources (các ComboBox này đã dùng custom style riêng), thêm `Foreground="Black"` để đảm bảo text luôn hiển thị.
+- [Giao diện] Tăng độ rộng ô ComboBox bộ lọc tại màn hình Quy hoạch:
+    + Ô **Bộ phận**: 180px → 220px để hiển thị đủ tên bộ phận dài.
+    + Ô **Nhiệm kỳ**: 130px → 160px để hiển thị đủ tên nhiệm kỳ.
+    + Áp dụng cho cả Tab Chuyên môn và Tab Đảng.
+- [Giao diện] Đổi tên 3 mục menu trong Sidebar chính:
+    + *TG giữ vị trí công tác* → **Thời gian công tác**
+    + *Xếp loại* → **Đánh giá xếp loại chất lượng công chức** (hỗ trợ xuống dòng tự động)
+    + *Đào tạo và Bồi dưỡng* → **Đào tạo, Bồi dưỡng**
+
+## v1.6.0.5 — 2026-06-25
+- [Tính năng] Bổ sung menu "Quy hoạch" vào Sidebar chính của ứng dụng:
+    + Tích hợp Page "Quản lý Quy hoạch Nhân sự" (PlanningManagementView) với giao diện TabControl phân tách thành hai khu vực chuyên biệt: **Quy hoạch Chuyên môn** và **Quy hoạch Đảng**.
+    + Mỗi khu vực hỗ trợ bộ lọc thông minh: tìm kiếm theo Họ tên/CCCD, lọc theo Tổ/Bộ phận công tác, lọc theo Nhiệm kỳ quy hoạch và lọc theo Trạng thái quy hoạch.
+    + Dữ liệu hiển thị dạng DataGrid và tự động được **nhóm (Grouping)** thành 3 nhóm phân tách trực quan:
+        1. *Tiếp tục quy hoạch*
+        2. *Đưa ra khỏi quy hoạch*
+        3. *Bổ sung quy hoạch*
+- [Tính năng] Dialog Thêm/Sửa Quy hoạch (PlanningRecordDialog):
+    + Hỗ trợ chọn cán bộ nhanh chóng thông qua hộp thoại tìm kiếm cán bộ sẵn có.
+    + Điền tự động các trường thông tin cơ bản: Chức vụ hiện tại, Trình độ chuyên môn, Lý luận chính trị và cho phép tùy biến/chỉnh sửa thông tin lịch sử quy hoạch độc lập với hồ sơ gốc.
+    + Hỗ trợ quản lý đầy đủ thông tin: Chức danh quy hoạch, Chức danh chuyển tiếp, Nhiệm kỳ, Quyết định quy hoạch (Số QĐ, Ngày ký, Đơn vị ban hành), Kết quả đánh giá phân loại 3 năm gần nhất và Ghi chú.
+- [Tính năng] Xuất Excel Báo cáo Quy hoạch (PlanningExcelExporter):
+    + Hỗ trợ xuất trực tiếp bảng danh sách quy hoạch ra tệp Excel (.xlsx) thông qua thư viện ClosedXML.
+    + Giao diện file Excel xuất ra được định dạng chuẩn, chia rõ ràng thành 3 bảng dữ liệu riêng biệt theo nhóm phân loại với STT chạy lại từ 1, tiêu đề cột căn chỉnh chuyên nghiệp, gộp ô đúng biểu mẫu yêu cầu.
+
 ## v1.6.0.4 — 2026-06-24
 - [Sửa lỗi] Khắc phục triệt để lỗi hiển thị mờ/khó đọc của số tiền hàng "Tổng cộng (Tháng)" trong màn hình Thu nhập năm khi dòng đó đang được chọn nhưng cửa sổ ứng dụng mất focus (Inactive). Bằng việc binding động Foreground của TextBlock theo Foreground của DataGridCell cha, màu chữ sẽ tự động chuyển sang màu tối/đen khi mất focus để nổi bật rõ ràng trên nền xám nhạt, thay vì bị ép cứng màu trắng như trước.
 - [Giao diện] Sửa lỗi hiển thị mờ ở hàng "Tổng cộng (Tháng)" trong màn hình Thu nhập năm (AnnualIncomeView.xaml), chuyển sang màu xanh lá cây đậm và in đậm để số liệu rõ ràng, dễ đọc hơn khi không được chọn.

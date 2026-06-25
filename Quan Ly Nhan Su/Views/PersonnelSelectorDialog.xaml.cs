@@ -13,13 +13,51 @@ namespace TaxPersonnelManagement.Views
     public partial class PersonnelSelectorDialog : Window
     {
         private List<PersonnelSelectorItem> _allPersonnel = new();
+        private bool _isSingleSelect = false;
         public List<int> SelectedPersonnelIds { get; private set; } = new();
 
-        public PersonnelSelectorDialog(List<int> excludedIds)
+        public PersonnelSelectorDialog(List<int> excludedIds, bool isSingleSelect = false)
         {
+            _isSingleSelect = isSingleSelect;
             InitializeComponent();
+            
+            if (_isSingleSelect)
+            {
+                lblSubtitle.Text = "Chọn một cán bộ công chức từ danh sách dưới đây để tiếp tục.";
+                btnConfirm.Content = "XÁC NHẬN";
+                this.Loaded += PersonnelSelectorDialog_Loaded;
+                dgPersonnelSelector.SelectionChanged += DgPersonnelSelector_SelectionChanged;
+                dgPersonnelSelector.MouseDoubleClick += DgPersonnelSelector_MouseDoubleClick;
+            }
+
             LoadDepartments();
             LoadPersonnel(excludedIds);
+        }
+
+        private void PersonnelSelectorDialog_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (_isSingleSelect && dgPersonnelSelector.Columns.Count > 0)
+            {
+                dgPersonnelSelector.Columns[0].Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void DgPersonnelSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isSingleSelect)
+            {
+                UpdateCount();
+            }
+        }
+
+        private void DgPersonnelSelector_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (_isSingleSelect && dgPersonnelSelector.SelectedItem is PersonnelSelectorItem selectedItem)
+            {
+                SelectedPersonnelIds = new List<int> { selectedItem.Id };
+                DialogResult = true;
+                Close();
+            }
         }
 
         /// <summary>
@@ -130,20 +168,33 @@ namespace TaxPersonnelManagement.Views
         {
             if (_allPersonnel == null) return;
 
-            int selectedCount = _allPersonnel.Count(p => p.IsSelected);
-            var list = dgPersonnelSelector.ItemsSource as List<PersonnelSelectorItem>;
-            int displayedCount = list?.Count ?? 0;
-
-            lblSelectionCount.Text = $"Đã chọn: {selectedCount} / {_allPersonnel.Count} cán bộ (Hiển thị: {displayedCount})";
-
-            // Đồng bộ trạng thái CheckBox chọn tất cả của danh sách đang hiển thị
-            if (list != null && displayedCount > 0 && list.All(p => p.IsSelected))
+            if (_isSingleSelect)
             {
-                chkSelectAll.IsChecked = true;
+                var selected = dgPersonnelSelector.SelectedItem as PersonnelSelectorItem;
+                var list = dgPersonnelSelector.ItemsSource as List<PersonnelSelectorItem>;
+                int displayedCount = list?.Count ?? 0;
+                
+                lblSelectionCount.Text = selected != null 
+                    ? $"Đang chọn: {selected.FullName} (Bộ phận: {selected.Department}) | Hiển thị: {displayedCount}"
+                    : $"Chưa chọn cán bộ nào (Hiển thị: {displayedCount})";
             }
             else
             {
-                chkSelectAll.IsChecked = false;
+                int selectedCount = _allPersonnel.Count(p => p.IsSelected);
+                var list = dgPersonnelSelector.ItemsSource as List<PersonnelSelectorItem>;
+                int displayedCount = list?.Count ?? 0;
+
+                lblSelectionCount.Text = $"Đã chọn: {selectedCount} / {_allPersonnel.Count} cán bộ (Hiển thị: {displayedCount})";
+
+                // Đồng bộ trạng thái CheckBox chọn tất cả của danh sách đang hiển thị
+                if (list != null && displayedCount > 0 && list.All(p => p.IsSelected))
+                {
+                    chkSelectAll.IsChecked = true;
+                }
+                else
+                {
+                    chkSelectAll.IsChecked = false;
+                }
             }
         }
 
@@ -195,15 +246,30 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         private void btnConfirm_Click(object sender, RoutedEventArgs e)
         {
-            SelectedPersonnelIds = _allPersonnel
-                                    .Where(p => p.IsSelected)
-                                    .Select(p => p.Id)
-                                    .ToList();
-
-            if (!SelectedPersonnelIds.Any())
+            if (_isSingleSelect)
             {
-                MessageBox.Show("Vui lòng chọn ít nhất một cán bộ công chức trước khi xác nhận!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                if (dgPersonnelSelector.SelectedItem is PersonnelSelectorItem selectedItem)
+                {
+                    SelectedPersonnelIds = new List<int> { selectedItem.Id };
+                }
+                else
+                {
+                    MessageBox.Show("Vui lòng chọn một cán bộ công chức trước khi xác nhận!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
+            else
+            {
+                SelectedPersonnelIds = _allPersonnel
+                                        .Where(p => p.IsSelected)
+                                        .Select(p => p.Id)
+                                        .ToList();
+
+                if (!SelectedPersonnelIds.Any())
+                {
+                    MessageBox.Show("Vui lòng chọn ít nhất một cán bộ công chức trước khi xác nhận!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             DialogResult = true;

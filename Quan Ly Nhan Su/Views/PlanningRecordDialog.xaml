@@ -1,0 +1,358 @@
+<Window x:Class="TaxPersonnelManagement.Views.PlanningRecordDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
+        mc:Ignorable="d"
+        Title="Thông tin Quy hoạch Nhân sự" Height="780" Width="620"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Language="vi-VN">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Modern DatePicker Style -->
+            <Style x:Key="ModernDatePicker" TargetType="DatePicker">
+                <Setter Property="Language" Value="vi-VN"/>
+                <Setter Property="helpers:DatePickerHelper.FixCalendarLocale" Value="True"/>
+                <Setter Property="helpers:DatePickerHelper.EnableSmartDateEntry" Value="True"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="#D1D5DB"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Padding" Value="10 0"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DatePicker">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <DatePickerTextBox x:Name="PART_TextBox" 
+                                                       Grid.Column="0"
+                                                       HorizontalContentAlignment="Stretch"
+                                                       VerticalContentAlignment="Center"
+                                                       Background="Transparent" 
+                                                       BorderThickness="0"
+                                                       Padding="{TemplateBinding Padding}"
+                                                       Foreground="{TemplateBinding Foreground}"
+                                                       FontWeight="{TemplateBinding FontWeight}"
+                                                       Focusable="True">
+                                        <DatePickerTextBox.Template>
+                                            <ControlTemplate TargetType="{x:Type DatePickerTextBox}">
+                                                <Grid>
+                                                    <ScrollViewer x:Name="PART_ContentHost" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                    <TextBlock x:Name="Watermark" Text="dd/MM/yyyy" 
+                                                               IsHitTestVisible="False" 
+                                                               Foreground="Gray" Opacity="0.7"
+                                                               VerticalAlignment="Center" 
+                                                               Visibility="Hidden"/>
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </DatePickerTextBox.Template>
+                                    </DatePickerTextBox>
+
+                                    <Button x:Name="PART_Button" 
+                                            Grid.Column="1" 
+                                            Width="30"
+                                            Padding="0"
+                                            Margin="0 0 5 0"
+                                            Background="Transparent" 
+                                            BorderThickness="0"
+                                            Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                            Style="{DynamicResource MaterialDesignToolButton}">
+                                        <materialDesign:PackIcon Kind="CalendarMonth" Width="20" Height="20"/>
+                                    </Button>
+
+                                    <Popup x:Name="PART_Popup" 
+                                           AllowsTransparency="True" 
+                                           Placement="Bottom" 
+                                           StaysOpen="False"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border CornerRadius="12" Background="White" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" Direction="-90" RenderingBias="Quality" ShadowDepth="2" Opacity="0.15"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="55"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Content -->
+                <RowDefinition Height="70"/>   <!-- Action Buttons -->
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="12 12 0 0" Padding="20 0">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AccountStar" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtTitle" Text="Thông tin Quy hoạch Nhân sự" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button HorizontalAlignment="Right" Click="btnCancel_Click" Background="Transparent" BorderThickness="0" Padding="0" Width="30" Height="30" Style="{DynamicResource MaterialDesignToolButton}">
+                        <materialDesign:PackIcon Kind="Close" Foreground="White" Width="22" Height="22"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="25 15">
+                <StackPanel>
+                    
+                    <!-- 1. CHỌN CÁN BỘ CÔNG CHỨC -->
+                    <TextBlock Text="Cán bộ công chức (*)" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                    <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0 0 0 20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" x:Name="pnlSelectedPersonnel" Visibility="Collapsed">
+                                <TextBlock x:Name="txtPersonnelName" Text="Họ và Tên" FontWeight="Bold" FontSize="15" Foreground="#1F2937"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 5 0 0">
+                                    <TextBlock Text="CCCD: " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock x:Name="txtPersonnelCardNumber" Text="---" FontWeight="SemiBold" Foreground="#4B5563" FontSize="13" Margin="0 0 20 0"/>
+                                    
+                                    <TextBlock Text="Bộ phận: " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock x:Name="txtPersonnelDepartment" Text="---" FontWeight="SemiBold" Foreground="#4B5563" FontSize="13"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5 0 0">
+                                    <TextBlock Text="Chức vụ: " Foreground="#6B7280" FontSize="13"/>
+                                    <TextBlock x:Name="txtPersonnelPosition" Text="---" FontWeight="SemiBold" Foreground="#4B5563" FontSize="13"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="0" x:Name="txtNoPersonnelSelected" Text="Chưa chọn cán bộ công chức..." FontStyle="Italic" Foreground="#9CA3AF" VerticalAlignment="Center"/>
+
+                            <Button Grid.Column="1" x:Name="btnSelectPersonnel" Click="btnSelectPersonnel_Click"
+                                    Style="{DynamicResource MaterialDesignFlatButton}"
+                                    Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                    Padding="10 0" Height="36" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="AccountSearch" Width="18" Height="18" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chọn..." FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- 2. PHÂN LOẠI QUY HOẠCH & NHIỆM KỲ -->
+                    <Grid Margin="0 0 0 15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Phân loại (Trạng thái) -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Trạng thái quy hoạch (*)" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <ComboBox x:Name="cboStatus" Height="40" Padding="10 0" VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White">
+                                <ComboBoxItem Content="Tiếp tục quy hoạch" IsSelected="True"/>
+                                <ComboBoxItem Content="Đưa ra khỏi quy hoạch"/>
+                                <ComboBoxItem Content="Bổ sung quy hoạch"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Nhiệm kỳ -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Nhiệm kỳ quy hoạch (*)" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <ComboBox x:Name="cboPlanningTerm" Grid.Column="0" Height="40" Padding="10 0" 
+                                          VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White"
+                                          materialDesign:HintAssist.Hint="Chọn nhiệm kỳ quy hoạch..."
+                                          IsEditable="False">
+                                </ComboBox>
+                                
+                                <Button Grid.Column="2" x:Name="btnAddPlanningTerm" Click="btnAddPlanningTerm_Click"
+                                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                                        Background="{DynamicResource PrimaryHueMidBrush}"
+                                        BorderThickness="0" Width="40" Height="40" Padding="0"
+                                        ToolTip="Thêm nhiệm kỳ mới" Cursor="Hand">
+                                    <materialDesign:PackIcon Kind="Plus" Width="20" Height="20" Foreground="White"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 3. CHỨC DANH QUY HOẠCH & CHUYỂN TIẾP -->
+                    <Grid Margin="0 0 0 15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Chức danh đã được quy hoạch -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Chức danh quy hoạch" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <ComboBox x:Name="cboPlannedPosition" Grid.Column="0" Height="40" Padding="10 0" 
+                                          VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White"
+                                          materialDesign:HintAssist.Hint="Chọn chức danh..." IsEditable="True">
+                                </ComboBox>
+                                
+                                <Button Grid.Column="2" x:Name="btnAddPlannedPosition" Click="btnAddPlannedPosition_Click"
+                                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                                        Background="{DynamicResource PrimaryHueMidBrush}"
+                                        BorderThickness="0" Width="40" Height="40" Padding="0"
+                                        ToolTip="Quản lý chức danh" Cursor="Hand">
+                                    <materialDesign:PackIcon Kind="Plus" Width="20" Height="20" Foreground="White"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- Chức danh chuyển tiếp quy hoạch -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Chức danh chuyển tiếp" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <ComboBox x:Name="cboPlannedTransitionPosition" Grid.Column="0" Height="40" Padding="10 0" 
+                                          VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White"
+                                          materialDesign:HintAssist.Hint="Chọn chức danh..." IsEditable="True">
+                                </ComboBox>
+                                
+                                <Button Grid.Column="2" x:Name="btnAddPlannedTransitionPosition" Click="btnAddPlannedTransitionPosition_Click"
+                                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                                        Background="{DynamicResource PrimaryHueMidBrush}"
+                                        BorderThickness="0" Width="40" Height="40" Padding="0"
+                                        ToolTip="Quản lý chức danh" Cursor="Hand">
+                                    <materialDesign:PackIcon Kind="Plus" Width="20" Height="20" Foreground="White"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 4. TRÌNH ĐỘ CHUYÊN MÔN & LÝ LUẬN CHÍNH TRỊ -->
+                    <Grid Margin="0 0 0 15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Trình độ chuyên môn (lịch sử) -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Trình độ chuyên môn" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <TextBox x:Name="txtTrainingLevel" Style="{StaticResource ModernTextBox}" Height="40" Padding="10 0" VerticalContentAlignment="Center" ToolTip="Tự động đồng bộ từ hồ sơ nhưng có thể sửa riêng cho quy hoạch này"/>
+                        </StackPanel>
+
+                        <!-- Lý luận chính trị (lịch sử) -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Lý luận chính trị" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <TextBox x:Name="txtPoliticalTheoryLevel" Style="{StaticResource ModernTextBox}" Height="40" Padding="10 0" VerticalContentAlignment="Center" ToolTip="Tự động đồng bộ từ hồ sơ nhưng có thể sửa riêng cho quy hoạch này"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 5. QUYẾT ĐỊNH QUY HOẠCH -->
+                    <Grid Margin="0 0 0 15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2.5*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="2.5*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Số QĐ -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Số quyết định" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <TextBox x:Name="txtDecisionNumber" Style="{StaticResource ModernTextBox}" Height="40" Padding="10 0" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Ngày ký -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Ngày ký QĐ" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <DatePicker x:Name="dpDecisionDate" Style="{StaticResource ModernDatePicker}"/>
+                        </StackPanel>
+
+                        <!-- Đơn vị ra QĐ -->
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="Đơn vị ra QĐ" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                            <TextBox x:Name="txtDecisionUnit" Style="{StaticResource ModernTextBox}" Height="40" Padding="10 0" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 6. PHÂN LOẠI 3 NĂM GẦN NHẤT -->
+                    <StackPanel Margin="0 0 0 15">
+                        <TextBlock Text="Kết quả phân loại công chức 03 năm gần nhất" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                        <TextBox x:Name="txtEvaluation3Years" Style="{StaticResource ModernTextBox}" Height="80" Padding="10" VerticalContentAlignment="Top"
+                                 AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" Background="#F3F4F6"
+                                 ToolTip="Trường thông tin chỉ đọc, tự động lấy kết quả xếp loại từ hồ sơ cán bộ."/>
+                    </StackPanel>
+
+                    <!-- 7. GHI CHÚ -->
+                    <StackPanel Margin="0 0 0 10">
+                        <TextBlock Text="Ghi chú" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                        <TextBox x:Name="txtNote" Style="{StaticResource ModernTextBox}" Height="60" Padding="10" VerticalContentAlignment="Top" AcceptsReturn="True" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Actions -->
+            <Border Grid.Row="2" Background="#F9FAFB" CornerRadius="0 0 12 12" BorderBrush="#E5E7EB" BorderThickness="0 1 0 0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
+                    <Button x:Name="btnCancel" Content="Hủy bỏ" Click="btnCancel_Click" 
+                            Style="{DynamicResource MaterialDesignFlatButton}" Margin="0 0 10 0" Height="40" Width="100"/>
+                    <Button x:Name="btnSave" Content="Lưu lại" Click="btnSave_Click" 
+                            Style="{DynamicResource MaterialDesignRaisedButton}" 
+                            Background="{DynamicResource PrimaryHueMidBrush}" BorderThickness="0" 
+                            Height="40" Width="100" materialDesign:ButtonAssist.CornerRadius="4"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

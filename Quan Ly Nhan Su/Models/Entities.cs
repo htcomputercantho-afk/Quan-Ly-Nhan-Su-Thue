@@ -511,5 +511,50 @@ namespace TaxPersonnelManagement.Models
         public int TrainingClassId { get; set; }
         public virtual TrainingClass TrainingClass { get; set; } = null!;
     }
+
+    /// <summary>
+    /// Lưu trữ thông tin quy hoạch cán bộ (bao gồm quy hoạch Chuyên môn và quy hoạch Đảng)
+    /// </summary>
+    public class PlanningRecord
+    {
+        [Key]
+        public int Id { get; set; }
+        
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+
+        public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
+        public virtual Personnel? Personnel { get; set; }
+
+        public string PlanningType { get; set; } = "Chuyên môn"; // "Chuyên môn" hoặc "Đảng"
+        public string Status { get; set; } = "Tiếp tục quy hoạch"; // "Tiếp tục quy hoạch", "Đưa ra khỏi quy hoạch", "Bổ sung quy hoạch"
+        
+        public string? CurrentPosition { get; set; } // Chức vụ hiện tại
+        public string? PlannedPosition { get; set; } // Chức danh đã được quy hoạch
+        public string? PlannedTransitionPosition { get; set; } // Chức danh chuyển tiếp quy hoạch
+        
+        public string? TrainingLevel { get; set; } // Trình độ chuyên môn
+        public string? PoliticalTheoryLevel { get; set; } // Lý luận chính trị
+        
+        public string? PlanningTerm { get; set; } // Nhiệm kỳ quy hoạch
+        public string? DecisionNumber { get; set; } // Số QĐ
+        public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
+        public string? DecisionUnit { get; set; } // Đơn vị ra QĐ
+        
+        public string? Evaluation3Years { get; set; } // Kết quả phân loại công chức 03 năm gần nhất
+        public string? Note { get; set; } // Ghi chú
+    }
+
+    /// <summary>
+    /// Lưu trữ danh mục nhiệm kỳ quy hoạch
+    /// </summary>
+    public class PlanningTerm
+    {
+        [Key]
+        public int Id { get; set; }
+        
+        [Required]
+        public string TermName { get; set; } = string.Empty; // Tên nhiệm kỳ (VD: 2021-2026, 2026-2031)
+    }
 }
 

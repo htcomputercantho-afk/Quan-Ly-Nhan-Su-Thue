@@ -118,7 +118,6 @@
             <Grid Grid.Row="1" Margin="25 5 25 20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="180"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
@@ -136,12 +135,10 @@
                     </Grid>
                 </Border>
 
-                <ComboBox Grid.Column="1" x:Name="cboDepartment"
-                          Style="{StaticResource DialogComboBox}"
-                          materialDesign:HintAssist.Hint="Bộ phận áp dụng"
-                          Margin="0 0 10 0"/>
+                <!-- Ẩn ComboBox này đi để không làm hỏng code-behind -->
+                <ComboBox x:Name="cboDepartment" Visibility="Collapsed"/>
                 
-                <Button Grid.Column="2" x:Name="btnAdd" Click="btnAdd_Click" Height="50" Width="50" 
+                <Button Grid.Column="1" x:Name="btnAdd" Click="btnAdd_Click" Height="50" Width="50" 
                         Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="{DynamicResource PrimaryHueMidBrush}" 
                         Style="{DynamicResource MaterialDesignFloatingActionMiniButton}"
                         ToolTip="Thêm chức vụ">
@@ -210,10 +207,7 @@
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
                                         <materialDesign:PackIcon Kind="BadgeAccount" Foreground="#718096" Width="20" Height="20" Margin="0 0 12 0" VerticalAlignment="Center"/>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium" Foreground="#2D3748" TextWrapping="Wrap"/>
-                                            <TextBlock Text="{Binding DepartmentDisplayName}" FontSize="11.5" Foreground="#718096" Margin="0 2 0 0" TextWrapping="Wrap"/>
-                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="15" FontWeight="Medium" Foreground="#2D3748" VerticalAlignment="Center" TextWrapping="Wrap"/>
                                      </Grid>
                                     
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
