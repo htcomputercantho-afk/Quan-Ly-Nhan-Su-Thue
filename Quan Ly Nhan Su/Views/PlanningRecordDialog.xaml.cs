@@ -180,48 +180,71 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                using (var db = new AppDbContext())
+                List<string> positions;
+                if (_planningType == "Đảng")
                 {
-                    var posOrder = new System.Collections.Generic.List<string> {
-                        "Chi cục trưởng",
-                        "Quyền Chi cục trưởng",
-                        "Phó Chi cục trưởng",
-                        "Trưởng Thuế cơ sở",
-                        "Quyền Trưởng Thuế cơ sở",
-                        "Phó Trưởng Thuế cơ sở",
-                        "Đội trưởng",
-                        "Trưởng phòng",
-                        "Phó Đội trưởng",
-                        "Phó Trưởng phòng",
-                        "Tổ trưởng",
-                        "Phó Tổ trưởng",
-                        "Công chức",
-                        "Nhân viên"
+                    positions = new List<string> {
+                        "Bí thư Chi bộ",
+                        "Phó Bí thư Chi bộ",
+                        "Chi ủy viên",
+                        "Bí thư Đảng bộ",
+                        "Phó Bí thư Đảng bộ",
+                        "Ủy viên Ban thường vụ Đảng bộ",
+                        "Ủy viên Ban chấp hành Đảng bộ",
+                        "Bí thư Đảng ủy",
+                        "Phó Bí thư Đảng ủy",
+                        "Ủy viên Ban thường vụ Đảng ủy",
+                        "Ủy viên Ban chấp hành Đảng ủy",
+                        "Tổ trưởng Tổ Đảng",
+                        "Đảng viên"
                     };
-
-                    var positions = db.Positions
-                                      .Select(p => p.Name)
-                                      .Distinct()
-                                      .ToList()
-                                      .OrderBy(name =>
-                                      {
-                                          int idx = posOrder.FindIndex(p => p.Equals(name, System.StringComparison.OrdinalIgnoreCase));
-                                          return idx == -1 ? 999 : idx;
-                                      })
-                                      .ThenBy(name => name)
-                                      .ToList();
-
-                    cboPlannedPosition.ItemsSource = new List<string>(positions);
-                    cboPlannedTransitionPosition.ItemsSource = new List<string>(positions);
-
-                    if (!string.IsNullOrEmpty(selectedPlanned))
+                    positions = positions.Distinct().ToList();
+                }
+                else
+                {
+                    using (var db = new AppDbContext())
                     {
-                        cboPlannedPosition.Text = selectedPlanned;
+                        var posOrder = new System.Collections.Generic.List<string> {
+                            "Chi cục trưởng",
+                            "Quyền Chi cục trưởng",
+                            "Phó Chi cục trưởng",
+                            "Trưởng Thuế cơ sở",
+                            "Quyền Trưởng Thuế cơ sở",
+                            "Phó Trưởng Thuế cơ sở",
+                            "Đội trưởng",
+                            "Trưởng phòng",
+                            "Phó Đội trưởng",
+                            "Phó Trưởng phòng",
+                            "Tổ trưởng",
+                            "Phó Tổ trưởng",
+                            "Công chức",
+                            "Nhân viên"
+                        };
+
+                        positions = db.Positions
+                                          .Select(p => p.Name)
+                                          .Distinct()
+                                          .ToList()
+                                          .OrderBy(name =>
+                                          {
+                                              int idx = posOrder.FindIndex(p => p.Equals(name, System.StringComparison.OrdinalIgnoreCase));
+                                              return idx == -1 ? 999 : idx;
+                                          })
+                                          .ThenBy(name => name)
+                                          .ToList();
                     }
-                    if (!string.IsNullOrEmpty(selectedTransition))
-                    {
-                        cboPlannedTransitionPosition.Text = selectedTransition;
-                    }
+                }
+
+                cboPlannedPosition.ItemsSource = new List<string>(positions);
+                cboPlannedTransitionPosition.ItemsSource = new List<string>(positions);
+
+                if (!string.IsNullOrEmpty(selectedPlanned))
+                {
+                    cboPlannedPosition.Text = selectedPlanned;
+                }
+                if (!string.IsNullOrEmpty(selectedTransition))
+                {
+                    cboPlannedTransitionPosition.Text = selectedTransition;
                 }
             }
             catch (Exception ex)
@@ -236,7 +259,7 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                var dialog = new AddPositionDialog();
+                var dialog = new AddPositionDialog(_planningType == "Đảng");
                 dialog.Owner = this;
                 if (dialog.ShowDialog() == true)
                 {
@@ -253,7 +276,8 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                var warning = new WarningWindow($"Lỗi quản lý chức vụ: {ex.Message}", "Lỗi");
+                var label = _planningType == "Đảng" ? "chức danh" : "chức vụ";
+                var warning = new WarningWindow($"Lỗi quản lý {label}: {ex.Message}", "Lỗi");
                 warning.Owner = this;
                 warning.ShowDialog();
             }
@@ -263,7 +287,7 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                var dialog = new AddPositionDialog();
+                var dialog = new AddPositionDialog(_planningType == "Đảng");
                 dialog.Owner = this;
                 if (dialog.ShowDialog() == true)
                 {
@@ -280,7 +304,8 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                var warning = new WarningWindow($"Lỗi quản lý chức vụ: {ex.Message}", "Lỗi");
+                var label = _planningType == "Đảng" ? "chức danh" : "chức vụ";
+                var warning = new WarningWindow($"Lỗi quản lý {label}: {ex.Message}", "Lỗi");
                 warning.Owner = this;
                 warning.ShowDialog();
             }

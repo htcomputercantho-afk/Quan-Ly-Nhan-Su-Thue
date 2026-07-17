@@ -469,7 +469,7 @@ namespace TaxPersonnelManagement.Views
                     dbPos.Add(new Position { Name = _personnel.Position });
                 }
 
-                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x.Name))
+                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x.Name) && x.DepartmentName != "__ĐẢNG__")
                                   .GroupBy(x => x.Name.ToLower())
                                   .Select(g => g.First())
                                   .OrderBy(x =>
@@ -2148,16 +2148,8 @@ namespace TaxPersonnelManagement.Views
                     _editingLeaveHistory.LeaveYear = null;
                 }
 
-                // Generate System Note Breakdown (ONLY if reason involves abroad)
-                bool isAbroad = !string.IsNullOrEmpty(reason) && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"));
-                if (end.HasValue && isAbroad)
-                {
-                    _editingLeaveHistory.SystemNote = GetLeaveBreakdownNote(start, end.Value, type);
-                }
-                else
-                {
-                    _editingLeaveHistory.SystemNote = null;
-                }
+                // Save system note from txtSystemNote
+                _editingLeaveHistory.SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim();
 
 
 
@@ -2214,7 +2206,7 @@ namespace TaxPersonnelManagement.Views
                                 Reason = reason + $"|SYS:Ưu tiên trừ phép tồn năm {previousYear}|LINK:{linkId}",
                                 PersonnelId = _personnel != null ? _personnel.Id : 0,
                                 LeaveYear = previousYear,
-                                SystemNote = (reason != null && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, start.AddDays(takenFromOld - 1), type) : null
+                                SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
                             };
 
 
@@ -2235,7 +2227,7 @@ namespace TaxPersonnelManagement.Views
                                 Reason = reason + $"|SYS:Trừ tiếp vào phép tồn năm {currentYear}|LINK:{linkId}",
                                 PersonnelId = _personnel != null ? _personnel.Id : 0,
                                 LeaveYear = currentYear,
-                                SystemNote = (reason != null && end.HasValue && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, end.Value, type) : null
+                                SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
                             };
 
 
@@ -2264,6 +2256,7 @@ namespace TaxPersonnelManagement.Views
                         dpLeaveEndDate.SelectedDate = null;
                         txtLeaveDuration.Clear();
                         txtLeaveReason.Clear();
+                        txtSystemNote.Clear();
                         return; // EXIT FUNCTION
                     }
                 }
@@ -2278,7 +2271,7 @@ namespace TaxPersonnelManagement.Views
                     Reason = reason,
                     PersonnelId = _personnel != null ? _personnel.Id : 0,
                     LeaveYear = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() == "Phép năm" ? (int?)cboLeaveYear.SelectedItem : null,
-                    SystemNote = (end.HasValue && !string.IsNullOrEmpty(reason) && (reason.ToLower().Contains("đi nước ngoài") || reason.ToLower().Contains("nước ngoài"))) ? GetLeaveBreakdownNote(start, end.Value, type) : null
+                    SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
                 };
 
 
@@ -2303,6 +2296,7 @@ namespace TaxPersonnelManagement.Views
             dpLeaveEndDate.SelectedDate = null;
             txtLeaveDuration.Clear();
             txtLeaveReason.Clear();
+            txtSystemNote.Clear();
         }
 
         private void OnLeaveDateChanged(object? sender, SelectionChangedEventArgs e)
@@ -2433,6 +2427,7 @@ namespace TaxPersonnelManagement.Views
             if (dpLeaveStartDate.SelectedDate == null || dpLeaveEndDate.SelectedDate == null)
             {
                 txtLeaveDuration.Text = "";
+                txtSystemNote.Text = "";
                 return;
             }
 
@@ -2442,6 +2437,7 @@ namespace TaxPersonnelManagement.Views
             if (end < start)
             {
                 txtLeaveDuration.Text = "";
+                txtSystemNote.Text = "";
                 return;
             }
 
@@ -2458,6 +2454,9 @@ namespace TaxPersonnelManagement.Views
             }
 
             txtLeaveDuration.Text = duration.ToString();
+
+            // Auto-calculate System Note
+            txtSystemNote.Text = GetLeaveBreakdownNote(start, end, type);
         }
 
         private double CalculateWorkingDays(DateTime start, DateTime end)
@@ -2532,6 +2531,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (dgLeaveHistory.SelectedItem is LeaveHistory item)
             {
+                _isRefreshing = true;
                 _editingLeaveHistory = item;
 
                 // Populate fields
@@ -2548,6 +2548,7 @@ namespace TaxPersonnelManagement.Views
                 dpLeaveEndDate.SelectedDate = item.EndDate;
                 txtLeaveDuration.Text = item.DurationDays.ToString();
                 txtLeaveReason.Text = item.UserReasonDisplay; // Only show user part
+                txtSystemNote.Text = item.SystemNote ?? "";
 
                 if (item.LeaveType == "Phép năm")
                 {
@@ -2581,6 +2582,8 @@ namespace TaxPersonnelManagement.Views
                 {
                     cboLeaveYear.IsEnabled = false;
                 }
+
+                _isRefreshing = false;
 
                 // Change Button Text
                 // Find TextBlock inside button

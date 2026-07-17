@@ -8,7 +8,8 @@
       mc:Ignorable="d" 
       Language="vi-VN"
       d:DesignHeight="600" d:DesignWidth="1200"
-      Title="Quản Lý Đào Tạo Và Bồi Dưỡng">
+      Title="Quản Lý Đào Tạo Và Bồi Dưỡng"
+      FontFamily="{DynamicResource MaterialDesignFont}">
 
     <Page.Resources>
         <ResourceDictionary>

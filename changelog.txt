@@ -1,3 +1,24 @@
+## v1.6.0.7 — 2026-07-17
+- [Tính năng] Phân tách quản lý và phân loại nhóm chức danh Quy hoạch (Chuyên môn vs Đảng):
+    + Mở lại nút thêm/sửa/xóa (+) chức danh quy hoạch bên cạnh ComboBox cho cả hai tab (Chuyên môn và Đảng) trong `PlanningRecordDialog`.
+    + Quản lý độc lập danh sách chức danh Đảng: Khi bấm + tại tab Quy hoạch Đảng, cửa sổ quản lý chức danh sẽ ở chế độ "Quản lý Chức danh Đảng" (chỉ làm việc với các chức danh thuộc phòng/ban "__ĐẢNG__"), tự động khởi tạo danh sách chức danh Đảng mặc định nếu danh sách trống.
+    + Lọc bỏ hoàn toàn các chức danh Đảng ra khỏi ComboBox chọn chức vụ chuyên môn ở phần thông tin nhân sự chính.
+- [Tính năng] Cải tiến báo cáo xuất Excel Quy hoạch (PlanningExcelExporter):
+    + Phân loại nhóm động theo loại quy hoạch: Chuyên môn phân nhóm theo "Trưởng phòng / Phó Trưởng phòng và tương đương"; Đảng phân nhóm theo "Bí thư / Phó Bí thư và tương đương" (bao gồm cả Chi ủy viên, Ủy viên).
+    + Loại bỏ hoàn toàn cụm từ "(trước sắp xếp)" ở các tiêu đề cột F và J của tệp Excel xuất ra.
+- [Tính năng] Bổ sung Ghi chú thai sản vào Excel Thời gian công tác:
+    + Thêm cột "Ghi chú" (cột H) vào tệp Excel xuất ra từ màn hình "Thời gian công tác".
+    + Tự động tính toán và hiển thị thời hạn nghỉ thai sản chưa đủ 36 tháng của công chức tương tự như xuất bên nhân sự.
+- [Tính năng] Nâng cấp Ghi chú hệ thống trong Quản lý Nghỉ phép:
+    + Bổ sung ô TextBox "Ghi chú hệ thống" trực quan vào biểu mẫu nhập thông tin nghỉ phép (chiều cao 40px đồng bộ).
+    + Tự động tính toán (tự nhảy) chi tiết breakdown ngày nghỉ loại trừ thứ 7, chủ nhật và ngày lễ Tết ngay khi chọn ngày/loại nghỉ.
+    + Cho phép người dùng chỉnh sửa thủ công (sửa tay) ghi chú tự động này trước khi thêm/cập nhật vào cơ sở dữ liệu.
+    + Đảm bảo khi chọn chỉnh sửa đợt nghỉ phép, ghi chú cũ sẽ được tải lên đầy đủ mà không bị ghi đè tự động.
+- [Sửa lỗi & Tối ưu]:
+    + Khắc phục lỗi font chữ tiếng Việt bị vỡ trên một số máy trạm bằng cách khai báo thuộc tính `FontFamily="{DynamicResource MaterialDesignFont}"` trực tiếp tại thẻ root `<Page>` của các trang: `PlanningManagementView.xaml`, `TrainingListView.xaml`, `LeaveDetailView.xaml`, `EmulationRewardView.xaml` và `AnnualIncomeView.xaml`.
+    + Khắc phục lỗi giao diện nút bấm (+) trong `PlanningRecordDialog.xaml` chạm sát thanh cuộn bằng cách bổ sung lề phải `Margin="0 0 15 0"`.
+    + Loại bỏ tùy chọn "Tất cả các năm" trong bộ lọc thống kê và mặc định chọn năm mới nhất khi khởi động.
+
 ## v1.6.0.6 — 2026-06-26
 - [Tối ưu Code] Refactor phương thức xuất Excel Quy hoạch (ExportToExcel):
     + Sửa lỗi logic: Tham số `planningType` đã được truyền vào nhưng không được sử dụng, dẫn đến cả 2 tab đều gộp chung toàn bộ dữ liệu Chuyên môn + Đảng khi xuất. Nay mỗi tab chỉ xuất đúng danh sách của mình.

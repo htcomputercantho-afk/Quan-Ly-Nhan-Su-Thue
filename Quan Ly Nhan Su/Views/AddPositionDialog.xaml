@@ -106,7 +106,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="5" Height="24" CornerRadius="2.5" Background="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 12 0"/>
-                    <TextBlock Text="Quản lý Chức vụ" FontSize="22" FontWeight="Bold" Foreground="#2D3748" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="txtTitle" Text="Quản lý Chức vụ" FontSize="22" FontWeight="Bold" Foreground="#2D3748" VerticalAlignment="Center"/>
                 </StackPanel>
                 
                 <Button Grid.Column="1" Click="btnClose_Click" Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="32" Height="32" Foreground="#A0AEC0" ToolTip="Đóng">

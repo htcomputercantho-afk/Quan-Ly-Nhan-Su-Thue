@@ -11,23 +11,25 @@ namespace TaxPersonnelManagement.Services
     {
         public static void Export(IEnumerable<PlanningRecord> records, string filePath)
         {
+            string planningType = records.FirstOrDefault()?.PlanningType ?? "Chuyên môn";
+
             using (var workbook = new XLWorkbook())
             {
                 // Group 1: Chuyển tiếp (Status != "Bổ sung quy hoạch")
                 var transferRecords = records.Where(r => r.Status != "Bổ sung quy hoạch").ToList();
                 var sheetTransfer = workbook.Worksheets.Add("RS Chuyển tiếp");
-                WriteTransferSheet(sheetTransfer, transferRecords);
+                WriteTransferSheet(sheetTransfer, transferRecords, planningType);
 
                 // Group 2: Bổ sung (Status == "Bổ sung quy hoạch")
                 var addRecords = records.Where(r => r.Status == "Bổ sung quy hoạch").ToList();
                 var sheetAdd = workbook.Worksheets.Add("RS Bổ sung");
-                WriteAddSheet(sheetAdd, addRecords);
+                WriteAddSheet(sheetAdd, addRecords, planningType);
 
                 workbook.SaveAs(filePath);
             }
         }
 
-        private static void WriteTransferSheet(IXLWorksheet worksheet, List<PlanningRecord> records)
+        private static void WriteTransferSheet(IXLWorksheet worksheet, List<PlanningRecord> records, string planningType)
         {
             worksheet.Style.Font.FontName = "Times New Roman";
             worksheet.PageSetup.ShowGridlines = true;
@@ -72,12 +74,12 @@ namespace TaxPersonnelManagement.Services
             worksheet.Cell(6, 3).Value = "Nam";
             worksheet.Cell(6, 4).Value = "Nữ";
             worksheet.Range("E5:E6").Merge().Value = "Chức vụ hiện tại";
-            worksheet.Range("F5:F6").Merge().Value = "Chức danh đã được quy hoạch\n(trước sắp xếp)";
+            worksheet.Range("F5:F6").Merge().Value = "Chức danh đã được quy hoạch";
             worksheet.Range("G5:G6").Merge().Value = "Chức danh chuyển tiếp quy hoạch";
             worksheet.Range("H5:I5").Merge().Value = "Trình độ đào tạo,\nbồi dưỡng";
             worksheet.Cell(6, 8).Value = "Trình độ chuyên môn";
             worksheet.Cell(6, 9).Value = "Lý luận chính trị";
-            worksheet.Range("J5:J6").Merge().Value = "QĐ quy hoạch\n(trước sắp xếp)";
+            worksheet.Range("J5:J6").Merge().Value = "QĐ quy hoạch";
             worksheet.Range("K5:K6").Merge().Value = "Kết quả phân loại công chức\n03 năm gần nhất";
             worksheet.Range("L5:L6").Merge().Value = "Đề xuất của đơn vị";
 
@@ -130,24 +132,44 @@ namespace TaxPersonnelManagement.Services
                 var transferRecords = termGroup.Where(r => r.Status == "Tiếp tục quy hoạch").ToList();
                 var removeRecords = termGroup.Where(r => r.Status == "Đưa ra khỏi quy hoạch").ToList();
 
-                var truongPhongList = transferRecords.Where(r => IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
-                var phoPhongList = transferRecords.Where(r => !IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                List<PlanningRecord> group1List;
+                List<PlanningRecord> group2List;
+                string group1Title;
+                string group2Title;
+                string group3Title;
 
-                if (truongPhongList.Any())
+                if (planningType == "Đảng")
                 {
-                    currentRow = WriteTransferGroupHeader(worksheet, "I", "Danh sách chuyển tiếp quy hoạch sang chức danh Trưởng phòng và tương đương", currentRow);
-                    currentRow = WriteTransferDataRows(worksheet, truongPhongList, currentRow);
+                    group1List = transferRecords.Where(r => IsPartyBithuOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group2List = transferRecords.Where(r => !IsPartyBithuOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group1Title = "Danh sách chuyển tiếp quy hoạch sang chức danh Bí thư và tương đương";
+                    group2Title = "Danh sách chuyển tiếp quy hoạch sang chức danh Phó Bí thư và tương đương";
+                    group3Title = "Danh sách đưa ra khỏi quy hoạch chức danh Bí thư, Phó Bí thư và tương đương";
+                }
+                else
+                {
+                    group1List = transferRecords.Where(r => IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group2List = transferRecords.Where(r => !IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group1Title = "Danh sách chuyển tiếp quy hoạch sang chức danh Trưởng phòng và tương đương";
+                    group2Title = "Danh sách chuyển tiếp quy hoạch sang chức danh Phó Trưởng phòng và tương đương";
+                    group3Title = "Danh sách đưa ra khỏi quy hoạch chức danh Trưởng phòng, Phó Trưởng phòng và tương đương";
                 }
 
-                if (phoPhongList.Any())
+                if (group1List.Any())
                 {
-                    currentRow = WriteTransferGroupHeader(worksheet, "II", "Danh sách chuyển tiếp quy hoạch sang chức danh Phó Trưởng phòng và tương đương", currentRow);
-                    currentRow = WriteTransferDataRows(worksheet, phoPhongList, currentRow);
+                    currentRow = WriteTransferGroupHeader(worksheet, "I", group1Title, currentRow);
+                    currentRow = WriteTransferDataRows(worksheet, group1List, currentRow);
+                }
+
+                if (group2List.Any())
+                {
+                    currentRow = WriteTransferGroupHeader(worksheet, "II", group2Title, currentRow);
+                    currentRow = WriteTransferDataRows(worksheet, group2List, currentRow);
                 }
 
                 if (removeRecords.Any())
                 {
-                    currentRow = WriteTransferGroupHeader(worksheet, "III", "Danh sách đưa ra khỏi quy hoạch chức danh ...", currentRow);
+                    currentRow = WriteTransferGroupHeader(worksheet, "III", group3Title, currentRow);
                     currentRow = WriteTransferDataRows(worksheet, removeRecords, currentRow);
                 }
             }
@@ -261,7 +283,7 @@ namespace TaxPersonnelManagement.Services
             return currentRow;
         }
 
-        private static void WriteAddSheet(IXLWorksheet worksheet, List<PlanningRecord> records)
+        private static void WriteAddSheet(IXLWorksheet worksheet, List<PlanningRecord> records, string planningType)
         {
             worksheet.Style.Font.FontName = "Times New Roman";
             worksheet.PageSetup.ShowGridlines = true;
@@ -359,21 +381,38 @@ namespace TaxPersonnelManagement.Services
                 termLetter++;
 
                 var addRecords = termGroup.ToList();
-                var truongPhongList = addRecords.Where(r => IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
-                var phoPhongList = addRecords.Where(r => !IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                List<PlanningRecord> group1List;
+                List<PlanningRecord> group2List;
+                string group1Title;
+                string group2Title;
 
-                if (truongPhongList.Any())
+                if (planningType == "Đảng")
                 {
-                    currentRow = WriteAddGroupHeader(worksheet, "I", "Bổ sung quy hoạch Trưởng phòng (hoặc tương đương):", currentRow);
-                    currentRow = WriteAddSpecialSummaryRows(worksheet, truongPhongList.Count, currentRow);
-                    currentRow = WriteAddDataRows(worksheet, truongPhongList, currentRow);
+                    group1List = addRecords.Where(r => IsPartyBithuOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group2List = addRecords.Where(r => !IsPartyBithuOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group1Title = "Bổ sung quy hoạch Bí thư (hoặc tương đương):";
+                    group2Title = "Bổ sung quy hoạch Phó Bí thư (hoặc tương đương):";
+                }
+                else
+                {
+                    group1List = addRecords.Where(r => IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group2List = addRecords.Where(r => !IsTruongPhongOrEquivalent(r.PlannedPosition ?? "")).ToList();
+                    group1Title = "Bổ sung quy hoạch Trưởng phòng (hoặc tương đương):";
+                    group2Title = "Bổ sung quy hoạch Phó Trưởng phòng (hoặc tương đương):";
                 }
 
-                if (phoPhongList.Any())
+                if (group1List.Any())
                 {
-                    currentRow = WriteAddGroupHeader(worksheet, "II", "Bổ sung quy hoạch Phó Trưởng phòng (hoặc tương đương):", currentRow);
-                    currentRow = WriteAddSpecialSummaryRows(worksheet, phoPhongList.Count, currentRow);
-                    currentRow = WriteAddDataRows(worksheet, phoPhongList, currentRow);
+                    currentRow = WriteAddGroupHeader(worksheet, "I", group1Title, currentRow);
+                    currentRow = WriteAddSpecialSummaryRows(worksheet, group1List.Count, currentRow);
+                    currentRow = WriteAddDataRows(worksheet, group1List, currentRow);
+                }
+
+                if (group2List.Any())
+                {
+                    currentRow = WriteAddGroupHeader(worksheet, "II", group2Title, currentRow);
+                    currentRow = WriteAddSpecialSummaryRows(worksheet, group2List.Count, currentRow);
+                    currentRow = WriteAddDataRows(worksheet, group2List, currentRow);
                 }
             }
 
@@ -512,7 +551,17 @@ namespace TaxPersonnelManagement.Services
             if (string.IsNullOrEmpty(position)) return true;
             string p = position.ToLower();
             if (p.Contains("phó")) return false;
-            if (p.Contains("trưởng") || p.Contains("đội trưởng") || p.Contains("chi cục trưởng") || p.Contains("tổ trưởng")) return true;
+            if (p.Contains("trưởng") || p.Contains("chánh") || p.Contains("đội trưởng") || p.Contains("chi cục trưởng") || p.Contains("tổ trưởng")) return true;
+            return true;
+        }
+
+        private static bool IsPartyBithuOrEquivalent(string position)
+        {
+            if (string.IsNullOrEmpty(position)) return true;
+            string p = position.ToLower();
+            if (p.Contains("phó")) return false;
+            if (p.Contains("bí thư")) return true;
+            if (p.Contains("chi ủy viên") || p.Contains("ủy viên")) return false;
             return true;
         }
 

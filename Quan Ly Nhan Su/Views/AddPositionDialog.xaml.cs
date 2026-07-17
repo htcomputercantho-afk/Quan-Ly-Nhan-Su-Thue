@@ -14,9 +14,18 @@ namespace TaxPersonnelManagement.Views
         public ObservableCollection<Position> Positions { get; set; } = new ObservableCollection<Position>();
         public string? SelectedPosition { get; private set; }
 
-        public AddPositionDialog()
+        private readonly bool _isPartyMode;
+
+        public AddPositionDialog(bool isPartyMode = false)
         {
             InitializeComponent();
+            _isPartyMode = isPartyMode;
+            if (_isPartyMode)
+            {
+                txtTitle.Text = "Quản lý Chức danh Đảng";
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(txtPositionName, "Nhập tên chức danh Đảng mới...");
+                btnAdd.ToolTip = "Thêm chức danh";
+            }
             LoadDepartments();
             LoadPositions();
         }
@@ -53,36 +62,75 @@ namespace TaxPersonnelManagement.Views
         }
         private void LoadPositions()
         {
-            var posOrder = new System.Collections.Generic.List<string> {
-                "Chi cục trưởng",
-                "Quyền Chi cục trưởng",
-                "Phó Chi cục trưởng",
-                "Trưởng Thuế cơ sở",
-                "Quyền Trưởng Thuế cơ sở",
-                "Phó Trưởng Thuế cơ sở",
-                "Đội trưởng",
-                "Trưởng phòng",
-                "Phó Đội trưởng",
-                "Phó Trưởng phòng",
-                "Tổ trưởng",
-                "Phó Tổ trưởng",
-                "Công chức",
-                "Nhân viên"
-            };
-
             using (var context = new AppDbContext())
             {
                 // Ensure table exists just in case
                 try { context.Database.EnsureCreated(); } catch { }
 
-                var list = context.Positions.ToList()
-                                  .OrderBy(x =>
-                                  {
-                                      int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
-                                      return idx == -1 ? 999 : idx;
-                                  })
-                                  .ThenBy(x => x.Name)
+                List<Position> list;
+                if (_isPartyMode)
+                {
+                    // Check if there are any Party positions, if not, seed defaults
+                    bool hasPartyPos = context.Positions.Any(x => x.DepartmentName == "__ĐẢNG__");
+                    if (!hasPartyPos)
+                    {
+                        var defaultPartyPositions = new List<string> {
+                            "Bí thư Chi bộ",
+                            "Phó Bí thư Chi bộ",
+                            "Chi ủy viên",
+                            "Bí thư Đảng bộ",
+                            "Phó Bí thư Đảng bộ",
+                            "Ủy viên Ban thường vụ Đảng bộ",
+                            "Ủy viên Ban chấp hành Đảng bộ",
+                            "Bí thư Đảng ủy",
+                            "Phó Bí thư Đảng ủy",
+                            "Ủy viên Ban thường vụ Đảng ủy",
+                            "Ủy viên Ban chấp hành Đảng ủy",
+                            "Tổ trưởng Tổ Đảng",
+                            "Đảng viên"
+                        };
+                        foreach (var name in defaultPartyPositions.Distinct())
+                        {
+                            context.Positions.Add(new Position { Name = name, DepartmentName = "__ĐẢNG__" });
+                        }
+                        context.SaveChanges();
+                    }
+
+                    list = context.Positions
+                                  .Where(x => x.DepartmentName == "__ĐẢNG__")
+                                  .ToList()
+                                  .OrderBy(x => x.Name)
                                   .ToList();
+                }
+                else
+                {
+                    var posOrder = new System.Collections.Generic.List<string> {
+                        "Chi cục trưởng",
+                        "Quyền Chi cục trưởng",
+                        "Phó Chi cục trưởng",
+                        "Trưởng Thuế cơ sở",
+                        "Quyền Trưởng Thuế cơ sở",
+                        "Phó Trưởng Thuế cơ sở",
+                        "Đội trưởng",
+                        "Trưởng phòng",
+                        "Phó Đội trưởng",
+                        "Phó Trưởng phòng",
+                        "Tổ trưởng",
+                        "Phó Tổ trưởng",
+                        "Công chức",
+                        "Nhân viên"
+                    };
+
+                    list = context.Positions.ToList()
+                                      .Where(x => x.DepartmentName != "__ĐẢNG__" && !string.IsNullOrEmpty(x.Name))
+                                      .OrderBy(x =>
+                                      {
+                                          int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
+                                          return idx == -1 ? 999 : idx;
+                                      })
+                                      .ThenBy(x => x.Name)
+                                      .ToList();
+                }
 
                 Positions = new ObservableCollection<Position>(list);
                 lstPositions.ItemsSource = Positions;
@@ -96,11 +144,11 @@ namespace TaxPersonnelManagement.Views
             var newName = txtPositionName.Text.Trim();
             if (string.IsNullOrWhiteSpace(newName))
             {
-                new WarningWindow("Vui lòng nhập tên chức vụ!", "Thông báo").ShowDialog();
+                new WarningWindow(_isPartyMode ? "Vui lòng nhập tên chức danh!" : "Vui lòng nhập tên chức vụ!", "Thông báo").ShowDialog();
                 return;
             }
 
-            string? selectedDept = cboDepartment.SelectedItem?.ToString();
+            string? selectedDept = _isPartyMode ? "__ĐẢNG__" : cboDepartment.SelectedItem?.ToString();
             if (selectedDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(selectedDept))
             {
                 selectedDept = null;
@@ -115,7 +163,7 @@ namespace TaxPersonnelManagement.Views
                         (d.DepartmentName ?? "").Equals(selectedDept ?? "", System.StringComparison.OrdinalIgnoreCase));
                     if (exists)
                     {
-                        new WarningWindow("Chức vụ này thuộc bộ phận đã chọn đã tồn tại!", "Thông báo").ShowDialog();
+                        new WarningWindow(_isPartyMode ? "Chức danh này đã tồn tại!" : "Chức vụ này thuộc bộ phận đã chọn đã tồn tại!", "Thông báo").ShowDialog();
                         return;
                     }
 
@@ -193,7 +241,8 @@ namespace TaxPersonnelManagement.Views
         {
             if (sender is Button btn && btn.Tag is Position pos)
             {
-                var confirm = new ConfirmWindow($"Bạn có chắc muốn xóa chức vụ '{pos.Name}'?", "Xác nhận xóa");
+                var msg = _isPartyMode ? $"Bạn có chắc muốn xóa chức danh '{pos.Name}'?" : $"Bạn có chắc muốn xóa chức vụ '{pos.Name}'?";
+                var confirm = new ConfirmWindow(msg, "Xác nhận xóa");
                 if (confirm.ShowDialog() == true)
                 {
                     using (var context = new AppDbContext())

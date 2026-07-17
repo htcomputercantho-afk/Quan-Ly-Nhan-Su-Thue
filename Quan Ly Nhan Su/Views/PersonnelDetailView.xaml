@@ -1168,6 +1168,11 @@
 
                                     <!-- Row 2 Input & Button -->
                                     <Grid Grid.Row="2" Grid.ColumnSpan="5">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="10"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="100"/>
                                             <ColumnDefinition Width="15"/>
@@ -1177,14 +1182,14 @@
                                         </Grid.ColumnDefinitions>
                                         
                                         <!-- Duration Field -->
-                                        <StackPanel Grid.Column="0">
+                                        <StackPanel Grid.Row="0" Grid.Column="0">
                                             <TextBlock Text="4. Số ngày nghỉ" Style="{StaticResource ModernLabel}"/>
                                             <TextBox x:Name="txtLeaveDuration" Style="{StaticResource ModernTextBox}" FontWeight="Bold"
                                                      HorizontalContentAlignment="Center"/>
                                         </StackPanel>
 
                                         <!-- Reason Field -->
-                                        <StackPanel Grid.Column="2">
+                                        <StackPanel Grid.Row="0" Grid.Column="2">
                                             <TextBlock Text="5. Nội dung nghỉ chi tiết" Style="{StaticResource ModernLabel}"/>
                                             <Grid>
                                                 <TextBox x:Name="txtLeaveReason" TextChanged="OnLeaveReasonTextChanged"
@@ -1206,9 +1211,16 @@
                                             </Grid>
                                         </StackPanel>
 
+                                        <!-- System Note Field (New) -->
+                                        <StackPanel Grid.Row="2" Grid.Column="2">
+                                            <TextBlock Text="6. Ghi chú hệ thống (Tự động cập nhật hoặc tự chỉnh sửa)" Style="{StaticResource ModernLabel}"/>
+                                            <TextBox x:Name="txtSystemNote" Style="{StaticResource ModernTextBox}" Height="40" Padding="10 0"
+                                                     VerticalContentAlignment="Center" Background="#FAFAFA" Foreground="#2C3E50"/>
+                                        </StackPanel>
+
                                         <!-- Add Button -->
-                                        <Button x:Name="btnAddLeave" Grid.Column="4" Click="btnAddLeave_Click" 
-                                                Height="35" Padding="20 0" VerticalAlignment="Bottom"
+                                        <Button x:Name="btnAddLeave" Grid.Row="2" Grid.Column="4" Click="btnAddLeave_Click" 
+                                                Height="40" Padding="20 0" VerticalAlignment="Bottom"
                                                 Background="{DynamicResource PrimaryHueMidBrush}" BorderThickness="0">
                                             <StackPanel Orientation="Horizontal">
                                                 <materialDesign:PackIcon Kind="ArrowDownBold" Margin="0 0 5 0"/>

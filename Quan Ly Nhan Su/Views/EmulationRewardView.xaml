@@ -6,7 +6,8 @@
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       mc:Ignorable="d" 
       d:DesignHeight="700" d:DesignWidth="1000"
-      Title="Thi đua khen thưởng">
+      Title="Thi đua khen thưởng"
+      FontFamily="{DynamicResource MaterialDesignFont}">
     
     <Page.Resources>
         <ResourceDictionary>

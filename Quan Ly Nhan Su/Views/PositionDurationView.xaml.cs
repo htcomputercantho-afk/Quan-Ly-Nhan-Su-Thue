@@ -41,7 +41,7 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    var query = context.Personnel.AsQueryable();
+                    var query = context.Personnel.Include(p => p.LeaveHistories).AsQueryable();
 
                     var deptOrder = new List<string> {
                         "Ban lãnh đạo",
@@ -300,7 +300,7 @@ namespace TaxPersonnelManagement.Views
                         var worksheet = workbook.Worksheets.Add("Thoi gian giu vi tri");
 
                         // Title
-                        var titleRange = worksheet.Range("A1:G1");
+                        var titleRange = worksheet.Range("A1:H1");
                         titleRange.Merge();
                         titleRange.Value = "DANH SÁCH THỜI GIAN GIỮ VỊ TRÍ CÔNG TÁC";
                         titleRange.Style.Font.Bold = true;
@@ -309,7 +309,7 @@ namespace TaxPersonnelManagement.Views
                         titleRange.Style.Font.FontColor = XLColor.DarkBlue;
 
                         // Subtitle with Reference Date
-                        var subtitleRange = worksheet.Range("A2:G2");
+                        var subtitleRange = worksheet.Range("A2:H2");
                         subtitleRange.Merge();
                         subtitleRange.Value = $"(Tính đến ngày: {DatePickerHelper.FormatDateForDisplay(referenceDate)})";
                         subtitleRange.Style.Font.Italic = true;
@@ -344,7 +344,7 @@ namespace TaxPersonnelManagement.Views
 
                         if (!string.IsNullOrEmpty(filterText))
                         {
-                            var filterRange = worksheet.Range("A3:G3");
+                            var filterRange = worksheet.Range("A3:H3");
                             filterRange.Merge();
                             filterRange.Value = filterText;
                             filterRange.Style.Font.Italic = true;
@@ -353,7 +353,7 @@ namespace TaxPersonnelManagement.Views
                         }
 
                         // Headers
-                        string[] headers = { "STT", "Họ và tên", "Bộ phận", "Ngày quyết định", "Thời gian giữ vị trí", "Tổng thời gian công tác trong ngành Thuế", "Thời gian còn lại đến khi nghỉ hưu" };
+                        string[] headers = { "STT", "Họ và tên", "Bộ phận", "Ngày quyết định", "Thời gian giữ vị trí", "Tổng thời gian công tác trong ngành Thuế", "Thời gian còn lại đến khi nghỉ hưu", "Ghi chú" };
                         for (int i = 0; i < headers.Length; i++)
                         {
                             var cell = worksheet.Cell(4, i + 1);
@@ -454,7 +454,27 @@ namespace TaxPersonnelManagement.Views
                             }
                             worksheet.Cell(row, 7).Value = remainingDurationText;
 
-                            for (int col = 1; col <= 7; col++)
+                            // Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng)
+                            string ghiChu = "";
+                            if (item.LeaveHistories != null)
+                            {
+                                var maternityLeave = item.LeaveHistories
+                                    .Where(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản"))
+                                    .OrderByDescending(l => l.StartDate)
+                                    .FirstOrDefault();
+
+                                if (maternityLeave != null)
+                                {
+                                    var endOf36Months = maternityLeave.StartDate.AddMonths(36);
+                                    if (referenceDate < endOf36Months)
+                                    {
+                                        ghiChu = $"Chưa đủ 36 tháng ({DatePickerHelper.FormatDateForDisplay(maternityLeave.StartDate)}-{DatePickerHelper.FormatDateForDisplay(endOf36Months)})";
+                                    }
+                                }
+                            }
+                            worksheet.Cell(row, 8).Value = ghiChu;
+
+                            for (int col = 1; col <= 8; col++)
                                 worksheet.Cell(row, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
 
                             row++;

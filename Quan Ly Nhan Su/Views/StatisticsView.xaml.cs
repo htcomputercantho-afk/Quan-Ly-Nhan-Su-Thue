@@ -44,7 +44,6 @@ namespace TaxPersonnelManagement.Views
 
                 // Bộ lọc Năm (từ năm nhỏ nhất đến năm hiện tại, sắp xếp mới nhất lên đầu)
                 cbYearFilter.Items.Clear();
-                cbYearFilter.Items.Add("Tất cả các năm");
 
                 int currentYear = DateTime.Now.Year;
                 int minYear = 1990;
@@ -108,20 +107,20 @@ namespace TaxPersonnelManagement.Views
             }
 
             // Lọc theo Năm
-            filterYear = 0;
-            yearStr = "Tất cả các năm";
-            if (cbYearFilter.SelectedIndex > 0 && cbYearFilter.SelectedItem is int yr)
+            filterYear = DateTime.Now.Year;
+            if (cbYearFilter.SelectedItem is int yr)
             {
                 filterYear = yr;
-                yearStr = filterYear.ToString();
-                // Dùng biến local vì C# không cho phép capture tham số 'out' trong lambda
-                int localYear = filterYear;
-                var endOfYear = new DateTime(localYear, 12, 31);
-                // Chỉ lấy những nhân sự đã bắt đầu làm việc trong hoặc trước năm đó
-                query = query.Where(p => (p.TaxAuthorityStartDate ?? p.StartDate) <= endOfYear);
-                // Loại trừ nhân sự đã nghỉ hưu trước năm đó
-                query = query.Where(p => !p.RetirementDate.HasValue || p.RetirementDate.Value.Year >= localYear);
             }
+            yearStr = filterYear.ToString();
+
+            // Dùng biến local vì C# không cho phép capture tham số 'out' trong lambda
+            int localYear = filterYear;
+            var endOfYear = new DateTime(localYear, 12, 31);
+            // Chỉ lấy những nhân sự đã bắt đầu làm việc trong hoặc trước năm đó
+            query = query.Where(p => (p.TaxAuthorityStartDate ?? p.StartDate) <= endOfYear);
+            // Loại trừ nhân sự đã nghỉ hưu trước năm đó
+            query = query.Where(p => !p.RetirementDate.HasValue || p.RetirementDate.Value.Year >= localYear);
 
             return query.ToList();
         }
