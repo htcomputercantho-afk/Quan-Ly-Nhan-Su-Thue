@@ -387,12 +387,17 @@ namespace TaxPersonnelManagement.Models
                 {
                     int months = 0;
                     DateTime tempDate = start;
-                    while (tempDate.AddMonths(1) <= end)
+                    DateTime targetDate = end.AddDays(1);
+                    while (tempDate.AddMonths(1) <= targetDate)
                     {
                         months++;
                         tempDate = tempDate.AddMonths(1);
                     }
-                    int days = (end - tempDate).Days + 1; // +1 to make it inclusive
+                    int days = 0;
+                    if (tempDate < targetDate)
+                    {
+                        days = (targetDate - tempDate).Days;
+                    }
 
                     string basic = "";
                     if (months > 0 && days > 0) basic = $"{months} tháng {days} ngày";

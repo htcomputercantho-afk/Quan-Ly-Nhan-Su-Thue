@@ -181,28 +181,60 @@ namespace TaxPersonnelManagement.Views
             try
             {
                 List<string> positions;
-                if (_planningType == "Đảng")
+                using (var db = new AppDbContext())
                 {
-                    positions = new List<string> {
-                        "Bí thư Chi bộ",
-                        "Phó Bí thư Chi bộ",
-                        "Chi ủy viên",
-                        "Bí thư Đảng bộ",
-                        "Phó Bí thư Đảng bộ",
-                        "Ủy viên Ban thường vụ Đảng bộ",
-                        "Ủy viên Ban chấp hành Đảng bộ",
-                        "Bí thư Đảng ủy",
-                        "Phó Bí thư Đảng ủy",
-                        "Ủy viên Ban thường vụ Đảng ủy",
-                        "Ủy viên Ban chấp hành Đảng ủy",
-                        "Tổ trưởng Tổ Đảng",
-                        "Đảng viên"
-                    };
-                    positions = positions.Distinct().ToList();
-                }
-                else
-                {
-                    using (var db = new AppDbContext())
+                    if (_planningType == "Đảng")
+                    {
+                        positions = db.Positions
+                                          .Where(p => p.DepartmentName == "__ĐẢNG__")
+                                          .Select(p => p.Name)
+                                          .Distinct()
+                                          .ToList();
+
+                        if (!positions.Any())
+                        {
+                            positions = new List<string> {
+                                "Bí thư Chi bộ",
+                                "Phó Bí thư Chi bộ",
+                                "Chi ủy viên",
+                                "Bí thư Đảng bộ",
+                                "Phó Bí thư Đảng bộ",
+                                "Ủy viên Ban thường vụ Đảng bộ",
+                                "Ủy viên Ban chấp hành Đảng bộ",
+                                "Bí thư Đảng ủy",
+                                "Phó Bí thư Đảng ủy",
+                                "Ủy viên Ban thường vụ Đảng ủy",
+                                "Ủy viên Ban chấp hành Đảng ủy",
+                                "Tổ trưởng Tổ Đảng",
+                                "Đảng viên"
+                            };
+                        }
+
+                        var partyOrder = new System.Collections.Generic.List<string> {
+                            "Bí thư Đảng ủy",
+                            "Phó Bí thư Đảng ủy",
+                            "Ủy viên Ban thường vụ Đảng ủy",
+                            "Ủy viên Ban chấp hành Đảng ủy",
+                            "Bí thư Đảng bộ",
+                            "Phó Bí thư Đảng bộ",
+                            "Ủy viên Ban thường vụ Đảng bộ",
+                            "Ủy viên Ban chấp hành Đảng bộ",
+                            "Bí thư Chi bộ",
+                            "Phó Bí thư Chi bộ",
+                            "Chi ủy viên",
+                            "Tổ trưởng Tổ Đảng",
+                            "Đảng viên"
+                        };
+
+                        positions = positions.OrderBy(name =>
+                        {
+                            int idx = partyOrder.FindIndex(p => p.Equals(name, System.StringComparison.OrdinalIgnoreCase));
+                            return idx == -1 ? 999 : idx;
+                        })
+                        .ThenBy(name => name)
+                        .ToList();
+                    }
+                    else
                     {
                         var posOrder = new System.Collections.Generic.List<string> {
                             "Chi cục trưởng",
@@ -222,6 +254,7 @@ namespace TaxPersonnelManagement.Views
                         };
 
                         positions = db.Positions
+                                          .Where(p => p.DepartmentName != "__ĐẢNG__")
                                           .Select(p => p.Name)
                                           .Distinct()
                                           .ToList()

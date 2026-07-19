@@ -1,3 +1,10 @@
+## v1.6.0.8 — 2026-07-19
+- [Sửa lỗi] Tối ưu hóa tính thời gian nghỉ thai sản (Tròn 6 tháng):
+    + Cập nhật thuật toán tính toán số tháng và số ngày nghỉ phép/thai sản. Khi khoảng thời gian nghỉ trọn vẹn theo tháng (ví dụ: từ ngày 15/01 đến hết ngày 14/07), hệ thống sẽ hiển thị tròn "6 tháng" thay vì hiển thị "5 tháng 30 ngày" như trước đây.
+- [Sửa lỗi] Lọc danh sách chức danh/chức vụ trong hộp thoại Quy hoạch:
+    + Khắc phục lỗi hiển thị lẫn lộn chức danh Đảng ở tab Quy hoạch Chuyên môn bằng cách lọc loại trừ các chức danh thuộc phòng/ban "__ĐẢNG__" khi hiển thị dropdown.
+    + Đồng bộ danh sách chức danh Đảng: Dropdown chọn chức danh Đảng sẽ tải trực tiếp danh sách từ database (có tên phòng/ban là "__ĐẢNG__") thay vì dùng danh sách tĩnh, giúp hiển thị ngay lập tức các thay đổi khi người dùng bấm dấu cộng (+) để thêm/sửa/xóa chức danh Đảng.
+
 ## v1.6.0.7 — 2026-07-17
 - [Tính năng] Phân tách quản lý và phân loại nhóm chức danh Quy hoạch (Chuyên môn vs Đảng):
     + Mở lại nút thêm/sửa/xóa (+) chức danh quy hoạch bên cạnh ComboBox cho cả hai tab (Chuyên môn và Đảng) trong `PlanningRecordDialog`.
