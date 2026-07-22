@@ -1,3 +1,10 @@
+## v1.6.0.9 — 2026-07-22
+- [Tính năng] Bổ sung bộ chọn mốc năm đánh giá động trong hộp thoại Quy hoạch:
+    + Thêm ComboBox chọn mốc năm đánh giá (Mốc năm) bên cạnh nhãn "Kết quả phân loại công chức 03 năm gần nhất".
+    + Nguồn dữ liệu mốc năm được tải động từ danh sách các năm thực tế đã có kết quả xếp loại trong cơ sở dữ liệu (kèm năm hiện tại, năm tiếp theo, và tự động thêm năm ký quyết định nếu chưa có).
+    + Tự động thay đổi mốc năm đánh giá theo năm ký quyết định (Ngày ký QĐ). Ví dụ: Khi ngày ký quyết định thuộc năm 2025, mốc năm sẽ tự động nhảy về 2025 để hiển thị xếp loại của 3 năm liền kề trước đó là 2022, 2023, 2024.
+    + Cho phép người dùng chủ động chọn lại mốc năm khác từ danh sách để tự động tải lại kết quả xếp loại 3 năm tương ứng từ hồ sơ cán bộ.
+
 ## v1.6.0.8 — 2026-07-19
 - [Sửa lỗi] Tối ưu hóa tính thời gian nghỉ thai sản (Tròn 6 tháng):
     + Cập nhật thuật toán tính toán số tháng và số ngày nghỉ phép/thai sản. Khi khoảng thời gian nghỉ trọn vẹn theo tháng (ví dụ: từ ngày 15/01 đến hết ngày 14/07), hệ thống sẽ hiển thị tròn "6 tháng" thay vì hiển thị "5 tháng 30 ngày" như trước đây.

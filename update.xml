@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <item>
-    <version>1.6.0.8</version>
-    <url>https://github.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/releases/download/v1.6.0.8/QuanLyNhanSu_v1.6.0.8.zip</url>
+    <version>1.6.0.9</version>
+    <url>https://github.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/releases/download/v1.6.0.9/QuanLyNhanSu_v1.6.0.9.zip</url>
     <changelog>https://raw.githubusercontent.com/htcomputercantho-afk/Quan-Ly-Nhan-Su-Thue/main/changelog.txt</changelog>
     <mandatory>true</mandatory>
 </item>

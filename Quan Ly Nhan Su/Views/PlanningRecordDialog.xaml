@@ -315,7 +315,7 @@
                         <!-- Ngày ký -->
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Ngày ký QĐ" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
-                            <DatePicker x:Name="dpDecisionDate" Style="{StaticResource ModernDatePicker}"/>
+                            <DatePicker x:Name="dpDecisionDate" Style="{StaticResource ModernDatePicker}" SelectedDateChanged="dpDecisionDate_SelectedDateChanged"/>
                         </StackPanel>
 
                         <!-- Đơn vị ra QĐ -->
@@ -327,7 +327,17 @@
 
                     <!-- 6. PHÂN LOẠI 3 NĂM GẦN NHẤT -->
                     <StackPanel Margin="0 0 0 15">
-                        <TextBlock Text="Kết quả phân loại công chức 03 năm gần nhất" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
+                        <Grid Margin="0 0 0 5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Kết quả phân loại công chức 03 năm gần nhất" FontWeight="SemiBold" Foreground="#374151" FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="Mốc năm:" FontWeight="SemiBold" Foreground="#4B5563" FontSize="13" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="3" x:Name="cboReferenceYear" Height="30" Padding="5 0" VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White" FontSize="13" SelectionChanged="cboReferenceYear_SelectionChanged"/>
+                        </Grid>
                         <TextBox x:Name="txtEvaluation3Years" Style="{StaticResource ModernTextBox}" Height="80" Padding="10" VerticalContentAlignment="Top"
                                  AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" Background="#F3F4F6"
                                  ToolTip="Trường thông tin chỉ đọc, tự động lấy kết quả xếp loại từ hồ sơ cán bộ."/>

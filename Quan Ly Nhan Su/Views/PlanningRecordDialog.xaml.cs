@@ -16,33 +16,40 @@ namespace TaxPersonnelManagement.Views
         private readonly string _planningType;
         private readonly bool _isEditMode;
         private readonly int _recordId;
+        private bool _isInitializing = false;
 
         // Constructor cho chế độ thêm mới
         public PlanningRecordDialog(string planningType)
         {
+            _isInitializing = true;
             InitializeComponent();
             _planningType = planningType;
             _isEditMode = false;
             txtTitle.Text = $"Thêm Quy hoạch {_planningType}";
             
+            InitializeReferenceYears();
             // Đặt mặc định ngày ký là hôm nay
             dpDecisionDate.SelectedDate = DateTime.Today;
+            cboReferenceYear.SelectedItem = DateTime.Today.Year;
 
             // Load danh sách nhiệm kỳ quy hoạch
             LoadPlanningTerms();
             // Load danh sách chức vụ
             LoadPositions();
+            _isInitializing = false;
         }
 
         // Constructor cho chế độ chỉnh sửa
         public PlanningRecordDialog(PlanningRecord record)
         {
+            _isInitializing = true;
             InitializeComponent();
             _planningType = record.PlanningType;
             _isEditMode = true;
             _recordId = record.Id;
             txtTitle.Text = $"Cập nhật Quy hoạch {_planningType}";
 
+            InitializeReferenceYears();
             // Tải thông tin bản ghi lên giao diện
             _selectedPersonnel = record.Personnel;
             if (_selectedPersonnel != null)
@@ -61,19 +68,26 @@ namespace TaxPersonnelManagement.Views
             
             txtDecisionNumber.Text = record.DecisionNumber;
             dpDecisionDate.SelectedDate = record.DecisionDate;
+            cboReferenceYear.SelectedItem = record.DecisionDate.HasValue ? record.DecisionDate.Value.Year : DateTime.Today.Year;
             txtDecisionUnit.Text = record.DecisionUnit;
+
             if (!string.IsNullOrEmpty(record.Evaluation3Years))
             {
                 txtEvaluation3Years.Text = System.Text.RegularExpressions.Regex.Replace(record.Evaluation3Years, @",\s*(?=\d{4}:)", Environment.NewLine);
             }
             else
             {
-                txtEvaluation3Years.Text = GetEvaluation3YearsText(record.PersonnelId);
+                if (_selectedPersonnel != null)
+                {
+                    int refYear = record.DecisionDate.HasValue ? record.DecisionDate.Value.Year : DateTime.Today.Year;
+                    txtEvaluation3Years.Text = GetEvaluation3YearsText(_selectedPersonnel.Id, refYear);
+                }
             }
             txtNote.Text = record.Note;
 
             // Chế độ chỉnh sửa thì không cho phép thay đổi cán bộ công chức để tránh nhầm lẫn
             btnSelectPersonnel.IsEnabled = false;
+            _isInitializing = false;
         }
 
         private void BindPersonnel(Personnel p)
@@ -85,12 +99,12 @@ namespace TaxPersonnelManagement.Views
             txtPersonnelDepartment.Text = p.Department ?? "Không có bộ phận";
             txtPersonnelPosition.Text = p.Position ?? "Không có chức vụ";
 
-            // Nếu là thêm mới, tự động điền các thông tin trình độ từ Personnel
             if (!_isEditMode)
             {
                 txtTrainingLevel.Text = p.EducationLevel ?? "";
                 txtPoliticalTheoryLevel.Text = p.PoliticalTheoryLevel ?? "";
-                txtEvaluation3Years.Text = GetEvaluation3YearsText(p.Id);
+                int refYear = (cboReferenceYear.SelectedItem as int?) ?? DateTime.Today.Year;
+                txtEvaluation3Years.Text = GetEvaluation3YearsText(p.Id, refYear);
             }
         }
 
@@ -419,14 +433,13 @@ namespace TaxPersonnelManagement.Views
             Close();
         }
 
-        private string GetEvaluation3YearsText(int personnelId)
+        private string GetEvaluation3YearsText(int personnelId, int referenceYear)
         {
             try
             {
-                int currentYear = DateTime.Today.Year;
-                int y1 = currentYear - 3;
-                int y2 = currentYear - 2;
-                int y3 = currentYear - 1;
+                int y1 = referenceYear - 3;
+                int y2 = referenceYear - 2;
+                int y3 = referenceYear - 1;
 
                 using (var db = new AppDbContext())
                 {
@@ -449,6 +462,88 @@ namespace TaxPersonnelManagement.Views
             {
                 System.Diagnostics.Debug.WriteLine($"Lỗi lấy xếp loại 3 năm gần nhất: {ex.Message}");
                 return string.Empty;
+            }
+        }
+
+        private void InitializeReferenceYears()
+        {
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    // Lấy tất cả các năm đã có dữ liệu xếp loại trong DB
+                    var years = db.EvaluationRecords
+                                  .Select(e => e.Year)
+                                  .Distinct()
+                                  .ToList();
+
+                    // Đảm bảo luôn có năm hiện tại và năm tiếp theo
+                    int currentYear = DateTime.Today.Year;
+                    if (!years.Contains(currentYear)) years.Add(currentYear);
+                    if (!years.Contains(currentYear + 1)) years.Add(currentYear + 1);
+
+                    // Nếu có ngày quyết định, thêm năm quyết định
+                    if (dpDecisionDate.SelectedDate.HasValue)
+                    {
+                        int decYear = dpDecisionDate.SelectedDate.Value.Year;
+                        if (!years.Contains(decYear)) years.Add(decYear);
+                    }
+
+                    // Sắp xếp giảm dần để năm mới nhất lên đầu
+                    var sortedYears = years.OrderByDescending(y => y).ToList();
+                    cboReferenceYear.ItemsSource = sortedYears;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Lỗi khởi tạo danh sách năm mốc: {ex.Message}");
+                // Fallback nếu lỗi DB
+                int currentYear = DateTime.Today.Year;
+                var fallbackYears = new List<int>();
+                for (int y = currentYear + 1; y >= currentYear - 10; y--)
+                {
+                    fallbackYears.Add(y);
+                }
+                cboReferenceYear.ItemsSource = fallbackYears;
+            }
+        }
+
+        private void cboReferenceYear_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            if (cboReferenceYear.SelectedItem is int year && _selectedPersonnel != null)
+            {
+                txtEvaluation3Years.Text = GetEvaluation3YearsText(_selectedPersonnel.Id, year);
+            }
+        }
+
+        private void dpDecisionDate_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            if (dpDecisionDate.SelectedDate.HasValue && cboReferenceYear != null)
+            {
+                int year = dpDecisionDate.SelectedDate.Value.Year;
+                if (cboReferenceYear.ItemsSource is List<int> years)
+                {
+                    if (!years.Contains(year))
+                    {
+                        years.Add(year);
+                        var sorted = years.OrderByDescending(y => y).ToList();
+                        cboReferenceYear.ItemsSource = sorted;
+                    }
+                    cboReferenceYear.SelectedItem = year;
+                }
+                else if (cboReferenceYear.ItemsSource is IEnumerable<int> enumYears)
+                {
+                    var yearsList = enumYears.ToList();
+                    if (!yearsList.Contains(year))
+                    {
+                        yearsList.Add(year);
+                        var sorted = yearsList.OrderByDescending(y => y).ToList();
+                        cboReferenceYear.ItemsSource = sorted;
+                    }
+                    cboReferenceYear.SelectedItem = year;
+                }
             }
         }
 
