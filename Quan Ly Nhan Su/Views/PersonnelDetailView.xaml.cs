@@ -82,6 +82,7 @@ namespace TaxPersonnelManagement.Views
 
                 txtRankName.Text = _personnel.RankName;
                 dpStartDate.SelectedDate = _personnel.TaxAuthorityStartDate;
+                SetComboBoxByContent(cboStatus, _personnel.Status ?? "Đang công tác");
 
 
                 // Education
@@ -871,7 +872,7 @@ namespace TaxPersonnelManagement.Views
                         RankName = txtRankName.Text,
                         TaxAuthorityStartDate = dpStartDate.SelectedDate,
                         StartDate = dpStartDate.SelectedDate,
-                        Status = "Đang công tác",
+                        Status = cboStatus.Text,
 
                         EducationLevel = cboEducationLevel.Text,
                         Major = txtMajor.Text,
@@ -990,6 +991,7 @@ namespace TaxPersonnelManagement.Views
                         existingP.RankCode = cboRankCode.Text;
                         existingP.RankName = txtRankName.Text;
                         existingP.TaxAuthorityStartDate = dpStartDate.SelectedDate;
+                        existingP.Status = cboStatus.Text;
 
                         existingP.EducationLevel = cboEducationLevel.Text;
                         existingP.Major = txtMajor.Text;

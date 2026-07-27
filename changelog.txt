@@ -1,3 +1,13 @@
+## v1.6.1.0 — 2026-07-27
+- [Tính năng] Cải tiến xuất file Excel Báo cáo tổng Thu nhập năm:
+    + Bổ sung 3 phần chi tiết bên dưới bảng tổng hợp của mỗi cán bộ (trên từng sheet riêng biệt): Lương, Làm thêm giờ, và Thu nhập khác.
+    + Bảng chi tiết Lương: Thể hiện chi tiết mức lương được nhận của từng tháng trong năm.
+    + Bảng chi tiết Làm thêm giờ và Thu nhập khác: Thể hiện chi tiết số tiền của từng tháng kèm cột Ghi chú tự động trích xuất nội dung khoản tiền (chỉ ra cụ thể đó là khoản tiền gì).
+- [Tính năng] Bổ sung quản lý Trạng thái công tác cho Cán bộ (thay vì xóa hồ sơ):
+    + Bổ sung trường "Trạng thái công tác" (Đang công tác, Luân chuyển / Điều động, Nghỉ việc, Nghỉ hưu) trong hộp thoại Thêm/Sửa hồ sơ công chức.
+    + Bổ sung bộ lọc "Trạng thái công tác" trên màn hình Danh sách Nhân sự chính, mặc định chỉ hiển thị những người "Đang công tác" giúp giao diện gọn gàng nhưng vẫn giữ nguyên dữ liệu gốc để tra cứu khi cần.
+    + Tối ưu hóa luồng khởi tạo giao diện WPF (thêm cờ _isInitializing) giúp tránh lỗi `NullReferenceException` khi load mặc định.
+
 ## v1.6.0.9 — 2026-07-22
 - [Tính năng] Bổ sung bộ chọn mốc năm đánh giá động trong hộp thoại Quy hoạch:
     + Thêm ComboBox chọn mốc năm đánh giá (Mốc năm) bên cạnh nhãn "Kết quả phân loại công chức 03 năm gần nhất".

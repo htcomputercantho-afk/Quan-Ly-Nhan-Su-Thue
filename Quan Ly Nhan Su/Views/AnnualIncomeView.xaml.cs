@@ -599,6 +599,100 @@ namespace TaxPersonnelManagement.Views
                                 worksheet.Columns().AdjustToContents();
                                 worksheet.Column(2).Width = 20; // Fix CCCD column width
 
+                                // HÀM HỖ TRỢ TẠO SHEET CHI TIẾT
+                                void CreateDetailSheet(string sheetName, string incomeType, bool includeNote)
+                                {
+                                    var ws = workbook.Worksheets.Add(sheetName);
+                                    ws.Cell(1, 1).Value = $"CHI TIẾT {sheetName.ToUpper()} NĂM " + selectedYear;
+                                    
+                                    int numCols = includeNote ? 16 : 15; // 1:Name, 2:CCCD, 3..14:Months, 15:Total, 16:Note
+                                    ws.Range(1, 1, 1, numCols).Merge().Style.Font.SetBold().Font.SetFontSize(16).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+
+                                    var hds = new List<string> { "Họ và tên", "CCCD" };
+                                    for (int m = 1; m <= 12; m++) hds.Add($"Tháng {m}");
+                                    hds.Add("Tổng cộng");
+                                    if (includeNote) hds.Add("Ghi chú");
+
+                                    for (int i = 0; i < hds.Count; i++)
+                                    {
+                                        var cell = ws.Cell(3, i + 1);
+                                        cell.Value = hds[i];
+                                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1976D2");
+                                        cell.Style.Font.FontColor = XLColor.White;
+                                        cell.Style.Font.Bold = true;
+                                        cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                        cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                    }
+
+                                    int r = 4;
+                                    foreach (var person in personnelList)
+                                    {
+                                        var pRecords = allRecords.Where(rec => rec.PersonnelId == person.Id && rec.IncomeType == incomeType).ToList();
+                                        
+                                        ws.Cell(r, 1).Value = person.FullName;
+                                        ws.Cell(r, 2).Value = "'" + person.IdentityCardNumber;
+                                        
+                                        decimal total = 0;
+                                        List<string> notes = new List<string>();
+
+                                        for (int m = 1; m <= 12; m++)
+                                        {
+                                            var mRecords = pRecords.Where(rec => rec.Month == m).ToList();
+                                            decimal mAmount = mRecords.Sum(rec => rec.Amount);
+                                            ws.Cell(r, 2 + m).Value = mAmount;
+                                            total += mAmount;
+
+                                            if (includeNote)
+                                            {
+                                                var mNotes = mRecords.Where(rec => !string.IsNullOrWhiteSpace(rec.Note))
+                                                                     .Select(rec => rec.Note!.Trim().Replace("\r", "").Replace("\n", ", "))
+                                                                     .ToList();
+                                                if (mNotes.Any())
+                                                {
+                                                    notes.Add($"T{m}: {string.Join(" | ", mNotes)}");
+                                                }
+                                            }
+                                        }
+
+                                        ws.Cell(r, 15).Value = total;
+                                        if (includeNote && notes.Any())
+                                        {
+                                            ws.Cell(r, 16).Value = string.Join("\n", notes);
+                                        }
+
+                                        // Formatting
+                                        ws.Range(r, 3, r, 15).Style.NumberFormat.Format = "#,##0";
+                                        ws.Range(r, 1, r, numCols).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                        r++;
+                                    }
+
+                                    // Footer: Grand Total
+                                    ws.Cell(r, 1).Value = "TỔNG CỘNG";
+                                    ws.Range(r, 1, r, 2).Merge().Style.Font.Bold = true;
+                                    
+                                    for (int c = 3; c <= 15; c++)
+                                    {
+                                        string colLetter = ((char)('A' + c - 1)).ToString();
+                                        ws.Cell(r, c).FormulaA1 = $"=SUM({colLetter}4:{colLetter}{r - 1})";
+                                    }
+                                    
+                                    ws.Range(r, 1, r, numCols).Style.Font.Bold = true;
+                                    ws.Range(r, 3, r, 15).Style.NumberFormat.Format = "#,##0";
+                                    ws.Range(r, 1, r, numCols).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                                    ws.Columns().AdjustToContents();
+                                    ws.Column(2).Width = 20;
+                                    if (includeNote)
+                                    {
+                                        ws.Column(16).Width = 45;
+                                        ws.Column(16).Style.Alignment.WrapText = true;
+                                    }
+                                }
+
+                                CreateDetailSheet("Lương", "Lương", false);
+                                CreateDetailSheet("Làm thêm giờ", "Làm thêm giờ", true);
+                                CreateDetailSheet("Thu nhập khác", "Thu nhập khác", true);
+
                                 workbook.SaveAs(filePath);
                             }
                         }

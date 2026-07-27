@@ -13,6 +13,7 @@ namespace TaxPersonnelManagement.Views
     public partial class PersonnelListView : UserControl
     {
         private string _currentCardFilter = "All";
+        private bool _isInitializing = true;
 
         // Pagination
         private List<Personnel> _fullFilteredList = new List<Personnel>();
@@ -71,6 +72,7 @@ namespace TaxPersonnelManagement.Views
                     }
                 };
                 this.SizeChanged += (s, e) => { IsCompact = e.NewSize.Width < 1400; ApplyCompactMode(); };
+                _isInitializing = false;
             }
             catch (Exception ex)
             {
@@ -187,6 +189,15 @@ namespace TaxPersonnelManagement.Views
                 if (cbDepartmentFilter.SelectedItem is string dept && dept != "-- Tất cả bộ phận --")
                 {
                     query = query.Where(p => p.Department == dept);
+                }
+
+                if (cbStatusFilter != null && cbStatusFilter.SelectedItem is ComboBoxItem statusItem)
+                {
+                    string status = statusItem.Content?.ToString() ?? "";
+                    if (status != "Tất cả trạng thái")
+                    {
+                        query = query.Where(p => p.Status == status);
+                    }
                 }
 
                 var allPersonnel = query.ToList();
@@ -373,7 +384,17 @@ namespace TaxPersonnelManagement.Views
 
         private void cbDepartmentFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            LoadData(txtSearch.Text);
+            if (_isInitializing) return;
+            LoadData(txtSearch?.Text ?? "");
+        }
+
+        private void cbStatusFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            if (cbStatusFilter != null)
+            {
+                LoadData(txtSearch?.Text ?? "");
+            }
         }
 
         private void UpdateCardVisuals()

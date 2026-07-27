@@ -667,12 +667,23 @@
 
                                         <!-- Date & Status -->
                                         <!-- Date -->
-                                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="5">
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
                                             <TextBlock Text="Thời gian công tác tại Cơ quan Thuế" Style="{StaticResource ModernLabel}"/>
                                                 <DatePicker x:Name="dpStartDate" 
                                                             Style="{StaticResource ModernDatePicker}"
                                                             SelectedDateChanged="OnRetirementDateChanged"
                                                             helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                        </StackPanel>
+                                        
+                                        <!-- Status -->
+                                        <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="15 0 0 0">
+                                            <TextBlock Text="Trạng thái công tác" Style="{StaticResource ModernLabel}"/>
+                                            <ComboBox x:Name="cboStatus" Style="{StaticResource ModernComboBox}">
+                                                <ComboBoxItem Content="Đang công tác"/>
+                                                <ComboBoxItem Content="Luân chuyển / Điều động"/>
+                                                <ComboBoxItem Content="Nghỉ việc"/>
+                                                <ComboBoxItem Content="Nghỉ hưu"/>
+                                            </ComboBox>
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>

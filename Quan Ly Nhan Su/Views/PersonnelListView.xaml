@@ -128,10 +128,10 @@
                 <!-- Dashboard / KPIs -->
                 <WrapPanel x:Name="wpKPIRow" Margin="0 0 0 10">
                     <!-- Filter Section -->
-                    <StackPanel VerticalAlignment="Top" Margin="0 0 20 15">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0 0 20 15">
                         <ComboBox x:Name="cbDepartmentFilter" 
                                   MinWidth="200" MaxWidth="300"
-                                  Height="40"
+                                  Height="40" Margin="0 0 15 0"
                                   materialDesign:HintAssist.Hint="Lọc theo bộ phận"
                                   Style="{DynamicResource MaterialDesignOutlinedComboBox}"
                                   Background="White"
@@ -146,6 +146,30 @@
                                     <Setter Property="MinHeight" Value="35"/>
                                 </Style>
                             </ComboBox.ItemContainerStyle>
+                        </ComboBox>
+
+                        <ComboBox x:Name="cbStatusFilter" 
+                                  MinWidth="180" MaxWidth="250"
+                                  Height="40"
+                                  materialDesign:HintAssist.Hint="Trạng thái công tác"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White"
+                                  VerticalContentAlignment="Center"
+                                  Padding="10 0"
+                                  FontSize="14"
+                                  Foreground="#455A64"
+                                  SelectionChanged="cbStatusFilter_SelectionChanged">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                    <Setter Property="Padding" Value="10"/>
+                                    <Setter Property="MinHeight" Value="35"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                            <ComboBoxItem Content="Tất cả trạng thái"/>
+                            <ComboBoxItem Content="Đang công tác" IsSelected="True"/>
+                            <ComboBoxItem Content="Luân chuyển / Điều động"/>
+                            <ComboBoxItem Content="Nghỉ việc"/>
+                            <ComboBoxItem Content="Nghỉ hưu"/>
                         </ComboBox>
                     </StackPanel>
 
