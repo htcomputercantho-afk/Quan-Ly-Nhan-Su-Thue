@@ -15,17 +15,27 @@ namespace TaxPersonnelManagement.Views
         public string? SelectedPosition { get; private set; }
 
         private readonly bool _isPartyMode;
+        private readonly bool _isPlanningMode;
 
-        public AddPositionDialog(bool isPartyMode = false)
+        public AddPositionDialog(bool isPartyMode = false, bool isPlanningMode = false)
         {
             InitializeComponent();
             _isPartyMode = isPartyMode;
+            _isPlanningMode = isPlanningMode;
+
             if (_isPartyMode)
             {
                 txtTitle.Text = "Quản lý Chức danh Đảng";
                 MaterialDesignThemes.Wpf.HintAssist.SetHint(txtPositionName, "Nhập tên chức danh Đảng mới...");
                 btnAdd.ToolTip = "Thêm chức danh";
             }
+            else if (_isPlanningMode)
+            {
+                txtTitle.Text = "Quản lý Chức danh Quy hoạch";
+                MaterialDesignThemes.Wpf.HintAssist.SetHint(txtPositionName, "Nhập tên chức danh quy hoạch mới...");
+                btnAdd.ToolTip = "Thêm chức danh quy hoạch";
+            }
+
             LoadDepartments();
             LoadPositions();
         }
@@ -66,6 +76,14 @@ namespace TaxPersonnelManagement.Views
             {
                 // Ensure table exists just in case
                 try { context.Database.EnsureCreated(); } catch { }
+
+                // Tự động dọn dẹp bản ghi dữ liệu thử nghiệm "test" trong DB
+                var testPositions = context.Positions.Where(x => x.Name.ToLower() == "test").ToList();
+                if (testPositions.Any())
+                {
+                    context.Positions.RemoveRange(testPositions);
+                    try { context.SaveChanges(); } catch { }
+                }
 
                 List<Position> list;
                 if (_isPartyMode)
@@ -121,15 +139,30 @@ namespace TaxPersonnelManagement.Views
                         "Nhân viên"
                     };
 
-                    list = context.Positions.ToList()
-                                      .Where(x => x.DepartmentName != "__ĐẢNG__" && !string.IsNullOrEmpty(x.Name))
-                                      .OrderBy(x =>
-                                      {
-                                          int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
-                                          return idx == -1 ? 999 : idx;
-                                      })
-                                      .ThenBy(x => x.Name)
-                                      .ToList();
+                    if (_isPlanningMode)
+                    {
+                        list = context.Positions.ToList()
+                                          .Where(x => x.DepartmentName != "__ĐẢNG__" && !string.IsNullOrEmpty(x.Name))
+                                          .OrderBy(x =>
+                                          {
+                                              int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
+                                              return idx == -1 ? 999 : idx;
+                                          })
+                                          .ThenBy(x => x.Name)
+                                          .ToList();
+                    }
+                    else
+                    {
+                        list = context.Positions.ToList()
+                                          .Where(x => x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__" && !string.IsNullOrEmpty(x.Name))
+                                          .OrderBy(x =>
+                                          {
+                                              int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
+                                              return idx == -1 ? 999 : idx;
+                                          })
+                                          .ThenBy(x => x.Name)
+                                          .ToList();
+                    }
                 }
 
                 Positions = new ObservableCollection<Position>(list);
@@ -148,10 +181,20 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            string? selectedDept = _isPartyMode ? "__ĐẢNG__" : cboDepartment.SelectedItem?.ToString();
-            if (selectedDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(selectedDept))
+            string? selectedDept;
+            if (_isPartyMode)
             {
-                selectedDept = null;
+                selectedDept = "__ĐẢNG__";
+            }
+            else if (_isPlanningMode)
+            {
+                var rawDept = cboDepartment.SelectedItem?.ToString();
+                selectedDept = (rawDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(rawDept)) ? "__QUY_HOẠCH__" : rawDept;
+            }
+            else
+            {
+                var rawDept = cboDepartment.SelectedItem?.ToString();
+                selectedDept = (rawDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(rawDept)) ? null : rawDept;
             }
 
             using (var context = new AppDbContext())

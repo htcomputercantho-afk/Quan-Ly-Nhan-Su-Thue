@@ -103,7 +103,9 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    var query = context.Personnel.AsQueryable();
+                    var query = context.Personnel
+                                       .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                                       .AsQueryable();
 
                     if (cbYear.SelectedItem is FilterItem selectedYear && selectedYear.Value > 0)
                     {

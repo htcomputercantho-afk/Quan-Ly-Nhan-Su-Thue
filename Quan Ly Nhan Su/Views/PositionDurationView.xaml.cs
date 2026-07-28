@@ -41,7 +41,10 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    var query = context.Personnel.Include(p => p.LeaveHistories).AsQueryable();
+                    var query = context.Personnel
+                                       .Include(p => p.LeaveHistories)
+                                       .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                                       .AsQueryable();
 
                     var deptOrder = new List<string> {
                         "Ban lãnh đạo",

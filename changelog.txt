@@ -1,3 +1,15 @@
+## v1.6.1.1 — 2026-07-28
+- [Tính năng] Phân tách độc lập Chức danh Quy hoạch và Chức vụ chính:
+    + Bổ sung phân loại `__QUY_HOẠCH__` cho danh mục chức danh mục tiêu quy hoạch; tự động phân loại các chức danh quy hoạch cũ đang có sẵn trong CSDL về đúng nhóm.
+    + Tối ưu bộ lọc Chức vụ trong màn hình Thông tin công tác: Ban lãnh đạo chỉ hiển thị các chức danh lãnh đạo chuẩn; các Tổ/Phòng chuyên môn chỉ hiển thị chức danh cấp tổ/phòng chuẩn. Loại bỏ hoàn toàn sự rò rỉ các chức danh quy hoạch mục tiêu vào menu Chức vụ chính.
+    + Khi mở cửa sổ thêm chức danh từ hộp thoại Quy hoạch, hệ thống ở chế độ "Quản lý Chức danh Quy hoạch" và tự động đánh dấu `__QUY_HOẠCH__`.
+- [Tối ưu] Đồng bộ bộ lọc Trạng thái công tác trên các màn hình chức năng:
+    + Áp dụng tự động lọc chỉ hiển thị nhân sự "Đang công tác" (loại trừ cán bộ luân chuyển / điều động, nghỉ việc, nghỉ hưu) trên 5 màn hình: *Thời gian giữ vị trí công tác*, *Nâng lương*, *Báo cáo tổng Thu nhập*, *Quản lý Nghỉ phép*, và *Thi đua - Đánh giá*.
+- [Sửa lỗi] Tối ưu hóa nhập liệu Bảng kê Thu nhập tháng:
+    + Tự động dọn dẹp và xóa dòng ghi chú (diễn giải khoản thu nhập/lương) khi số tiền của tháng được sửa hoặc xóa về 0 đ.
+    + Tối ưu luồng lưu dữ liệu: chỉ lưu các bản ghi có số tiền thu nhập thực tế > 0 đ vào CSDL, loại bỏ hoàn toàn các bản ghi rỗng/bằng 0 đ.
+- [Dọn dẹp CSDL] Quét và tự động xóa sạch các bản ghi chức vụ thử nghiệm rác (`test`) trực tiếp khỏi cơ sở dữ liệu SQLite; loại bỏ các bộ lọc ẩn cứng để đảm bảo hiển thị minh bạch.
+
 ## v1.6.1.0 — 2026-07-27
 - [Tính năng] Cải tiến xuất file Excel Báo cáo tổng Thu nhập năm:
     + Bổ sung 3 phần chi tiết bên dưới bảng tổng hợp của mỗi cán bộ (trên từng sheet riêng biệt): Lương, Làm thêm giờ, và Thu nhập khác.

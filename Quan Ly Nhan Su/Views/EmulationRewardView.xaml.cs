@@ -41,7 +41,9 @@ namespace TaxPersonnelManagement.Views
                         "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                     };
 
-                    _allPersonnel = db.Personnel.AsEnumerable()
+                    _allPersonnel = db.Personnel
+                                      .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                                      .AsEnumerable()
                                       .OrderBy(p =>
                                       {
                                           string dept = (p.Department ?? "").Trim();

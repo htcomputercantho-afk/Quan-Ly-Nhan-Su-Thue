@@ -183,7 +183,8 @@ namespace TaxPersonnelManagement.Views
                                        .AsQueryable();
 
                     var rawList = query.ToList();
-                    var filtered = rawList.AsEnumerable();
+                    var filtered = rawList.AsEnumerable()
+                                          .Where(e => e.Personnel != null && (string.IsNullOrEmpty(e.Personnel.Status) || e.Personnel.Status == "Đang công tác"));
 
                     if (!string.IsNullOrEmpty(search))
                     {

@@ -288,7 +288,10 @@ namespace TaxPersonnelManagement.Views
                         "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                     };
 
-                    var query = db.Personnel.Include(p => p.LeaveHistories).AsQueryable();
+                    var query = db.Personnel
+                                  .Include(p => p.LeaveHistories)
+                                  .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                                  .AsQueryable();
                     if (!string.IsNullOrEmpty(selectedDept))
                     {
                         query = query.Where(p => p.Department == selectedDept);

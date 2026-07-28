@@ -268,7 +268,7 @@ namespace TaxPersonnelManagement.Views
                         };
 
                         positions = db.Positions
-                                          .Where(p => p.DepartmentName != "__ĐẢNG__")
+                                          .Where(p => p.DepartmentName != "__ĐẢNG__" && !string.IsNullOrWhiteSpace(p.Name))
                                           .Select(p => p.Name)
                                           .Distinct()
                                           .ToList()
@@ -306,7 +306,7 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                var dialog = new AddPositionDialog(_planningType == "Đảng");
+                var dialog = new AddPositionDialog(_planningType == "Đảng", _planningType != "Đảng");
                 dialog.Owner = this;
                 if (dialog.ShowDialog() == true)
                 {
@@ -334,7 +334,7 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
-                var dialog = new AddPositionDialog(_planningType == "Đảng");
+                var dialog = new AddPositionDialog(_planningType == "Đảng", _planningType != "Đảng");
                 dialog.Owner = this;
                 if (dialog.ShowDialog() == true)
                 {

@@ -69,7 +69,9 @@ namespace TaxPersonnelManagement.Views
                     "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                 };
 
-                _allPersonnel = db.Personnel.AsEnumerable()
+                _allPersonnel = db.Personnel
+                                  .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                                  .AsEnumerable()
                                   .OrderBy(p =>
                                   {
                                       string dept = (p.Department ?? "").Trim();
@@ -199,7 +201,12 @@ namespace TaxPersonnelManagement.Views
 
                         if (targetRow != null)
                         {
-                            if (record.IncomeType == "Thu nhập khác" || record.IncomeType == "Làm thêm giờ")
+                            if (record.Amount <= 0)
+                            {
+                                targetRow.SetAmount(record.Month, 0);
+                                targetRow.SetNote(record.Month, "");
+                            }
+                            else if (record.IncomeType == "Thu nhập khác" || record.IncomeType == "Làm thêm giờ")
                             {
                                 string formattedNote = record.Note ?? "";
                                 if (!string.IsNullOrWhiteSpace(formattedNote) && 
@@ -335,48 +342,70 @@ namespace TaxPersonnelManagement.Views
 
                         for (int m = 1; m <= 12; m++)
                         {
-                            if (salaryRow.GetAmount(m) > 0 || !string.IsNullOrWhiteSpace(salaryRow.GetNote(m)))
-                                db.IncomeRecords.Add(new IncomeRecord { PersonnelId = selectedPerson.Id, Year = selectedYear, Month = m, IncomeType = "Lương", Amount = salaryRow.GetAmount(m), Note = salaryRow.GetNote(m) });
-
-                            if (overtimeRow.GetAmount(m) > 0 || !string.IsNullOrWhiteSpace(overtimeRow.GetNote(m)))
+                            // 1. Lương
+                            decimal salaryAmt = salaryRow.GetAmount(m);
+                            if (salaryAmt > 0)
                             {
-                                string rawNote = overtimeRow.GetNote(m);
-                                string stdNote = AnnualIncomeRowViewModel.StandardizeOtherIncomeNote(rawNote);
-                                decimal recalculatedAmount = AnnualIncomeRowViewModel.ParseAmountFromNote(rawNote);
-                                
+                                db.IncomeRecords.Add(new IncomeRecord { 
+                                    PersonnelId = selectedPerson.Id, 
+                                    Year = selectedYear, 
+                                    Month = m, 
+                                    IncomeType = "Lương", 
+                                    Amount = salaryAmt, 
+                                    Note = salaryRow.GetNote(m) 
+                                });
+                            }
+                            else
+                            {
+                                salaryRow.SetNote(m, "");
+                            }
+
+                            // 2. Làm thêm giờ
+                            string rawNoteOt = overtimeRow.GetNote(m);
+                            decimal recalculatedOt = AnnualIncomeRowViewModel.ParseAmountFromNote(rawNoteOt);
+                            if (recalculatedOt > 0)
+                            {
+                                string stdNote = AnnualIncomeRowViewModel.StandardizeOtherIncomeNote(rawNoteOt);
                                 db.IncomeRecords.Add(new IncomeRecord 
                                 { 
                                     PersonnelId = selectedPerson.Id, 
                                     Year = selectedYear, 
                                     Month = m, 
                                     IncomeType = "Làm thêm giờ", 
-                                    Amount = recalculatedAmount, 
+                                    Amount = recalculatedOt, 
                                     Note = stdNote 
                                 });
-                                
                                 overtimeRow.SetNote(m, stdNote);
-                                overtimeRow.SetAmount(m, recalculatedAmount);
+                                overtimeRow.SetAmount(m, recalculatedOt);
+                            }
+                            else
+                            {
+                                overtimeRow.SetNote(m, "");
+                                overtimeRow.SetAmount(m, 0);
                             }
 
-                            if (otherRow.GetAmount(m) > 0 || !string.IsNullOrWhiteSpace(otherRow.GetNote(m)))
+                            // 3. Thu nhập khác
+                            string rawNoteOther = otherRow.GetNote(m);
+                            decimal recalculatedOther = AnnualIncomeRowViewModel.ParseAmountFromNote(rawNoteOther);
+                            if (recalculatedOther > 0)
                             {
-                                string rawNote = otherRow.GetNote(m);
-                                string stdNote = AnnualIncomeRowViewModel.StandardizeOtherIncomeNote(rawNote);
-                                decimal recalculatedAmount = AnnualIncomeRowViewModel.ParseAmountFromNote(rawNote);
-                                
+                                string stdNote = AnnualIncomeRowViewModel.StandardizeOtherIncomeNote(rawNoteOther);
                                 db.IncomeRecords.Add(new IncomeRecord 
                                 { 
                                     PersonnelId = selectedPerson.Id, 
                                     Year = selectedYear, 
                                     Month = m, 
                                     IncomeType = "Thu nhập khác", 
-                                    Amount = recalculatedAmount, 
+                                    Amount = recalculatedOther, 
                                     Note = stdNote 
                                 });
-                                
-                                // Sync back to the row model to update UI immediately
                                 otherRow.SetNote(m, stdNote);
-                                otherRow.SetAmount(m, recalculatedAmount);
+                                otherRow.SetAmount(m, recalculatedOther);
+                            }
+                            else
+                            {
+                                otherRow.SetNote(m, "");
+                                otherRow.SetAmount(m, 0);
                             }
                         }
 
@@ -794,75 +823,67 @@ namespace TaxPersonnelManagement.Views
                     {
                         standardizedLines.Add($"{amount:N0} đ");
                     }
-                    else
-                    {
-                        standardizedLines.Add(line.Trim());
-                    }
                 }
                 else
                 {
                     string amtStr = line.Substring(0, dashIndex);
                     string reasonStr = line.Substring(dashIndex + 1).Trim();
                     string cleanAmt = Regex.Replace(amtStr, @"[^0-9]", "");
-                    if (decimal.TryParse(cleanAmt, out decimal amount))
+                    if (decimal.TryParse(cleanAmt, out decimal amount) && amount > 0)
                     {
                         standardizedLines.Add($"{amount:N0} đ - {reasonStr}");
-                    }
-                    else
-                    {
-                        standardizedLines.Add(line.Trim());
                     }
                 }
             }
             return string.Join("\n", standardizedLines);
         }
 
-        private decimal _m1Amount; public decimal M1Amount { get => _m1Amount; set { _m1Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m1Note = ""; public string M1Note { get => _m1Note; set { _m1Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M1Amount = ParseAmountFromNote(value); OnPropertyChanged("M1Breakdown"); } } }
+        private decimal _m1Amount; public decimal M1Amount { get => _m1Amount; set { _m1Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m1Note) || ParseAmountFromNote(_m1Note) == 0)) { _m1Note = ""; OnPropertyChanged("M1Note"); OnPropertyChanged("M1Breakdown"); } } }
+        private string _m1Note = ""; public string M1Note { get => _m1Note; set { _m1Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m1Amount = ParseAmountFromNote(value); if (_m1Amount == 0) { _m1Note = ""; OnPropertyChanged("M1Note"); } OnPropertyChanged("M1Breakdown"); } } }
         public List<IncomeBreakdownItem> M1Breakdown => ParseBreakdown(M1Note);
 
-        private decimal _m2Amount; public decimal M2Amount { get => _m2Amount; set { _m2Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m2Note = ""; public string M2Note { get => _m2Note; set { _m2Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M2Amount = ParseAmountFromNote(value); OnPropertyChanged("M2Breakdown"); } } }
+        private decimal _m2Amount; public decimal M2Amount { get => _m2Amount; set { _m2Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m2Note) || ParseAmountFromNote(_m2Note) == 0)) { _m2Note = ""; OnPropertyChanged("M2Note"); OnPropertyChanged("M2Breakdown"); } } }
+        private string _m2Note = ""; public string M2Note { get => _m2Note; set { _m2Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m2Amount = ParseAmountFromNote(value); if (_m2Amount == 0) { _m2Note = ""; OnPropertyChanged("M2Note"); } OnPropertyChanged("M2Breakdown"); } } }
         public List<IncomeBreakdownItem> M2Breakdown => ParseBreakdown(M2Note);
 
-        private decimal _m3Amount; public decimal M3Amount { get => _m3Amount; set { _m3Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m3Note = ""; public string M3Note { get => _m3Note; set { _m3Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M3Amount = ParseAmountFromNote(value); OnPropertyChanged("M3Breakdown"); } } }
+        private decimal _m3Amount; public decimal M3Amount { get => _m3Amount; set { _m3Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m3Note) || ParseAmountFromNote(_m3Note) == 0)) { _m3Note = ""; OnPropertyChanged("M3Note"); OnPropertyChanged("M3Breakdown"); } } }
+        private string _m3Note = ""; public string M3Note { get => _m3Note; set { _m3Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m3Amount = ParseAmountFromNote(value); if (_m3Amount == 0) { _m3Note = ""; OnPropertyChanged("M3Note"); } OnPropertyChanged("M3Breakdown"); } } }
         public List<IncomeBreakdownItem> M3Breakdown => ParseBreakdown(M3Note);
 
-        private decimal _m4Amount; public decimal M4Amount { get => _m4Amount; set { _m4Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m4Note = ""; public string M4Note { get => _m4Note; set { _m4Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M4Amount = ParseAmountFromNote(value); OnPropertyChanged("M4Breakdown"); } } }
+        private decimal _m4Amount; public decimal M4Amount { get => _m4Amount; set { _m4Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m4Note) || ParseAmountFromNote(_m4Note) == 0)) { _m4Note = ""; OnPropertyChanged("M4Note"); OnPropertyChanged("M4Breakdown"); } } }
+        private string _m4Note = ""; public string M4Note { get => _m4Note; set { _m4Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m4Amount = ParseAmountFromNote(value); if (_m4Amount == 0) { _m4Note = ""; OnPropertyChanged("M4Note"); } OnPropertyChanged("M4Breakdown"); } } }
         public List<IncomeBreakdownItem> M4Breakdown => ParseBreakdown(M4Note);
 
-        private decimal _m5Amount; public decimal M5Amount { get => _m5Amount; set { _m5Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m5Note = ""; public string M5Note { get => _m5Note; set { _m5Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M5Amount = ParseAmountFromNote(value); OnPropertyChanged("M5Breakdown"); } } }
+        private decimal _m5Amount; public decimal M5Amount { get => _m5Amount; set { _m5Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m5Note) || ParseAmountFromNote(_m5Note) == 0)) { _m5Note = ""; OnPropertyChanged("M5Note"); OnPropertyChanged("M5Breakdown"); } } }
+        private string _m5Note = ""; public string M5Note { get => _m5Note; set { _m5Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m5Amount = ParseAmountFromNote(value); if (_m5Amount == 0) { _m5Note = ""; OnPropertyChanged("M5Note"); } OnPropertyChanged("M5Breakdown"); } } }
         public List<IncomeBreakdownItem> M5Breakdown => ParseBreakdown(M5Note);
 
-        private decimal _m6Amount; public decimal M6Amount { get => _m6Amount; set { _m6Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m6Note = ""; public string M6Note { get => _m6Note; set { _m6Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M6Amount = ParseAmountFromNote(value); OnPropertyChanged("M6Breakdown"); } } }
+        private decimal _m6Amount; public decimal M6Amount { get => _m6Amount; set { _m6Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m6Note) || ParseAmountFromNote(_m6Note) == 0)) { _m6Note = ""; OnPropertyChanged("M6Note"); OnPropertyChanged("M6Breakdown"); } } }
+        private string _m6Note = ""; public string M6Note { get => _m6Note; set { _m6Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m6Amount = ParseAmountFromNote(value); if (_m6Amount == 0) { _m6Note = ""; OnPropertyChanged("M6Note"); } OnPropertyChanged("M6Breakdown"); } } }
         public List<IncomeBreakdownItem> M6Breakdown => ParseBreakdown(M6Note);
 
-        private decimal _m7Amount; public decimal M7Amount { get => _m7Amount; set { _m7Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m7Note = ""; public string M7Note { get => _m7Note; set { _m7Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M7Amount = ParseAmountFromNote(value); OnPropertyChanged("M7Breakdown"); } } }
+        private decimal _m7Amount; public decimal M7Amount { get => _m7Amount; set { _m7Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m7Note) || ParseAmountFromNote(_m7Note) == 0)) { _m7Note = ""; OnPropertyChanged("M7Note"); OnPropertyChanged("M7Breakdown"); } } }
+        private string _m7Note = ""; public string M7Note { get => _m7Note; set { _m7Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m7Amount = ParseAmountFromNote(value); if (_m7Amount == 0) { _m7Note = ""; OnPropertyChanged("M7Note"); } OnPropertyChanged("M7Breakdown"); } } }
         public List<IncomeBreakdownItem> M7Breakdown => ParseBreakdown(M7Note);
 
-        private decimal _m8Amount; public decimal M8Amount { get => _m8Amount; set { _m8Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m8Note = ""; public string M8Note { get => _m8Note; set { _m8Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M8Amount = ParseAmountFromNote(value); OnPropertyChanged("M8Breakdown"); } } }
+        private decimal _m8Amount; public decimal M8Amount { get => _m8Amount; set { _m8Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m8Note) || ParseAmountFromNote(_m8Note) == 0)) { _m8Note = ""; OnPropertyChanged("M8Note"); OnPropertyChanged("M8Breakdown"); } } }
+        private string _m8Note = ""; public string M8Note { get => _m8Note; set { _m8Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m8Amount = ParseAmountFromNote(value); if (_m8Amount == 0) { _m8Note = ""; OnPropertyChanged("M8Note"); } OnPropertyChanged("M8Breakdown"); } } }
         public List<IncomeBreakdownItem> M8Breakdown => ParseBreakdown(M8Note);
 
-        private decimal _m9Amount; public decimal M9Amount { get => _m9Amount; set { _m9Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m9Note = ""; public string M9Note { get => _m9Note; set { _m9Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M9Amount = ParseAmountFromNote(value); OnPropertyChanged("M9Breakdown"); } } }
+        private decimal _m9Amount; public decimal M9Amount { get => _m9Amount; set { _m9Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m9Note) || ParseAmountFromNote(_m9Note) == 0)) { _m9Note = ""; OnPropertyChanged("M9Note"); OnPropertyChanged("M9Breakdown"); } } }
+        private string _m9Note = ""; public string M9Note { get => _m9Note; set { _m9Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m9Amount = ParseAmountFromNote(value); if (_m9Amount == 0) { _m9Note = ""; OnPropertyChanged("M9Note"); } OnPropertyChanged("M9Breakdown"); } } }
         public List<IncomeBreakdownItem> M9Breakdown => ParseBreakdown(M9Note);
 
-        private decimal _m10Amount; public decimal M10Amount { get => _m10Amount; set { _m10Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m10Note = ""; public string M10Note { get => _m10Note; set { _m10Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M10Amount = ParseAmountFromNote(value); OnPropertyChanged("M10Breakdown"); } } }
+        private decimal _m10Amount; public decimal M10Amount { get => _m10Amount; set { _m10Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m10Note) || ParseAmountFromNote(_m10Note) == 0)) { _m10Note = ""; OnPropertyChanged("M10Note"); OnPropertyChanged("M10Breakdown"); } } }
+        private string _m10Note = ""; public string M10Note { get => _m10Note; set { _m10Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m10Amount = ParseAmountFromNote(value); if (_m10Amount == 0) { _m10Note = ""; OnPropertyChanged("M10Note"); } OnPropertyChanged("M10Breakdown"); } } }
         public List<IncomeBreakdownItem> M10Breakdown => ParseBreakdown(M10Note);
 
-        private decimal _m11Amount; public decimal M11Amount { get => _m11Amount; set { _m11Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m11Note = ""; public string M11Note { get => _m11Note; set { _m11Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M11Amount = ParseAmountFromNote(value); OnPropertyChanged("M11Breakdown"); } } }
+        private decimal _m11Amount; public decimal M11Amount { get => _m11Amount; set { _m11Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m11Note) || ParseAmountFromNote(_m11Note) == 0)) { _m11Note = ""; OnPropertyChanged("M11Note"); OnPropertyChanged("M11Breakdown"); } } }
+        private string _m11Note = ""; public string M11Note { get => _m11Note; set { _m11Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m11Amount = ParseAmountFromNote(value); if (_m11Amount == 0) { _m11Note = ""; OnPropertyChanged("M11Note"); } OnPropertyChanged("M11Breakdown"); } } }
         public List<IncomeBreakdownItem> M11Breakdown => ParseBreakdown(M11Note);
 
-        private decimal _m12Amount; public decimal M12Amount { get => _m12Amount; set { _m12Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); } }
-        private string _m12Note = ""; public string M12Note { get => _m12Note; set { _m12Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { M12Amount = ParseAmountFromNote(value); OnPropertyChanged("M12Breakdown"); } } }
+        private decimal _m12Amount; public decimal M12Amount { get => _m12Amount; set { _m12Amount = value; OnPropertyChanged(); OnPropertyChanged("Total"); if (value == 0 && (IncomeType == "Lương" || string.IsNullOrWhiteSpace(_m12Note) || ParseAmountFromNote(_m12Note) == 0)) { _m12Note = ""; OnPropertyChanged("M12Note"); OnPropertyChanged("M12Breakdown"); } } }
+        private string _m12Note = ""; public string M12Note { get => _m12Note; set { _m12Note = value; OnPropertyChanged(); if (IncomeType == "Thu nhập khác" || IncomeType == "Làm thêm giờ") { _m12Amount = ParseAmountFromNote(value); if (_m12Amount == 0) { _m12Note = ""; OnPropertyChanged("M12Note"); } OnPropertyChanged("M12Breakdown"); } } }
         public List<IncomeBreakdownItem> M12Breakdown => ParseBreakdown(M12Note);
 
         public decimal Total =>
