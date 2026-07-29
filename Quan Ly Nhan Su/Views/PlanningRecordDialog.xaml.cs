@@ -205,25 +205,6 @@ namespace TaxPersonnelManagement.Views
                                           .Distinct()
                                           .ToList();
 
-                        if (!positions.Any())
-                        {
-                            positions = new List<string> {
-                                "Bí thư Chi bộ",
-                                "Phó Bí thư Chi bộ",
-                                "Chi ủy viên",
-                                "Bí thư Đảng bộ",
-                                "Phó Bí thư Đảng bộ",
-                                "Ủy viên Ban thường vụ Đảng bộ",
-                                "Ủy viên Ban chấp hành Đảng bộ",
-                                "Bí thư Đảng ủy",
-                                "Phó Bí thư Đảng ủy",
-                                "Ủy viên Ban thường vụ Đảng ủy",
-                                "Ủy viên Ban chấp hành Đảng ủy",
-                                "Tổ trưởng Tổ Đảng",
-                                "Đảng viên"
-                            };
-                        }
-
                         var partyOrder = new System.Collections.Generic.List<string> {
                             "Bí thư Đảng ủy",
                             "Phó Bí thư Đảng ủy",
@@ -267,8 +248,9 @@ namespace TaxPersonnelManagement.Views
                             "Nhân viên"
                         };
 
-                        positions = db.Positions
-                                          .Where(p => p.DepartmentName != "__ĐẢNG__" && !string.IsNullOrWhiteSpace(p.Name))
+                        // Đọc từ bảng PlanningPositions (chức danh quy hoạch tách biệt)
+                        positions = db.PlanningPositions
+                                          .Where(p => !string.IsNullOrWhiteSpace(p.Name))
                                           .Select(p => p.Name)
                                           .Distinct()
                                           .ToList()

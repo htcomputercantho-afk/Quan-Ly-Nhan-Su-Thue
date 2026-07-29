@@ -380,6 +380,15 @@ namespace TaxPersonnelManagement.Views
                     if (string.IsNullOrWhiteSpace(pos.Name))
                         return false;
 
+                    // Ưu tiên kiểm tra GroupType (Ban lãnh đạo / Các tổ / null = tất cả)
+                    if (!string.IsNullOrEmpty(pos.GroupType))
+                    {
+                        if (isLeadershipDept)
+                            return pos.GroupType.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase);
+                        else
+                            return pos.GroupType.Equals("Các tổ", StringComparison.OrdinalIgnoreCase);
+                    }
+
                     if (!string.IsNullOrEmpty(pos.DepartmentName))
                     {
                         if (pos.DepartmentName.Equals(selectedDept, StringComparison.OrdinalIgnoreCase))
@@ -392,15 +401,13 @@ namespace TaxPersonnelManagement.Views
                         return false;
                     }
 
-                    // Fallback cho chức vụ có DepartmentName rỗng/null:
+                    // Fallback cho chức vụ có GroupType và DepartmentName rỗng/null:
                     if (isLeadershipDept)
                     {
-                        // Ban lãnh đạo chỉ hiển thị các chức danh lãnh đạo chuẩn
                         return leadershipPositions.Any(lp => lp.Equals(pos.Name, StringComparison.OrdinalIgnoreCase));
                     }
                     else
                     {
-                        // Các tổ/phòng chỉ hiển thị chức danh cấp tổ/phòng chuẩn
                         return unitPositions.Any(up => up.Equals(pos.Name, StringComparison.OrdinalIgnoreCase));
                     }
                 })
@@ -410,12 +417,6 @@ namespace TaxPersonnelManagement.Views
             }
 
             var currentPos = cboPosition.SelectedItem?.ToString() ?? (_personnel?.Position);
-
-            // Giữ lại chức vụ hiện tại của nhân sự nếu chưa có trong danh sách lọc
-            if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !filtered.Any(f => f.Equals(_personnel.Position, StringComparison.OrdinalIgnoreCase)))
-            {
-                filtered.Add(_personnel.Position);
-            }
 
             filtered.Insert(0, "");
             cboPosition.ItemsSource = filtered;
@@ -480,36 +481,28 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                // Tự động phân loại các chức danh quy hoạch cũ đang có DepartmentName rỗng/null về "__QUY_HOẠCH__"
-                var standardSet = new HashSet<string>(posOrder, StringComparer.OrdinalIgnoreCase);
-                standardSet.Add("Cục trưởng");
-                standardSet.Add("Phó Cục trưởng");
+                var leadershipNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
+                    "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
+                    "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
+                    "Cục trưởng", "Phó Cục trưởng"
+                };
+                var unitNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
+                    "Đội trưởng", "Trưởng phòng", "Phó Đội trưởng", "Phó Trưởng phòng",
+                    "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên"
+                };
 
-                var nullDeptPositions = context.Positions
-                    .Where(p => (p.DepartmentName == null || p.DepartmentName == "") && p.DepartmentName != "__ĐẢNG__" && p.DepartmentName != "__QUY_HOẠCH__")
-                    .ToList();
-
-                bool hasUpdate = false;
-                foreach (var p in nullDeptPositions)
+                var unclassified = context.Positions.Where(p => p.DepartmentName != "__ĐẢNG__" && string.IsNullOrEmpty(p.GroupType)).ToList();
+                if (unclassified.Any())
                 {
-                    if (!standardSet.Contains(p.Name))
+                    foreach (var p in unclassified)
                     {
-                        p.DepartmentName = "__QUY_HOẠCH__";
-                        hasUpdate = true;
+                        if (leadershipNames.Contains(p.Name)) p.GroupType = "Ban lãnh đạo";
+                        else if (unitNames.Contains(p.Name)) p.GroupType = "Các tổ";
                     }
-                }
-                if (hasUpdate)
-                {
                     try { context.SaveChanges(); } catch { }
                 }
 
                 var dbPos = context.Positions.ToList();
-
-                // Thêm chức vụ hiện tại của nhân sự đang xem nếu chưa có trong danh mục chính
-                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Position) && !dbPos.Any(p => p.Name.Equals(_personnel.Position, StringComparison.OrdinalIgnoreCase)))
-                {
-                    dbPos.Add(new Position { Name = _personnel.Position });
-                }
 
                 _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x.Name) && x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__")
                                   .GroupBy(x => x.Name.ToLower())

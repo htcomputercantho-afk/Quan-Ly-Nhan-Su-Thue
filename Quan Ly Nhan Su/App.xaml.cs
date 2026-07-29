@@ -129,6 +129,14 @@ namespace TaxPersonnelManagement
                             Name TEXT NOT NULL
                         );");
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN DepartmentName TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN GroupType TEXT"); } catch { }
+
+                    // Manual Migration for PlanningPositions table
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS PlanningPositions (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Name TEXT NOT NULL
+                        );");
 
                     // Manual Migration for Ranks table
                     context.Database.ExecuteSqlRaw(@"

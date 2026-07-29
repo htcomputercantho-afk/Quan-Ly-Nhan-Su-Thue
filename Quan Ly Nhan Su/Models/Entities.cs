@@ -230,10 +230,36 @@ namespace TaxPersonnelManagement.Models
         public int Id { get; set; }
         [Required]
         public string Name { get; set; } = string.Empty; // Tên chức vụ
-        public string? DepartmentName { get; set; } // Bộ phận trực thuộc (nullable)
+        public string? DepartmentName { get; set; }       // Bộ phận cụ thể (nullable, dùng cho Đảng)
+
+        /// <summary>
+        /// Nhóm bộ phận áp dụng cho chức vụ này.
+        /// null  = áp dụng cho tất cả bộ phận
+        /// "Ban lãnh đạo" = chỉ hiện khi bộ phận là Ban lãnh đạo
+        /// "Các tổ"       = chỉ hiện khi bộ phận là các Tổ/Phòng chuyên môn
+        /// "__ĐẢNG__"     = chức danh Đảng (không dùng nhóm này)
+        /// </summary>
+        public string? GroupType { get; set; }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string DepartmentDisplayName => string.IsNullOrEmpty(DepartmentName) ? "Tất cả bộ phận" : DepartmentName;
+        public string GroupTypeDisplay => GroupType switch
+        {
+            "Ban lãnh đạo" => "Ban lãnh đạo",
+            "Các tổ"       => "Các tổ",
+            _              => "Tất cả"
+        };
+    }
+
+    /// <summary>
+    /// Bảng danh mục Chức danh Quy hoạch — hoàn toàn tách biệt với bảng Chức vụ công tác.
+    /// Dùng cho màn hình Quy hoạch cán bộ.
+    /// </summary>
+    public class PlanningPosition
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty; // Tên chức danh quy hoạch
     }
 
     /// <summary>

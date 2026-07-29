@@ -35,6 +35,10 @@ namespace TaxPersonnelManagement.Views
                 MaterialDesignThemes.Wpf.HintAssist.SetHint(txtPositionName, "Nhập tên chức danh quy hoạch mới...");
                 btnAdd.ToolTip = "Thêm chức danh quy hoạch";
             }
+            else
+            {
+                pnlGroupType.Visibility = Visibility.Visible;
+            }
 
             LoadDepartments();
             LoadPositions();
@@ -70,14 +74,14 @@ namespace TaxPersonnelManagement.Views
             cboDepartment.ItemsSource = deptList;
             cboDepartment.SelectedIndex = 0;
         }
+
         private void LoadPositions()
         {
             using (var context = new AppDbContext())
             {
-                // Ensure table exists just in case
                 try { context.Database.EnsureCreated(); } catch { }
 
-                // Tự động dọn dẹp bản ghi dữ liệu thử nghiệm "test" trong DB
+                // 1. Tự động dọn dẹp các bản ghi "test"
                 var testPositions = context.Positions.Where(x => x.Name.ToLower() == "test").ToList();
                 if (testPositions.Any())
                 {
@@ -85,84 +89,74 @@ namespace TaxPersonnelManagement.Views
                     try { context.SaveChanges(); } catch { }
                 }
 
+                // 2. Migration một lần: Chuyển các chức danh quy hoạch cũ (__QUY_HOẠCH__) sang bảng PlanningPositions
+                var oldPlanningPositions = context.Positions.Where(p => p.DepartmentName == "__QUY_HOẠCH__").ToList();
+                if (oldPlanningPositions.Any())
+                {
+                    foreach (var oldP in oldPlanningPositions)
+                    {
+                        if (!context.PlanningPositions.Any(x => x.Name.ToLower() == oldP.Name.ToLower()))
+                        {
+                            context.PlanningPositions.Add(new PlanningPosition { Name = oldP.Name });
+                        }
+                    }
+                    context.Positions.RemoveRange(oldPlanningPositions);
+                    try { context.SaveChanges(); } catch { }
+                }
+
+                // 3. Migration một lần: Gán GroupType mặc định cho các chức vụ cũ nếu GroupType đang null
+                var leadershipNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
+                    "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
+                    "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
+                    "Cục trưởng", "Phó Cục trưởng"
+                };
+                var unitNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
+                    "Đội trưởng", "Trưởng phòng", "Phó Đội trưởng", "Phó Trưởng phòng",
+                    "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên"
+                };
+
+                var unclassified = context.Positions.Where(p => p.DepartmentName != "__ĐẢNG__" && string.IsNullOrEmpty(p.GroupType)).ToList();
+                if (unclassified.Any())
+                {
+                    foreach (var p in unclassified)
+                    {
+                        if (leadershipNames.Contains(p.Name)) p.GroupType = "Ban lãnh đạo";
+                        else if (unitNames.Contains(p.Name)) p.GroupType = "Các tổ";
+                    }
+                    try { context.SaveChanges(); } catch { }
+                }
+
                 List<Position> list;
                 if (_isPartyMode)
                 {
-                    // Check if there are any Party positions, if not, seed defaults
-                    bool hasPartyPos = context.Positions.Any(x => x.DepartmentName == "__ĐẢNG__");
-                    if (!hasPartyPos)
-                    {
-                        var defaultPartyPositions = new List<string> {
-                            "Bí thư Chi bộ",
-                            "Phó Bí thư Chi bộ",
-                            "Chi ủy viên",
-                            "Bí thư Đảng bộ",
-                            "Phó Bí thư Đảng bộ",
-                            "Ủy viên Ban thường vụ Đảng bộ",
-                            "Ủy viên Ban chấp hành Đảng bộ",
-                            "Bí thư Đảng ủy",
-                            "Phó Bí thư Đảng ủy",
-                            "Ủy viên Ban thường vụ Đảng ủy",
-                            "Ủy viên Ban chấp hành Đảng ủy",
-                            "Tổ trưởng Tổ Đảng",
-                            "Đảng viên"
-                        };
-                        foreach (var name in defaultPartyPositions.Distinct())
-                        {
-                            context.Positions.Add(new Position { Name = name, DepartmentName = "__ĐẢNG__" });
-                        }
-                        context.SaveChanges();
-                    }
-
                     list = context.Positions
                                   .Where(x => x.DepartmentName == "__ĐẢNG__")
-                                  .ToList()
                                   .OrderBy(x => x.Name)
                                   .ToList();
                 }
+                else if (_isPlanningMode)
+                {
+                    var dbPlanning = context.PlanningPositions.OrderBy(x => x.Name).ToList();
+                    list = dbPlanning.Select(p => new Position { Id = p.Id, Name = p.Name, DepartmentName = "__QUY_HOẠCH__" }).ToList();
+                }
                 else
                 {
-                    var posOrder = new System.Collections.Generic.List<string> {
-                        "Chi cục trưởng",
-                        "Quyền Chi cục trưởng",
-                        "Phó Chi cục trưởng",
-                        "Trưởng Thuế cơ sở",
-                        "Quyền Trưởng Thuế cơ sở",
-                        "Phó Trưởng Thuế cơ sở",
-                        "Đội trưởng",
-                        "Trưởng phòng",
-                        "Phó Đội trưởng",
-                        "Phó Trưởng phòng",
-                        "Tổ trưởng",
-                        "Phó Tổ trưởng",
-                        "Công chức",
-                        "Nhân viên"
+                    var posOrder = new List<string> {
+                        "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
+                        "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
+                        "Đội trưởng", "Trưởng phòng", "Phó Đội trưởng", "Phó Trưởng phòng",
+                        "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên"
                     };
 
-                    if (_isPlanningMode)
-                    {
-                        list = context.Positions.ToList()
-                                          .Where(x => x.DepartmentName != "__ĐẢNG__" && !string.IsNullOrEmpty(x.Name))
-                                          .OrderBy(x =>
-                                          {
-                                              int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
-                                              return idx == -1 ? 999 : idx;
-                                          })
-                                          .ThenBy(x => x.Name)
-                                          .ToList();
-                    }
-                    else
-                    {
-                        list = context.Positions.ToList()
-                                          .Where(x => x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__" && !string.IsNullOrEmpty(x.Name))
-                                          .OrderBy(x =>
-                                          {
-                                              int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
-                                              return idx == -1 ? 999 : idx;
-                                          })
-                                          .ThenBy(x => x.Name)
-                                          .ToList();
-                    }
+                    list = context.Positions.ToList()
+                                      .Where(x => x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__" && !string.IsNullOrEmpty(x.Name))
+                                      .OrderBy(x =>
+                                      {
+                                          int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
+                                          return idx == -1 ? 999 : idx;
+                                      })
+                                      .ThenBy(x => x.Name)
+                                      .ToList();
                 }
 
                 Positions = new ObservableCollection<Position>(list);
@@ -181,59 +175,76 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            string? selectedDept;
-            if (_isPartyMode)
+            string? selectedGroup = null;
+            if (!_isPartyMode && !_isPlanningMode)
             {
-                selectedDept = "__ĐẢNG__";
-            }
-            else if (_isPlanningMode)
-            {
-                var rawDept = cboDepartment.SelectedItem?.ToString();
-                selectedDept = (rawDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(rawDept)) ? "__QUY_HOẠCH__" : rawDept;
-            }
-            else
-            {
-                var rawDept = cboDepartment.SelectedItem?.ToString();
-                selectedDept = (rawDept == "-- Tất cả bộ phận --" || string.IsNullOrEmpty(rawDept)) ? null : rawDept;
+                if (rdoGroupLeadership.IsChecked == true) selectedGroup = "Ban lãnh đạo";
+                else if (rdoGroupUnits.IsChecked == true) selectedGroup = "Các tổ";
             }
 
             using (var context = new AppDbContext())
             {
-                if (_editingPosition == null)
+                if (_isPlanningMode)
                 {
-                    bool exists = context.Positions.AsEnumerable().Any(d => 
-                        d.Name.Equals(newName, System.StringComparison.OrdinalIgnoreCase) && 
-                        (d.DepartmentName ?? "").Equals(selectedDept ?? "", System.StringComparison.OrdinalIgnoreCase));
-                    if (exists)
+                    if (_editingPosition == null)
                     {
-                        new WarningWindow(_isPartyMode ? "Chức danh này đã tồn tại!" : "Chức vụ này thuộc bộ phận đã chọn đã tồn tại!", "Thông báo").ShowDialog();
-                        return;
+                        bool exists = context.PlanningPositions.Any(d => d.Name.Equals(newName, System.StringComparison.OrdinalIgnoreCase));
+                        if (exists)
+                        {
+                            new WarningWindow("Chức danh quy hoạch này đã tồn tại!", "Thông báo").ShowDialog();
+                            return;
+                        }
+                        context.PlanningPositions.Add(new PlanningPosition { Name = newName });
                     }
-
-                    var newPos = new Position { Name = newName, DepartmentName = selectedDept };
-                    context.Positions.Add(newPos);
+                    else
+                    {
+                        var item = context.PlanningPositions.Find(_editingPosition.Id);
+                        if (item != null) item.Name = newName;
+                        _editingPosition = null;
+                    }
                 }
                 else
                 {
-                    var p = context.Positions.Find(_editingPosition.Id);
-                    if (p != null)
+                    string? selectedDept = _isPartyMode ? "__ĐẢNG__" : null;
+
+                    if (_editingPosition == null)
                     {
-                        p.Name = newName;
-                        p.DepartmentName = selectedDept;
+                        bool exists = context.Positions.AsEnumerable().Any(d => 
+                            d.Name.Equals(newName, System.StringComparison.OrdinalIgnoreCase) && 
+                            (d.DepartmentName ?? "").Equals(selectedDept ?? "", System.StringComparison.OrdinalIgnoreCase));
+                        if (exists)
+                        {
+                            new WarningWindow(_isPartyMode ? "Chức danh này đã tồn tại!" : "Chức vụ này đã tồn tại!", "Thông báo").ShowDialog();
+                            return;
+                        }
+
+                        var newPos = new Position { Name = newName, DepartmentName = selectedDept, GroupType = selectedGroup };
+                        context.Positions.Add(newPos);
                     }
-                    _editingPosition = null;
+                    else
+                    {
+                        var p = context.Positions.Find(_editingPosition.Id);
+                        if (p != null)
+                        {
+                            p.Name = newName;
+                            p.DepartmentName = selectedDept;
+                            p.GroupType = selectedGroup;
+                        }
+                        _editingPosition = null;
+                    }
                 }
+
                 context.SaveChanges();
             }
 
             txtPositionName.Clear();
-            cboDepartment.SelectedIndex = 0;
+            rdoGroupAll.IsChecked = true;
             txtPositionName.Focus();
 
             // Reset button visual
             btnAdd.Background = (System.Windows.Media.Brush)Application.Current.Resources["PrimaryHueMidBrush"];
             btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.Plus, Width = 24, Height = 24 };
-            btnAdd.ToolTip = "Thêm chức vụ";
+            btnAdd.ToolTip = _isPlanningMode ? "Thêm chức danh quy hoạch" : "Thêm chức vụ";
 
             LoadPositions();
         }
@@ -246,32 +257,9 @@ namespace TaxPersonnelManagement.Views
                 txtPositionName.Text = pos.Name;
                 txtPositionName.Focus();
 
-                if (string.IsNullOrEmpty(pos.DepartmentName))
-                {
-                    cboDepartment.SelectedIndex = 0;
-                }
-                else
-                {
-                    bool found = false;
-                    foreach (var item in cboDepartment.Items)
-                    {
-                        if (item?.ToString()?.Equals(pos.DepartmentName, System.StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            cboDepartment.SelectedItem = item;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found)
-                    {
-                        if (cboDepartment.ItemsSource is List<string> deptsList)
-                        {
-                            var newList = new List<string>(deptsList) { pos.DepartmentName };
-                            cboDepartment.ItemsSource = newList;
-                            cboDepartment.SelectedItem = pos.DepartmentName;
-                        }
-                    }
-                }
+                if (pos.GroupType == "Ban lãnh đạo") rdoGroupLeadership.IsChecked = true;
+                else if (pos.GroupType == "Các tổ") rdoGroupUnits.IsChecked = true;
+                else rdoGroupAll.IsChecked = true;
 
                 // Change button to indicate Update
                 btnAdd.Content = new MaterialDesignThemes.Wpf.PackIcon { Kind = MaterialDesignThemes.Wpf.PackIconKind.ContentSave, Width = 24, Height = 24 };
@@ -284,17 +272,30 @@ namespace TaxPersonnelManagement.Views
         {
             if (sender is Button btn && btn.Tag is Position pos)
             {
-                var msg = _isPartyMode ? $"Bạn có chắc muốn xóa chức danh '{pos.Name}'?" : $"Bạn có chắc muốn xóa chức vụ '{pos.Name}'?";
+                var msg = _isPartyMode ? $"Bạn có chắc muốn xóa chức danh '{pos.Name}'?" : 
+                          (_isPlanningMode ? $"Bạn có chắc muốn xóa chức danh quy hoạch '{pos.Name}'?" : $"Bạn có chắc muốn xóa chức vụ '{pos.Name}'?");
                 var confirm = new ConfirmWindow(msg, "Xác nhận xóa");
                 if (confirm.ShowDialog() == true)
                 {
                     using (var context = new AppDbContext())
                     {
-                        var p = context.Positions.Find(pos.Id);
-                        if (p != null)
+                        if (_isPlanningMode)
                         {
-                            context.Positions.Remove(p);
-                            context.SaveChanges();
+                            var item = context.PlanningPositions.Find(pos.Id);
+                            if (item != null)
+                            {
+                                context.PlanningPositions.Remove(item);
+                                context.SaveChanges();
+                            }
+                        }
+                        else
+                        {
+                            var p = context.Positions.Find(pos.Id);
+                            if (p != null)
+                            {
+                                context.Positions.Remove(p);
+                                context.SaveChanges();
+                            }
                         }
                     }
                     LoadPositions();

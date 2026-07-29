@@ -252,26 +252,10 @@
                         <!-- Chức danh chuyển tiếp quy hoạch -->
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Chức danh chuyển tiếp" FontWeight="SemiBold" Foreground="#374151" Margin="0 0 0 5" FontSize="14"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="8"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <ComboBox x:Name="cboPlannedTransitionPosition" Grid.Column="0" Height="40" Padding="10 0" 
-                                          VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White"
-                                          materialDesign:HintAssist.Hint="Chọn chức danh..." IsEditable="True">
-                                </ComboBox>
-                                
-                                <Button Grid.Column="2" x:Name="btnAddPlannedTransitionPosition" Click="btnAddPlannedTransitionPosition_Click"
-                                        Style="{DynamicResource MaterialDesignRaisedButton}"
-                                        Background="{DynamicResource PrimaryHueMidBrush}"
-                                        BorderThickness="0" Width="40" Height="40" Padding="0"
-                                        ToolTip="Quản lý chức danh" Cursor="Hand">
-                                    <materialDesign:PackIcon Kind="Plus" Width="20" Height="20" Foreground="White"/>
-                                </Button>
-                            </Grid>
+                            <ComboBox x:Name="cboPlannedTransitionPosition" Height="40" Padding="10 0" 
+                                      VerticalContentAlignment="Center" BorderThickness="1" BorderBrush="#D1D5DB" Background="White"
+                                      materialDesign:HintAssist.Hint="Chọn chức danh..." IsEditable="True">
+                            </ComboBox>
                         </StackPanel>
                     </Grid>
 

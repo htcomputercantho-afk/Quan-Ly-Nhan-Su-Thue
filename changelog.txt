@@ -1,3 +1,17 @@
+## v1.6.1.2 — 2026-07-29
+- [Tính năng & Kiến trúc] Phân tách cơ sở dữ liệu Chức vụ và Chức danh Quy hoạch:
+    + Tạo bảng cơ sở dữ liệu SQLite độc lập `PlanningPositions` (`PlanningPosition` entity) chuyên quản lý các Chức danh Quy hoạch cán bộ.
+    + Bổ sung trường `GroupType` vào bảng `Positions` phân loại rõ nhóm áp dụng: *Ban lãnh đạo*, *Các tổ*, hoặc *Tất cả*.
+- [Giao diện & UX] Nâng cấp toàn diện giao diện cửa sổ Quản lý Chức vụ (`AddPositionDialog`):
+    + Mở rộng kích thước cửa sổ lên `600x620px` thoáng đãng.
+    + Thiết kế lại bộ chọn nhóm bộ phận áp dụng theo phong cách Segmented Choice Cards/Pills với Icon trực quan (*Tất cả*, *Ban lãnh đạo*, *Các tổ / Phòng*) và hiệu ứng mờ shadow hiện đại.
+    + Thêm nhãn Badge Tag hiển thị rõ nhóm bộ phận của từng chức vụ trong danh sách.
+    + Tối ưu giao diện Quy hoạch cán bộ: Loại bỏ nút `+` dư thừa cạnh ô Chức danh chuyển tiếp, dùng chung 1 nút quản lý duy nhất.
+- [Sửa lỗi & Tối ưu] Tự động cập nhật CSDL và lọc danh sách minh bạch:
+    + Tự động chạy lệnh SQL Migration (`ALTER TABLE Positions ADD COLUMN GroupType TEXT` và `CREATE TABLE IF NOT EXISTS PlanningPositions`) trong `App.xaml.cs` khi khởi chạy app.
+    + Khắc phục lỗi hiển thị lẫn lộn chức danh (loại bỏ logic ép chèn chức vụ đã xóa vào dropdown).
+    + Loại bỏ cơ chế tự động nạp lại danh sách mặc định khi danh sách bị xóa rỗng, đảm bảo thao tác xóa của người dùng được lưu vết chính xác.
+
 ## v1.6.1.1 — 2026-07-28
 - [Tính năng] Phân tách độc lập Chức danh Quy hoạch và Chức vụ chính:
     + Bổ sung phân loại `__QUY_HOẠCH__` cho danh mục chức danh mục tiêu quy hoạch; tự động phân loại các chức danh quy hoạch cũ đang có sẵn trong CSDL về đúng nhóm.
