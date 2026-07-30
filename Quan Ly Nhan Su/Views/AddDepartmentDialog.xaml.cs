@@ -42,11 +42,8 @@ namespace TaxPersonnelManagement.Views
                 try { context.Database.EnsureCreated(); } catch { }
 
                 var list = context.Departments.ToList()
-                                  .OrderBy(x =>
-                                  {
-                                      int idx = deptOrder.FindIndex(d => d.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
-                                      return idx == -1 ? 999 : idx;
-                                  })
+                                  .OrderBy(x => DepartmentSorter.GetSortKey(x.Name).Order)
+                                  .ThenBy(x => DepartmentSorter.GetSortKey(x.Name).Number)
                                   .ThenBy(x => x.Name)
                                   .ToList();
 

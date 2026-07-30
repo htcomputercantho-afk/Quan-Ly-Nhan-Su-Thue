@@ -44,6 +44,49 @@ namespace TaxPersonnelManagement
             };
         }
 
+        private bool _isClosingHandled = false;
+
+        /// <summary>
+        /// Bắt sự kiện người dùng bấm nút [X] đóng ứng dụng.
+        /// Nếu đang kết nối Google Drive, hiển thị cửa sổ thông báo đang đồng bộ trước khi đóng hẳn.
+        /// </summary>
+        protected override async void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!_isClosingHandled && App.DriveSync.HasSavedToken())
+            {
+                e.Cancel = true; // Tạm dừng đóng ứng dụng để chạy đồng bộ
+                _isClosingHandled = true;
+
+                var syncDialog = new SyncOnCloseWindow();
+                syncDialog.Show();
+
+                try
+                {
+                    // Đảm bảo DriveService đã nạp token
+                    if (!App.DriveSync.IsConnected)
+                    {
+                        await App.DriveSync.TryLoadSavedTokenAsync();
+                    }
+
+                    if (App.DriveSync.IsConnected)
+                    {
+                        // Chạy PushAsync lên Google Drive (tối đa 10 giây)
+                        var pushTask = App.DriveSync.PushAsync();
+                        await System.Threading.Tasks.Task.WhenAny(pushTask, System.Threading.Tasks.Task.Delay(10000));
+                    }
+                }
+                catch { }
+                finally
+                {
+                    syncDialog.Close();
+                    this.Close(); // Tiếp tục đóng ứng dụng
+                }
+                return;
+            }
+
+            base.OnClosing(e);
+        }
+
         private void SetVersionInfo()
         {
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;

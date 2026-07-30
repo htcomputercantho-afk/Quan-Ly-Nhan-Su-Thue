@@ -1,3 +1,17 @@
+## v1.6.2.0 — 2026-07-30
+- [Tính năng & Kiến trúc] Tích hợp đồng bộ cơ sở dữ liệu lên Google Drive (Auto-Sync & Thủ công):
+    + Tự động đồng bộ CSDL SQLite (`tax_personnel.db`) lên Google Drive khi người dùng đóng ứng dụng hoặc đăng xuất.
+    + Thư mục riêng chuyên biệt `Sao Lưu - Quản Lý Nhân Sự Thuế` trên Google Drive giúp quản lý ngăn nắp, tránh xóa nhầm.
+    + Cấu hình OAuth 2.0 chuẩn với phạm vi `drive.file` giúp ứng dụng vận hành lâu dài, an toàn và dễ dàng xác minh.
+    + Tùy chọn đồng bộ thủ công ("Đẩy lên" và "Tải về") linh hoạt trong màn hình Sao lưu & Phục hồi.
+    + Tự động sao lưu bản CSDL cục bộ dự phòng (`.before_sync.bak`) trước khi tải và ghi đè CSDL mới từ Google Drive.
+- [Giao diện & UX] Nâng cấp toàn diện các hộp thoại thông báo đồng bộ:
+    + Cửa sổ thông báo tiến trình đóng app (`SyncOnCloseWindow`) hiệu ứng đám mây xoay mượt mà, trực quan.
+    + Chuyển đổi toàn bộ thông báo lỗi, cảnh báo và thành công sang giao diện `WarningWindow` và `SuccessWindow` chuẩn Material Design cao cấp (bo góc, hiệu ứng mờ shadow), loại bỏ hoàn toàn MessageBox cũ của Windows.
+    + Kiểm tra sự tồn tại của bản sao lưu trên Drive trước khi tải về, đưa ra thông báo hướng dẫn chính xác cho người dùng.
+- [Sửa lỗi & Tối ưu] Tối ưu hóa thứ tự sắp xếp danh mục Tổ / Phòng chuyên môn:
+    + Tự động sắp xếp các Tổ / Phòng theo đúng thứ tự ưu tiên nghiệp vụ (*Tổ Tổng hợp - Kế hoạch - Dự toán*, *Tổ Nghiệp vụ Quản lý thuế*, *Tổ Đội Thuế*, ...) chuẩn quy định.
+
 ## v1.6.1.2 — 2026-07-29
 - [Tính năng & Kiến trúc] Phân tách cơ sở dữ liệu Chức vụ và Chức danh Quy hoạch:
     + Tạo bảng cơ sở dữ liệu SQLite độc lập `PlanningPositions` (`PlanningPosition` entity) chuyên quản lý các Chức danh Quy hoạch cán bộ.

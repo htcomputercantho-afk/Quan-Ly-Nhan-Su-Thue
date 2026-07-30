@@ -236,7 +236,7 @@ namespace TaxPersonnelManagement.Models
         /// Nhóm bộ phận áp dụng cho chức vụ này.
         /// null  = áp dụng cho tất cả bộ phận
         /// "Ban lãnh đạo" = chỉ hiện khi bộ phận là Ban lãnh đạo
-        /// "Các tổ"       = chỉ hiện khi bộ phận là các Tổ/Phòng chuyên môn
+        /// "Các Tổ"       = chỉ hiện khi bộ phận là các Tổ/Phòng chuyên môn
         /// "__ĐẢNG__"     = chức danh Đảng (không dùng nhóm này)
         /// </summary>
         public string? GroupType { get; set; }
@@ -245,9 +245,42 @@ namespace TaxPersonnelManagement.Models
         public string GroupTypeDisplay => GroupType switch
         {
             "Ban lãnh đạo" => "Ban lãnh đạo",
-            "Các tổ"       => "Các tổ",
+            "Các Tổ"       => "Các Tổ",
             _              => "Tất cả"
         };
+    }
+
+    public static class DepartmentSorter
+    {
+        public static (int Order, int Number, string Name) GetSortKey(string? deptName)
+        {
+            if (string.IsNullOrWhiteSpace(deptName))
+                return (999, 0, "");
+
+            string name = deptName.Trim();
+
+            if (name.Equals("Ban lãnh đạo", System.StringComparison.OrdinalIgnoreCase) || 
+                name.Contains("lãnh đạo", System.StringComparison.OrdinalIgnoreCase))
+                return (0, 0, name);
+
+            int number = 0;
+            var match = System.Text.RegularExpressions.Regex.Match(name, @"\b(số\s*)?(\d+)\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success && int.TryParse(match.Groups[2].Value, out int num))
+            {
+                number = num;
+            }
+
+            int categoryOrder = 100;
+            if (name.Contains("Hành chính", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 10;
+            else if (name.Contains("Kiểm tra", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 20;
+            else if (name.Contains("Nghiệp vụ", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 30;
+            else if (name.Contains("thu khác", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 40;
+            else if (name.Contains("hộ kinh doanh", System.StringComparison.OrdinalIgnoreCase) || 
+                     name.Contains("cá nhân", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 50;
+            else if (name.Contains("doanh nghiệp", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 60;
+
+            return (categoryOrder, number, name);
+        }
     }
 
     /// <summary>

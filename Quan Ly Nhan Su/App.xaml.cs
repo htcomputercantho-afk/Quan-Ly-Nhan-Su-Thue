@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Globalization;
 using TaxPersonnelManagement.Models;
+using TaxPersonnelManagement.Services;
 
 
 
@@ -18,6 +19,11 @@ namespace TaxPersonnelManagement
     public partial class App : Application
     {
         public static Models.User? CurrentUser { get; set; }
+
+        /// <summary>
+        /// Instance dùng chung cho toàn app – BackupRestoreView có thể dùng lại instance này.
+        /// </summary>
+        public static GoogleDriveSyncService DriveSync { get; } = new GoogleDriveSyncService();
 
         public App()
         {
@@ -42,6 +48,9 @@ namespace TaxPersonnelManagement
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            // Tự động tải token Google Drive đã lưu khi mở app
+            _ = DriveSync.TryLoadSavedTokenAsync();
+
             // Cấu hình Tự động cập nhật (Auto-Update)
             // Đăng ký sự kiện để tự thiết kế giao diện thông báo
             AutoUpdater.CheckForUpdateEvent += (args) =>
@@ -857,8 +866,34 @@ namespace TaxPersonnelManagement
             DateTime date2 = lunar.ToDateTime(year - 1, lMonth, lDay, 0, 0, 0, 0);
             return date2;
         }
+
+        /// <summary>
+        /// Tự động đẩy CSDL lên Google Drive khi ứng dụng đóng (nếu đã kết nối).
+        /// Chạy đồng bộ với timeout 10 giây để không delay quá lâu khi tắt app.
+        /// </summary>
+        protected override void OnExit(ExitEventArgs e)
+        {
+            try
+            {
+                if (DriveSync.IsConnected)
+                {
+                    DebugLog("Auto-pushing CSDL to Google Drive on exit...");
+                    // Timeout 10 giây
+                    var task = DriveSync.PushAsync();
+                    task.Wait(TimeSpan.FromSeconds(10));
+                    DebugLog(task.IsCompletedSuccessfully && task.Result
+                        ? "Auto-push to Drive: SUCCESS"
+                        : "Auto-push to Drive: FAILED or TIMEOUT");
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLog($"Auto-push on exit error: {ex.Message}");
+            }
+            finally
+            {
+                base.OnExit(e);
+            }
+        }
     }
 }
-
-
-

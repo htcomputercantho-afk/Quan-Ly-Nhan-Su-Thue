@@ -317,11 +317,8 @@ namespace TaxPersonnelManagement.Views
 
                 var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x))
                                       .Distinct()
-                                      .OrderBy(x =>
-                                      {
-                                          int idx = deptOrder.FindIndex(d => d.Equals(x, StringComparison.OrdinalIgnoreCase));
-                                          return idx == -1 ? 999 : idx;
-                                      })
+                                      .OrderBy(x => DepartmentSorter.GetSortKey(x).Order)
+                                      .ThenBy(x => DepartmentSorter.GetSortKey(x).Number)
                                       .ThenBy(x => x)
                                       .ToList();
                 allDepts.Insert(0, "");

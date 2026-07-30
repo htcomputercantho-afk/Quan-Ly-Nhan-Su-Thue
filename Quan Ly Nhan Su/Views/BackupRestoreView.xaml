@@ -30,9 +30,11 @@
             <!-- Cards Container -->
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" MinWidth="350"/>
-                    <ColumnDefinition Width="30"/>
-                    <ColumnDefinition Width="*" MinWidth="350"/>
+                    <ColumnDefinition Width="*" MinWidth="300"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*" MinWidth="300"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*" MinWidth="300"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Backup Card -->
@@ -181,6 +183,113 @@
                                     </StackPanel>
                                 </Button>
                             </Grid>
+                        </StackPanel>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Google Drive Sync Card -->
+                <materialDesign:Card Grid.Column="4" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Padding="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Card Header -->
+                        <Border Grid.Row="0" CornerRadius="12 12 0 0" Padding="25 20">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#1565C0" Offset="0.0"/>
+                                    <GradientStop Color="#42A5F5" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="GoogleDrive" Width="28" Height="28" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
+                                <TextBlock Text="GOOGLE DRIVE" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Card Body -->
+                        <StackPanel Grid.Row="1" Margin="25">
+                            <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#546E7A" Margin="0 0 0 15">
+                                Đồng bộ CSDL lên <Bold>Google Drive</Bold> để làm việc liền mạch trên nhiều máy tính mà không cần chép file thủ công.
+                            </TextBlock>
+
+                            <!-- Trạng thái kết nối -->
+                            <Border x:Name="borderDriveStatus" Background="#ECEFF1" CornerRadius="8" Padding="15" Margin="0 0 0 15">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                                        <Ellipse x:Name="ellipseStatus" Width="12" Height="12" Fill="#9E9E9E" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                        <TextBlock x:Name="txtDriveStatus" Text="Chưa kết nối" FontWeight="SemiBold" FontSize="14" Foreground="#546E7A" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="txtDriveEmail" Text="" FontSize="13" Foreground="#78909C" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock x:Name="txtLastSync" Text="" FontSize="12" Foreground="#9E9E9E" Margin="0 4 0 0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Nút Kết nối / Ngắt kết nối -->
+                            <Button x:Name="btnDriveConnect" Click="btnDriveConnect_Click"
+                                    Height="45" FontSize="15" FontWeight="Bold" Margin="0 0 0 10"
+                                    Background="#1565C0" Foreground="White" BorderThickness="0"
+                                    Style="{DynamicResource MaterialDesignRaisedButton}"
+                                    materialDesign:ButtonAssist.CornerRadius="10"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon x:Name="iconDriveConnect" Kind="LinkVariant" Width="22" Height="22" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="txtDriveConnect" Text="Kết nối Google Drive" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Nút Đồng bộ thủ công -->
+                            <Grid Margin="0 0 0 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Button x:Name="btnDrivePush" Click="btnDrivePush_Click"
+                                        Grid.Column="0" Height="42" FontSize="13" FontWeight="Bold"
+                                        Background="#2E7D32" Foreground="White" BorderThickness="0"
+                                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                                        materialDesign:ButtonAssist.CornerRadius="10"
+                                        IsEnabled="False" ToolTip="Upload CSDL lên Drive">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CloudUpload" Width="20" Height="20" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Đẩy lên" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="btnDrivePull" Click="btnDrivePull_Click"
+                                        Grid.Column="2" Height="42" FontSize="13" FontWeight="Bold"
+                                        Background="#E65100" Foreground="White" BorderThickness="0"
+                                        Style="{DynamicResource MaterialDesignRaisedButton}"
+                                        materialDesign:ButtonAssist.CornerRadius="10"
+                                        IsEnabled="False" ToolTip="Tải CSDL từ Drive về">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="CloudDownload" Width="20" Height="20" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Tải về" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+
+                            <!-- Spinner khi đang sync -->
+                            <StackPanel x:Name="panelDriveLoading" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 12 0 0" Visibility="Collapsed">
+                                <materialDesign:PackIcon Kind="Loading" Width="20" Height="20" Foreground="#1565C0" VerticalAlignment="Center" Margin="0 0 8 0"
+                                    RenderTransformOrigin="0.5,0.5">
+                                    <materialDesign:PackIcon.RenderTransform>
+                                        <RotateTransform/>
+                                    </materialDesign:PackIcon.RenderTransform>
+                                    <materialDesign:PackIcon.Triggers>
+                                        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(RotateTransform.Angle)" From="0" To="360" Duration="0:0:1"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </materialDesign:PackIcon.Triggers>
+                                </materialDesign:PackIcon>
+                                <TextBlock x:Name="txtDriveLoading" Text="Đang đồng bộ..." FontSize="13" Foreground="#1565C0" VerticalAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </materialDesign:Card>

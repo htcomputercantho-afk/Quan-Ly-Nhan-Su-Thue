@@ -16,6 +16,7 @@ namespace TaxPersonnelManagement.Views
 
         private readonly bool _isPartyMode;
         private readonly bool _isPlanningMode;
+        private bool _isInitializing = true;
 
         public AddPositionDialog(bool isPartyMode = false, bool isPlanningMode = false)
         {
@@ -42,6 +43,7 @@ namespace TaxPersonnelManagement.Views
 
             LoadDepartments();
             LoadPositions();
+            _isInitializing = false;
         }
 
         private void LoadDepartments()
@@ -144,24 +146,47 @@ namespace TaxPersonnelManagement.Views
                     var posOrder = new List<string> {
                         "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
                         "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
+                        "Cục trưởng", "Phó Cục trưởng",
                         "Đội trưởng", "Trưởng phòng", "Phó Đội trưởng", "Phó Trưởng phòng",
                         "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên"
                     };
 
-                    list = context.Positions.ToList()
-                                      .Where(x => x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__" && !string.IsNullOrEmpty(x.Name))
-                                      .OrderBy(x =>
+                    var rawList = context.Positions.ToList()
+                                      .Where(x => x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__" && !string.IsNullOrEmpty(x.Name));
+
+                    if (rdoGroupLeadership != null && rdoGroupLeadership.IsChecked == true)
+                    {
+                        rawList = rawList.Where(x => x.GroupType == "Ban lãnh đạo");
+                    }
+                    else if (rdoGroupUnits != null && rdoGroupUnits.IsChecked == true)
+                    {
+                        rawList = rawList.Where(x => x.GroupType == "Các Tổ" || x.GroupType == "Các tổ");
+                    }
+
+                    list = rawList.OrderBy(x =>
+                                      {
+                                          if (x.GroupType == "Ban lãnh đạo") return 0;
+                                          if (x.GroupType == "Các Tổ" || x.GroupType == "Các tổ") return 1;
+                                          return 2;
+                                      })
+                                  .ThenBy(x =>
                                       {
                                           int idx = posOrder.FindIndex(p => p.Equals(x.Name, System.StringComparison.OrdinalIgnoreCase));
                                           return idx == -1 ? 999 : idx;
                                       })
-                                      .ThenBy(x => x.Name)
-                                      .ToList();
+                                  .ThenBy(x => x.Name)
+                                  .ToList();
                 }
 
                 Positions = new ObservableCollection<Position>(list);
                 lstPositions.ItemsSource = Positions;
             }
+        }
+
+        private void rdoGroup_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializing) return;
+            LoadPositions();
         }
 
         private Position? _editingPosition = null;
@@ -179,7 +204,7 @@ namespace TaxPersonnelManagement.Views
             if (!_isPartyMode && !_isPlanningMode)
             {
                 if (rdoGroupLeadership.IsChecked == true) selectedGroup = "Ban lãnh đạo";
-                else if (rdoGroupUnits.IsChecked == true) selectedGroup = "Các tổ";
+                else if (rdoGroupUnits.IsChecked == true) selectedGroup = "Các Tổ";
             }
 
             using (var context = new AppDbContext())
@@ -188,7 +213,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     if (_editingPosition == null)
                     {
-                        bool exists = context.PlanningPositions.Any(d => d.Name.Equals(newName, System.StringComparison.OrdinalIgnoreCase));
+                        bool exists = context.PlanningPositions.AsEnumerable().Any(d => d.Name.Equals(newName, System.StringComparison.OrdinalIgnoreCase));
                         if (exists)
                         {
                             new WarningWindow("Chức danh quy hoạch này đã tồn tại!", "Thông báo").ShowDialog();
@@ -258,7 +283,7 @@ namespace TaxPersonnelManagement.Views
                 txtPositionName.Focus();
 
                 if (pos.GroupType == "Ban lãnh đạo") rdoGroupLeadership.IsChecked = true;
-                else if (pos.GroupType == "Các tổ") rdoGroupUnits.IsChecked = true;
+                else if (pos.GroupType == "Các Tổ" || pos.GroupType == "Các tổ") rdoGroupUnits.IsChecked = true;
                 else rdoGroupAll.IsChecked = true;
 
                 // Change button to indicate Update

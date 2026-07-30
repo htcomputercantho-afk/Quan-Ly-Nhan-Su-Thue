@@ -190,24 +190,24 @@
                     <StackPanel>
                         <TextBlock Text="Áp dụng cho bộ phận:" FontSize="12" FontWeight="SemiBold" Foreground="#475569" Margin="4 0 0 8"/>
                         <UniformGrid Columns="3">
-                            <RadioButton x:Name="rdoGroupAll" GroupName="GroupType" IsChecked="True" Style="{StaticResource SegmentedRadioButton}">
+                            <RadioButton x:Name="rdoGroupAll" GroupName="GroupType" IsChecked="True" Style="{StaticResource SegmentedRadioButton}" Checked="rdoGroup_Checked">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon Kind="ViewList" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
                                     <TextBlock Text="Tất cả" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
 
-                            <RadioButton x:Name="rdoGroupLeadership" GroupName="GroupType" Style="{StaticResource SegmentedRadioButton}">
+                            <RadioButton x:Name="rdoGroupLeadership" GroupName="GroupType" Style="{StaticResource SegmentedRadioButton}" Checked="rdoGroup_Checked">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon Kind="AccountTie" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
                                     <TextBlock Text="Ban lãnh đạo" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
 
-                            <RadioButton x:Name="rdoGroupUnits" GroupName="GroupType" Style="{StaticResource SegmentedRadioButton}">
+                            <RadioButton x:Name="rdoGroupUnits" GroupName="GroupType" Style="{StaticResource SegmentedRadioButton}" Checked="rdoGroup_Checked">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon Kind="AccountMultiple" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Các tổ / Phòng" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Các Tổ / Phòng" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </RadioButton>
                         </UniformGrid>
