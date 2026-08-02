@@ -110,15 +110,46 @@ namespace TaxPersonnelManagement.Views
         }
     }
 
+    public class PersonnelSelectionItem : System.ComponentModel.INotifyPropertyChanged
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Position { get; set; } = "";
+        public string DepartmentPositionInfo => string.IsNullOrEmpty(Position) && string.IsNullOrEmpty(Department) ? "" : $"({Position} - {Department})";
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string? name = null)
+        {
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+        }
+    }
+
     public partial class BulkIncomeDialog : Window
     {
         private ObservableCollection<ExcelSheetConfig> _sheetsList = new ObservableCollection<ExcelSheetConfig>();
+        private List<PersonnelSelectionItem> _allPersonnelItems = new List<PersonnelSelectionItem>();
 
         public BulkIncomeDialog(int defaultYear)
         {
             InitializeComponent();
             LoadYears(defaultYear);
             LoadDepartments();
+            LoadPersonnelItems();
 
             cboMonth.SelectedIndex = DateTime.Now.Month - 1;
             dgSheets.ItemsSource = _sheetsList;
@@ -146,6 +177,192 @@ namespace TaxPersonnelManagement.Views
             catch (Exception ex)
             {
                 App.DebugLog("Error loading departments for BulkIncome: " + ex.Message);
+            }
+        }
+
+        private static readonly List<string> DeptOrderList = new List<string> {
+            "Ban lãnh đạo",
+            "Tổ Hành chính, tổng hợp",
+            "Tổ Kiểm tra số 1",
+            "Tổ Kiểm tra số 2",
+            "Tổ Kiểm tra số 3",
+            "Tổ Nghiệp vụ, dự toán, pháp chế",
+            "Tổ Quản lý các khoản thu khác",
+            "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+            "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+            "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+            "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+        };
+
+        private static int GetDepartmentRank(string department)
+        {
+            string dept = (department ?? "").Trim();
+            int index = DeptOrderList.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
+            return index == -1 ? 999 : index;
+        }
+
+        private static int GetPositionRank(string position, string department)
+        {
+            string pos = (position ?? "").ToLower();
+            string dept = (department ?? "").ToLower();
+
+            if (dept.Contains("lãnh đạo"))
+            {
+                if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
+                if (pos.Contains("quyền")) return 2;
+                if (pos.Contains("phó")) return 3;
+            }
+            else
+            {
+                if ((pos.Contains("tổ trưởng") || pos.Contains("đội trưởng")) && !pos.Contains("phó")) return 1;
+                if (pos.Contains("phó")) return 2;
+                if (pos.Contains("công chức") || pos.Contains("kiểm tra")) return 3;
+            }
+            return 99;
+        }
+
+        private void LoadPersonnelItems()
+        {
+            try
+            {
+                using var db = new AppDbContext();
+                var rawList = db.Personnel
+                                .Where(p => p.Status == null || p.Status == "Đang công tác")
+                                .ToList();
+
+                var sortedList = rawList
+                    .OrderBy(p => GetDepartmentRank(p.Department ?? ""))
+                    .ThenBy(p => GetPositionRank(p.Position ?? "", p.Department ?? ""))
+                    .ThenBy(p => p.FullName)
+                    .Select(p => new PersonnelSelectionItem
+                    {
+                        Id = p.Id,
+                        FullName = p.FullName,
+                        Department = p.Department ?? "",
+                        Position = p.Position ?? "",
+                        IsSelected = false
+                    })
+                    .ToList();
+
+                _allPersonnelItems = sortedList;
+                ApplyPersonnelFilter();
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("Error loading personnel for selection: " + ex.Message);
+            }
+        }
+
+        private void ApplyPersonnelFilter()
+        {
+            if (_allPersonnelItems == null) return;
+
+            string query = txtSearchPersonnel?.Text?.Trim() ?? "";
+            List<PersonnelSelectionItem> filtered;
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                filtered = _allPersonnelItems;
+            }
+            else
+            {
+                string unsignedQuery = RemoveSignString(query);
+                filtered = _allPersonnelItems.Where(p =>
+                    p.FullName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    RemoveSignString(p.FullName).Contains(unsignedQuery, StringComparison.OrdinalIgnoreCase) ||
+                    p.Department.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    p.Position.Contains(query, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            if (icPersonnelList != null)
+                icPersonnelList.ItemsSource = filtered;
+
+            UpdateSelectedPersonnelCount();
+        }
+
+        private static string RemoveSignString(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+            string normalizedString = text.Normalize(System.Text.NormalizationForm.FormD);
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+
+            foreach (char c in normalizedString)
+            {
+                System.Globalization.UnicodeCategory unicodeCategory = System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != System.Globalization.UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            string result = stringBuilder.ToString().Normalize(System.Text.NormalizationForm.FormC);
+            return result.Replace('đ', 'd').Replace('Đ', 'D');
+        }
+
+        private void UpdateSelectedPersonnelCount()
+        {
+            int count = _allPersonnelItems?.Count(p => p.IsSelected) ?? 0;
+            if (txtSelectedCount != null)
+            {
+                txtSelectedCount.Text = $"Đã chọn: {count} công chức";
+            }
+        }
+
+        private void RadSpecificPersonnel_Checked(object sender, RoutedEventArgs e)
+        {
+            if (gridSpecificPersonnel != null)
+                gridSpecificPersonnel.IsEnabled = true;
+        }
+
+        private void RadSpecificPersonnel_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (gridSpecificPersonnel != null)
+                gridSpecificPersonnel.IsEnabled = false;
+        }
+
+        private void TxtSearchPersonnel_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyPersonnelFilter();
+        }
+
+        private void ChkSelectAllPersonnel_Click(object sender, RoutedEventArgs e)
+        {
+            bool isChecked = chkSelectAllPersonnel.IsChecked == true;
+            var currentFiltered = icPersonnelList?.ItemsSource as IEnumerable<PersonnelSelectionItem>;
+            if (currentFiltered != null)
+            {
+                foreach (var item in currentFiltered)
+                {
+                    item.IsSelected = isChecked;
+                }
+            }
+            UpdateSelectedPersonnelCount();
+        }
+
+        private void PersonnelCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateSelectedPersonnelCount();
+        }
+
+        private void BtnOpenSelectorDialog_Click(object sender, RoutedEventArgs e)
+        {
+            radSpecificPersonnel.IsChecked = true;
+
+            var selector = new PersonnelSelectorDialog(new List<int>());
+            selector.Owner = this;
+
+            if (selector.ShowDialog() == true && selector.SelectedPersonnelIds != null)
+            {
+                var selectedIds = selector.SelectedPersonnelIds;
+                foreach (var item in _allPersonnelItems)
+                {
+                    if (selectedIds.Contains(item.Id))
+                    {
+                        item.IsSelected = true;
+                    }
+                }
+                ApplyPersonnelFilter();
             }
         }
 
@@ -260,6 +477,17 @@ namespace TaxPersonnelManagement.Views
                     }
                     personnelQuery = personnelQuery.Where(p => p.Department == dept);
                     targetDesc = $"Phòng ban: {dept}";
+                }
+                else if (radSpecificPersonnel.IsChecked == true)
+                {
+                    var selectedIds = _allPersonnelItems.Where(p => p.IsSelected).Select(p => p.Id).ToList();
+                    if (selectedIds.Count == 0)
+                    {
+                        new WarningWindow("Vui lòng chọn ít nhất 1 công chức từ danh sách.", "Lỗi nhập liệu") { Owner = this }.ShowDialog();
+                        return;
+                    }
+                    personnelQuery = personnelQuery.Where(p => selectedIds.Contains(p.Id));
+                    targetDesc = $"Công chức chọn lọc ({selectedIds.Count} người)";
                 }
                 else
                 {

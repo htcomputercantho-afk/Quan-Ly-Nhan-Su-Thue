@@ -1,3 +1,13 @@
+## v1.6.2.1 — 2026-08-02
+- [Tính năng] Bổ sung tùy chọn chọn nhiều công chức cụ thể trong Nhập thu nhập hàng loạt:
+    + Thêm mục chọn đối tượng áp dụng "Theo công chức cụ thể" cho phép tích chọn nhiều cán bộ công chức cùng lúc.
+    + Sắp xếp danh sách công chức theo đúng thứ tự ưu tiên Phòng ban (Ban lãnh đạo, các Tổ chuyên môn) và Chức vụ (Trưởng, Phó, Công chức).
+    + Tích hợp ô tìm kiếm tên/phòng ban/chức vụ trực tiếp, nút chọn tất cả / bỏ chọn tất cả và bộ đếm số lượng công chức đã chọn.
+    + Hỗ trợ nút "BỘ CHỌN LỚN" mở cửa sổ tìm kiếm và lọc danh sách cán bộ chuyên sâu.
+- [Sửa lỗi] Sửa lỗi hiển thị bộ lọc "Đang công tác" ở màn hình Tổng quan danh sách nhân sự:
+    + Xử lý hiển thị đầy đủ 100% nhân sự khi lọc "Đang công tác", tự động bao gồm các nhân sự có trường trạng thái rỗng/null hoặc mới import từ Excel.
+    + Tự động gán mặc định trạng thái "Đang công tác" cho tất cả công chức khi import từ file Excel.
+
 ## v1.6.2.0 — 2026-07-30
 - [Tính năng & Kiến trúc] Tích hợp đồng bộ cơ sở dữ liệu lên Google Drive (Auto-Sync & Thủ công):
     + Tự động đồng bộ CSDL SQLite (`tax_personnel.db`) lên Google Drive khi người dùng đóng ứng dụng hoặc đăng xuất.

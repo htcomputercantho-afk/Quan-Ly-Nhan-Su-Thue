@@ -196,7 +196,14 @@ namespace TaxPersonnelManagement.Views
                     string status = statusItem.Content?.ToString() ?? "";
                     if (status != "Tất cả trạng thái")
                     {
-                        query = query.Where(p => p.Status == status);
+                        if (status == "Đang công tác")
+                        {
+                            query = query.Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác");
+                        }
+                        else
+                        {
+                            query = query.Where(p => p.Status == status);
+                        }
                     }
                 }
 

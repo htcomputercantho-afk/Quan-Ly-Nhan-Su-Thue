@@ -187,6 +187,75 @@
                                         <RadioButton x:Name="radDepartment" Content="Theo phòng ban:" GroupName="TargetGroup" Checked="RadDepartment_Checked" Unchecked="RadDepartment_Unchecked" Margin="0 0 0 5" Foreground="#444"/>
                                         <ComboBox x:Name="cboDepartment" materialDesign:TextFieldAssist.UnderlineBrush="#7B1FA2" IsEnabled="False" Margin="25 0 0 10" Padding="5"/>
 
+                                        <RadioButton x:Name="radSpecificPersonnel" Content="Theo công chức cụ thể:" GroupName="TargetGroup" Checked="RadSpecificPersonnel_Checked" Unchecked="RadSpecificPersonnel_Unchecked" Margin="0 0 0 5" Foreground="#444"/>
+                                        <Border x:Name="gridSpecificPersonnel" IsEnabled="False" Margin="25 0 0 10" 
+                                                BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6" 
+                                                Padding="10 8">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="White"/>
+                                                    <Setter Property="Opacity" Value="1.0"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsEnabled" Value="False">
+                                                            <Setter Property="Background" Value="#F5F5F5"/>
+                                                            <Setter Property="Opacity" Value="0.6"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel>
+                                                <!-- Toolbar controls -->
+                                                <Grid Margin="0 0 0 8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBox x:Name="txtSearchPersonnel" Width="170" 
+                                                                 materialDesign:HintAssist.Hint="Tìm tên..." 
+                                                                 FontSize="13" Padding="6 4" Margin="0 0 10 0"
+                                                                 TextChanged="TxtSearchPersonnel_TextChanged"
+                                                                 materialDesign:TextFieldAssist.HasClearButton="True"/>
+                                                        <CheckBox x:Name="chkSelectAllPersonnel" Content="Chọn tất cả" FontSize="12" 
+                                                                  Click="ChkSelectAllPersonnel_Click" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                        <TextBlock x:Name="txtSelectedCount" Text="Đã chọn: 0 công chức" FontSize="12" FontWeight="Bold" 
+                                                                   Foreground="#7B1FA2" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+
+                                                    <Button x:Name="btnOpenSelectorDialog" Grid.Column="1" Click="BtnOpenSelectorDialog_Click" 
+                                                            Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White"
+                                                            Style="{DynamicResource MaterialDesignRaisedButton}" 
+                                                            materialDesign:ButtonAssist.CornerRadius="14"
+                                                            Height="28" Padding="10 0" VerticalAlignment="Center">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <materialDesign:PackIcon Kind="AccountMultipleCheck" Width="14" Height="14" Margin="0 0 4 0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="BỘ CHỌN LỚN" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+
+                                                <!-- Personnel List -->
+                                                <Border BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Background="#FAFAFA" Height="160">
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                        <ItemsControl x:Name="icPersonnelList" Margin="5">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                                                              Click="PersonnelCheckBox_Click" Margin="4 3">
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="13" Foreground="#333"/>
+                                                                            <TextBlock Text="{Binding DepartmentPositionInfo}" FontSize="12" Foreground="#666" Margin="8 0 0 0"/>
+                                                                        </StackPanel>
+                                                                    </CheckBox>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </StackPanel>
+                                        </Border>
+
                                         <RadioButton x:Name="radExcelFile" Content="Theo file Excel:" GroupName="TargetGroup" Checked="RadExcelFile_Checked" Unchecked="RadExcelFile_Unchecked" Margin="0 0 0 5" Foreground="#444"/>
                                         <Border x:Name="gridExcelFile" IsEnabled="False" Margin="25 0 0 0" 
                                                 BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="6" 

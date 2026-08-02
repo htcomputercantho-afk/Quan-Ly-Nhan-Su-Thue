@@ -87,6 +87,47 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        private static readonly List<string> DeptOrderList = new List<string> {
+            "Ban lãnh đạo",
+            "Tổ Hành chính, tổng hợp",
+            "Tổ Kiểm tra số 1",
+            "Tổ Kiểm tra số 2",
+            "Tổ Kiểm tra số 3",
+            "Tổ Nghiệp vụ, dự toán, pháp chế",
+            "Tổ Quản lý các khoản thu khác",
+            "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+            "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+            "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+            "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+        };
+
+        private static int GetDepartmentRank(string department)
+        {
+            string dept = (department ?? "").Trim();
+            int index = DeptOrderList.FindIndex(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
+            return index == -1 ? 999 : index;
+        }
+
+        private static int GetPositionRank(string position, string department)
+        {
+            string pos = (position ?? "").ToLower();
+            string dept = (department ?? "").ToLower();
+
+            if (dept.Contains("lãnh đạo"))
+            {
+                if (pos.Contains("trưởng") && !pos.Contains("phó") && !pos.Contains("quyền")) return 1;
+                if (pos.Contains("quyền")) return 2;
+                if (pos.Contains("phó")) return 3;
+            }
+            else
+            {
+                if ((pos.Contains("tổ trưởng") || pos.Contains("đội trưởng")) && !pos.Contains("phó")) return 1;
+                if (pos.Contains("phó")) return 2;
+                if (pos.Contains("công chức") || pos.Contains("kiểm tra")) return 3;
+            }
+            return 99;
+        }
+
         /// <summary>
         /// Tải danh sách cán bộ chưa tham gia lớp học
         /// </summary>
@@ -96,14 +137,18 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var db = new AppDbContext())
                 {
-                    // Lấy toàn bộ cán bộ, loại trừ những người đã có trong lớp
-                    var query = db.Personnel
-                                  .Where(p => !excludedIds.Contains(p.Id))
-                                  .OrderBy(p => p.Department)
-                                  .ThenBy(p => p.FullName)
-                                  .ToList();
+                    // Lấy toàn bộ cán bộ, loại trừ những người đã có trong danh sách
+                    var rawList = db.Personnel
+                                   .Where(p => !excludedIds.Contains(p.Id))
+                                   .ToList();
 
-                    _allPersonnel = query.Select(p => new PersonnelSelectorItem
+                    var sortedList = rawList
+                                   .OrderBy(p => GetDepartmentRank(p.Department ?? ""))
+                                   .ThenBy(p => GetPositionRank(p.Position ?? "", p.Department ?? ""))
+                                   .ThenBy(p => p.FullName)
+                                   .ToList();
+
+                    _allPersonnel = sortedList.Select(p => new PersonnelSelectorItem
                     {
                         Id = p.Id,
                         FullName = p.FullName,
