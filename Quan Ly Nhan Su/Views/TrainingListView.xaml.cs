@@ -14,6 +14,8 @@ namespace TaxPersonnelManagement.Views
     public partial class TrainingListView : Page
     {
         private List<TrainingClassItem> _allClasses = new();
+        private List<TrainingClassItem> _displayedClasses = new();
+        private bool _isInitializingFilter = false;
 
         public TrainingListView()
         {
@@ -43,8 +45,46 @@ namespace TaxPersonnelManagement.Views
                         DecisionUnit = tc.DecisionUnit,
                         ParticipantCount = tc.PersonnelTrainings.Count
                     })
-                    .OrderByDescending(tc => tc.ParticipationDate ?? DateTime.MinValue)
+                    .OrderByDescending(tc => tc.DecisionDate ?? tc.ParticipationDate ?? DateTime.MinValue)
                     .ToList();
+
+                    // Load Available Years for Filter
+                    var distinctYears = _allClasses
+                        .Select(tc => tc.Year)
+                        .Where(y => y.HasValue)
+                        .Select(y => y!.Value)
+                        .Distinct()
+                        .ToList();
+
+                    int currentYear = DateTime.Now.Year;
+                    if (!distinctYears.Contains(currentYear))
+                    {
+                        distinctYears.Add(currentYear);
+                    }
+                    distinctYears = distinctYears.OrderByDescending(y => y).ToList();
+
+                    var yearItems = new List<TrainingYearFilterItem>
+                    {
+                        new TrainingYearFilterItem { Label = "-- Tất cả --", Value = null }
+                    };
+                    foreach (var y in distinctYears)
+                    {
+                        yearItems.Add(new TrainingYearFilterItem { Label = y.ToString(), Value = y });
+                    }
+
+                    int? prevYear = (cbYear.SelectedItem as TrainingYearFilterItem)?.Value;
+
+                    _isInitializingFilter = true;
+                    cbYear.ItemsSource = yearItems;
+                    if (prevYear.HasValue && yearItems.Any(i => i.Value == prevYear.Value))
+                    {
+                        cbYear.SelectedItem = yearItems.First(i => i.Value == prevYear.Value);
+                    }
+                    else
+                    {
+                        cbYear.SelectedIndex = 0; // "-- Tất cả các năm --"
+                    }
+                    _isInitializingFilter = false;
 
                     ApplyFilter();
                 }
@@ -63,23 +103,37 @@ namespace TaxPersonnelManagement.Views
             ApplyFilter();
         }
 
+        private void cbFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isInitializingFilter)
+            {
+                ApplyFilter();
+            }
+        }
+
         private void ApplyFilter()
         {
             string keyword = txtSearch.Text.Trim();
-            List<TrainingClassItem> filtered;
+            int? selectedYear = (cbYear.SelectedItem as TrainingYearFilterItem)?.Value;
 
-            if (string.IsNullOrEmpty(keyword))
+            var query = _allClasses.AsEnumerable();
+
+            if (selectedYear.HasValue)
             {
-                filtered = _allClasses;
+                query = query.Where(tc => tc.Year == selectedYear.Value);
             }
-            else
+
+            if (!string.IsNullOrEmpty(keyword))
             {
-                filtered = _allClasses.Where(tc =>
+                query = query.Where(tc =>
                     TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(tc.ClassName, keyword) ||
                     TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(tc.DecisionNumber, keyword) ||
-                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(tc.DecisionUnit, keyword)
-                ).ToList();
+                    TaxPersonnelManagement.Helpers.SearchHelper.IsMatch(tc.DecisionUnit, keyword) ||
+                    (tc.Year.HasValue && tc.Year.Value.ToString().Contains(keyword))
+                );
             }
+
+            var filtered = query.ToList();
 
             // Re-assign STT for visual correctness
             int stt = 1;
@@ -88,9 +142,10 @@ namespace TaxPersonnelManagement.Views
                 tc.STT = stt++;
             }
 
+            _displayedClasses = filtered;
             dgTrainingClasses.ItemsSource = null;
             dgTrainingClasses.ItemsSource = filtered;
-            txtTotalCount.Text = $"Hiển thị {filtered.Count} lớp học / hội nghị";
+            txtTotalCount.Text = $"Hiển thị {filtered.Count} lớp học / hội nghị" + (selectedYear.HasValue ? $" (Năm {selectedYear.Value})" : "");
         }
 
         private void btnAddClass_Click(object sender, RoutedEventArgs e)
@@ -124,7 +179,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
-            if (!_allClasses.Any())
+            if (!_displayedClasses.Any())
             {
                 var warning = new WarningWindow("Không có dữ liệu để xuất!", "Thông báo");
                 if (Window.GetWindow(this) is Window parent) warning.Owner = parent;
@@ -132,10 +187,13 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
+            int? selectedYear = (cbYear.SelectedItem as TrainingYearFilterItem)?.Value;
+            string fileNameSuffix = selectedYear.HasValue ? $"Nam{selectedYear.Value}_" : "";
+
             var saveFileDialog = new SaveFileDialog
             {
                 Filter = "Excel Files|*.xlsx",
-                FileName = $"DanhSachLopDaoTao_HoiNghi_{DateTime.Now:yyyyMMdd}.xlsx"
+                FileName = $"DanhSachLopDaoTao_HoiNghi_{fileNameSuffix}{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
             if (saveFileDialog.ShowDialog() == true)
@@ -147,15 +205,19 @@ namespace TaxPersonnelManagement.Views
                         var worksheet = workbook.Worksheets.Add("Lớp Đào Tạo - Hội Nghị");
 
                         // Title
-                        worksheet.Cell(1, 1).Value = "DANH SÁCH TỔNG HỢP CÁC LỚP ĐÀO TẠO, BỒI DƯỠNG & HỘI NGHỊ";
+                        string title = selectedYear.HasValue
+                            ? $"DANH SÁCH TỔNG HỢP CÁC LỚP ĐÀO TẠO, BỒI DƯỠNG & HỘI NGHỊ NĂM {selectedYear.Value}"
+                            : "DANH SÁCH TỔNG HỢP CÁC LỚP ĐÀO TẠO, BỒI DƯỠNG & HỘI NGHỊ";
+
+                        worksheet.Cell(1, 1).Value = title;
                         worksheet.Cell(1, 1).Style.Font.Bold = true;
                         worksheet.Cell(1, 1).Style.Font.FontSize = 16;
                         worksheet.Cell(1, 1).Style.Font.FontColor = XLColor.FromHtml("#1565C0");
-                        worksheet.Range("A1:G1").Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        worksheet.Range("A1:H1").Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                         worksheet.Row(1).Height = 35;
 
                         // Headers
-                        string[] headers = { "STT", "Tên các lớp, hội nghị", "Ngày tham gia", "Số QĐ", "Ngày ra QĐ", "Đơn vị ra QĐ", "Số lượng học viên" };
+                        string[] headers = { "STT", "Năm", "Tên các lớp, hội nghị", "Ngày tham gia", "Số QĐ", "Ngày ra QĐ", "Đơn vị ra QĐ", "Số lượng học viên" };
                         for (int i = 0; i < headers.Length; i++)
                         {
                             var cell = worksheet.Cell(2, i + 1);
@@ -171,35 +233,37 @@ namespace TaxPersonnelManagement.Views
                         // Data
                         int currentRow = 3;
                         int stt = 1;
-                        foreach (var tc in _allClasses)
+                        foreach (var tc in _displayedClasses)
                         {
                             worksheet.Cell(currentRow, 1).Value = stt++;
-                            worksheet.Cell(currentRow, 2).Value = tc.ClassName;
-                            worksheet.Cell(currentRow, 3).Value = tc.ParticipationDate?.ToString("dd/MM/yyyy") ?? "";
-                            worksheet.Cell(currentRow, 4).Value = tc.DecisionNumber;
-                            worksheet.Cell(currentRow, 5).Value = tc.DecisionDate?.ToString("dd/MM/yyyy") ?? "";
-                            worksheet.Cell(currentRow, 6).Value = tc.DecisionUnit;
-                            worksheet.Cell(currentRow, 7).Value = tc.ParticipantCount;
+                            worksheet.Cell(currentRow, 2).Value = tc.YearDisplay;
+                            worksheet.Cell(currentRow, 3).Value = tc.ClassName;
+                            worksheet.Cell(currentRow, 4).Value = tc.ParticipationDate?.ToString("dd/MM/yyyy") ?? "";
+                            worksheet.Cell(currentRow, 5).Value = tc.DecisionNumber;
+                            worksheet.Cell(currentRow, 6).Value = tc.DecisionDate?.ToString("dd/MM/yyyy") ?? "";
+                            worksheet.Cell(currentRow, 7).Value = tc.DecisionUnit;
+                            worksheet.Cell(currentRow, 8).Value = tc.ParticipantCount;
 
                             // Formats
-                            for (int i = 1; i <= 7; i++)
+                            for (int i = 1; i <= 8; i++)
                             {
                                 var cell = worksheet.Cell(currentRow, i);
                                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                                 cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                                if (i == 1 || i == 3 || i == 5 || i == 7) cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                if (i == 1 || i == 2 || i == 4 || i == 6 || i == 8) cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                             }
                             currentRow++;
                         }
 
                         // Column widths
                         worksheet.Column(1).Width = 8;
-                        worksheet.Column(2).Width = 40;
-                        worksheet.Column(3).Width = 18;
+                        worksheet.Column(2).Width = 10;
+                        worksheet.Column(3).Width = 40;
                         worksheet.Column(4).Width = 18;
                         worksheet.Column(5).Width = 18;
-                        worksheet.Column(6).Width = 25;
-                        worksheet.Column(7).Width = 20;
+                        worksheet.Column(6).Width = 18;
+                        worksheet.Column(7).Width = 25;
+                        worksheet.Column(8).Width = 20;
 
                         workbook.SaveAs(saveFileDialog.FileName);
 
@@ -228,5 +292,15 @@ namespace TaxPersonnelManagement.Views
         public DateTime? DecisionDate { get; set; }
         public string? DecisionUnit { get; set; }
         public int ParticipantCount { get; set; }
+
+        public int? Year => DecisionDate?.Year ?? ParticipationDate?.Year;
+        public string YearDisplay => Year.HasValue ? Year.Value.ToString() : "---";
+    }
+
+    public class TrainingYearFilterItem
+    {
+        public string Label { get; set; } = string.Empty;
+        public int? Value { get; set; }
+        public override string ToString() => Label;
     }
 }

@@ -299,6 +299,21 @@ namespace TaxPersonnelManagement.Views
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
 
+                // Khi đang lọc theo thẻ nghỉ: sắp xếp người sắp đi làm lại sớm nhất lên đầu
+                if (_currentCardFilter != "All")
+                {
+                    displayList = displayList.OrderBy(p =>
+                    {
+                        // Lấy lịch nghỉ đang active (StartDate <= hôm nay <= EndDate)
+                        var activeLeave = p.LeaveHistories?
+                            .Where(l => l.StartDate <= now && (l.EndDate == null || l.EndDate >= now))
+                            .OrderBy(l => l.EndDate ?? DateTime.MaxValue)
+                            .FirstOrDefault();
+                        // Người có EndDate null (chưa xác định ngày về) → xuống cuối
+                        return activeLeave?.EndDate ?? DateTime.MaxValue;
+                    });
+                }
+
                 _fullFilteredList = displayList.ToList();
 
                 if (TargetPersonnelId.HasValue)

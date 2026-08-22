@@ -547,8 +547,79 @@
                         </Grid>
                     </materialDesign:Card>
                 </Grid>
-                
+
+            <!-- ═══ THỐNG KÊ LÃNH ĐẠO TỔ ═══ -->
+            <StackPanel Margin="0,16,0,20">
+                <materialDesign:Card Padding="22" UniformCornerRadius="12" Background="White">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,16">
+                            <materialDesign:PackIcon Kind="AccountGroup" Width="22" Height="22" Foreground="#0F766E" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="THỐNG KÊ LÃNH ĐẠO TỔ" Style="{StaticResource CardTitleText}" Foreground="#0F766E"/>
+                        </StackPanel>
+
+                        <!-- Column Headers -->
+                        <Border Grid.Row="1" Background="#F0FDFA" CornerRadius="8" Padding="14,8" Margin="0,0,0,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="90"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="Bộ phận / Tổ" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E"/>
+                                <TextBlock Grid.Column="1" Text="Tổ trưởng" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Phó Tổ trưởng" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="Công chức" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="Tổng" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Data Rows (generated dynamically) -->
+                        <ItemsControl x:Name="icTeamLeadership" Grid.Row="2">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="14,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="90"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Tên bộ phận -->
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Border Width="8" Height="8" Background="#14B8A6" CornerRadius="4" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding DepartmentName}" FontSize="13" FontWeight="SemiBold" Foreground="#1F2937" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <!-- Tổ trưởng -->
+                                            <TextBlock Grid.Column="1" Text="{Binding LeaderCount}" FontSize="13" FontWeight="Bold" Foreground="#0369A1" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <!-- Phó Tổ trưởng -->
+                                            <TextBlock Grid.Column="2" Text="{Binding DeputyCount}" FontSize="13" FontWeight="Bold" Foreground="#7C3AED" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <!-- Công chức -->
+                                            <TextBlock Grid.Column="3" Text="{Binding StaffCount}" FontSize="13" Foreground="#374151" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <!-- Tổng -->
+                                            <Border Grid.Column="4" Background="#F0FDFA" CornerRadius="6" Padding="6,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TotalCount}" FontSize="12.5" FontWeight="Bold" Foreground="#0F766E" TextAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </materialDesign:Card>
             </StackPanel>
+
+        </StackPanel>
         </ScrollViewer>
     </Grid>
 </UserControl>

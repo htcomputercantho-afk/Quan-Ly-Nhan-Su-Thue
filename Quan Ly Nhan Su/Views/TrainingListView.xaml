@@ -40,10 +40,10 @@
         <materialDesign:Card Grid.Row="1" Margin="0 0 0 20" Padding="16 16 16 6" UniformCornerRadius="8">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Search Box -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 10">
-                    <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
-                    <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 10 0" Foreground="#555"/>
-                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="280" Height="38">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 15 10">
+                    <materialDesign:PackIcon Kind="Magnify" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <TextBlock Text="Tìm kiếm:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
+                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="250" Height="38">
                         <TextBox x:Name="txtSearch"
                                  materialDesign:HintAssist.Hint="Tên lớp, số QĐ, đơn vị..."
                                  materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
@@ -52,6 +52,24 @@
                                  VerticalContentAlignment="Center" Padding="10 0"
                                  FontSize="14" Foreground="#374151"
                                  TextChanged="txtSearch_TextChanged"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Year Filter -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 10">
+                    <materialDesign:PackIcon Kind="CalendarRange" Width="24" Height="24" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <TextBlock Text="Năm:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
+                    <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="170" Height="38">
+                        <ComboBox x:Name="cbYear"
+                                  Style="{DynamicResource MaterialDesignComboBox}"
+                                  materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                  BorderThickness="0" Background="Transparent"
+                                  VerticalAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  Padding="10 0 10 0"
+                                  FontSize="14" Foreground="#374151"
+                                  SelectionChanged="cbFilter_SelectionChanged">
+                        </ComboBox>
                     </Border>
                 </StackPanel>
 
@@ -156,7 +174,18 @@
 
                     <DataGrid.Columns>
                         <!-- STT -->
-                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="60"/>
+                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="55"/>
+
+                        <!-- NĂM -->
+                        <DataGridTemplateColumn Header="NĂM" Width="80" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E8EAF6" CornerRadius="8" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding YearDisplay}" FontWeight="Bold" Foreground="#3949AB" FontSize="13"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
                         <!-- TÊN CÁC LỚP, HỘI NGHỊ -->
                         <DataGridTemplateColumn Header="TÊN CÁC LỚP, HỘI NGHỊ" Width="*" MinWidth="260" HeaderStyle="{StaticResource WrappedHeaderStyle}">

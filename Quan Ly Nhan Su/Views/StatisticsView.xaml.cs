@@ -53,6 +53,7 @@ namespace TaxPersonnelManagement.Views
                     if (db.Personnel.Any())
                     {
                         var yearsList = db.Personnel
+                            .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
                             .Select(p => p.TaxAuthorityStartDate.HasValue
                                 ? p.TaxAuthorityStartDate.Value.Year
                                 : (p.StartDate.HasValue ? p.StartDate.Value.Year : 2020))
@@ -96,7 +97,8 @@ namespace TaxPersonnelManagement.Views
         {
             var query = db.Personnel.AsQueryable();
 
-
+            // Chỉ thống kê công chức đang làm việc / đang công tác (loại trừ luân chuyển điều động, nghỉ hưu, nghỉ việc)
+            query = query.Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác");
 
             // Lọc theo Bộ phận
             departmentStr = "Tất cả bộ phận";
@@ -246,6 +248,36 @@ namespace TaxPersonnelManagement.Views
                     barSen2.Height = maxSenPct > 0 ? (sen2Ratio / maxSenPct) * 120 : 0;
                     barSen3.Height = maxSenPct > 0 ? (sen3Ratio / maxSenPct) * 120 : 0;
                     barSen4.Height = maxSenPct > 0 ? (sen4Ratio / maxSenPct) * 120 : 0;
+
+                    // 7. Thống kê lãnh đạo tổ theo từng bộ phận
+                    var leaderPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                        { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở", "Cục trưởng" };
+                    var deputyPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                        { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở", "Phó Cục trưởng" };
+
+                    var teamRows = list
+                        .Where(p => !string.IsNullOrWhiteSpace(p.Department))
+                        .GroupBy(p => p.Department!)
+                        .OrderBy(g => g.Key)
+                        .Select(g =>
+                        {
+                            int leaders = g.Count(p => leaderPositions.Contains(p.Position ?? ""));
+                            int deputies = g.Count(p => deputyPositions.Contains(p.Position ?? ""));
+                            int staff    = g.Count(p =>
+                                !leaderPositions.Contains(p.Position ?? "") &&
+                                !deputyPositions.Contains(p.Position ?? ""));
+                            return new TeamLeadershipRow
+                            {
+                                DepartmentName = g.Key,
+                                LeaderCount    = leaders,
+                                DeputyCount    = deputies,
+                                StaffCount     = staff,
+                                TotalCount     = g.Count()
+                            };
+                        })
+                        .ToList();
+
+                    icTeamLeadership.ItemsSource = teamRows;
                 }
             }
             catch (Exception ex)
@@ -628,7 +660,17 @@ namespace TaxPersonnelManagement.Views
     // Model đại diện cho một lát cắt của biểu đồ tròn
     public class PieSlice
     {
-        public double Value { get; set; }
-        public Brush ColorBrush { get; set; } = Brushes.Transparent;
+        public int Value { get; set; }
+        public SolidColorBrush ColorBrush { get; set; } = new();
+    }
+
+    /// <summary>DTO cho một dòng trong bảng thống kê lãnh đạo tổ.</summary>
+    public class TeamLeadershipRow
+    {
+        public string DepartmentName { get; set; } = string.Empty;
+        public int LeaderCount { get; set; }
+        public int DeputyCount { get; set; }
+        public int StaffCount { get; set; }
+        public int TotalCount { get; set; }
     }
 }

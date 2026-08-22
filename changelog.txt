@@ -1,3 +1,22 @@
+## v1.6.2.2 — 2026-08-22
+- [Tính năng] Cảnh báo công chức sắp đi làm lại sau đợt nghỉ (7 ngày):
+    + Tự động quét và hiển thị popup cảnh báo (`LeaveReturnAlertWindow`) khi đăng nhập nếu có công chức đang nghỉ (thai sản, ốm, phép) sắp đi làm lại trong vòng 7 ngày tới.
+    + Thiết kế giao diện hiện đại chuẩn Material Design, gắn badge màu phân cấp theo thời hạn (Hôm nay/Ngày mai, 2–3 ngày, 4–7 ngày), sắp xếp theo thứ tự người đi làm lại sớm nhất.
+- [Tính năng] Sắp xếp danh sách nhân sự đang nghỉ theo ngày đi làm lại:
+    + Khi bấm vào thẻ KPI nhân sự đang nghỉ (Thai sản, Nghỉ ốm, Nghỉ phép), hệ thống tự động sắp xếp danh sách hiển thị người sắp hết đợt nghỉ sớm nhất lên đầu tiên.
+- [Tính năng] Tự động lùi thời hạn nâng lương khi nghỉ ốm vượt 6 tháng (> 180 ngày):
+    + Tự động cộng dồn toàn bộ số ngày nghỉ ốm trong kỳ nâng lương (tính từ mốc Thời điểm tính bậc lương lần sau).
+    + Nếu tổng ngày nghỉ ốm > 180 ngày (6 tháng), hệ thống tự động tính số ngày vượt và cộng dồn vào "Dự kiến lên lương", đồng thời tự động hiển thị mục "Nghỉ ốm quá hạn (X ngày)" trong dropdown "Lùi thời gian nâng lương".
+    + Xử lý trường hợp đợt nghỉ ốm chưa có ngày kết thúc: Tính tạm thời gian nghỉ đến ngày hiện tại và hiển thị dòng lưu ý "⚠ Tạm tính — đang có đợt nghỉ ốm chưa xác định ngày kết thúc".
+- [Tính năng] Bổ sung Bảng Thống kê Lãnh đạo Tổ trong Báo cáo Thống kê:
+    + Bổ sung bảng "THỐNG KÊ LÃNH ĐẠO TỔ" trong màn hình Thống kê nhân sự.
+    + Thống kê chi tiết theo từng Tổ / Phòng / Đơn vị: Số lượng Tổ trưởng (Trưởng phòng/Đội trưởng), Phó Tổ trưởng (Phó phòng/Phó đội trưởng), Công chức và Tổng số nhân sự của tổ.
+    + Tự động đồng bộ và lọc dữ liệu chính xác theo bộ lọc Bộ phận và Năm thống kê.
+- [Tính năng] Nâng cấp Quản lý Đào tạo, Bồi dưỡng & Hội nghị:
+    + Bổ sung bộ lọc theo Năm mở lớp / hội nghị (mặc định "Tất cả các năm").
+    + Cải tiến ô tìm kiếm đa năng: Hỗ trợ tìm kiếm đồng thời theo Tên lớp, Số quyết định, Đơn vị ra quyết định và Năm.
+    + Nâng cấp xuất Excel: Bổ sung cột Năm, tự động gắn tiêu đề theo năm lọc và chuẩn hóa tên file xuất.
+
 ## v1.6.2.1 — 2026-08-02
 - [Tính năng] Bổ sung tùy chọn chọn nhiều công chức cụ thể trong Nhập thu nhập hàng loạt:
     + Thêm mục chọn đối tượng áp dụng "Theo công chức cụ thể" cho phép tích chọn nhiều cán bộ công chức cùng lúc.

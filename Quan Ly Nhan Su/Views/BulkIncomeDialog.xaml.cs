@@ -453,7 +453,7 @@ namespace TaxPersonnelManagement.Views
             try
             {
                 using var db = new AppDbContext();
-                var personnelQuery = db.Personnel.AsQueryable();
+                var personnelQuery = db.Personnel.Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác");
 
                 string targetDesc = "";
 

@@ -137,9 +137,9 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var db = new AppDbContext())
                 {
-                    // Lấy toàn bộ cán bộ, loại trừ những người đã có trong danh sách
+                    // Lấy toàn bộ cán bộ đang công tác, loại trừ những người đã có trong danh sách
                     var rawList = db.Personnel
-                                   .Where(p => !excludedIds.Contains(p.Id))
+                                   .Where(p => !excludedIds.Contains(p.Id) && (string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác"))
                                    .ToList();
 
                     var sortedList = rawList

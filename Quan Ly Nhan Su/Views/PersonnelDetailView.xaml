@@ -1589,7 +1589,17 @@
                             <StackPanel Grid.Column="4">
                                 <TextBlock Text="Dự kiến lên lương" Style="{StaticResource ModernLabel}"/>
                                 <DatePicker x:Name="dpExpectedSalaryIncrease" Style="{StaticResource ModernDatePicker}" Foreground="#388E3C" FontWeight="Bold" helpers:DatePickerHelper.EnableSmartDateEntry="True" DateValidationError="dpExpectedSalaryIncrease_DateValidationError"/>
+                                <!-- Cảnh báo khi đang có đợt nghỉ ốm chưa xác định ngày kết thúc -->
+                                <TextBlock x:Name="txtSickLeaveProvisionalWarning"
+                                           Visibility="Collapsed"
+                                           Foreground="#D97706"
+                                           FontSize="11"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           Margin="0,3,0,0"
+                                           Text="⚠ Tạm tính — đang có đợt nghỉ ốm chưa xác định ngày kết thúc"/>
                             </StackPanel>
+
                         </Grid>
 
                         <!-- Row 4: History Label -->

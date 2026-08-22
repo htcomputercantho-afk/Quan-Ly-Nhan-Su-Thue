@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using Microsoft.EntityFrameworkCore;
+using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Views;
 
@@ -41,10 +46,84 @@ namespace TaxPersonnelManagement
             {
                 if (this.ActualWidth < 1400)
                     CollapseSidebar();
+
+                // Kiểm tra và hiển thị cảnh báo công chức sắp đi làm lại
+                CheckLeaveReturnAlerts();
             };
         }
 
         private bool _isClosingHandled = false;
+
+        /// <summary>
+        /// Kiểm tra xem có công chức nào sắp hết nghỉ (thai sản / ốm / phép) trong 7 ngày tới không.
+        /// Nếu có, hiển thị popup cảnh báo để nhắc nhở.
+        /// </summary>
+        private void CheckLeaveReturnAlerts()
+        {
+            try
+            {
+                const int AlertDays = 7;
+                var today = DateTime.Today;
+                var cutoff = today.AddDays(AlertDays);
+
+                using (var db = new AppDbContext())
+                {
+                    // Lấy tất cả personnel có lịch nghỉ kết thúc trong khoảng [hôm nay, hôm nay + 7 ngày]
+                    var personnelList = db.Personnel
+                        .Include(p => p.LeaveHistories)
+                        .Where(p => p.LeaveHistories.Any(l =>
+                            l.EndDate.HasValue &&
+                            l.EndDate.Value.Date >= today &&
+                            l.EndDate.Value.Date <= cutoff &&
+                            l.StartDate.Date <= today))
+                        .ToList();
+
+                    var alerts = new List<LeaveReturnInfo>();
+
+                    foreach (var p in personnelList)
+                    {
+                        // Lấy lịch nghỉ đang active và sắp kết thúc gần nhất
+                        var activeLeave = p.LeaveHistories
+                            .Where(l =>
+                                l.EndDate.HasValue &&
+                                l.EndDate.Value.Date >= today &&
+                                l.EndDate.Value.Date <= cutoff &&
+                                l.StartDate.Date <= today)
+                            .OrderBy(l => l.EndDate)
+                            .FirstOrDefault();
+
+                        if (activeLeave == null) continue;
+
+                        // Ngày đi làm lại = ngày kết thúc nghỉ + 1
+                        var returnDate = activeLeave.EndDate!.Value.Date.AddDays(1);
+                        int daysLeft = (returnDate - today).Days;
+
+                        alerts.Add(new LeaveReturnInfo
+                        {
+                            FullName = p.FullName,
+                            Department = p.Department,
+                            LeaveType = activeLeave.LeaveType,
+                            ReturnDate = returnDate,
+                            DaysLeft = daysLeft
+                        });
+                    }
+
+                    // Sắp xếp theo ngày đi làm lại gần nhất
+                    alerts = alerts.OrderBy(a => a.ReturnDate).ToList();
+
+                    if (alerts.Count > 0)
+                    {
+                        var alertWindow = new LeaveReturnAlertWindow(alerts);
+                        alertWindow.Owner = this;
+                        alertWindow.ShowDialog();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("CheckLeaveReturnAlerts error: " + ex.Message);
+            }
+}
 
         /// <summary>
         /// Bắt sự kiện người dùng bấm nút [X] đóng ứng dụng.
