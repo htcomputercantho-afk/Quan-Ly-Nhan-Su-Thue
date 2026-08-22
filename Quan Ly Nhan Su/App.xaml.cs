@@ -21,6 +21,16 @@ namespace TaxPersonnelManagement
         public static Models.User? CurrentUser { get; set; }
 
         /// <summary>
+        /// Cờ đánh dấu dữ liệu trong CSDL có bị thay đổi (thêm, sửa, xóa) trong phiên làm việc hiện tại hay không.
+        /// </summary>
+        public static bool IsDataDirty { get; set; } = false;
+
+        /// <summary>
+        /// Thời điểm bắt đầu phiên làm việc hiện tại của ứng dụng.
+        /// </summary>
+        public static DateTime SessionStartTime { get; } = DateTime.Now;
+
+        /// <summary>
         /// Instance dùng chung cho toàn app – BackupRestoreView có thể dùng lại instance này.
         /// </summary>
         public static GoogleDriveSyncService DriveSync { get; } = new GoogleDriveSyncService();
@@ -868,22 +878,25 @@ namespace TaxPersonnelManagement
         }
 
         /// <summary>
-        /// Tự động đẩy CSDL lên Google Drive khi ứng dụng đóng (nếu đã kết nối).
-        /// Chạy đồng bộ với timeout 10 giây để không delay quá lâu khi tắt app.
+        /// Tự động đẩy CSDL lên Google Drive khi ứng dụng đóng (chỉ khi có dữ liệu thay đổi trong phiên làm việc).
         /// </summary>
         protected override void OnExit(ExitEventArgs e)
         {
             try
             {
-                if (DriveSync.IsConnected)
+                if (IsDataDirty && DriveSync.IsConnected)
                 {
-                    DebugLog("Auto-pushing CSDL to Google Drive on exit...");
+                    DebugLog("Auto-pushing CSDL to Google Drive on exit (IsDataDirty = true)...");
                     // Timeout 10 giây
                     var task = DriveSync.PushAsync();
                     task.Wait(TimeSpan.FromSeconds(10));
                     DebugLog(task.IsCompletedSuccessfully && task.Result
                         ? "Auto-push to Drive: SUCCESS"
                         : "Auto-push to Drive: FAILED or TIMEOUT");
+                }
+                else
+                {
+                    DebugLog("OnExit: No data changes in this session, skipped auto-push.");
                 }
             }
             catch (Exception ex)

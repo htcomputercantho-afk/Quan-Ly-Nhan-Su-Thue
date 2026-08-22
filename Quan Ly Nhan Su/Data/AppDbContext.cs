@@ -59,5 +59,31 @@ namespace TaxPersonnelManagement.Data
                 Role = UserRole.Admin   // Quyền Quản trị viên có toàn quyền truy cập
             });
         }
+
+        /// <summary>
+        /// Tự động đánh dấu CSDL đã có thay đổi (IsDataDirty = true) khi có dữ liệu được thêm/sửa/xóa thành công.
+        /// </summary>
+        public override int SaveChanges()
+        {
+            int result = base.SaveChanges();
+            if (result > 0)
+            {
+                App.IsDataDirty = true;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Tự động đánh dấu CSDL đã có thay đổi (IsDataDirty = true) khi có dữ liệu được thêm/sửa/xóa bất đồng bộ thành công.
+        /// </summary>
+        public override async System.Threading.Tasks.Task<int> SaveChangesAsync(System.Threading.CancellationToken cancellationToken = default)
+        {
+            int result = await base.SaveChangesAsync(cancellationToken);
+            if (result > 0)
+            {
+                App.IsDataDirty = true;
+            }
+            return result;
+        }
     }
 }

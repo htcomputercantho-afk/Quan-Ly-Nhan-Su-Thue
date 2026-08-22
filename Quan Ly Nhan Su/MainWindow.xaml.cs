@@ -49,10 +49,87 @@ namespace TaxPersonnelManagement
 
                 // Kiểm tra và hiển thị cảnh báo công chức sắp đi làm lại
                 CheckLeaveReturnAlerts();
+
+                // Tự động kiểm tra bản cập nhật CSDL trên Google Drive khi mở app
+                _ = CheckGoogleDriveStartupSyncAsync();
             };
         }
 
         private bool _isClosingHandled = false;
+
+        /// <summary>
+        /// Tự động kiểm tra xem trên Google Drive có bản sao lưu CSDL mới hơn máy hiện tại không khi mở app.
+        /// Nếu có, hỏi người dùng có muốn tải về để đồng bộ không.
+        /// </summary>
+        private async System.Threading.Tasks.Task CheckGoogleDriveStartupSyncAsync()
+        {
+            try
+            {
+                if (!App.DriveSync.HasSavedToken()) return;
+
+                if (!App.DriveSync.IsConnected)
+                {
+                    bool connected = await App.DriveSync.TryLoadSavedTokenAsync();
+                    if (!connected) return;
+                }
+
+                var cloudTime = await App.DriveSync.GetCloudModifiedTimeAsync();
+                var localTime = App.DriveSync.GetLocalDbLastWriteTime();
+
+                if (cloudTime.HasValue && localTime.HasValue)
+                {
+                    // Nếu dữ liệu trên Drive mới hơn dữ liệu máy này ít nhất 1 phút
+                    if (cloudTime.Value > localTime.Value.AddMinutes(1))
+                    {
+                        string message = $"Phát hiện bản sao lưu trên Google Drive MỚI HƠN dữ liệu trên máy này:\n\n" +
+                                         $"• Trên Google Drive: {cloudTime.Value:dd/MM/yyyy HH:mm:ss}\n" +
+                                         $"• Trên máy tính này: {localTime.Value:dd/MM/yyyy HH:mm:ss}\n\n" +
+                                         $"Bạn có muốn tải dữ liệu mới nhất từ Google Drive về máy không?";
+
+                        var confirmWin = new ConfirmWindow(message, "Đồng Bộ Dữ Liệu Từ Google Drive");
+                        confirmWin.Owner = this;
+                        if (confirmWin.ShowDialog() == true)
+                        {
+                            var syncDialog = new SyncOnCloseWindow();
+                            syncDialog.Show();
+
+                            try
+                            {
+                                bool pullSuccess = await App.DriveSync.PullAsync();
+                                syncDialog.Close();
+
+                                if (pullSuccess)
+                                {
+                                    App.IsDataDirty = false;
+                                    // Làm mới lại giao diện hiển thị
+                                    _dashboardCache = null;
+                                    NavigateDashboard(null, null);
+
+                                    var successWin = new SuccessWindow("Đã tải và cập nhật dữ liệu mới nhất từ Google Drive thành công!", "Đồng Bộ Thành Công");
+                                    successWin.Owner = this;
+                                    successWin.ShowDialog();
+                                }
+                                else
+                                {
+                                    var warnWin = new WarningWindow("Không thể tải dữ liệu từ Google Drive. Vui lòng thử lại sau!", "Lỗi Đồng Bộ");
+                                    warnWin.Owner = this;
+                                    warnWin.ShowDialog();
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                syncDialog.Close();
+                                App.DebugLog($"Pull on startup error: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog($"CheckGoogleDriveStartupSyncAsync error: {ex.Message}");
+            }
+        }
 
         /// <summary>
         /// Kiểm tra xem có công chức nào sắp hết nghỉ (thai sản / ốm / phép) trong 7 ngày tới không.
@@ -123,25 +200,32 @@ namespace TaxPersonnelManagement
             {
                 App.DebugLog("CheckLeaveReturnAlerts error: " + ex.Message);
             }
-}
+        }
 
         /// <summary>
         /// Bắt sự kiện người dùng bấm nút [X] đóng ứng dụng.
-        /// Nếu đang kết nối Google Drive, hiển thị cửa sổ thông báo đang đồng bộ trước khi đóng hẳn.
+        /// Cơ chế Smart Cloud Sync:
+        /// - Nếu không có dữ liệu nào bị sửa đổi (IsDataDirty == false): Đóng app ngay, không đẩy đè CSDL.
+        /// - Nếu có dữ liệu sửa đổi (IsDataDirty == true): Kiểm tra xung đột với Drive và đẩy lên an toàn.
         /// </summary>
         protected override async void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             if (!_isClosingHandled && App.DriveSync.HasSavedToken())
             {
-                e.Cancel = true; // Tạm dừng đóng ứng dụng để chạy đồng bộ
-                _isClosingHandled = true;
+                // 1. Nếu người dùng chỉ mở app xem, không sửa bất kỳ dữ liệu nào -> BỎ QUA PUSH để tránh ghi đè dữ liệu mới trên Drive
+                if (!App.IsDataDirty)
+                {
+                    App.DebugLog("OnClosing: IsDataDirty is false. Skipping auto-push to Google Drive to preserve cloud data.");
+                    base.OnClosing(e);
+                    return;
+                }
 
-                var syncDialog = new SyncOnCloseWindow();
-                syncDialog.Show();
+                // 2. Có thay đổi dữ liệu -> Tạm dừng đóng để xử lý đồng bộ
+                e.Cancel = true;
+                _isClosingHandled = true;
 
                 try
                 {
-                    // Đảm bảo DriveService đã nạp token
                     if (!App.DriveSync.IsConnected)
                     {
                         await App.DriveSync.TryLoadSavedTokenAsync();
@@ -149,15 +233,46 @@ namespace TaxPersonnelManagement
 
                     if (App.DriveSync.IsConnected)
                     {
-                        // Chạy PushAsync lên Google Drive (tối đa 10 giây)
-                        var pushTask = App.DriveSync.PushAsync();
-                        await System.Threading.Tasks.Task.WhenAny(pushTask, System.Threading.Tasks.Task.Delay(10000));
+                        // Kiểm tra xung đột: Drive có bị ai khác sửa sau khi phiên làm việc này bắt đầu không?
+                        var cloudTime = await App.DriveSync.GetCloudModifiedTimeAsync();
+                        if (cloudTime.HasValue && cloudTime.Value > App.SessionStartTime.AddMinutes(1))
+                        {
+                            string message = $"CẢNH BÁO XUNG ĐỘT DỮ LIỆU!\n\n" +
+                                             $"Dữ liệu trên Google Drive đã được cập nhật từ máy khác vào lúc: {cloudTime.Value:dd/MM/yyyy HH:mm:ss}.\n\n" +
+                                             $"Nếu tiếp tục đẩy lên, bạn sẽ GHI ĐÈ và làm mất dữ liệu đó.\n\n" +
+                                             $"Bạn có chắc chắn muốn đẩy dữ liệu từ máy này lên Google Drive không?";
+
+                            var confirm = new ConfirmWindow(message, "Cảnh Báo Ghi Đè Dữ Liệu");
+                            confirm.Owner = this;
+                            if (confirm.ShowDialog() != true)
+                            {
+                                // Người dùng hủy -> Không đẩy lên, đóng app
+                                this.Close();
+                                return;
+                            }
+                        }
+
+                        // Tiến hành Push
+                        var syncDialog = new SyncOnCloseWindow();
+                        syncDialog.Show();
+
+                        try
+                        {
+                            var pushTask = App.DriveSync.PushAsync();
+                            await System.Threading.Tasks.Task.WhenAny(pushTask, System.Threading.Tasks.Task.Delay(10000));
+                        }
+                        finally
+                        {
+                            syncDialog.Close();
+                        }
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    App.DebugLog($"OnClosing sync error: {ex.Message}");
+                }
                 finally
                 {
-                    syncDialog.Close();
                     this.Close(); // Tiếp tục đóng ứng dụng
                 }
                 return;

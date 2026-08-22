@@ -167,7 +167,9 @@ namespace TaxPersonnelManagement.Services
                     var createRequest = _driveService.Files.Create(fileMetadata, stream, "application/octet-stream");
                     createRequest.Fields = "id,name,modifiedTime";
                     var result = await createRequest.UploadAsync();
-                    return result.Status == Google.Apis.Upload.UploadStatus.Completed;
+                    bool success = result.Status == Google.Apis.Upload.UploadStatus.Completed;
+                    if (success) App.IsDataDirty = false;
+                    return success;
                 }
                 else
                 {
@@ -176,7 +178,9 @@ namespace TaxPersonnelManagement.Services
                     var updateRequest = _driveService.Files.Update(fileMetadata, existingFileId, stream, "application/octet-stream");
                     updateRequest.Fields = "id,name,modifiedTime";
                     var result = await updateRequest.UploadAsync();
-                    return result.Status == Google.Apis.Upload.UploadStatus.Completed;
+                    bool success = result.Status == Google.Apis.Upload.UploadStatus.Completed;
+                    if (success) App.IsDataDirty = false;
+                    return success;
                 }
             }
             catch
@@ -199,6 +203,15 @@ namespace TaxPersonnelManagement.Services
                 string? fileId = await GetDriveFileIdAsync();
                 if (fileId == null) return false; // Chưa có file trên Drive
 
+                // Giải phóng các kết nối SQLite đang mở nếu có
+                try
+                {
+                    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+                catch { }
+
                 // Backup file local trước khi ghi đè
                 if (File.Exists(DB_PATH))
                 {
@@ -216,6 +229,7 @@ namespace TaxPersonnelManagement.Services
 
                 // Ghi đè file local bằng file vừa tải
                 File.Move(tempPath, DB_PATH, overwrite: true);
+                App.IsDataDirty = false;
                 return true;
             }
             catch
@@ -224,6 +238,22 @@ namespace TaxPersonnelManagement.Services
                 if (File.Exists(tempPath))
                     File.Delete(tempPath);
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Lấy thời gian sửa đổi cuối cùng của file CSDL trên máy cục bộ.
+        /// </summary>
+        public DateTime? GetLocalDbLastWriteTime()
+        {
+            try
+            {
+                if (!File.Exists(DB_PATH)) return null;
+                return File.GetLastWriteTime(DB_PATH);
+            }
+            catch
+            {
+                return null;
             }
         }
 

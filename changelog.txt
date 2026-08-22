@@ -12,6 +12,10 @@
     + Bổ sung bảng "THỐNG KÊ LÃNH ĐẠO TỔ" trong màn hình Thống kê nhân sự.
     + Thống kê chi tiết theo từng Tổ / Phòng / Đơn vị: Số lượng Tổ trưởng (Trưởng phòng/Đội trưởng), Phó Tổ trưởng (Phó phòng/Phó đội trưởng), Công chức và Tổng số nhân sự của tổ.
     + Tự động đồng bộ và lọc dữ liệu chính xác theo bộ lọc Bộ phận và Năm thống kê.
+- [Tính năng] Cơ chế Đồng bộ Thông minh Google Drive (Smart Cloud Sync) chống ghi đè dữ liệu:
+    + Tự động theo dõi trạng thái thay đổi dữ liệu (`App.IsDataDirty`): Nếu chỉ mở app lên xem mà không chỉnh sửa, hệ thống sẽ bỏ qua bước đẩy dữ liệu khi tắt app, bảo toàn 100% dữ liệu mới trên Google Drive.
+    + Tự động kiểm tra bản sao lưu mới khi mở app: Nếu phát hiện trên Google Drive có dữ liệu mới hơn trên máy tính (ví dụ từ máy cơ quan về máy nhà), app sẽ hỏi người dùng để tải về bản mới nhất chỉ với 1 cú nhấp chuột.
+    + Cảnh báo xung đột khi tắt app: Nếu phát hiện dữ liệu trên Drive đã được máy khác cập nhật trong lúc phiên làm việc đang mở, hệ thống sẽ hiển thị cảnh báo xác nhận trước khi ghi đè.
 - [Tính năng] Nâng cấp Quản lý Đào tạo, Bồi dưỡng & Hội nghị:
     + Bổ sung bộ lọc theo Năm mở lớp / hội nghị (mặc định "Tất cả các năm").
     + Cải tiến ô tìm kiếm đa năng: Hỗ trợ tìm kiếm đồng thời theo Tên lớp, Số quyết định, Đơn vị ra quyết định và Năm.
