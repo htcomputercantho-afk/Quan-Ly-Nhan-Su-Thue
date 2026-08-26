@@ -1,4 +1,4 @@
-## v1.6.2.3 — 2026-08-26
+## v1.6.2.4 — 2026-08-26
 - [Tính năng] Cảnh báo Đến hạn Nhân sự thông minh (`DeadlineAlertWindow`):
     + Tự động quét và hiển thị popup cảnh báo mỗi khi mở ứng dụng đối với 4 loại mốc hành chính quan trọng:
         * Hết hạn bảo lưu phụ cấp chức vụ (cảnh báo trước 30 ngày).
