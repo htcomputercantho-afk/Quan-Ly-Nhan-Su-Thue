@@ -1,10 +1,10 @@
 ## v1.6.2.3 — 2026-08-26
 - [Tính năng] Cảnh báo Đến hạn Nhân sự thông minh (`DeadlineAlertWindow`):
     + Tự động quét và hiển thị popup cảnh báo mỗi khi mở ứng dụng đối với 4 loại mốc hành chính quan trọng:
-        * 🟣 Hết hạn bảo lưu phụ cấp chức vụ (cảnh báo trước 60 ngày).
-        * 🟡 Đến hạn nâng bậc lương định kỳ (cảnh báo trước 60 ngày).
-        * 🔴 Đến tuổi nghỉ hưu (cảnh báo trước 90 ngày).
-        * 🔵 Hết nhiệm kỳ bổ nhiệm / tái cử 5 năm đối với cấp Trưởng/Phó (cảnh báo trước 90 ngày).
+        * Hết hạn bảo lưu phụ cấp chức vụ (cảnh báo trước 30 ngày).
+        * Đến hạn nâng bậc lương định kỳ (cảnh báo trước 60 ngày).
+        * Đến tuổi nghỉ hưu (cảnh báo trước 90 ngày).
+        * Hết nhiệm kỳ bổ nhiệm / tái cử 5 năm đối với cấp Trưởng/Phó (cảnh báo trước 90 ngày).
     + Tối ưu giao diện bảng cảnh báo: Căn giữa trực quan các cột STT, Loại cảnh báo, Ngày đến hạn, Thời gian đếm ngược.
 - [Tính năng] Nâng cấp Xuất danh sách nhân sự Excel (`ExcelExporter`):
     + Bổ sung cột "Thời gian công tác theo QĐ gần nhất" ngay sau cột "Số năm công tác".

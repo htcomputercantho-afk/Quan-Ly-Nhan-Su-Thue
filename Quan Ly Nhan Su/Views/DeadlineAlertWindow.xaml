@@ -191,7 +191,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
                         <TextBlock FontSize="12" Foreground="#92400E">
-                            <Run FontWeight="Bold" Foreground="#7E22CE">🟣 Hết hạn bảo lưu PC</Run><Run> / </Run>
+                            <Run FontWeight="Bold" Foreground="#7E22CE">🟣 Hết hạn bảo lưu PC:</Run><Run> Cảnh báo trước 30 ngày</Run><Run>  |  </Run>
                             <Run FontWeight="Bold" Foreground="#B45309">🟡 Nâng lương:</Run><Run> Cảnh báo trước 60 ngày</Run>
                         </TextBlock>
                         <TextBlock FontSize="12" Foreground="#92400E" Margin="0,3,0,0">

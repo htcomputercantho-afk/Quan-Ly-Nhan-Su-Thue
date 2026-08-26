@@ -231,7 +231,7 @@ namespace TaxPersonnelManagement
                 const int SalaryAlertDays      = 60;
                 const int RetirementAlertDays  = 90;
                 const int AppointmentAlertDays = 90;
-                const int AllowanceAlertDays   = 60;
+                const int AllowanceAlertDays   = 30;
                 const int AppointmentTermYears = 5;
 
                 using (var db = new AppDbContext())
