@@ -251,17 +251,23 @@ namespace TaxPersonnelManagement.Views
 
                     // 7. Thống kê lãnh đạo tổ theo từng bộ phận
                     var leaderPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                        { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở", "Cục trưởng" };
+                        { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở" };
                     var deputyPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                        { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở", "Phó Cục trưởng" };
+                        { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở" };
+
+                    // Bộ phận bị loại khỏi bảng thống kê lãnh đạo tổ (không có khái niệm Tổ trưởng/Phó Tổ trưởng)
+                    var excludedDepts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                        { "Ban Lãnh đạo", "Ban lãnh đạo", "Lãnh đạo đơn vị", "Ban Giám đốc", "Ban giám đốc",
+                          "HĐLĐ", "Hội đồng lao động", "Hợp đồng lao động" };
 
                     var teamRows = list
-                        .Where(p => !string.IsNullOrWhiteSpace(p.Department))
+                        .Where(p => !string.IsNullOrWhiteSpace(p.Department)
+                                 && !excludedDepts.Contains(p.Department!))
                         .GroupBy(p => p.Department!)
                         .OrderBy(g => g.Key)
                         .Select(g =>
                         {
-                            int leaders = g.Count(p => leaderPositions.Contains(p.Position ?? ""));
+                            int leaders  = g.Count(p => leaderPositions.Contains(p.Position ?? ""));
                             int deputies = g.Count(p => deputyPositions.Contains(p.Position ?? ""));
                             int staff    = g.Count(p =>
                                 !leaderPositions.Contains(p.Position ?? "") &&

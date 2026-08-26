@@ -1,14 +1,14 @@
-<Window x:Class="TaxPersonnelManagement.Views.LeaveReturnAlertWindow"
+<Window x:Class="TaxPersonnelManagement.Views.DeadlineAlertWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        SizeToContent="Height" Width="680"
-        MaxHeight="620"
+        SizeToContent="Height" Width="720"
+        MaxHeight="640"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Title="Cảnh báo công chức sắp đi làm lại">
+        Title="Cảnh báo đến hạn">
 
     <Window.Triggers>
         <EventTrigger RoutedEvent="Window.Loaded">
@@ -27,7 +27,7 @@
 
     <Border Background="White" CornerRadius="18" Margin="16">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="35" ShadowDepth="6" Opacity="0.2" Color="#0D47A1"/>
+            <DropShadowEffect BlurRadius="35" ShadowDepth="6" Opacity="0.22" Color="#B45309"/>
         </Border.Effect>
 
         <Grid>
@@ -37,78 +37,60 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Gradient Header Bar -->
+            <!-- Gradient Header (Amber/Orange) -->
             <Border Grid.Row="0" CornerRadius="18,18,0,0" Padding="22,18" MouseDown="Header_MouseDown" Cursor="SizeAll">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#0F4C81" Offset="0"/>
-                        <GradientStop Color="#1565C0" Offset="0.55"/>
-                        <GradientStop Color="#1E88E5" Offset="1"/>
+                        <GradientStop Color="#92400E" Offset="0"/>
+                        <GradientStop Color="#B45309" Offset="0.5"/>
+                        <GradientStop Color="#D97706" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
-
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
-                    <!-- Icon Avatar with soft halo -->
                     <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22" Background="#26FFFFFF" Margin="0,0,14,0" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="BellRingOutline" Width="24" Height="24" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <materialDesign:PackIcon Kind="ClockAlertOutline" Width="24" Height="24" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
-
-                    <!-- Title & Subtitle -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Cảnh Báo Công Chức Sắp Đi Làm Lại" FontSize="16.5" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock x:Name="txtSubtitle" FontSize="12.5" Foreground="#BBDEFB" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="Cảnh Báo Đến Hạn Nhân Sự" FontSize="16.5" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="txtSubtitle" FontSize="12.5" Foreground="#FDE68A" Margin="0,3,0,0" TextWrapping="Wrap"/>
                     </StackPanel>
-
-                    <!-- Quick Close Button [X] -->
                     <Button Grid.Column="2" Click="Close_Click" Width="30" Height="30" Cursor="Hand"
                             Background="#22FFFFFF" BorderThickness="0" Foreground="White"
-                            materialDesign:ButtonAssist.CornerRadius="15" Padding="0"
-                            ToolTip="Đóng">
+                            materialDesign:ButtonAssist.CornerRadius="15" Padding="0" ToolTip="Đóng">
                         <materialDesign:PackIcon Kind="Close" Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </Grid>
             </Border>
 
-            <!-- Table Container -->
+            <!-- Table -->
             <Grid Grid.Row="1" Margin="22,16,22,10">
                 <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="12" Background="White" ClipToBounds="True">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="350">
-                        <DataGrid x:Name="dgAlerts"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  GridLinesVisibility="Horizontal"
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="390">
+                        <DataGrid x:Name="dgDeadlines"
+                                  AutoGenerateColumns="False" IsReadOnly="True"
+                                  HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                                   HorizontalGridLinesBrush="#F1F5F9"
-                                  Background="White"
-                                  RowBackground="White"
-                                  AlternatingRowBackground="#FAFCFF"
-                                  BorderThickness="0"
-                                  CanUserResizeRows="False"
-                                  CanUserSortColumns="False"
-                                  SelectionMode="Single"
-                                  RowHeight="54">
-                            
-                            <!-- Header Style -->
+                                  Background="White" RowBackground="White"
+                                  AlternatingRowBackground="#FFFBF5"
+                                  BorderThickness="0" CanUserResizeRows="False"
+                                  CanUserSortColumns="False" SelectionMode="Single" RowHeight="54">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background" Value="#F8FAFC"/>
-                                    <Setter Property="Foreground" Value="#475569"/>
+                                    <Setter Property="Background" Value="#FFF8F0"/>
+                                    <Setter Property="Foreground" Value="#92400E"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="FontSize" Value="12"/>
                                     <Setter Property="Padding" Value="10,10"/>
                                     <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                    <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                    <Setter Property="BorderBrush" Value="#FDE68A"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
                                 </Style>
                             </DataGrid.ColumnHeaderStyle>
-
-                            <!-- Cell Style -->
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="Padding" Value="10,0"/>
@@ -117,13 +99,12 @@
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#EFF6FF"/>
-                                            <Setter Property="Foreground" Value="#1E3A8A"/>
+                                            <Setter Property="Background" Value="#FFFBEB"/>
+                                            <Setter Property="Foreground" Value="#78350F"/>
                                         </Trigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.CellStyle>
-
                             <DataGrid.Columns>
                                 <!-- STT -->
                                 <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="52">
@@ -136,18 +117,17 @@
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-
                                 <!-- Họ tên & Bộ phận -->
                                 <DataGridTemplateColumn Header="Họ và tên / Đơn vị" Width="*">
                                     <DataGridTemplateColumn.HeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
-                                            <Setter Property="Background" Value="#F8FAFC"/>
-                                            <Setter Property="Foreground" Value="#475569"/>
+                                            <Setter Property="Background" Value="#FFF8F0"/>
+                                            <Setter Property="Foreground" Value="#92400E"/>
                                             <Setter Property="FontWeight" Value="SemiBold"/>
                                             <Setter Property="FontSize" Value="12"/>
                                             <Setter Property="Padding" Value="16,10,10,10"/>
                                             <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                                            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                            <Setter Property="BorderBrush" Value="#FDE68A"/>
                                             <Setter Property="HorizontalContentAlignment" Value="Left"/>
                                         </Style>
                                     </DataGridTemplateColumn.HeaderStyle>
@@ -160,33 +140,30 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-
-                                <!-- Loại nghỉ (Badge) -->
-                                <DataGridTemplateColumn Header="Loại nghỉ" Width="125">
+                                <!-- Loại cảnh báo -->
+                                <DataGridTemplateColumn Header="Loại" Width="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                    Background="{Binding LeaveTypeBackground}">
-                                                <TextBlock Text="{Binding LeaveType}" FontSize="12" FontWeight="SemiBold"
-                                                           Foreground="{Binding LeaveTypeForeground}" TextAlignment="Center"/>
+                                                    Background="{Binding AlertCategoryBackground}">
+                                                <TextBlock Text="{Binding AlertCategoryDisplay}" FontSize="12" FontWeight="SemiBold"
+                                                           Foreground="{Binding AlertCategoryForeground}" TextAlignment="Center"/>
                                             </Border>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-
-                                <!-- Ngày đi làm lại -->
-                                <DataGridTemplateColumn Header="Ngày đi làm lại" Width="145">
+                                <!-- Ngày đến hạn -->
+                                <DataGridTemplateColumn Header="Ngày đến hạn" Width="145">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <materialDesign:PackIcon Kind="CalendarCheck" Width="16" Height="16" Foreground="#0284C7" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                                <TextBlock Text="{Binding ReturnDateDisplay}" FontWeight="Bold" FontSize="13" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="CalendarClock" Width="16" Height="16" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding DeadlineDateDisplay}" FontWeight="Bold" FontSize="13" Foreground="#0F172A" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-
-                                <!-- Còn lại (Pill Badge) -->
+                                <!-- Còn lại -->
                                 <DataGridTemplateColumn Header="Thời gian" Width="110">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -206,28 +183,33 @@
             </Grid>
 
             <!-- Footer -->
-            <Border Grid.Row="2" Padding="22,12,22,18" Background="#FAFAFA" CornerRadius="0,0,18,18" BorderBrush="#F1F5F9" BorderThickness="0,1,0,0">
+            <Border Grid.Row="2" Padding="22,12,22,18" Background="#FFFBF0" CornerRadius="0,0,18,18" BorderBrush="#FDE68A" BorderThickness="0,1,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="InformationOutline" Width="16" Height="16" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock FontSize="12" Foreground="#64748B" VerticalAlignment="Center"
-                                   Text="Ngày đi làm lại được tính bằng ngày kết thúc nghỉ + 1 ngày."/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                        <TextBlock FontSize="12" Foreground="#92400E">
+                            <Run FontWeight="Bold" Foreground="#7E22CE">🟣 Hết hạn bảo lưu PC</Run><Run> / </Run>
+                            <Run FontWeight="Bold" Foreground="#B45309">🟡 Nâng lương:</Run><Run> Cảnh báo trước 60 ngày</Run>
+                        </TextBlock>
+                        <TextBlock FontSize="12" Foreground="#92400E" Margin="0,3,0,0">
+                            <Run FontWeight="Bold" Foreground="#B91C1C">🔴 Nghỉ hưu</Run><Run> / </Run>
+                            <Run FontWeight="Bold" Foreground="#1D4ED8">🔵 Bổ nhiệm:</Run><Run> Cảnh báo trước 90 ngày</Run>
+                        </TextBlock>
+                        <TextBlock FontSize="11" Foreground="#78350F" Margin="0,4,0,0">
+                            <Run FontStyle="Italic">* Hạn bổ nhiệm được ước tính: Ngày QĐ bổ nhiệm + 5 năm (áp dụng cấp Trưởng/Phó).</Run>
+                        </TextBlock>
                     </StackPanel>
-
                     <Button Grid.Column="1" Content="Đã hiểu" Click="Close_Click"
-                            Width="120" Height="38"
-                            Cursor="Hand"
+                            Width="120" Height="38" Cursor="Hand"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="19"
-                            Background="#1565C0" BorderBrush="#1565C0" Foreground="White"
+                            Background="#D97706" BorderBrush="#D97706" Foreground="White"
                             FontSize="13.5" FontWeight="Bold">
                         <Button.Effect>
-                            <DropShadowEffect BlurRadius="8" Opacity="0.2" Color="#1565C0" ShadowDepth="2"/>
+                            <DropShadowEffect BlurRadius="8" Opacity="0.25" Color="#D97706" ShadowDepth="2"/>
                         </Button.Effect>
                     </Button>
                 </Grid>
@@ -235,4 +217,3 @@
         </Grid>
     </Border>
 </Window>
-

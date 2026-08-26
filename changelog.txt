@@ -1,3 +1,20 @@
+## v1.6.2.3 — 2026-08-26
+- [Tính năng] Cảnh báo Đến hạn Nhân sự thông minh (`DeadlineAlertWindow`):
+    + Tự động quét và hiển thị popup cảnh báo mỗi khi mở ứng dụng đối với 4 loại mốc hành chính quan trọng:
+        * 🟣 Hết hạn bảo lưu phụ cấp chức vụ (cảnh báo trước 60 ngày).
+        * 🟡 Đến hạn nâng bậc lương định kỳ (cảnh báo trước 60 ngày).
+        * 🔴 Đến tuổi nghỉ hưu (cảnh báo trước 90 ngày).
+        * 🔵 Hết nhiệm kỳ bổ nhiệm / tái cử 5 năm đối với cấp Trưởng/Phó (cảnh báo trước 90 ngày).
+    + Tối ưu giao diện bảng cảnh báo: Căn giữa trực quan các cột STT, Loại cảnh báo, Ngày đến hạn, Thời gian đếm ngược.
+- [Tính năng] Nâng cấp Xuất danh sách nhân sự Excel (`ExcelExporter`):
+    + Bổ sung cột "Thời gian công tác theo QĐ gần nhất" ngay sau cột "Số năm công tác".
+    + Cột "Đảng viên" hiển thị số `1` (căn giữa) thay cho chuỗi ký tự "Đảng viên".
+- [Cải tiến] Tối ưu bộ lọc Năm trong Theo dõi nâng lương (`SalaryListView`):
+    + Tải danh sách năm động từ CSDL: Tự động loại bỏ các năm cũ khi đã hoàn tất nâng lương (không còn bản ghi đến hạn của năm đó).
+- [Cải tiến] Tự động chọn Năm hiện tại trong Quản lý Đào tạo & Bồi dưỡng (`TrainingListView`):
+    + Mặc định chọn năm công tác hiện hành thay vì "-- Tất cả --" khi mở trang.
+- [Cải tiến] Tối ưu hóa giao diện và tinh gọn toàn bộ mã nguồn hệ thống.
+
 ## v1.6.2.2 — 2026-08-22
 - [Tính năng] Cảnh báo công chức sắp đi làm lại sau đợt nghỉ (7 ngày):
     + Tự động quét và hiển thị popup cảnh báo (`LeaveReturnAlertWindow`) khi đăng nhập nếu có công chức đang nghỉ (thai sản, ốm, phép) sắp đi làm lại trong vòng 7 ngày tới.

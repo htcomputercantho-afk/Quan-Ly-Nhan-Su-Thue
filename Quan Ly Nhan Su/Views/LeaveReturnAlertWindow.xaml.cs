@@ -6,20 +6,26 @@ using System.Windows.Media;
 
 namespace TaxPersonnelManagement.Views
 {
-    /// <summary>
-    /// Hiển thị danh sách công chức sắp kết thúc nghỉ (thai sản / ốm / phép)
-    /// và sắp đi làm lại trong vòng 7 ngày tới với giao diện hiện đại, trực quan.
-    /// </summary>
     public partial class LeaveReturnAlertWindow : Window
     {
         public LeaveReturnAlertWindow(List<LeaveReturnInfo> alerts)
         {
             InitializeComponent();
 
-            int count = alerts.Count;
-            txtSubtitle.Text = $"Có {count} công chức sẽ hoàn thành đợt nghỉ và đi làm lại trong 7 ngày tới";
+            int upcoming = alerts.Count(a => a.AlertType == "upcoming");
+            int open     = alerts.Count(a => a.AlertType == "open");
 
-            // Gán STT
+            var parts = new List<string>();
+            if (upcoming > 0) parts.Add($"{upcoming} sắp đi làm lại (7 ngày tới)");
+            if (open     > 0) parts.Add($"{open} đang nghỉ chưa có ngày kết thúc");
+
+            txtSubtitle.Text = string.Join("  •  ", parts);
+
+            alerts = alerts
+                .OrderBy(a => a.AlertType == "upcoming" ? 0 : 1)
+                .ThenBy(a => a.ReturnDate ?? DateTime.MaxValue)
+                .ToList();
+
             for (int i = 0; i < alerts.Count; i++)
                 alerts[i].STT = i + 1;
 
@@ -29,57 +35,47 @@ namespace TaxPersonnelManagement.Views
         private void Header_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                this.DragMove();
-            }
+                DragMove();
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 
-    /// <summary>
-    /// DTO lưu thông tin một công chức sắp đi làm lại.
-    /// </summary>
     public class LeaveReturnInfo
     {
         public int STT { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string? Department { get; set; }
         public string LeaveType { get; set; } = string.Empty;
-
-        /// <summary>Ngày đi làm lại = EndDate + 1</summary>
-        public DateTime ReturnDate { get; set; }
-
-        /// <summary>Số ngày còn lại cho đến ngày đi làm lại (tính từ hôm nay).</summary>
+        public string AlertType { get; set; } = "upcoming";
+        public DateTime? ReturnDate { get; set; }
         public int DaysLeft { get; set; }
 
-        // ── Computed display properties ─────────────────────────────────────
-
-        public string ReturnDateDisplay => ReturnDate.ToString("dd/MM/yyyy");
-
+        public string ReturnDateDisplay => AlertType == "open" ? "Chưa xác định" : ReturnDate?.ToString("dd/MM/yyyy") ?? "---";
         public string DepartmentDisplay => string.IsNullOrWhiteSpace(Department) ? "---" : Department;
 
         public string DaysLeftDisplay
         {
             get
             {
+                if (AlertType == "open") return "Đang nghỉ";
                 if (DaysLeft <= 0) return "Hôm nay";
                 if (DaysLeft == 1) return "Ngày mai";
                 return $"Còn {DaysLeft} ngày";
             }
         }
 
-        /// <summary>Màu badge "Còn lại": đỏ khi <= 1 ngày, vàng hổ phách khi <= 3 ngày, xanh dương nhẹ khi còn nhiều hơn.</summary>
         public Brush DaysLeftBackground
         {
             get
             {
-                if (DaysLeft <= 1) return new SolidColorBrush(Color.FromRgb(254, 226, 226)); // Red 100
-                if (DaysLeft <= 3) return new SolidColorBrush(Color.FromRgb(254, 243, 199)); // Amber 100
-                return new SolidColorBrush(Color.FromRgb(224, 242, 254));                     // Sky 100
+                if (AlertType == "open") return new SolidColorBrush(Color.FromRgb(241, 245, 249));
+                if (DaysLeft <= 1) return new SolidColorBrush(Color.FromRgb(254, 226, 226));
+                if (DaysLeft <= 3) return new SolidColorBrush(Color.FromRgb(254, 243, 199));
+                return new SolidColorBrush(Color.FromRgb(224, 242, 254));
             }
         }
 
@@ -87,9 +83,10 @@ namespace TaxPersonnelManagement.Views
         {
             get
             {
-                if (DaysLeft <= 1) return new SolidColorBrush(Color.FromRgb(220, 38, 38));  // Red 600
-                if (DaysLeft <= 3) return new SolidColorBrush(Color.FromRgb(217, 119, 6));  // Amber 600
-                return new SolidColorBrush(Color.FromRgb(2, 132, 199));                      // Sky 600
+                if (AlertType == "open") return new SolidColorBrush(Color.FromRgb(100, 116, 139));
+                if (DaysLeft <= 1) return new SolidColorBrush(Color.FromRgb(220, 38, 38));
+                if (DaysLeft <= 3) return new SolidColorBrush(Color.FromRgb(217, 119, 6));
+                return new SolidColorBrush(Color.FromRgb(2, 132, 199));
             }
         }
 
@@ -97,21 +94,22 @@ namespace TaxPersonnelManagement.Views
         {
             get
             {
-                if (DaysLeft <= 1) return new SolidColorBrush(Color.FromRgb(254, 202, 202)); // Red 200
-                if (DaysLeft <= 3) return new SolidColorBrush(Color.FromRgb(253, 230, 138)); // Amber 200
-                return new SolidColorBrush(Color.FromRgb(186, 230, 253));                     // Sky 200
+                if (AlertType == "open") return new SolidColorBrush(Color.FromRgb(203, 213, 225));
+                if (DaysLeft <= 1) return new SolidColorBrush(Color.FromRgb(254, 202, 202));
+                if (DaysLeft <= 3) return new SolidColorBrush(Color.FromRgb(253, 230, 138));
+                return new SolidColorBrush(Color.FromRgb(186, 230, 253));
             }
         }
 
-        /// <summary>Màu badge loại nghỉ</summary>
         public Brush LeaveTypeBackground
         {
             get
             {
                 string lt = (LeaveType ?? "").ToLower();
-                if (lt.Contains("thai sản")) return new SolidColorBrush(Color.FromRgb(253, 242, 248)); // Pink 50
-                if (lt.Contains("ốm")) return new SolidColorBrush(Color.FromRgb(255, 247, 237));       // Orange 50
-                return new SolidColorBrush(Color.FromRgb(240, 253, 244));                               // Green 50
+                if (lt.Contains("thai sản")) return new SolidColorBrush(Color.FromRgb(253, 242, 248));
+                if (lt.Contains("ốm")) return new SolidColorBrush(Color.FromRgb(255, 247, 237));
+                if (lt.Contains("không lương") || lt.Contains("khong luong")) return new SolidColorBrush(Color.FromRgb(245, 243, 255));
+                return new SolidColorBrush(Color.FromRgb(240, 253, 244));
             }
         }
 
@@ -120,9 +118,10 @@ namespace TaxPersonnelManagement.Views
             get
             {
                 string lt = (LeaveType ?? "").ToLower();
-                if (lt.Contains("thai sản")) return new SolidColorBrush(Color.FromRgb(190, 24, 93));  // Pink 700
-                if (lt.Contains("ốm")) return new SolidColorBrush(Color.FromRgb(194, 65, 12));        // Orange 700
-                return new SolidColorBrush(Color.FromRgb(21, 128, 61));                                // Green 700
+                if (lt.Contains("thai sản")) return new SolidColorBrush(Color.FromRgb(190, 24, 93));
+                if (lt.Contains("ốm")) return new SolidColorBrush(Color.FromRgb(194, 65, 12));
+                if (lt.Contains("không lương") || lt.Contains("khong luong")) return new SolidColorBrush(Color.FromRgb(109, 40, 217));
+                return new SolidColorBrush(Color.FromRgb(21, 128, 61));
             }
         }
     }

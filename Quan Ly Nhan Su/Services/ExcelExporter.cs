@@ -25,22 +25,22 @@ namespace TaxPersonnelManagement.Services
             {
                 var worksheet = workbook.Worksheets.Add("DanhSachNhanSu");
 
-                // Tiêu đề các cột (40 cột)
+                // Tiêu đề các cột (42 cột)
                 string[] headers =
                 {
-                    "STT", "Số hiệu CB", "Họ và Tên", // A, B, C
-                    "Giới tính", "Ngày sinh", "Dân tộc", "Tôn giáo", "Nơi sinh", "Quê quán", "Nơi ở hiện nay", // D, E, F, G, H, I, J
-                    "SĐT", "Email", // K, L
-                    "CCCD", "Nơi cấp CCCD", "Số BHXH", // M, N, O
-                    "Bộ phận", "Chức vụ", "Thời gian công tác tại cơ quan thuế", "Số năm công tác", // P, Q, R, S
-                    "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // T, U, V
-                    "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // W, X, Y, Z
-                    "Đảng viên", "Ngày vào Đảng", "Ngày chính thức", "Số năm tuổi Đảng", // AA, AB, AC, AD
-                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AE, AF, AG, AH
-                    "Phụ cấp CV", "Vượt khung %", // AI, AJ
-                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AK, AL, AM
-                    "Ghi chú", // AN
-                    "Ngày về hưu (Dự kiến)" // AO
+                    "STT", "Số hiệu CB", "Họ và Tên", // A, B, C (1, 2, 3)
+                    "Giới tính", "Ngày sinh", "Dân tộc", "Tôn giáo", "Nơi sinh", "Quê quán", "Nơi ở hiện nay", // D-J (4-10)
+                    "SĐT", "Email", // K, L (11, 12)
+                    "CCCD", "Nơi cấp CCCD", "Số BHXH", // M, N, O (13, 14, 15)
+                    "Bộ phận", "Chức vụ", "Thời gian công tác tại cơ quan thuế", "Số năm công tác", "Thời gian công tác theo QĐ gần nhất", // P, Q, R, S, T (16, 17, 18, 19, 20)
+                    "Trình độ CM", "Chuyên ngành", "Trường đào tạo", // U, V, W (21, 22, 23)
+                    "Lý luận CT", "QL Nhà nước", "Ngoại ngữ", "Tin học", // X, Y, Z, AA (24, 25, 26, 27)
+                    "Đảng viên", "Ngày vào Đảng", "Ngày chính thức", "Số năm tuổi Đảng", // AB, AC, AD, AE (28, 29, 30, 31)
+                    "Mã ngạch", "Tên ngạch", "Bậc lương", "Hệ số", // AF, AG, AH, AI (32, 33, 34, 35)
+                    "Phụ cấp CV", "Vượt khung %", // AJ, AK (36, 37)
+                    "Danh hiệu thi đua", "Khen thưởng", "Kỷ luật", // AL, AM, AN (38, 39, 40)
+                    "Ghi chú", // AO (41)
+                    "Ngày về hưu (Dự kiến)" // AP (42)
                 };
 
                 for (int i = 0; i < headers.Length; i++)
@@ -83,36 +83,37 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 16).Value = p.Department;
                     worksheet.Cell(row, 17).Value = p.Position;
                     worksheet.Cell(row, 18).Value = p.TaxAuthorityStartDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.TaxAuthorityStartDate.Value) : "";
- 
                     worksheet.Cell(row, 19).Value = CalcWorkingYears(p, now);
+                    worksheet.Cell(row, 20).Value = p.PositionDecisionDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PositionDecisionDate.Value) : "";
 
-                    worksheet.Cell(row, 20).Value = p.EducationLevel;
-                    worksheet.Cell(row, 21).Value = p.Major;
-                    worksheet.Cell(row, 22).Value = p.University;
+                    worksheet.Cell(row, 21).Value = p.EducationLevel;
+                    worksheet.Cell(row, 22).Value = p.Major;
+                    worksheet.Cell(row, 23).Value = p.University;
 
-                    worksheet.Cell(row, 23).Value = p.PoliticalTheoryLevel;
-                    worksheet.Cell(row, 24).Value = p.StateManagementLevel;
-                    worksheet.Cell(row, 25).Value = p.LanguageSkillLevel;
-                    worksheet.Cell(row, 26).Value = p.ITSkillLevel;
+                    worksheet.Cell(row, 24).Value = p.PoliticalTheoryLevel;
+                    worksheet.Cell(row, 25).Value = p.StateManagementLevel;
+                    worksheet.Cell(row, 26).Value = p.LanguageSkillLevel;
+                    worksheet.Cell(row, 27).Value = p.ITSkillLevel;
 
-                    worksheet.Cell(row, 27).Value = p.PartyEntryDate.HasValue ? "Đảng viên" : "";
-                    worksheet.Cell(row, 28).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
-                    worksheet.Cell(row, 29).Value = p.PartyOfficialDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyOfficialDate.Value) : "";
-                    worksheet.Cell(row, 30).Value = p.CalculatedPartyAge;
+                    worksheet.Cell(row, 28).Value = p.PartyEntryDate.HasValue ? 1 : "";
+                    worksheet.Cell(row, 28).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Cell(row, 29).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
+                    worksheet.Cell(row, 30).Value = p.PartyOfficialDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyOfficialDate.Value) : "";
+                    worksheet.Cell(row, 31).Value = p.CalculatedPartyAge;
 
-                    worksheet.Cell(row, 31).Value = p.RankCode;
-                    worksheet.Cell(row, 32).Value = p.RankName;
-                    worksheet.Cell(row, 33).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
-                    worksheet.Cell(row, 34).Value = p.CurrentSalaryCoefficient;
+                    worksheet.Cell(row, 32).Value = p.RankCode;
+                    worksheet.Cell(row, 33).Value = p.RankName;
+                    worksheet.Cell(row, 34).Value = "'" + p.CurrentSalaryStep; // e.g. "1/9" can be interpreted as date
+                    worksheet.Cell(row, 35).Value = p.CurrentSalaryCoefficient;
 
-                    worksheet.Cell(row, 35).Value = p.PositionAllowance;
-                    worksheet.Cell(row, 36).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
+                    worksheet.Cell(row, 36).Value = p.PositionAllowance;
+                    worksheet.Cell(row, 37).Value = p.ExceedFramePercent > 0 ? $"{p.ExceedFramePercent}%" : "";
 
-                    worksheet.Cell(row, 37).Value = p.EmulationTitles;
-                    worksheet.Cell(row, 38).Value = p.RewardForms;
-                    worksheet.Cell(row, 39).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
+                    worksheet.Cell(row, 38).Value = p.EmulationTitles;
+                    worksheet.Cell(row, 39).Value = p.RewardForms;
+                    worksheet.Cell(row, 40).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
 
-                    // Cột 40: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
+                    // Cột 41: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
                     string ghiChu = "";
                     if (p.LeaveHistories != null)
                     {
@@ -146,8 +147,8 @@ namespace TaxPersonnelManagement.Services
                             }
                         }
                     }
-                    worksheet.Cell(row, 40).Value = ghiChu;
-                    worksheet.Cell(row, 41).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
+                    worksheet.Cell(row, 41).Value = ghiChu;
+                    worksheet.Cell(row, 42).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
 
                     // Áp dụng viền và căn chỉnh cho toàn bộ ô trong dòng
                     for (int c = 1; c <= headers.Length; c++)

@@ -82,7 +82,15 @@ namespace TaxPersonnelManagement.Views
                     }
                     else
                     {
-                        cbYear.SelectedIndex = 0; // "-- Tất cả các năm --"
+                        var currentYearItem = yearItems.FirstOrDefault(i => i.Value == currentYear);
+                        if (currentYearItem != null)
+                        {
+                            cbYear.SelectedItem = currentYearItem;
+                        }
+                        else
+                        {
+                            cbYear.SelectedIndex = 0; // "-- Tất cả --"
+                        }
                     }
                     _isInitializingFilter = false;
 

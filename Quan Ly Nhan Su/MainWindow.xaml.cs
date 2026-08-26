@@ -50,6 +50,9 @@ namespace TaxPersonnelManagement
                 // Kiểm tra và hiển thị cảnh báo công chức sắp đi làm lại
                 CheckLeaveReturnAlerts();
 
+                // Kiểm tra và hiển thị cảnh báo đến hạn (nâng lương / nghỉ hưu / bổ nhiệm)
+                CheckDeadlineAlerts();
+
                 // Tự động kiểm tra bản cập nhật CSDL trên Google Drive khi mở app
                 _ = CheckGoogleDriveStartupSyncAsync();
             };
@@ -139,54 +142,72 @@ namespace TaxPersonnelManagement
         {
             try
             {
-                const int AlertDays = 7;
                 var today = DateTime.Today;
-                var cutoff = today.AddDays(AlertDays);
+                var cutoff = today.AddDays(7);
 
                 using (var db = new AppDbContext())
                 {
-                    // Lấy tất cả personnel có lịch nghỉ kết thúc trong khoảng [hôm nay, hôm nay + 7 ngày]
-                    var personnelList = db.Personnel
+                    var allPersonnel = db.Personnel
                         .Include(p => p.LeaveHistories)
-                        .Where(p => p.LeaveHistories.Any(l =>
-                            l.EndDate.HasValue &&
-                            l.EndDate.Value.Date >= today &&
-                            l.EndDate.Value.Date <= cutoff &&
-                            l.StartDate.Date <= today))
+                        .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
                         .ToList();
 
                     var alerts = new List<LeaveReturnInfo>();
 
-                    foreach (var p in personnelList)
+                    foreach (var p in allPersonnel)
                     {
-                        // Lấy lịch nghỉ đang active và sắp kết thúc gần nhất
-                        var activeLeave = p.LeaveHistories
+                        if (p.LeaveHistories == null || p.LeaveHistories.Count == 0) continue;
+
+                        // Sắp hết kỳ nghỉ trong 7 ngày tới
+                        var upcomingLeave = p.LeaveHistories
                             .Where(l =>
                                 l.EndDate.HasValue &&
+                                l.StartDate.Date <= today &&
                                 l.EndDate.Value.Date >= today &&
-                                l.EndDate.Value.Date <= cutoff &&
-                                l.StartDate.Date <= today)
+                                l.EndDate.Value.Date <= cutoff)
                             .OrderBy(l => l.EndDate)
                             .FirstOrDefault();
 
-                        if (activeLeave == null) continue;
-
-                        // Ngày đi làm lại = ngày kết thúc nghỉ + 1
-                        var returnDate = activeLeave.EndDate!.Value.Date.AddDays(1);
-                        int daysLeft = (returnDate - today).Days;
-
-                        alerts.Add(new LeaveReturnInfo
+                        if (upcomingLeave != null)
                         {
-                            FullName = p.FullName,
-                            Department = p.Department,
-                            LeaveType = activeLeave.LeaveType,
-                            ReturnDate = returnDate,
-                            DaysLeft = daysLeft
-                        });
-                    }
+                            var returnDate = upcomingLeave.EndDate!.Value.Date.AddDays(1);
+                            alerts.Add(new LeaveReturnInfo
+                            {
+                                AlertType  = "upcoming",
+                                FullName   = p.FullName,
+                                Department = p.Department,
+                                LeaveType  = upcomingLeave.LeaveType,
+                                ReturnDate = returnDate,
+                                DaysLeft   = (returnDate - today).Days
+                            });
+                            continue;
+                        }
 
-                    // Sắp xếp theo ngày đi làm lại gần nhất
-                    alerts = alerts.OrderBy(a => a.ReturnDate).ToList();
+                        // Đợt nghỉ chưa có ngày kết thúc (thai sản, ốm dài ngày, không lương)
+                        var openLeave = p.LeaveHistories
+                            .Where(l =>
+                                !l.EndDate.HasValue &&
+                                l.StartDate.Date <= today &&
+                                (l.LeaveType.Contains("Thai sản") ||
+                                 l.LeaveType.Contains("Nghỉ ốm") ||
+                                 l.LeaveType.Contains("Nghỉ thai sản") ||
+                                 l.LeaveType.Contains("Không lương")))
+                            .OrderByDescending(l => l.StartDate)
+                            .FirstOrDefault();
+
+                        if (openLeave != null)
+                        {
+                            alerts.Add(new LeaveReturnInfo
+                            {
+                                AlertType  = "open",
+                                FullName   = p.FullName,
+                                Department = p.Department,
+                                LeaveType  = openLeave.LeaveType,
+                                ReturnDate = null,
+                                DaysLeft   = 0
+                            });
+                        }
+                    }
 
                     if (alerts.Count > 0)
                     {
@@ -199,6 +220,121 @@ namespace TaxPersonnelManagement
             catch (Exception ex)
             {
                 App.DebugLog("CheckLeaveReturnAlerts error: " + ex.Message);
+            }
+        }
+
+        private void CheckDeadlineAlerts()
+        {
+            try
+            {
+                var today = DateTime.Today;
+                const int SalaryAlertDays      = 60;
+                const int RetirementAlertDays  = 90;
+                const int AppointmentAlertDays = 90;
+                const int AllowanceAlertDays   = 60;
+                const int AppointmentTermYears = 5;
+
+                using (var db = new AppDbContext())
+                {
+                    var personnelList = db.Personnel
+                        .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                        .ToList();
+
+                    var alerts = new List<DeadlineAlertInfo>();
+
+                    foreach (var p in personnelList)
+                    {
+                        // 1. Thời hạn bảo lưu phụ cấp chức vụ
+                        if (p.SalaryReservationDeadline.HasValue)
+                        {
+                            var allowanceDate = p.SalaryReservationDeadline.Value.Date;
+                            int days = (allowanceDate - today).Days;
+                            if (days >= 0 && days <= AllowanceAlertDays)
+                            {
+                                alerts.Add(new DeadlineAlertInfo
+                                {
+                                    AlertCategory = "allowance",
+                                    FullName      = p.FullName,
+                                    Department    = p.Department,
+                                    DeadlineDate  = allowanceDate,
+                                    DaysLeft      = days
+                                });
+                            }
+                        }
+
+                        // 2. Nâng lương định kỳ
+                        if (p.ExpectedSalaryIncreaseDate.HasValue)
+                        {
+                            var salaryDate = p.ExpectedSalaryIncreaseDate.Value.Date;
+                            int days = (salaryDate - today).Days;
+                            if (days >= 0 && days <= SalaryAlertDays)
+                            {
+                                alerts.Add(new DeadlineAlertInfo
+                                {
+                                    AlertCategory = "salary",
+                                    FullName      = p.FullName,
+                                    Department    = p.Department,
+                                    DeadlineDate  = salaryDate,
+                                    DaysLeft      = days
+                                });
+                            }
+                        }
+
+                        // 3. Nghỉ hưu
+                        if (p.RetirementDate.HasValue)
+                        {
+                            var retDate = p.RetirementDate.Value.Date;
+                            int days = (retDate - today).Days;
+                            if (days >= 0 && days <= RetirementAlertDays)
+                            {
+                                alerts.Add(new DeadlineAlertInfo
+                                {
+                                    AlertCategory = "retirement",
+                                    FullName      = p.FullName,
+                                    Department    = p.Department,
+                                    DeadlineDate  = retDate,
+                                    DaysLeft      = days
+                                });
+                            }
+                        }
+
+                        // 4. Bổ nhiệm / tái cử (Trưởng / Phó)
+                        if (p.PositionDecisionDate.HasValue && !string.IsNullOrWhiteSpace(p.Position))
+                        {
+                            string pos = p.Position.ToLower();
+                            bool isLeader = (pos.Contains("trưởng") || pos.Contains("phó"))
+                                         && !pos.Contains("công chức");
+                            if (isLeader)
+                            {
+                                var apptEndDate = p.PositionDecisionDate.Value
+                                                    .AddYears(AppointmentTermYears).Date;
+                                int days = (apptEndDate - today).Days;
+                                if (days >= 0 && days <= AppointmentAlertDays)
+                                {
+                                    alerts.Add(new DeadlineAlertInfo
+                                    {
+                                        AlertCategory = "appointment",
+                                        FullName      = p.FullName,
+                                        Department    = p.Department,
+                                        DeadlineDate  = apptEndDate,
+                                        DaysLeft      = days
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    if (alerts.Count > 0)
+                    {
+                        var alertWin = new DeadlineAlertWindow(alerts);
+                        alertWin.Owner = this;
+                        alertWin.ShowDialog();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("CheckDeadlineAlerts error: " + ex.Message);
             }
         }
 

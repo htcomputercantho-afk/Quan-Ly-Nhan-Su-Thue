@@ -57,18 +57,10 @@ namespace TaxPersonnelManagement.Views
             Header
         }
 
+        private bool _isInitializingFilter = false;
+
         private void LoadFilterOptions()
         {
-            var years = new List<FilterItem>();
-            years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
-            int currentYear = DateTime.Now.Year;
-            for (int i = 2025; i <= currentYear + 5; i++)
-            {
-                years.Add(new FilterItem { Label = $"Năm {i}", Value = i });
-            }
-            cbYear.ItemsSource = years;
-            cbYear.SelectedIndex = 0;
-
             var periods = new List<FilterItem>();
             periods.Add(new FilterItem { Label = "-- Cả năm --", Value = 0, Type = FilterType.None });
 
@@ -90,10 +82,62 @@ namespace TaxPersonnelManagement.Views
 
             cbPeriod.ItemsSource = periods;
             cbPeriod.SelectedIndex = 0;
+
+            UpdateYearFilterOptions();
+        }
+
+        private void UpdateYearFilterOptions()
+        {
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                    // Lấy động danh sách các năm thực tế có công chức đến hạn nâng lương trong CSDL
+                    var distinctYears = context.Personnel
+                        .Where(p => (string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác") && p.ExpectedSalaryIncreaseDate.HasValue)
+                        .Select(p => p.ExpectedSalaryIncreaseDate!.Value.Year)
+                        .Distinct()
+                        .ToList();
+
+                    int currentYear = DateTime.Now.Year;
+                    if (!distinctYears.Contains(currentYear))
+                    {
+                        distinctYears.Add(currentYear);
+                    }
+                    distinctYears.Sort();
+
+                    var years = new List<FilterItem>();
+                    years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
+                    foreach (var y in distinctYears)
+                    {
+                        years.Add(new FilterItem { Label = $"Năm {y}", Value = y });
+                    }
+
+                    int prevVal = (cbYear.SelectedItem as FilterItem)?.Value ?? 0;
+
+                    _isInitializingFilter = true;
+                    cbYear.ItemsSource = years;
+                    if (prevVal > 0 && years.Any(i => i.Value == prevVal))
+                    {
+                        cbYear.SelectedItem = years.First(i => i.Value == prevVal);
+                    }
+                    else
+                    {
+                        cbYear.SelectedIndex = 0;
+                    }
+                    _isInitializingFilter = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _isInitializingFilter = false;
+                App.DebugLog("UpdateYearFilterOptions error: " + ex.Message);
+            }
         }
 
         private void cbFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (_isInitializingFilter) return;
             LoadData();
         }
 
