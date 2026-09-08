@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
@@ -10,6 +12,24 @@ using DriveFile = Google.Apis.Drive.v3.Data.File;
 
 namespace TaxPersonnelManagement.Services
 {
+    public class CloudFileInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public DateTime? ModifiedTime { get; set; }
+        public string? Md5Checksum { get; set; }
+        public long? Size { get; set; }
+    }
+
+    public class SyncState
+    {
+        public string? LastCloudFileId { get; set; }
+        public DateTime? LastCloudModifiedTime { get; set; }
+        public string? LastCloudMd5 { get; set; }
+        public string? LastLocalDbMd5 { get; set; }
+        public DateTime? LastSyncLocalTime { get; set; }
+    }
+
     /// <summary>
     /// Dịch vụ đồng bộ CSDL SQLite với Google Drive (drive.file scope).
     /// File backup sẽ xuất hiện trong My Drive của người dùng, chỉ truy cập file do app tạo ra.
@@ -36,11 +56,21 @@ namespace TaxPersonnelManagement.Services
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "QuanLyNhanSu", "google_token");
 
+        // File lưu trạng thái đồng bộ đã thực hiện gần nhất trên máy này
+        private static readonly string SYNC_STATE_FILE = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "QuanLyNhanSu", "sync_state.json");
+
         private static readonly string DB_PATH = Path.Combine(
             System.AppContext.BaseDirectory, DB_FILE_NAME);
 
         private UserCredential? _credential;
         private DriveService?   _driveService;
+
+        /// <summary>
+        /// Thời điểm sửa đổi của file Drive ghi nhận lúc mở app (dùng để phát hiện xung đột khi đóng app).
+        /// </summary>
+        public DateTime? InitialCloudModifiedTime { get; set; }
 
         // ─────────────────────────────────────────────────────────────────────
         // PUBLIC API
@@ -155,6 +185,8 @@ namespace TaxPersonnelManagement.Services
 
                 using var stream = new FileStream(DB_PATH, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
+                DriveFile? uploadedFile = null;
+
                 if (existingFileId == null)
                 {
                     // Tạo file mới trong thư mục dedicated
@@ -165,26 +197,66 @@ namespace TaxPersonnelManagement.Services
                         Parents     = folderId != null ? new[] { folderId } : null
                     };
                     var createRequest = _driveService.Files.Create(fileMetadata, stream, "application/octet-stream");
-                    createRequest.Fields = "id,name,modifiedTime";
+                    createRequest.Fields = "id,name,modifiedTime,md5Checksum,size";
                     var result = await createRequest.UploadAsync();
-                    bool success = result.Status == Google.Apis.Upload.UploadStatus.Completed;
-                    if (success) App.IsDataDirty = false;
-                    return success;
+                    if (result.Status == Google.Apis.Upload.UploadStatus.Completed)
+                    {
+                        uploadedFile = createRequest.ResponseBody;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
                     // Cập nhật file đã tồn tại
                     var fileMetadata = new DriveFile();
                     var updateRequest = _driveService.Files.Update(fileMetadata, existingFileId, stream, "application/octet-stream");
-                    updateRequest.Fields = "id,name,modifiedTime";
+                    updateRequest.Fields = "id,name,modifiedTime,md5Checksum,size";
                     var result = await updateRequest.UploadAsync();
-                    bool success = result.Status == Google.Apis.Upload.UploadStatus.Completed;
-                    if (success) App.IsDataDirty = false;
-                    return success;
+                    if (result.Status == Google.Apis.Upload.UploadStatus.Completed)
+                    {
+                        uploadedFile = updateRequest.ResponseBody;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
+
+                if (uploadedFile != null)
+                {
+                    var cloudModified = uploadedFile.ModifiedTimeDateTimeOffset?.DateTime.ToLocalTime() ?? DateTime.Now;
+                    string? cloudMd5 = uploadedFile.Md5Checksum;
+                    string? localMd5 = GetLocalDbMd5();
+
+                    // Đồng bộ timestamp file local khớp với thời gian cloud để tránh sai lệch
+                    try
+                    {
+                        File.SetLastWriteTime(DB_PATH, cloudModified);
+                    }
+                    catch { }
+
+                    SaveSyncState(new SyncState
+                    {
+                        LastCloudFileId = uploadedFile.Id,
+                        LastCloudModifiedTime = cloudModified,
+                        LastCloudMd5 = cloudMd5 ?? localMd5,
+                        LastLocalDbMd5 = localMd5,
+                        LastSyncLocalTime = DateTime.Now
+                    });
+
+                    InitialCloudModifiedTime = cloudModified;
+                    App.IsDataDirty = false;
+                    return true;
+                }
+
+                return false;
             }
-            catch
+            catch (Exception ex)
             {
+                App.DebugLog($"PushAsync error: {ex.Message}");
                 return false;
             }
         }
@@ -227,18 +299,175 @@ namespace TaxPersonnelManagement.Services
                     await getRequest.DownloadAsync(stream);
                 }
 
+                // Lấy thông tin metadata của file trên Drive
+                DateTime? cloudModified = null;
+                string? cloudMd5 = null;
+                try
+                {
+                    var metaReq = _driveService.Files.Get(fileId);
+                    metaReq.Fields = "id,name,modifiedTime,md5Checksum,size";
+                    var fileMeta = await metaReq.ExecuteAsync();
+                    cloudModified = fileMeta.ModifiedTimeDateTimeOffset?.DateTime.ToLocalTime();
+                    cloudMd5 = fileMeta.Md5Checksum;
+                }
+                catch { }
+
                 // Ghi đè file local bằng file vừa tải
                 File.Move(tempPath, DB_PATH, overwrite: true);
+
+                if (cloudModified.HasValue)
+                {
+                    try
+                    {
+                        File.SetLastWriteTime(DB_PATH, cloudModified.Value);
+                    }
+                    catch { }
+                }
+
+                string? localMd5 = GetLocalDbMd5();
+                SaveSyncState(new SyncState
+                {
+                    LastCloudFileId = fileId,
+                    LastCloudModifiedTime = cloudModified,
+                    LastCloudMd5 = cloudMd5 ?? localMd5,
+                    LastLocalDbMd5 = localMd5,
+                    LastSyncLocalTime = DateTime.Now
+                });
+
+                InitialCloudModifiedTime = cloudModified;
                 App.IsDataDirty = false;
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                App.DebugLog($"PullAsync error: {ex.Message}");
                 string tempPath = DB_PATH + ".sync_tmp";
                 if (File.Exists(tempPath))
                     File.Delete(tempPath);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Lấy mã băm MD5 của file CSDL trên máy cục bộ.
+        /// </summary>
+        public string? GetLocalDbMd5()
+        {
+            try
+            {
+                if (!File.Exists(DB_PATH)) return null;
+                using var md5 = MD5.Create();
+                using var stream = new FileStream(DB_PATH, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                byte[] hash = md5.ComputeHash(stream);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog($"GetLocalDbMd5 error: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Đọc trạng thái đồng bộ đã ghi nhớ gần nhất trên máy này.
+        /// </summary>
+        public SyncState? GetSyncState()
+        {
+            try
+            {
+                if (!File.Exists(SYNC_STATE_FILE)) return null;
+                string json = File.ReadAllText(SYNC_STATE_FILE);
+                return JsonSerializer.Deserialize<SyncState>(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Ghi nhớ trạng thái đồng bộ gần nhất vào ổ cứng máy tính.
+        /// </summary>
+        public void SaveSyncState(SyncState state)
+        {
+            try
+            {
+                string? dir = Path.GetDirectoryName(SYNC_STATE_FILE);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+
+                string json = JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(SYNC_STATE_FILE, json);
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog($"SaveSyncState error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Xác định xem có nên hiển thị thông báo tải dữ liệu từ Google Drive về máy khi khởi động hay không.
+        /// Sử dụng cơ chế kiểm tra nhiều lớp thông minh:
+        /// 1. MD5 hash trùng nhau -> dữ liệu 100% giống nhau -> bỏ qua
+        /// 2. ModifiedTime trên Drive không mới hơn lần sync trước của máy này -> bỏ qua
+        /// 3. ModifiedTime trên Drive không mới hơn thời gian ghi của file local ít nhất 2 phút -> bỏ qua
+        /// </summary>
+        public bool ShouldPromptStartupDownload(CloudFileInfo cloudInfo, out string reason)
+        {
+            reason = "";
+            if (cloudInfo == null || !cloudInfo.ModifiedTime.HasValue)
+            {
+                reason = "Cloud info hoặc modifiedTime không tồn tại";
+                return false;
+            }
+
+            // 1. Kiểm tra hash MD5 giữa file cục bộ và file trên Drive
+            string? localMd5 = GetLocalDbMd5();
+            if (!string.IsNullOrEmpty(localMd5) && !string.IsNullOrEmpty(cloudInfo.Md5Checksum))
+            {
+                if (string.Equals(localMd5, cloudInfo.Md5Checksum, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Dữ liệu giống hệt nhau
+                    var curState = GetSyncState() ?? new SyncState();
+                    curState.LastCloudFileId = cloudInfo.Id;
+                    curState.LastCloudModifiedTime = cloudInfo.ModifiedTime;
+                    curState.LastCloudMd5 = cloudInfo.Md5Checksum;
+                    curState.LastLocalDbMd5 = localMd5;
+                    curState.LastSyncLocalTime = DateTime.Now;
+                    SaveSyncState(curState);
+
+                    try { File.SetLastWriteTime(DB_PATH, cloudInfo.ModifiedTime.Value); } catch { }
+                    reason = "MD5 trùng khớp (CSDL cục bộ và Google Drive hoàn toàn giống nhau)";
+                    return false;
+                }
+            }
+
+            // 2. Kiểm tra với SyncState đã lưu trên máy này
+            var syncState = GetSyncState();
+            if (syncState?.LastCloudModifiedTime.HasValue == true)
+            {
+                // Nếu thời gian trên Drive không mới hơn mốc đã sync gần nhất (cho phép sai lệch 5 giây)
+                if (cloudInfo.ModifiedTime.Value <= syncState.LastCloudModifiedTime.Value.AddSeconds(5))
+                {
+                    reason = "Bản sao lưu trên Drive không mới hơn lần đồng bộ gần nhất của máy này";
+                    return false;
+                }
+            }
+
+            // 3. So sánh với thời gian ghi của file local
+            var localTime = GetLocalDbLastWriteTime();
+            if (localTime.HasValue)
+            {
+                // Bản trên Drive phải mới hơn file local ít nhất 2 phút để loại trừ độ trễ upload và sai lệch đồng hồ
+                if (cloudInfo.ModifiedTime.Value <= localTime.Value.AddMinutes(2))
+                {
+                    reason = "Thời gian trên Drive không mới hơn file local đủ ngưỡng (> 2 phút)";
+                    return false;
+                }
+            }
+
+            reason = "Phát hiện bản sao lưu trên Drive thực sự mới hơn dữ liệu cục bộ";
+            return true;
         }
 
         /// <summary>
@@ -258,10 +487,9 @@ namespace TaxPersonnelManagement.Services
         }
 
         /// <summary>
-        /// Lấy thời gian sửa đổi cuối cùng của file trên Google Drive.
-        /// Trả về null nếu chưa có file hoặc lỗi.
+        /// Lấy thông tin chi tiết (id, name, modifiedTime, md5Checksum, size) của bản backup trên Google Drive.
         /// </summary>
-        public async Task<DateTime?> GetCloudModifiedTimeAsync()
+        public async Task<CloudFileInfo?> GetCloudFileInfoAsync()
         {
             if (_driveService == null) return null;
             try
@@ -272,19 +500,62 @@ namespace TaxPersonnelManagement.Services
                 listRequest.Q       = folderId != null 
                     ? $"name = '{DRIVE_FILE_NAME}' and '{folderId}' in parents and trashed = false"
                     : $"name = '{DRIVE_FILE_NAME}' and trashed = false";
-                listRequest.Fields  = "files(id,name,modifiedTime)";
+                listRequest.Fields  = "files(id,name,modifiedTime,md5Checksum,size)";
                 listRequest.OrderBy = "modifiedTime desc";
                 listRequest.PageSize = 1;
 
                 var list = await listRequest.ExecuteAsync();
-                if (list.Files == null || list.Files.Count == 0) return null;
+                if (list.Files != null && list.Files.Count > 0)
+                {
+                    var f = list.Files[0];
+                    return new CloudFileInfo
+                    {
+                        Id = f.Id,
+                        Name = f.Name,
+                        ModifiedTime = f.ModifiedTimeDateTimeOffset?.DateTime.ToLocalTime(),
+                        Md5Checksum = f.Md5Checksum,
+                        Size = f.Size
+                    };
+                }
 
-                return list.Files[0].ModifiedTimeDateTimeOffset?.DateTime.ToLocalTime();
-            }
-            catch
-            {
+                // Mở rộng tìm file ngoài thư mục root nếu tạo từ phiên bản trước
+                var rootSearch = _driveService.Files.List();
+                rootSearch.Spaces   = "drive";
+                rootSearch.Q        = $"name = '{DRIVE_FILE_NAME}' and trashed = false";
+                rootSearch.Fields   = "files(id,name,modifiedTime,md5Checksum,size)";
+                rootSearch.OrderBy  = "modifiedTime desc";
+                rootSearch.PageSize = 1;
+                var rootList = await rootSearch.ExecuteAsync();
+                if (rootList.Files != null && rootList.Files.Count > 0)
+                {
+                    var f = rootList.Files[0];
+                    return new CloudFileInfo
+                    {
+                        Id = f.Id,
+                        Name = f.Name,
+                        ModifiedTime = f.ModifiedTimeDateTimeOffset?.DateTime.ToLocalTime(),
+                        Md5Checksum = f.Md5Checksum,
+                        Size = f.Size
+                    };
+                }
+
                 return null;
             }
+            catch (Exception ex)
+            {
+                App.DebugLog($"GetCloudFileInfoAsync error: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Lấy thời gian sửa đổi cuối cùng của file trên Google Drive.
+        /// Trả về null nếu chưa có file hoặc lỗi.
+        /// </summary>
+        public async Task<DateTime?> GetCloudModifiedTimeAsync()
+        {
+            var info = await GetCloudFileInfoAsync();
+            return info?.ModifiedTime;
         }
 
         /// <summary>

@@ -1,3 +1,10 @@
+## v1.6.2.5 — 2026-09-08
+- [Sửa lỗi & Cải tiến] Nâng cấp Cơ chế Đồng bộ Thông minh Google Drive (Smart Cloud Sync):
+    + Tích hợp so sánh mã băm MD5 (`Md5Checksum`) giữa file CSDL trên máy tính và bản sao lưu trên Google Drive: Nếu nội dung file giống nhau 100% từng byte, ứng dụng tự động bỏ qua popup thông báo, giải quyết triệt để lỗi hiển thị popup thông báo tải dữ liệu về dù dữ liệu không thay đổi.
+    + Cơ chế lưu vết trạng thái đồng bộ (`sync_state.json`): Tự động ghi nhớ thời gian và mã băm của bản sao lưu gần nhất do máy tính đồng bộ, nhận diện chính xác dữ liệu của chính máy này tải lên thay vì báo trùng lặp.
+    + Tự động cập nhật `LastWriteTime` của file CSDL cục bộ khớp chính xác với mốc thời gian Google Drive sau khi Đẩy (Push) hoặc Tải (Pull) thành công, loại bỏ độ lệch thời gian upload.
+    + Cải tiến kiểm tra xung đột dữ liệu khi đóng app: So sánh mốc thời gian Google Drive với thời điểm lúc mở app (`InitialCloudModifiedTime`), tránh cảnh báo xung đột giả do sai lệch đồng hồ máy tính.
+
 ## v1.6.2.4 — 2026-08-26
 - [Tính năng] Cảnh báo Đến hạn Nhân sự thông minh (`DeadlineAlertWindow`):
     + Tự động quét và hiển thị popup cảnh báo mỗi khi mở ứng dụng đối với 4 loại mốc hành chính quan trọng:

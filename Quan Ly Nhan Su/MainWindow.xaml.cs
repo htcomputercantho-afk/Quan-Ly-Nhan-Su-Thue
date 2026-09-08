@@ -76,56 +76,59 @@ namespace TaxPersonnelManagement
                     if (!connected) return;
                 }
 
-                var cloudTime = await App.DriveSync.GetCloudModifiedTimeAsync();
-                var localTime = App.DriveSync.GetLocalDbLastWriteTime();
+                var cloudInfo = await App.DriveSync.GetCloudFileInfoAsync();
+                if (cloudInfo == null || !cloudInfo.ModifiedTime.HasValue) return;
 
-                if (cloudTime.HasValue && localTime.HasValue)
+                App.DriveSync.InitialCloudModifiedTime = cloudInfo.ModifiedTime;
+
+                if (App.DriveSync.ShouldPromptStartupDownload(cloudInfo, out string reason))
                 {
-                    // Nếu dữ liệu trên Drive mới hơn dữ liệu máy này ít nhất 1 phút
-                    if (cloudTime.Value > localTime.Value.AddMinutes(1))
+                    var localTime = App.DriveSync.GetLocalDbLastWriteTime();
+                    string message = $"Phát hiện bản sao lưu trên Google Drive MỚI HƠN dữ liệu trên máy này:\n\n" +
+                                     $"• Trên Google Drive: {cloudInfo.ModifiedTime.Value:dd/MM/yyyy HH:mm:ss}\n" +
+                                     $"• Trên máy tính này: {localTime?.ToString("dd/MM/yyyy HH:mm:ss") ?? "Không rõ"}\n\n" +
+                                     $"Bạn có muốn tải dữ liệu mới nhất từ Google Drive về máy không?";
+
+                    var confirmWin = new ConfirmWindow(message, "Đồng Bộ Dữ Liệu Từ Google Drive");
+                    confirmWin.Owner = this;
+                    if (confirmWin.ShowDialog() == true)
                     {
-                        string message = $"Phát hiện bản sao lưu trên Google Drive MỚI HƠN dữ liệu trên máy này:\n\n" +
-                                         $"• Trên Google Drive: {cloudTime.Value:dd/MM/yyyy HH:mm:ss}\n" +
-                                         $"• Trên máy tính này: {localTime.Value:dd/MM/yyyy HH:mm:ss}\n\n" +
-                                         $"Bạn có muốn tải dữ liệu mới nhất từ Google Drive về máy không?";
+                        var syncDialog = new SyncOnCloseWindow();
+                        syncDialog.Show();
 
-                        var confirmWin = new ConfirmWindow(message, "Đồng Bộ Dữ Liệu Từ Google Drive");
-                        confirmWin.Owner = this;
-                        if (confirmWin.ShowDialog() == true)
+                        try
                         {
-                            var syncDialog = new SyncOnCloseWindow();
-                            syncDialog.Show();
+                            bool pullSuccess = await App.DriveSync.PullAsync();
+                            syncDialog.Close();
 
-                            try
+                            if (pullSuccess)
                             {
-                                bool pullSuccess = await App.DriveSync.PullAsync();
-                                syncDialog.Close();
+                                App.IsDataDirty = false;
+                                // Làm mới lại giao diện hiển thị
+                                _dashboardCache = null;
+                                NavigateDashboard(null, null);
 
-                                if (pullSuccess)
-                                {
-                                    App.IsDataDirty = false;
-                                    // Làm mới lại giao diện hiển thị
-                                    _dashboardCache = null;
-                                    NavigateDashboard(null, null);
-
-                                    var successWin = new SuccessWindow("Đã tải và cập nhật dữ liệu mới nhất từ Google Drive thành công!", "Đồng Bộ Thành Công");
-                                    successWin.Owner = this;
-                                    successWin.ShowDialog();
-                                }
-                                else
-                                {
-                                    var warnWin = new WarningWindow("Không thể tải dữ liệu từ Google Drive. Vui lòng thử lại sau!", "Lỗi Đồng Bộ");
-                                    warnWin.Owner = this;
-                                    warnWin.ShowDialog();
-                                }
+                                var successWin = new SuccessWindow("Đã tải và cập nhật dữ liệu mới nhất từ Google Drive thành công!", "Đồng Bộ Thành Công");
+                                successWin.Owner = this;
+                                successWin.ShowDialog();
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                syncDialog.Close();
-                                App.DebugLog($"Pull on startup error: {ex.Message}");
+                                var warnWin = new WarningWindow("Không thể tải dữ liệu từ Google Drive. Vui lòng thử lại sau!", "Lỗi Đồng Bộ");
+                                warnWin.Owner = this;
+                                warnWin.ShowDialog();
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            syncDialog.Close();
+                            App.DebugLog($"Pull on startup error: {ex.Message}");
+                        }
                     }
+                }
+                else
+                {
+                    App.DebugLog($"Startup sync check: Skipped download prompt ({reason}).");
                 }
             }
             catch (Exception ex)
@@ -369,12 +372,32 @@ namespace TaxPersonnelManagement
 
                     if (App.DriveSync.IsConnected)
                     {
-                        // Kiểm tra xung đột: Drive có bị ai khác sửa sau khi phiên làm việc này bắt đầu không?
-                        var cloudTime = await App.DriveSync.GetCloudModifiedTimeAsync();
-                        if (cloudTime.HasValue && cloudTime.Value > App.SessionStartTime.AddMinutes(1))
+                        // Kiểm tra xung đột: Drive có bị ai khác sửa trong lúc phiên làm việc này đang mở không?
+                        var cloudInfo = await App.DriveSync.GetCloudFileInfoAsync();
+                        var initialCloudTime = App.DriveSync.InitialCloudModifiedTime;
+
+                        bool hasConflict = false;
+                        if (cloudInfo?.ModifiedTime.HasValue == true && initialCloudTime.HasValue)
+                        {
+                            // Nếu Drive bị sửa đổi trong lúc phiên này đang mở (mới hơn thời điểm mở app ít nhất 10 giây)
+                            if (cloudInfo.ModifiedTime.Value > initialCloudTime.Value.AddSeconds(10))
+                            {
+                                hasConflict = true;
+                            }
+                        }
+                        else if (cloudInfo?.ModifiedTime.HasValue == true && !initialCloudTime.HasValue)
+                        {
+                            // Fallback nếu lúc mở app chưa lấy được cloudInfo: so sánh với SessionStartTime
+                            if (cloudInfo.ModifiedTime.Value > App.SessionStartTime.AddMinutes(2))
+                            {
+                                hasConflict = true;
+                            }
+                        }
+
+                        if (hasConflict)
                         {
                             string message = $"CẢNH BÁO XUNG ĐỘT DỮ LIỆU!\n\n" +
-                                             $"Dữ liệu trên Google Drive đã được cập nhật từ máy khác vào lúc: {cloudTime.Value:dd/MM/yyyy HH:mm:ss}.\n\n" +
+                                             $"Dữ liệu trên Google Drive đã được cập nhật từ máy khác vào lúc: {cloudInfo?.ModifiedTime:dd/MM/yyyy HH:mm:ss}.\n\n" +
                                              $"Nếu tiếp tục đẩy lên, bạn sẽ GHI ĐÈ và làm mất dữ liệu đó.\n\n" +
                                              $"Bạn có chắc chắn muốn đẩy dữ liệu từ máy này lên Google Drive không?";
 
