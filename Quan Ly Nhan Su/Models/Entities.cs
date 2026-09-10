@@ -189,6 +189,7 @@ namespace TaxPersonnelManagement.Models
         public string? DisciplineReason { get; set; } // Nội dung / Lý do kỷ luật
 
         // Navigation
+        public virtual ICollection<PersonnelDegree> PersonnelDegrees { get; set; } = new List<PersonnelDegree>();
 
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
@@ -619,6 +620,54 @@ namespace TaxPersonnelManagement.Models
         
         [Required]
         public string TermName { get; set; } = string.Empty; // Tên nhiệm kỳ (VD: 2021-2026, 2026-2031)
+    }
+
+    /// <summary>
+    /// Lưu trữ danh sách các văn bằng, chứng chỉ của cán bộ (Tin học, Ngoại ngữ, Chuyên môn, QLNN, LLCT...)
+    /// </summary>
+    public class PersonnelDegree
+    {
+        [Key]
+        public int Id { get; set; }
+
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+
+        /// <summary>
+        /// Phân loại: "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị", "Chứng chỉ khác"
+        /// </summary>
+        [Required]
+        public string DegreeType { get; set; } = "Tin học";
+
+        /// <summary>
+        /// Tên bằng/chứng chỉ (VD: "Bằng A", "Bằng B", "Bằng C", "Aptis B2", "IELTS 6.5", "Cử nhân", "Thạc sĩ"...)
+        /// </summary>
+        [Required]
+        public string DegreeName { get; set; } = string.Empty;
+
+        /// <summary>Chuyên ngành / Lĩnh vực đào tạo</summary>
+        public string? Major { get; set; }
+
+        /// <summary>Cơ sở đào tạo / Đơn vị cấp</summary>
+        public string? Institution { get; set; }
+
+        /// <summary>Xếp loại / Điểm số / Trình độ</summary>
+        public string? Classification { get; set; }
+
+        /// <summary>Năm tốt nghiệp / Cấp bằng</summary>
+        public string? GraduationYear { get; set; }
+
+        /// <summary>Ngày cấp</summary>
+        public DateTime? IssueDate { get; set; }
+
+        /// <summary>Hình thức đào tạo (Chính quy, Vừa học vừa làm, Từ xa...)</summary>
+        public string? TrainingForm { get; set; }
+
+        /// <summary>Đánh dấu là bằng cao nhất / bằng chính hiển thị ra màn hình chính</summary>
+        public bool IsPrimary { get; set; } = false;
+
+        /// <summary>Ghi chú</summary>
+        public string? Note { get; set; }
     }
 }
 

@@ -548,6 +548,127 @@
                     </materialDesign:Card>
                 </Grid>
 
+            <!-- ═══ THỐNG KÊ CÁC NGẠCH CÔNG CHỨC ═══ -->
+            <StackPanel Margin="0,16,0,0">
+                <materialDesign:Card Padding="22" UniformCornerRadius="12" Background="White">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,16">
+                            <materialDesign:PackIcon Kind="CertificateOutline" Width="24" Height="24" Foreground="#4338CA" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="THỐNG KÊ CÁC NGẠCH CÔNG CHỨC" Style="{StaticResource CardTitleText}" Foreground="#4338CA"/>
+                        </StackPanel>
+
+                        <!-- Column Headers -->
+                        <Border Grid.Row="1" Background="#EEF2FF" CornerRadius="8" Padding="14,8" Margin="0,0,0,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="160"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="STT" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="Mã ngạch" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Tên ngạch công chức" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA"/>
+                                <TextBlock Grid.Column="3" Text="Nam" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="Nữ" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="Tổng (người)" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="6" Text="Tỷ lệ (%)" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Data Rows (generated dynamically) -->
+                        <ItemsControl x:Name="icRankStatistics" Grid.Row="2">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#E5E7EB" BorderThickness="0,0,0,1" Padding="14,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50"/>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="160"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- STT -->
+                                            <TextBlock Grid.Column="0" Text="{Binding STT}" FontSize="12.5" Foreground="#6B7280" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <!-- Mã ngạch -->
+                                            <Border Grid.Column="1" Background="#F1F5F9" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding RankCode}" FontSize="12" FontWeight="SemiBold" Foreground="#334155" TextAlignment="Center"/>
+                                            </Border>
+                                            <!-- Tên ngạch -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Border Width="8" Height="8" Background="#6366F1" CornerRadius="4" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding RankName}" FontSize="13" FontWeight="SemiBold" Foreground="#1F2937" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <!-- Nam -->
+                                            <TextBlock Grid.Column="3" Text="{Binding MaleCount}" FontSize="13" FontWeight="Bold" Foreground="#0288D1" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <!-- Nữ -->
+                                            <TextBlock Grid.Column="4" Text="{Binding FemaleCount}" FontSize="13" FontWeight="Bold" Foreground="#EC407A" TextAlignment="Center" VerticalAlignment="Center"/>
+                                            <!-- Tổng -->
+                                            <Border Grid.Column="5" Background="#EEF2FF" CornerRadius="6" Padding="6,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding TotalCount}" FontSize="12.5" FontWeight="Bold" Foreground="#4338CA" TextAlignment="Center"/>
+                                            </Border>
+                                            <!-- Tỷ lệ (%) kèm thanh tiến độ -->
+                                            <Grid Grid.Column="6" VerticalAlignment="Center" Margin="10,0,10,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="48"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding RatioText}" FontSize="12" FontWeight="SemiBold" Foreground="#4B5563" VerticalAlignment="Center"/>
+                                                <Border Grid.Column="1" CornerRadius="4" ClipToBounds="True" Background="#E2E8F0" Height="8" VerticalAlignment="Center">
+                                                    <ProgressBar Value="{Binding BarRatio, Mode=OneWay}" Minimum="0" Maximum="100" Height="8" Foreground="#6366F1" Background="Transparent" BorderThickness="0"/>
+                                                </Border>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Total Row (Footer) -->
+                        <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="0,1.5,0,0" Padding="14,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="160"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Text="TỔNG CỘNG" FontWeight="Bold" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock x:Name="txtRankTotalMale" Grid.Column="3" Text="0" FontSize="13" FontWeight="Black" Foreground="#0288D1" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtRankTotalFemale" Grid.Column="4" Text="0" FontSize="13" FontWeight="Black" Foreground="#EC407A" TextAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Grid.Column="5" Background="#4338CA" CornerRadius="6" Padding="6,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="txtRankTotalAll" Text="0" FontSize="12.5" FontWeight="Bold" Foreground="White" TextAlignment="Center"/>
+                                </Border>
+                                <TextBlock Grid.Column="6" Text="100.0%" FontSize="12.5" FontWeight="Bold" Foreground="#4338CA" TextAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Summary Note -->
+                        <Border Grid.Row="4" Background="#F9FAFB" CornerRadius="6" Padding="12,10" Margin="0,12,0,0">
+                            <TextBlock x:Name="txtRankSummary" FontSize="12.5" TextWrapping="Wrap" Foreground="#475569" FontStyle="Italic" LineHeight="18"/>
+                        </Border>
+                    </Grid>
+                </materialDesign:Card>
+            </StackPanel>
+
             <!-- ═══ THỐNG KÊ LÃNH ĐẠO TỔ ═══ -->
             <StackPanel Margin="0,16,0,20">
                 <materialDesign:Card Padding="22" UniformCornerRadius="12" Background="White">

@@ -693,10 +693,22 @@
                             <Border Background="White" CornerRadius="8" Effect="{DynamicResource MaterialDesignShadowDepth1}" Margin="0 0 0 20">
                                 <StackPanel>
                                     <Border Background="#607D8B" CornerRadius="8 8 0 0" Padding="15 10">
-                                        <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="School" Foreground="White" VerticalAlignment="Center" Margin="0 0 10 0"/>
-                                            <TextBlock Text="TRÌNH ĐỘ - ĐÀO TẠO" Foreground="White" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
-                                        </StackPanel>
+                                        <Grid>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="School" Foreground="White" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                                <TextBlock Text="TRÌNH ĐỘ - ĐÀO TẠO" Foreground="White" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <Button x:Name="btnManageAllDegrees" HorizontalAlignment="Right" Click="btnManageAllDegrees_Click"
+                                                    Background="#37474F" BorderThickness="1" BorderBrush="#546E7A" Foreground="White"
+                                                    materialDesign:ButtonAssist.CornerRadius="6" Cursor="Hand"
+                                                    Height="28" Padding="12 0"
+                                                    ToolTip="Xem và quản lý tất cả các văn bằng, chứng chỉ hiện có của cán bộ">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Kind="CertificateOutline" Width="15" Height="15" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Quản lý danh sách văn bằng" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
                                     </Border>
                                     <StackPanel Margin="20">
                                         
@@ -712,14 +724,27 @@
 
                                             <!-- Trình độ -->
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Text="Trình độ" Style="{StaticResource ModernLabel}"/>
+                                                <Grid Margin="0 0 0 4">
+                                                    <TextBlock Text="Trình độ" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0"/>
+                                                    <Button x:Name="btnViewMajorDegrees" Click="btnViewMajorDegrees_Click"
+                                                            HorizontalAlignment="Right"
+                                                            Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Cursor="Hand"
+                                                            Height="22" Padding="6 0"
+                                                            materialDesign:ButtonAssist.CornerRadius="11"
+                                                            ToolTip="Xem tất cả văn bằng chuyên môn của cán bộ">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="CertificateOutline" Width="12" Height="12" Foreground="#2563EB" VerticalAlignment="Center"/>
+                                                            <TextBlock x:Name="txtMajorBadge" Text="Xem các bằng" FontSize="11" Foreground="#1E40AF" FontWeight="SemiBold" Margin="3 0 0 0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
                                                 <Grid>
                                                     <ComboBox x:Name="cboEducationLevel" Style="{StaticResource ModernComboBox}">
-                                                                                                              <ComboBoxItem Content=""/>
-                                                                                                              <ComboBoxItem Content="Thạc sĩ"/>
-                                                                                                              <ComboBoxItem Content="Cử nhân"/>
-                                                                                                              <ComboBoxItem Content="Trung cấp"/>
-                                                                                                         </ComboBox>
+                                                         <ComboBoxItem Content=""/>
+                                                         <ComboBoxItem Content="Thạc sĩ"/>
+                                                         <ComboBoxItem Content="Cử nhân"/>
+                                                         <ComboBoxItem Content="Trung cấp"/>
+                                                    </ComboBox>
                                                     <TextBlock Text="-- Chọn --" IsHitTestVisible="False" VerticalAlignment="Center" Margin="10 0" Foreground="#A0AEC0">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
@@ -765,7 +790,20 @@
 
                                             <!-- Quản lý Nhà nước -->
                                             <StackPanel Grid.Column="0">
-                                                <TextBlock Text="Quản lý Nhà nước" Style="{StaticResource ModernLabel}"/>
+                                                <Grid Margin="0 0 0 4">
+                                                    <TextBlock Text="Quản lý Nhà nước" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0"/>
+                                                    <Button Click="btnViewStateDegrees_Click"
+                                                            HorizontalAlignment="Right"
+                                                            Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Cursor="Hand"
+                                                            Height="22" Padding="6 0"
+                                                            materialDesign:ButtonAssist.CornerRadius="11"
+                                                            ToolTip="Xem văn bằng QL Nhà nước &amp; LLCT">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="CertificateOutline" Width="12" Height="12" Foreground="#2563EB" VerticalAlignment="Center"/>
+                                                            <TextBlock x:Name="txtStateBadge" Text="Xem các bằng" FontSize="11" Foreground="#1E40AF" FontWeight="SemiBold" Margin="3 0 0 0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
                                                 <Grid>
                                                     <ComboBox x:Name="cboStateManagement" Style="{StaticResource ModernComboBox}">
                                                          <ComboBoxItem Content=""/>
@@ -820,14 +858,56 @@
 
                                             <!-- Tin học -->
                                             <StackPanel Grid.Column="4">
-                                                <TextBlock Text="Tin học" Style="{StaticResource ModernLabel}"/>
-                                                <TextBox x:Name="txtITSkill" Style="{StaticResource ModernTextBox}"/>
+                                                <Grid Margin="0 0 0 4">
+                                                    <TextBlock Text="Tin học" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0"/>
+                                                    <Button x:Name="btnViewITDegrees" Click="btnViewITDegrees_Click"
+                                                            HorizontalAlignment="Right"
+                                                            Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Cursor="Hand"
+                                                            Height="22" Padding="6 0"
+                                                            materialDesign:ButtonAssist.CornerRadius="11"
+                                                            ToolTip="Xem tất cả bằng Tin học của cán bộ (A, B, C...)">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="CertificateOutline" Width="12" Height="12" Foreground="#2563EB" VerticalAlignment="Center"/>
+                                                            <TextBlock x:Name="txtITBadge" Text="Xem các bằng" FontSize="11" Foreground="#1E40AF" FontWeight="SemiBold" Margin="3 0 0 0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                                <Grid>
+                                                    <TextBox x:Name="txtITSkill" Style="{StaticResource ModernTextBox}" Padding="10 6 28 6"/>
+                                                    <Button Click="btnViewITDegrees_Click"
+                                                            Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                                                            Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 3 0"
+                                                            ToolTip="Bấm để xem &amp; quản lý danh sách bằng Tin học của người này">
+                                                        <materialDesign:PackIcon Kind="EyeOutline" Width="15" Height="15" Foreground="#2563EB"/>
+                                                    </Button>
+                                                </Grid>
                                             </StackPanel>
 
                                             <!-- Ngoại ngữ -->
                                             <StackPanel Grid.Column="6">
-                                                <TextBlock Text="Ngoại ngữ" Style="{StaticResource ModernLabel}"/>
-                                                <TextBox x:Name="txtLanguageSkill" Style="{StaticResource ModernTextBox}"/>
+                                                <Grid Margin="0 0 0 4">
+                                                    <TextBlock Text="Ngoại ngữ" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0"/>
+                                                    <Button x:Name="btnViewLangDegrees" Click="btnViewLangDegrees_Click"
+                                                            HorizontalAlignment="Right"
+                                                            Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Cursor="Hand"
+                                                            Height="22" Padding="6 0"
+                                                            materialDesign:ButtonAssist.CornerRadius="11"
+                                                            ToolTip="Xem tất cả chứng chỉ Ngoại ngữ của cán bộ">
+                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                            <materialDesign:PackIcon Kind="CertificateOutline" Width="12" Height="12" Foreground="#2563EB" VerticalAlignment="Center"/>
+                                                            <TextBlock x:Name="txtLangBadge" Text="Xem các bằng" FontSize="11" Foreground="#1E40AF" FontWeight="SemiBold" Margin="3 0 0 0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                                <Grid>
+                                                    <TextBox x:Name="txtLanguageSkill" Style="{StaticResource ModernTextBox}" Padding="10 6 28 6"/>
+                                                    <Button Click="btnViewLangDegrees_Click"
+                                                            Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                                                            Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 3 0"
+                                                            ToolTip="Bấm để xem &amp; quản lý danh sách chứng chỉ Ngoại ngữ">
+                                                        <materialDesign:PackIcon Kind="EyeOutline" Width="15" Height="15" Foreground="#2563EB"/>
+                                                    </Button>
+                                                </Grid>
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>

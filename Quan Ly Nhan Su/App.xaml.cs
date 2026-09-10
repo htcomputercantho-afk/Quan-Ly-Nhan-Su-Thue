@@ -431,6 +431,24 @@ namespace TaxPersonnelManagement
                             TermName TEXT NOT NULL UNIQUE
                         );");
 
+                    // Manual Migration for PersonnelDegrees (Văn bằng, chứng chỉ)
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS PersonnelDegrees (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            PersonnelId INTEGER NOT NULL,
+                            DegreeType TEXT NOT NULL,
+                            DegreeName TEXT NOT NULL,
+                            Major TEXT,
+                            Institution TEXT,
+                            Classification TEXT,
+                            GraduationYear TEXT,
+                            IssueDate TEXT,
+                            TrainingForm TEXT,
+                            IsPrimary INTEGER NOT NULL DEFAULT 0,
+                            Note TEXT,
+                            FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                        );");
+
                     // Khởi tạo các nhiệm kỳ quy hoạch mặc định nếu bảng trống
                     if (!context.PlanningTerms.Any())
                     {

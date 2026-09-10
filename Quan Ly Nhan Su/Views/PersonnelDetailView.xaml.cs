@@ -94,6 +94,7 @@ namespace TaxPersonnelManagement.Views
                 txtITSkill.Text = _personnel.ITSkillLevel;
 
                 txtLanguageSkill.Text = _personnel.LanguageSkillLevel;
+                UpdateDegreeBadges();
 
                 // Tab 2
                 dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
@@ -984,6 +985,25 @@ namespace TaxPersonnelManagement.Views
                                 DecisionNumber = ev.DecisionNumber,
                                 DecisionDate = ev.DecisionDate,
                                 DecisionAgency = ev.DecisionAgency
+                            });
+                        }
+                    }
+
+                    // Copy Personnel Degrees if any (Handling case where degrees were added before saving personnel)
+                    if (_personnel != null && _personnel.PersonnelDegrees != null && _personnel.PersonnelDegrees.Any())
+                    {
+                        newP.PersonnelDegrees = new List<PersonnelDegree>();
+                        foreach (var deg in _personnel.PersonnelDegrees)
+                        {
+                            newP.PersonnelDegrees.Add(new PersonnelDegree
+                            {
+                                DegreeType = deg.DegreeType,
+                                DegreeName = deg.DegreeName,
+                                Major = deg.Major,
+                                Institution = deg.Institution,
+                                Classification = deg.Classification,
+                                GraduationYear = deg.GraduationYear,
+                                IsPrimary = deg.IsPrimary
                             });
                         }
                     }
@@ -3458,5 +3478,125 @@ namespace TaxPersonnelManagement.Views
                 }
             }
         }
+
+        #region Quản lý văn bằng & chứng chỉ
+        private void UpdateDegreeBadges()
+        {
+            int itCount = 0;
+            int langCount = 0;
+            int majorCount = 0;
+            int stateCount = 0;
+
+            if (_personnel != null)
+            {
+                if (_personnel.Id > 0)
+                {
+                    try
+                    {
+                        using var db = new AppDbContext();
+                        itCount = db.PersonnelDegrees.Count(d => d.PersonnelId == _personnel.Id && d.DegreeType == "Tin học");
+                        langCount = db.PersonnelDegrees.Count(d => d.PersonnelId == _personnel.Id && d.DegreeType == "Ngoại ngữ");
+                        majorCount = db.PersonnelDegrees.Count(d => d.PersonnelId == _personnel.Id && d.DegreeType == "Chuyên môn");
+                        stateCount = db.PersonnelDegrees.Count(d => d.PersonnelId == _personnel.Id && (d.DegreeType == "Quản lý Nhà nước" || d.DegreeType == "Lý luận chính trị"));
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Error updating degree badges: " + ex.Message);
+                    }
+                }
+                else if (_personnel.PersonnelDegrees != null)
+                {
+                    itCount = _personnel.PersonnelDegrees.Count(d => d.DegreeType == "Tin học");
+                    langCount = _personnel.PersonnelDegrees.Count(d => d.DegreeType == "Ngoại ngữ");
+                    majorCount = _personnel.PersonnelDegrees.Count(d => d.DegreeType == "Chuyên môn");
+                    stateCount = _personnel.PersonnelDegrees.Count(d => d.DegreeType == "Quản lý Nhà nước" || d.DegreeType == "Lý luận chính trị");
+                }
+            }
+
+            if (txtITBadge != null)
+                txtITBadge.Text = itCount > 1 ? $"Xem ({itCount} bằng)" : "Xem các bằng";
+            if (txtLangBadge != null)
+                txtLangBadge.Text = langCount > 1 ? $"Xem ({langCount} bằng)" : "Xem các bằng";
+            if (txtMajorBadge != null)
+                txtMajorBadge.Text = majorCount > 1 ? $"Xem ({majorCount} bằng)" : "Xem các bằng";
+            if (txtStateBadge != null)
+                txtStateBadge.Text = stateCount > 1 ? $"Xem ({stateCount} bằng)" : "Xem các bằng";
+        }
+
+        private void OpenDegreesDialog(string? initialTab = null)
+        {
+            if (_personnel == null)
+            {
+                _personnel = new Personnel
+                {
+                    FullName = txtName.Text?.Trim() ?? "Cán bộ mới",
+                    Department = cboDepartment.Text,
+                    Position = cboPosition.Text,
+                    ITSkillLevel = txtITSkill.Text,
+                    LanguageSkillLevel = txtLanguageSkill.Text,
+                    EducationLevel = cboEducationLevel.Text,
+                    Major = txtMajor.Text,
+                    University = txtUniversity.Text,
+                    StateManagementLevel = cboStateManagement.Text,
+                    PoliticalTheoryLevel = cboPoliticalTheory.Text
+                };
+            }
+            else if (_personnel.Id <= 0)
+            {
+                if (!string.IsNullOrWhiteSpace(txtName.Text))
+                    _personnel.FullName = txtName.Text.Trim();
+                if (!string.IsNullOrWhiteSpace(cboDepartment.Text))
+                    _personnel.Department = cboDepartment.Text;
+                if (!string.IsNullOrWhiteSpace(cboPosition.Text))
+                    _personnel.Position = cboPosition.Text;
+            }
+
+            var dialog = new PersonnelDegreesDialog(_personnel, initialTab)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            dialog.ShowDialog();
+
+            if (dialog.HasChanges)
+            {
+                // Đồng bộ lại các ô trên form
+                txtITSkill.Text = _personnel.ITSkillLevel ?? "";
+                txtLanguageSkill.Text = _personnel.LanguageSkillLevel ?? "";
+                SetComboBoxByContent(cboEducationLevel, _personnel.EducationLevel);
+                txtMajor.Text = _personnel.Major ?? "";
+                txtUniversity.Text = _personnel.University ?? "";
+                SetComboBoxByContent(cboStateManagement, _personnel.StateManagementLevel);
+                SetComboBoxByContent(cboPoliticalTheory, _personnel.PoliticalTheoryLevel);
+
+                UpdateDegreeBadges();
+            }
+        }
+
+        private void btnManageAllDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDegreesDialog("All");
+        }
+
+        private void btnViewITDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDegreesDialog("Tin học");
+        }
+
+        private void btnViewLangDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDegreesDialog("Ngoại ngữ");
+        }
+
+        private void btnViewMajorDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDegreesDialog("Chuyên môn");
+        }
+
+        private void btnViewStateDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDegreesDialog("Quản lý Nhà nước");
+        }
+        #endregion
     }
 }

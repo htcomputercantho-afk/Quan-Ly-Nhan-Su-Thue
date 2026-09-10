@@ -1,3 +1,18 @@
+## v1.6.2.6 — 2026-09-10
+- [Tính năng] Thống kê Cơ cấu Ngạch công chức (`StatisticsView`):
+    + Bổ sung bảng "THỐNG KÊ CƠ CẤU NGẠCH CÔNG CHỨC" trong màn hình Báo cáo Thống kê.
+    + Thống kê chi tiết số lượng và tỷ lệ % cơ cấu công chức theo từng ngạch (Chuyên viên cao cấp, Chuyên viên chính, Chuyên viên, Cán sự, Nhân viên, Kiểm tra viên...).
+    + Tự động đồng bộ và lọc dữ liệu chính xác theo bộ lọc Đơn vị/Tổ phòng ban và Năm công tác.
+- [Tính năng] Quản lý Danh sách Văn bằng & Chứng chỉ chi tiết (`PersonnelDegreesDialog`):
+    + Hỗ trợ quản lý và xem toàn bộ các văn bằng, chứng chỉ hiện có của cán bộ (Tin học, Ngoại ngữ, Trình độ chuyên môn, Quản lý Nhà nước & Lý luận chính trị).
+    + Cho phép đánh dấu "⭐ Bằng chính" để hiển thị đại diện ra hồ sơ bên ngoài form cán bộ.
+    + Cho phép nhập và quản lý văn bằng ngay cả khi đang tạo mới cán bộ (chưa lưu CSDL), tự động lưu đồng bộ khi bấm "Lưu hồ sơ".
+    + Tự động đồng bộ số lượng văn bằng hiện có lên các nút chip hiển thị trên form hồ sơ (ví dụ: `Xem (2 bằng)`).
+- [Cải tiến & Sửa lỗi] Tối ưu hóa Giao diện & Trải nghiệm người dùng:
+    + Thiết kế lại popup Quản lý văn bằng rộng rãi (1100x720px), sang trọng với thanh tiêu đề Slate Navy, hỗ trợ kéo di chuyển cửa sổ trên màn hình.
+    + Khắc phục triệt để lỗi cắt chữ chức vụ ("Tổ trưởng"), nhãn ⭐ Bằng chính và các tiêu đề cột dữ liệu.
+    + Chuẩn hóa giao diện Phần 3 (Trình độ - Đào tạo) trên màn hình chi tiết cán bộ với các chip pill hiện đại.
+
 ## v1.6.2.5 — 2026-09-08
 - [Sửa lỗi & Cải tiến] Nâng cấp Cơ chế Đồng bộ Thông minh Google Drive (Smart Cloud Sync):
     + Tích hợp so sánh mã băm MD5 (`Md5Checksum`) giữa file CSDL trên máy tính và bản sao lưu trên Google Drive: Nếu nội dung file giống nhau 100% từng byte, ứng dụng tự động bỏ qua popup thông báo, giải quyết triệt để lỗi hiển thị popup thông báo tải dữ liệu về dù dữ liệu không thay đổi.

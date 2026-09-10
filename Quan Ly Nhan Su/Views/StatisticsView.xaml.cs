@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Data;
+using Microsoft.EntityFrameworkCore;
 using ClosedXML.Excel;
 using Microsoft.Win32;
 
@@ -249,40 +250,35 @@ namespace TaxPersonnelManagement.Views
                     barSen3.Height = maxSenPct > 0 ? (sen3Ratio / maxSenPct) * 120 : 0;
                     barSen4.Height = maxSenPct > 0 ? (sen4Ratio / maxSenPct) * 120 : 0;
 
-                    // 7. Thống kê lãnh đạo tổ theo từng bộ phận
-                    var leaderPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                        { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở" };
-                    var deputyPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                        { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở" };
+                    // 7. Thống kê các ngạch công chức
+                    var rankRows = CalculateRankStatistics(list, db, total);
+                    icRankStatistics.ItemsSource = rankRows;
 
-                    // Bộ phận bị loại khỏi bảng thống kê lãnh đạo tổ (không có khái niệm Tổ trưởng/Phó Tổ trưởng)
-                    var excludedDepts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                        { "Ban Lãnh đạo", "Ban lãnh đạo", "Lãnh đạo đơn vị", "Ban Giám đốc", "Ban giám đốc",
-                          "HĐLĐ", "Hội đồng lao động", "Hợp đồng lao động" };
+                    int rankTotalMale = rankRows.Sum(r => r.MaleCount);
+                    int rankTotalFemale = rankRows.Sum(r => r.FemaleCount);
+                    int rankTotalAll = rankRows.Sum(r => r.TotalCount);
 
-                    var teamRows = list
-                        .Where(p => !string.IsNullOrWhiteSpace(p.Department)
-                                 && !excludedDepts.Contains(p.Department!))
-                        .GroupBy(p => p.Department!)
-                        .OrderBy(g => g.Key)
-                        .Select(g =>
-                        {
-                            int leaders  = g.Count(p => leaderPositions.Contains(p.Position ?? ""));
-                            int deputies = g.Count(p => deputyPositions.Contains(p.Position ?? ""));
-                            int staff    = g.Count(p =>
-                                !leaderPositions.Contains(p.Position ?? "") &&
-                                !deputyPositions.Contains(p.Position ?? ""));
-                            return new TeamLeadershipRow
-                            {
-                                DepartmentName = g.Key,
-                                LeaderCount    = leaders,
-                                DeputyCount    = deputies,
-                                StaffCount     = staff,
-                                TotalCount     = g.Count()
-                            };
-                        })
-                        .ToList();
+                    txtRankTotalMale.Text = rankTotalMale.ToString();
+                    txtRankTotalFemale.Text = rankTotalFemale.ToString();
+                    txtRankTotalAll.Text = rankTotalAll.ToString();
 
+                    int distinctRanks = rankRows.Count(r => !r.IsUnassigned);
+                    var topRank = rankRows.Where(r => !r.IsUnassigned).OrderByDescending(r => r.TotalCount).FirstOrDefault();
+                    if (topRank != null && total > 0)
+                    {
+                        txtRankSummary.Text = $"* Đơn vị hiện có {distinctRanks} ngạch công chức. Ngạch có số lượng đông nhất là \"{topRank.RankName}\" ({topRank.RankCode}) với {topRank.TotalCount} công chức (chiếm {topRank.Ratio:F1}%).";
+                    }
+                    else if (rankRows.Any())
+                    {
+                        txtRankSummary.Text = $"* Đơn vị có {total} công chức nhưng chưa được phân mã/tên ngạch cụ thể.";
+                    }
+                    else
+                    {
+                        txtRankSummary.Text = "* Chưa có dữ liệu phân ngạch công chức.";
+                    }
+
+                    // 8. Thống kê lãnh đạo tổ theo từng bộ phận
+                    var teamRows = CalculateTeamLeadershipRows(list);
                     icTeamLeadership.ItemsSource = teamRows;
                 }
             }
@@ -340,6 +336,118 @@ namespace TaxPersonnelManagement.Views
                 else if (years <= 20) sen3++;
                 else sen4++;
             }
+        }
+
+        /// <summary>
+        /// Tính toán danh sách thống kê theo các ngạch công chức.
+        /// </summary>
+        private static List<RankStatisticsRow> CalculateRankStatistics(List<Personnel> list, AppDbContext db, int total)
+        {
+            var allRanks = db.Ranks.AsNoTracking().ToList();
+            var rankDictByCode = allRanks
+                .Where(r => !string.IsNullOrEmpty(r.Code))
+                .GroupBy(r => r.Code.Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().Name, StringComparer.OrdinalIgnoreCase);
+
+            var rankDictByName = allRanks
+                .Where(r => !string.IsNullOrEmpty(r.Name))
+                .GroupBy(r => r.Name.Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().Code, StringComparer.OrdinalIgnoreCase);
+
+            var rankGroups = list
+                .GroupBy(p =>
+                {
+                    string code = (p.RankCode ?? "").Trim();
+                    string name = (p.RankName ?? "").Trim();
+
+                    if (string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(name))
+                    {
+                        if (rankDictByName.TryGetValue(name, out var mappedCode))
+                            code = mappedCode;
+                    }
+                    else if (!string.IsNullOrEmpty(code) && string.IsNullOrEmpty(name))
+                    {
+                        if (rankDictByCode.TryGetValue(code, out var mappedName))
+                            name = mappedName;
+                    }
+
+                    if (string.IsNullOrEmpty(code) && string.IsNullOrEmpty(name))
+                    {
+                        return (Code: "", Name: "Chưa phân ngạch");
+                    }
+
+                    return (Code: code, Name: string.IsNullOrEmpty(name) ? code : name);
+                })
+                .OrderBy(g => string.IsNullOrEmpty(g.Key.Code) ? 1 : 0) // Chưa phân ngạch xuống cuối
+                .ThenBy(g => g.Key.Code)
+                .ThenBy(g => g.Key.Name)
+                .ToList();
+
+            int rankStt = 1;
+            var rankRows = new List<RankStatisticsRow>();
+
+            foreach (var g in rankGroups)
+            {
+                int m = g.Count(p => p.Gender == "Nam");
+                int f = g.Count(p => p.Gender != "Nam");
+                int t = g.Count();
+                double ratio = total > 0 ? (double)t / total * 100 : 0;
+
+                rankRows.Add(new RankStatisticsRow
+                {
+                    STT = rankStt++,
+                    RankCode = string.IsNullOrEmpty(g.Key.Code) ? "---" : g.Key.Code,
+                    RankName = g.Key.Name,
+                    MaleCount = m,
+                    FemaleCount = f,
+                    TotalCount = t,
+                    Ratio = ratio,
+                    RatioText = $"{ratio:F1}%",
+                    BarRatio = ratio,
+                    IsUnassigned = string.IsNullOrEmpty(g.Key.Code)
+                });
+            }
+
+            return rankRows;
+        }
+
+        /// <summary>
+        /// Tính toán danh sách thống kê lãnh đạo tổ theo từng bộ phận.
+        /// </summary>
+        private static List<TeamLeadershipRow> CalculateTeamLeadershipRows(List<Personnel> list)
+        {
+            var leaderPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở" };
+            var deputyPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở" };
+
+            // Bộ phận bị loại khỏi bảng thống kê lãnh đạo tổ (không có khái niệm Tổ trưởng/Phó Tổ trưởng)
+            var excludedDepts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                { "Ban Lãnh đạo", "Ban lãnh đạo", "Lãnh đạo đơn vị", "Ban Giám đốc", "Ban giám đốc",
+                  "HĐLĐ", "Hội đồng lao động", "Hợp đồng lao động" };
+
+            return list
+                .Where(p => !string.IsNullOrWhiteSpace(p.Department)
+                         && !excludedDepts.Contains(p.Department!))
+                .GroupBy(p => p.Department!)
+                .OrderBy(g => g.Key)
+                .Select(g =>
+                {
+                    int leaders  = g.Count(p => leaderPositions.Contains(p.Position ?? ""));
+                    int deputies = g.Count(p => deputyPositions.Contains(p.Position ?? ""));
+                    int staff    = g.Count(p =>
+                        !leaderPositions.Contains(p.Position ?? "") &&
+                        !deputyPositions.Contains(p.Position ?? ""));
+                    return new TeamLeadershipRow
+                    {
+                        DepartmentName = g.Key,
+                        LeaderCount    = leaders,
+                        DeputyCount    = deputies,
+                        StaffCount     = staff,
+                        TotalCount     = g.Count()
+                    };
+                })
+                .ToList();
         }
 
         // Vẽ biểu đồ tròn (Donut Chart) bằng WPF Path/ArcSegment
@@ -502,6 +610,9 @@ namespace TaxPersonnelManagement.Views
                         }
 
                         // Dữ liệu thống kê theo nhóm
+                        var rankRows = CalculateRankStatistics(list, db, total);
+                        var teamRows = CalculateTeamLeadershipRows(list);
+
                         var rowData = new List<(string Name, double Count, double Ratio, bool IsGroup)>
                         {
                             ("TỔNG SỐ CÔNG CHỨC", total, 100.0, false),
@@ -527,8 +638,18 @@ namespace TaxPersonnelManagement.Views
                             ("Dưới 5 năm", sen1, sen1Ratio, false),
                             ("Từ 5 - 10 năm", sen2, sen2Ratio, false),
                             ("Từ 11 - 20 năm", sen3, sen3Ratio, false),
-                            ("Trên 20 năm", sen4, sen4Ratio, false)
+                            ("Trên 20 năm", sen4, sen4Ratio, false),
+
+                            ("CÁC NGẠCH CÔNG CHỨC", 0, 0, true)
                         };
+
+                        foreach (var r in rankRows)
+                        {
+                            string label = string.IsNullOrEmpty(r.RankCode) || r.RankCode == "---"
+                                ? r.RankName
+                                : $"{r.RankName} ({r.RankCode})";
+                            rowData.Add((label, r.TotalCount, r.Ratio, false));
+                        }
 
                         int curRow = startRow + 1;
                         foreach (var data in rowData)
@@ -574,14 +695,195 @@ namespace TaxPersonnelManagement.Views
                             curRow++;
                         }
 
-                        wsSummary.Column(1).Width = 40;
+                        wsSummary.Column(1).Width = 42;
                         wsSummary.Column(2).Width = 20;
                         wsSummary.Column(3).Width = 15;
 
-                        // --- Sheet 2: Danh sách chi tiết ---
+                        // --- Sheet 2: Thống kê ngạch công chức ---
+                        var wsRank = workbook.Worksheets.Add("Thống kê ngạch");
+
+                        var rankTitleRange = wsRank.Range("A1:G1");
+                        rankTitleRange.Merge();
+                        rankTitleRange.Value = "BẢNG THỐNG KÊ CHI TIẾT CÁC NGẠCH CÔNG CHỨC";
+                        rankTitleRange.Style.Font.Bold = true;
+                        rankTitleRange.Style.Font.FontSize = 16;
+                        rankTitleRange.Style.Font.FontColor = XLColor.FromHtml("#4338CA");
+                        rankTitleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        rankTitleRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        wsRank.Row(1).Height = 35;
+
+                        wsRank.Cell(2, 1).Value = "Bộ phận:";
+                        wsRank.Cell(2, 1).Style.Font.Bold = true;
+                        wsRank.Cell(2, 2).Value = departmentStr;
+
+                        wsRank.Cell(3, 1).Value = "Năm thống kê:";
+                        wsRank.Cell(3, 1).Style.Font.Bold = true;
+                        wsRank.Cell(3, 2).Value = yearStr;
+
+                        string[] rankHeaders = { "STT", "Mã ngạch", "Tên ngạch công chức", "Nam", "Nữ", "Tổng số (người)", "Tỷ lệ (%)" };
+                        for (int col = 1; col <= rankHeaders.Length; col++)
+                        {
+                            var cell = wsRank.Cell(5, col);
+                            cell.Value = rankHeaders[col - 1];
+                            cell.Style.Font.Bold = true;
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#4338CA");
+                            cell.Style.Font.FontColor = XLColor.White;
+                            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        }
+                        wsRank.Row(5).Height = 25;
+
+                        int rRow = 6;
+                        foreach (var r in rankRows)
+                        {
+                            wsRank.Cell(rRow, 1).Value = r.STT;
+                            wsRank.Cell(rRow, 2).Value = r.RankCode;
+                            wsRank.Cell(rRow, 3).Value = r.RankName;
+                            wsRank.Cell(rRow, 4).Value = r.MaleCount;
+                            wsRank.Cell(rRow, 5).Value = r.FemaleCount;
+                            wsRank.Cell(rRow, 6).Value = r.TotalCount;
+                            wsRank.Cell(rRow, 7).Value = r.Ratio;
+
+                            for (int col = 1; col <= 7; col++)
+                            {
+                                var cell = wsRank.Cell(rRow, col);
+                                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                                if (col != 3)
+                                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                if (col == 4 || col == 5 || col == 6)
+                                    cell.Style.NumberFormat.Format = "#,##0";
+                                else if (col == 7)
+                                    cell.Style.NumberFormat.Format = "0.0";
+                            }
+                            rRow++;
+                        }
+
+                        // Dòng tổng cộng bảng ngạch
+                        wsRank.Cell(rRow, 1).Value = "";
+                        wsRank.Cell(rRow, 2).Value = "";
+                        wsRank.Cell(rRow, 3).Value = "TỔNG CỘNG";
+                        wsRank.Cell(rRow, 3).Style.Font.Bold = true;
+                        wsRank.Cell(rRow, 4).Value = rankRows.Sum(x => x.MaleCount);
+                        wsRank.Cell(rRow, 4).Style.Font.Bold = true;
+                        wsRank.Cell(rRow, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsRank.Cell(rRow, 4).Style.NumberFormat.Format = "#,##0";
+                        wsRank.Cell(rRow, 5).Value = rankRows.Sum(x => x.FemaleCount);
+                        wsRank.Cell(rRow, 5).Style.Font.Bold = true;
+                        wsRank.Cell(rRow, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsRank.Cell(rRow, 5).Style.NumberFormat.Format = "#,##0";
+                        wsRank.Cell(rRow, 6).Value = rankRows.Sum(x => x.TotalCount);
+                        wsRank.Cell(rRow, 6).Style.Font.Bold = true;
+                        wsRank.Cell(rRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsRank.Cell(rRow, 6).Style.NumberFormat.Format = "#,##0";
+                        wsRank.Cell(rRow, 7).Value = total > 0 ? 100.0 : 0.0;
+                        wsRank.Cell(rRow, 7).Style.Font.Bold = true;
+                        wsRank.Cell(rRow, 7).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsRank.Cell(rRow, 7).Style.NumberFormat.Format = "0.0";
+
+                        for (int col = 1; col <= 7; col++)
+                        {
+                            var cell = wsRank.Cell(rRow, col);
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#EEF2FF");
+                        }
+
+                        wsRank.Columns().AdjustToContents();
+
+                        // --- Sheet 3: Thống kê lãnh đạo tổ ---
+                        var wsTeam = workbook.Worksheets.Add("Lãnh đạo tổ");
+
+                        var teamTitleRange = wsTeam.Range("A1:F1");
+                        teamTitleRange.Merge();
+                        teamTitleRange.Value = "BẢNG THỐNG KÊ LÃNH ĐẠO TỔ THEO BỘ PHẬN";
+                        teamTitleRange.Style.Font.Bold = true;
+                        teamTitleRange.Style.Font.FontSize = 16;
+                        teamTitleRange.Style.Font.FontColor = XLColor.FromHtml("#0F766E");
+                        teamTitleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        teamTitleRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        wsTeam.Row(1).Height = 35;
+
+                        wsTeam.Cell(2, 1).Value = "Bộ phận:";
+                        wsTeam.Cell(2, 1).Style.Font.Bold = true;
+                        wsTeam.Cell(2, 2).Value = departmentStr;
+
+                        wsTeam.Cell(3, 1).Value = "Năm thống kê:";
+                        wsTeam.Cell(3, 1).Style.Font.Bold = true;
+                        wsTeam.Cell(3, 2).Value = yearStr;
+
+                        string[] teamHeaders = { "STT", "Bộ phận / Tổ", "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Tổng cộng" };
+                        for (int col = 1; col <= teamHeaders.Length; col++)
+                        {
+                            var cell = wsTeam.Cell(5, col);
+                            cell.Value = teamHeaders[col - 1];
+                            cell.Style.Font.Bold = true;
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#0F766E");
+                            cell.Style.Font.FontColor = XLColor.White;
+                            cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        }
+                        wsTeam.Row(5).Height = 25;
+
+                        int tRow = 6;
+                        int teamStt = 1;
+                        foreach (var t in teamRows)
+                        {
+                            wsTeam.Cell(tRow, 1).Value = teamStt++;
+                            wsTeam.Cell(tRow, 2).Value = t.DepartmentName;
+                            wsTeam.Cell(tRow, 3).Value = t.LeaderCount;
+                            wsTeam.Cell(tRow, 4).Value = t.DeputyCount;
+                            wsTeam.Cell(tRow, 5).Value = t.StaffCount;
+                            wsTeam.Cell(tRow, 6).Value = t.TotalCount;
+
+                            for (int col = 1; col <= 6; col++)
+                            {
+                                var cell = wsTeam.Cell(tRow, col);
+                                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                                if (col != 2)
+                                    cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                if (col >= 3)
+                                    cell.Style.NumberFormat.Format = "#,##0";
+                            }
+                            tRow++;
+                        }
+
+                        // Dòng tổng cộng bảng lãnh đạo tổ
+                        wsTeam.Cell(tRow, 1).Value = "";
+                        wsTeam.Cell(tRow, 2).Value = "TỔNG CỘNG";
+                        wsTeam.Cell(tRow, 2).Style.Font.Bold = true;
+                        wsTeam.Cell(tRow, 3).Value = teamRows.Sum(x => x.LeaderCount);
+                        wsTeam.Cell(tRow, 3).Style.Font.Bold = true;
+                        wsTeam.Cell(tRow, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsTeam.Cell(tRow, 3).Style.NumberFormat.Format = "#,##0";
+                        wsTeam.Cell(tRow, 4).Value = teamRows.Sum(x => x.DeputyCount);
+                        wsTeam.Cell(tRow, 4).Style.Font.Bold = true;
+                        wsTeam.Cell(tRow, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsTeam.Cell(tRow, 4).Style.NumberFormat.Format = "#,##0";
+                        wsTeam.Cell(tRow, 5).Value = teamRows.Sum(x => x.StaffCount);
+                        wsTeam.Cell(tRow, 5).Style.Font.Bold = true;
+                        wsTeam.Cell(tRow, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsTeam.Cell(tRow, 5).Style.NumberFormat.Format = "#,##0";
+                        wsTeam.Cell(tRow, 6).Value = teamRows.Sum(x => x.TotalCount);
+                        wsTeam.Cell(tRow, 6).Style.Font.Bold = true;
+                        wsTeam.Cell(tRow, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        wsTeam.Cell(tRow, 6).Style.NumberFormat.Format = "#,##0";
+
+                        for (int col = 1; col <= 6; col++)
+                        {
+                            var cell = wsTeam.Cell(tRow, col);
+                            cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#F0FDFA");
+                        }
+
+                        wsTeam.Columns().AdjustToContents();
+
+                        // --- Sheet 4: Danh sách chi tiết ---
                         var wsDetail = workbook.Worksheets.Add("Danh sách chi tiết");
 
-                        var detailTitleRange = wsDetail.Range("A1:K1");
+                        var detailTitleRange = wsDetail.Range("A1:M1");
                         detailTitleRange.Merge();
                         detailTitleRange.Value = "DANH SÁCH CHI TIẾT CÁN BỘ NHÂN SỰ";
                         detailTitleRange.Style.Font.Bold = true;
@@ -594,7 +896,7 @@ namespace TaxPersonnelManagement.Views
                         // Header bảng chi tiết
                         string[] headers = {
                             "STT", "Mã cán bộ", "Họ và tên", "Ngày sinh", "Giới tính",
-                            "Bộ phận công tác", "Chức vụ", "Trình độ học vấn",
+                            "Bộ phận công tác", "Chức vụ", "Mã ngạch", "Tên ngạch", "Trình độ học vấn",
                             "Đảng viên", "Ngày vào Đảng", "Ngày bắt đầu công tác"
                         };
 
@@ -624,10 +926,12 @@ namespace TaxPersonnelManagement.Views
                             wsDetail.Cell(rNum, 5).Value = p.Gender ?? "";
                             wsDetail.Cell(rNum, 6).Value = p.Department ?? "";
                             wsDetail.Cell(rNum, 7).Value = p.Position ?? "";
-                            wsDetail.Cell(rNum, 8).Value = p.EducationLevel ?? "";
-                            wsDetail.Cell(rNum, 9).Value = p.PartyEntryDate.HasValue ? "Đảng viên" : "";
-                            wsDetail.Cell(rNum, 10).Value = p.PartyEntryDate.HasValue ? p.PartyEntryDate.Value.ToString("dd/MM/yyyy") : "";
-                            wsDetail.Cell(rNum, 11).Value = start.HasValue ? start.Value.ToString("dd/MM/yyyy") : "";
+                            wsDetail.Cell(rNum, 8).Value = p.RankCode ?? "";
+                            wsDetail.Cell(rNum, 9).Value = p.RankName ?? "";
+                            wsDetail.Cell(rNum, 10).Value = p.EducationLevel ?? "";
+                            wsDetail.Cell(rNum, 11).Value = p.PartyEntryDate.HasValue ? "Đảng viên" : "";
+                            wsDetail.Cell(rNum, 12).Value = p.PartyEntryDate.HasValue ? p.PartyEntryDate.Value.ToString("dd/MM/yyyy") : "";
+                            wsDetail.Cell(rNum, 13).Value = start.HasValue ? start.Value.ToString("dd/MM/yyyy") : "";
 
                             // Định dạng viền và căn lề
                             for (int col = 1; col <= headers.Length; col++)
@@ -636,7 +940,7 @@ namespace TaxPersonnelManagement.Views
                                 cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                                 cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
                                 // Căn giữa tất cả trừ các cột text dài
-                                if (col != 3 && col != 6 && col != 7 && col != 8)
+                                if (col != 3 && col != 6 && col != 7 && col != 9 && col != 10)
                                     cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                             }
                             rNum++;
@@ -668,6 +972,21 @@ namespace TaxPersonnelManagement.Views
     {
         public int Value { get; set; }
         public SolidColorBrush ColorBrush { get; set; } = new();
+    }
+
+    /// <summary>DTO cho một dòng trong bảng thống kê các ngạch công chức.</summary>
+    public class RankStatisticsRow
+    {
+        public int STT { get; set; }
+        public string RankCode { get; set; } = string.Empty;
+        public string RankName { get; set; } = string.Empty;
+        public int MaleCount { get; set; }
+        public int FemaleCount { get; set; }
+        public int TotalCount { get; set; }
+        public double Ratio { get; set; }
+        public string RatioText { get; set; } = string.Empty;
+        public double BarRatio { get; set; }
+        public bool IsUnassigned { get; set; }
     }
 
     /// <summary>DTO cho một dòng trong bảng thống kê lãnh đạo tổ.</summary>

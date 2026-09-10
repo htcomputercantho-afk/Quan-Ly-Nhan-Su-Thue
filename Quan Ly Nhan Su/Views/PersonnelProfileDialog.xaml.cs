@@ -227,5 +227,17 @@ namespace TaxPersonnelManagement.Views
                 }
             }
         }
+
+        private void btnViewAllDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is Personnel p && p.Id > 0)
+            {
+                var dialog = new PersonnelDegreesDialog(p)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                dialog.ShowDialog();
+            }
+        }
     }
 }

@@ -227,10 +227,22 @@
                         <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Margin="0 0 0 20">
                             <StackPanel>
                                 <Border Background="Transparent" Padding="15 10">
-                                    <StackPanel Orientation="Horizontal">
-                                        <materialDesign:PackIcon Kind="School" Foreground="#2E7D32" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="2. ĐÀO TẠO" FontWeight="Bold" Foreground="#2E7D32" FontSize="17" VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="School" Foreground="#2E7D32" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                            <TextBlock Text="2. ĐÀO TẠO" FontWeight="Bold" Foreground="#2E7D32" FontSize="17" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <Button HorizontalAlignment="Right" Click="btnViewAllDegrees_Click"
+                                                Background="Transparent" BorderBrush="#2E7D32" BorderThickness="1" Foreground="#2E7D32"
+                                                materialDesign:ButtonAssist.CornerRadius="4" Cursor="Hand"
+                                                Height="28" Padding="10 0"
+                                                ToolTip="Xem danh sách tất cả các văn bằng, chứng chỉ của cán bộ">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialDesign:PackIcon Kind="CertificateOutline" Width="15" Height="15" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Xem tất cả văn bằng" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
                                 <Grid Margin="15">
