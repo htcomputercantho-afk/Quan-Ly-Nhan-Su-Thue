@@ -153,21 +153,87 @@ namespace TaxPersonnelManagement.Services
 
         static void ComposeEducation(ColumnDescriptor column, Personnel p)
         {
+            var degs = p.PersonnelDegrees != null && p.PersonnelDegrees.Any()
+                ? p.PersonnelDegrees.ToList()
+                : null;
+
+            if (degs == null && p.Id > 0)
+            {
+                try
+                {
+                    using var db = new TaxPersonnelManagement.Data.AppDbContext();
+                    degs = db.PersonnelDegrees.Where(d => d.PersonnelId == p.Id).ToList();
+                }
+                catch { }
+            }
+
+            string GetDegString(string type, string? fallback)
+            {
+                if (degs != null)
+                {
+                    var list = degs.Where(d => d.DegreeType == type).OrderByDescending(d => d.IsPrimary).ThenBy(d => d.Id).ToList();
+                    if (list.Any())
+                    {
+                        return string.Join(", ", list.Select(d => !string.IsNullOrWhiteSpace(d.GraduationYear) ? $"{d.DegreeName} ({d.GraduationYear})" : d.DegreeName));
+                    }
+                }
+                return fallback ?? "---";
+            }
+
+            string GetMajorInstString()
+            {
+                if (degs != null)
+                {
+                    var list = degs.Where(d => d.DegreeType == "Chuyên môn").OrderByDescending(d => d.IsPrimary).ThenBy(d => d.Id).ToList();
+                    if (list.Any())
+                    {
+                        var parts = list.Select(d =>
+                        {
+                            var s = d.Major ?? "";
+                            if (!string.IsNullOrWhiteSpace(d.Institution)) s += string.IsNullOrWhiteSpace(s) ? d.Institution : $" ({d.Institution})";
+                            return s;
+                        }).Where(x => !string.IsNullOrWhiteSpace(x));
+                        if (parts.Any()) return string.Join(", ", parts);
+                    }
+                }
+                var def = $"{p.Major} - {p.University}".Trim(' ', '-');
+                return string.IsNullOrWhiteSpace(def) ? "---" : def;
+            }
+
             column.Item().Row(row =>
             {
                 row.RelativeItem().Column(c =>
                 {
-                    LabelValue(c, "Trình độ:", p.EducationLevel);
-                    LabelValue(c, "Tin học:", p.ITSkillLevel);
-                    LabelValue(c, "Quản lý Nhà nước:", p.StateManagementLevel);
+                    LabelValue(c, "Trình độ:", GetDegString("Chuyên môn", p.EducationLevel));
+                    LabelValue(c, "Tin học:", GetDegString("Tin học", p.ITSkillLevel));
+                    LabelValue(c, "Quản lý Nhà nước:", GetDegString("Quản lý Nhà nước", p.StateManagementLevel));
                 });
                 row.RelativeItem().Column(c =>
                 {
-                    LabelValue(c, "Chuyên ngành:", $"{p.Major} - {p.University}");
-                    LabelValue(c, "Ngoại ngữ:", p.LanguageSkillLevel);
-                    LabelValue(c, "Lý luận Chính trị:", p.PoliticalTheoryLevel);
+                    LabelValue(c, "Chuyên ngành:", GetMajorInstString());
+                    LabelValue(c, "Ngoại ngữ:", GetDegString("Ngoại ngữ", p.LanguageSkillLevel));
+                    LabelValue(c, "Lý luận Chính trị:", GetDegString("Lý luận chính trị", p.PoliticalTheoryLevel));
                 });
             });
+
+            if (degs != null)
+            {
+                var others = degs.Where(d => d.DegreeType == "Chứng chỉ khác" || (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType))).ToList();
+                if (others.Any())
+                {
+                    string otherStr = string.Join(", ", others.Select(d =>
+                    {
+                        var s = d.DegreeName;
+                        if (!string.IsNullOrWhiteSpace(d.Major)) s += $" ({d.Major})";
+                        if (!string.IsNullOrWhiteSpace(d.GraduationYear)) s += $" [{d.GraduationYear}]";
+                        return s;
+                    }));
+                    column.Item().PaddingTop(4).Row(row =>
+                    {
+                        row.RelativeItem().Column(c => LabelValue(c, "Chứng chỉ khác:", otherStr));
+                    });
+                }
+            }
         }
 
         static void ComposeSalary(ColumnDescriptor column, Personnel p)

@@ -184,6 +184,7 @@ namespace TaxPersonnelManagement.Views
                 var query = context.Personnel
                                    .Include(p => p.LeaveHistories)
                                    .Include(p => p.SalaryRecords)
+                                   .Include(p => p.PersonnelDegrees)
                                    .AsQueryable();
 
                 if (cbDepartmentFilter.SelectedItem is string dept && dept != "-- Tất cả bộ phận --")
@@ -505,7 +506,7 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).Include(p => p.EvaluationRecords).FirstOrDefault(x => x.Id == id);
+                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).Include(p => p.EvaluationRecords).Include(p => p.PersonnelDegrees).FirstOrDefault(x => x.Id == id);
                 if (p != null)
                 {
                     if (Application.Current.MainWindow is MainWindow mw)
@@ -545,7 +546,7 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).Include(p => p.EvaluationRecords).FirstOrDefault(x => x.Id == id);
+                var p = context.Personnel.Include(p => p.LeaveHistories).Include(p => p.SalaryRecords).Include(p => p.EvaluationRecords).Include(p => p.PersonnelDegrees).FirstOrDefault(x => x.Id == id);
                 if (p != null)
                 {
                     var dialog = new PersonnelProfileDialog(p);

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ClosedXML.Excel;
+using Microsoft.EntityFrameworkCore;
+using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Helpers;
 
@@ -9,23 +11,46 @@ namespace TaxPersonnelManagement.Services
 {
     /// <summary>
     /// Lớp xuất danh sách nhân sự ra file Excel (.xlsx).
-    /// Bao gồm toàn bộ thông tin cá nhân, lương, khen thưởng, kỷ luật và cột Ghi chú.
+    /// Bao gồm toàn bộ thông tin cá nhân, lương, khen thưởng, kỷ luật, toàn bộ văn bằng chứng chỉ và cột Ghi chú.
     /// </summary>
     public static class ExcelExporter
     {
         /// <summary>
         /// Xuất danh sách nhân sự ra file Excel tại đường dẫn chỉ định.
-        /// Cột Ghi chú tự động tính toán trạng thái nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm.
+        /// Các bằng cấp, chứng chỉ nếu có nhiều dòng sẽ được hiển thị nhiều dòng (Alt+Enter) trong cùng 1 ô.
         /// </summary>
         /// <param name="personnelList">Danh sách nhân sự cần xuất.</param>
         /// <param name="filePath">Đường dẫn lưu file Excel.</param>
         public static void Export(IEnumerable<Personnel> personnelList, string filePath)
         {
+            var personnelListArray = personnelList as Personnel[] ?? personnelList.ToArray();
+            var ids = personnelListArray.Select(p => p.Id).Where(id => id > 0).ToList();
+
+            // Tải toàn bộ văn bằng từ CSDL để đảm bảo đầy đủ ngay cả khi danh sách truyền vào chưa được Include
+            Dictionary<int, List<PersonnelDegree>> degreesByPersonnel = new();
+            if (ids.Any())
+            {
+                try
+                {
+                    using var db = new AppDbContext();
+                    degreesByPersonnel = db.PersonnelDegrees
+                        .Where(d => ids.Contains(d.PersonnelId))
+                        .AsNoTracking()
+                        .ToList()
+                        .GroupBy(d => d.PersonnelId)
+                        .ToDictionary(g => g.Key, g => g.ToList());
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Error loading degrees for export: " + ex.Message);
+                }
+            }
+
             using (var workbook = new XLWorkbook())
             {
                 var worksheet = workbook.Worksheets.Add("DanhSachNhanSu");
 
-                // Tiêu đề các cột (42 cột)
+                // Tiêu đề các cột (42 cột chuẩn)
                 string[] headers =
                 {
                     "STT", "Số hiệu CB", "Họ và Tên", // A, B, C (1, 2, 3)
@@ -58,8 +83,10 @@ namespace TaxPersonnelManagement.Services
                 int stt = 1;
                 var now = DateTime.Now.Date;
 
-                foreach (var p in personnelList)
+                foreach (var p in personnelListArray)
                 {
+                    var allDegrees = GetDegreesForPersonnel(p, degreesByPersonnel);
+
                     worksheet.Cell(row, 1).Value = stt++;
                     worksheet.Cell(row, 2).Value = p.StaffId;
                     worksheet.Cell(row, 3).Value = p.FullName;
@@ -86,15 +113,64 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 19).Value = CalcWorkingYears(p, now);
                     worksheet.Cell(row, 20).Value = p.PositionDecisionDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PositionDecisionDate.Value) : "";
 
-                    worksheet.Cell(row, 21).Value = p.EducationLevel;
-                    worksheet.Cell(row, 22).Value = p.Major;
-                    worksheet.Cell(row, 23).Value = p.University;
+                    // 1. Chuyên môn (Hiển thị nhiều dòng trong cùng 1 ô nếu có nhiều bằng)
+                    var cmList = allDegrees.Where(d => d.DegreeType == "Chuyên môn")
+                                           .OrderByDescending(d => d.IsPrimary)
+                                           .ThenBy(d => d.Id)
+                                           .ToList();
+                    string trinhDoCM = cmList.Any()
+                        ? string.Join("\n", cmList.Select(d => d.DegreeName))
+                        : (p.EducationLevel ?? "");
 
-                    worksheet.Cell(row, 24).Value = p.PoliticalTheoryLevel;
-                    worksheet.Cell(row, 25).Value = p.StateManagementLevel;
-                    worksheet.Cell(row, 26).Value = p.LanguageSkillLevel;
-                    worksheet.Cell(row, 27).Value = p.ITSkillLevel;
+                    string chuyenNganh = cmList.Any()
+                        ? string.Join("\n", cmList.Select(d => d.Major ?? ""))
+                        : (p.Major ?? "");
 
+                    string truongDaoTao = cmList.Any()
+                        ? string.Join("\n", cmList.Select(d => d.Institution ?? ""))
+                        : (p.University ?? "");
+
+                    worksheet.Cell(row, 21).Value = trinhDoCM;
+                    worksheet.Cell(row, 22).Value = chuyenNganh;
+                    worksheet.Cell(row, 23).Value = truongDaoTao;
+
+                    // 2. Lý luận chính trị (Nhiều dòng nếu có nhiều bằng)
+                    var polList = allDegrees.Where(d => d.DegreeType == "Lý luận chính trị")
+                                            .OrderByDescending(d => d.IsPrimary)
+                                            .ThenBy(d => d.Id)
+                                            .ToList();
+                    worksheet.Cell(row, 24).Value = polList.Any()
+                        ? string.Join("\n", polList.Select(d => d.DegreeName))
+                        : (p.PoliticalTheoryLevel ?? "");
+
+                    // 3. Quản lý Nhà nước (Nhiều dòng nếu có nhiều bằng)
+                    var stateList = allDegrees.Where(d => d.DegreeType == "Quản lý Nhà nước")
+                                              .OrderByDescending(d => d.IsPrimary)
+                                              .ThenBy(d => d.Id)
+                                              .ToList();
+                    worksheet.Cell(row, 25).Value = stateList.Any()
+                        ? string.Join("\n", stateList.Select(d => d.DegreeName))
+                        : (p.StateManagementLevel ?? "");
+
+                    // 4. Ngoại ngữ (Nhiều dòng nếu có nhiều bằng, ví dụ: A, B, C...)
+                    var langList = allDegrees.Where(d => d.DegreeType == "Ngoại ngữ")
+                                             .OrderByDescending(d => d.IsPrimary)
+                                             .ThenBy(d => d.Id)
+                                             .ToList();
+                    worksheet.Cell(row, 26).Value = langList.Any()
+                        ? string.Join("\n", langList.Select(d => d.DegreeName))
+                        : (p.LanguageSkillLevel ?? "");
+
+                    // 5. Tin học (Nhiều dòng nếu có nhiều bằng, ví dụ: A, B, C...)
+                    var itList = allDegrees.Where(d => d.DegreeType == "Tin học")
+                                           .OrderByDescending(d => d.IsPrimary)
+                                           .ThenBy(d => d.Id)
+                                           .ToList();
+                    worksheet.Cell(row, 27).Value = itList.Any()
+                        ? string.Join("\n", itList.Select(d => d.DegreeName))
+                        : (p.ITSkillLevel ?? "");
+
+                    // Thông tin Đảng viên
                     worksheet.Cell(row, 28).Value = p.PartyEntryDate.HasValue ? 1 : "";
                     worksheet.Cell(row, 28).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                     worksheet.Cell(row, 29).Value = p.PartyEntryDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PartyEntryDate.Value) : "";
@@ -113,11 +189,10 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 39).Value = p.RewardForms;
                     worksheet.Cell(row, 40).Value = p.DisciplineType == "---" ? "" : p.DisciplineType;
 
-                    // Cột 41: Ghi chú - Theo dõi nghỉ thai sản (chưa đủ 36 tháng) và nghỉ ốm
+                    // Cột 41: Ghi chú - Theo dõi nghỉ thai sản, nghỉ ốm và chứng chỉ khác (nếu có)
                     string ghiChu = "";
                     if (p.LeaveHistories != null)
                     {
-                        // Kiểm tra nghỉ thai sản: nếu chưa đủ 36 tháng từ ngày bắt đầu → ghi chú
                         var maternityLeave = p.LeaveHistories
                             .Where(l => (l.LeaveType == "Thai sản" || l.LeaveType == "Nghỉ thai sản"))
                             .OrderByDescending(l => l.StartDate)
@@ -132,7 +207,6 @@ namespace TaxPersonnelManagement.Services
                             }
                         }
 
-                        // Kiểm tra nghỉ ốm: nếu công chức đang trong thời gian nghỉ ốm → ghi chú
                         if (string.IsNullOrEmpty(ghiChu))
                         {
                             var sickLeave = p.LeaveHistories
@@ -147,25 +221,124 @@ namespace TaxPersonnelManagement.Services
                             }
                         }
                     }
+
+                    // Thêm chứng chỉ khác vào Ghi chú nếu có
+                    var otherList = allDegrees.Where(d => d.DegreeType == "Chứng chỉ khác" ||
+                                                          (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType)))
+                                               .OrderByDescending(d => d.IsPrimary)
+                                               .ThenBy(d => d.Id)
+                                               .ToList();
+                    if (otherList.Any())
+                    {
+                        string otherStr = string.Join(", ", otherList.Select(d => d.DegreeName));
+                        if (!string.IsNullOrWhiteSpace(otherStr))
+                        {
+                            ghiChu = string.IsNullOrWhiteSpace(ghiChu) ? $"CC khác: {otherStr}" : $"{ghiChu}\nCC khác: {otherStr}";
+                        }
+                    }
+
                     worksheet.Cell(row, 41).Value = ghiChu;
                     worksheet.Cell(row, 42).Value = p.RetirementDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.RetirementDate.Value) : "";
 
-                    // Áp dụng viền và căn chỉnh cho toàn bộ ô trong dòng
+                    // Áp dụng viền, căn chỉnh giữa và cho phép hiển thị nhiều dòng trong ô (WrapText)
                     for (int c = 1; c <= headers.Length; c++)
                     {
                         worksheet.Cell(row, c).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                         worksheet.Cell(row, c).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        worksheet.Cell(row, c).Style.Alignment.WrapText = true;
                     }
 
                     row++;
                 }
 
-                // Tự động điều chỉnh độ rộng cột theo nội dung
+                // Tự động điều chỉnh độ rộng cột và chiều cao dòng theo nội dung
                 worksheet.Columns().AdjustToContents();
+                worksheet.Rows().AdjustToContents();
 
                 // Lưu file Excel
                 workbook.SaveAs(filePath);
             }
+        }
+
+        private static List<PersonnelDegree> GetDegreesForPersonnel(Personnel p, Dictionary<int, List<PersonnelDegree>> dbDegreesMap)
+        {
+            if (p.Id > 0 && dbDegreesMap.TryGetValue(p.Id, out var dbList) && dbList.Any())
+            {
+                return dbList;
+            }
+            if (p.PersonnelDegrees != null && p.PersonnelDegrees.Any())
+            {
+                return p.PersonnelDegrees.ToList();
+            }
+
+            // Tự động kế thừa từ các trường truyền thống của cán bộ nếu chưa có bản ghi trong bảng PersonnelDegrees
+            var fallback = new List<PersonnelDegree>();
+            if (!string.IsNullOrWhiteSpace(p.EducationLevel))
+            {
+                fallback.Add(new PersonnelDegree
+                {
+                    PersonnelId = p.Id,
+                    DegreeType = "Chuyên môn",
+                    DegreeName = p.EducationLevel.Trim(),
+                    Major = p.Major,
+                    Institution = p.University,
+                    IsPrimary = true
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(p.PoliticalTheoryLevel))
+            {
+                fallback.Add(new PersonnelDegree
+                {
+                    PersonnelId = p.Id,
+                    DegreeType = "Lý luận chính trị",
+                    DegreeName = p.PoliticalTheoryLevel.Trim(),
+                    IsPrimary = true
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(p.StateManagementLevel))
+            {
+                fallback.Add(new PersonnelDegree
+                {
+                    PersonnelId = p.Id,
+                    DegreeType = "Quản lý Nhà nước",
+                    DegreeName = p.StateManagementLevel.Trim(),
+                    IsPrimary = true
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(p.LanguageSkillLevel))
+            {
+                fallback.Add(new PersonnelDegree
+                {
+                    PersonnelId = p.Id,
+                    DegreeType = "Ngoại ngữ",
+                    DegreeName = p.LanguageSkillLevel.Trim(),
+                    IsPrimary = true
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(p.ITSkillLevel))
+            {
+                fallback.Add(new PersonnelDegree
+                {
+                    PersonnelId = p.Id,
+                    DegreeType = "Tin học",
+                    DegreeName = p.ITSkillLevel.Trim(),
+                    IsPrimary = true
+                });
+            }
+            return fallback;
+        }
+
+        private static int GetDegreeTypeSortOrder(string? degreeType)
+        {
+            return (degreeType ?? "").Trim() switch
+            {
+                "Chuyên môn" => 1,
+                "Lý luận chính trị" => 2,
+                "Quản lý Nhà nước" => 3,
+                "Ngoại ngữ" => 4,
+                "Tin học" => 5,
+                _ => 6
+            };
         }
 
         private static string CalcWorkingYears(Personnel p, DateTime now)

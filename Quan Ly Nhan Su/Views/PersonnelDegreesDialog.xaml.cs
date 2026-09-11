@@ -4,6 +4,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using MaterialDesignThemes.Wpf;
 using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
@@ -62,8 +64,10 @@ namespace TaxPersonnelManagement.Views
                         rbTabMajor.IsChecked = true;
                         break;
                     case "Quản lý Nhà nước":
-                    case "Lý luận chính trị":
                         rbTabState.IsChecked = true;
+                        break;
+                    case "Lý luận chính trị":
+                        rbTabPolTheory.IsChecked = true;
                         break;
                     default:
                         rbTabAll.IsChecked = true;
@@ -278,7 +282,11 @@ namespace TaxPersonnelManagement.Views
             }
             else if (rbTabState.IsChecked == true)
             {
-                filtered = filtered.Where(d => d.DegreeType == "Quản lý Nhà nước" || d.DegreeType == "Lý luận chính trị");
+                filtered = filtered.Where(d => d.DegreeType == "Quản lý Nhà nước");
+            }
+            else if (rbTabPolTheory.IsChecked == true)
+            {
+                filtered = filtered.Where(d => d.DegreeType == "Lý luận chính trị");
             }
 
             var viewList = filtered.Select((d, idx) => new DegreeViewModel(d, idx + 1)).ToList();
@@ -291,9 +299,10 @@ namespace TaxPersonnelManagement.Views
             int itCount = _allDegrees.Count(d => d.DegreeType == "Tin học");
             int langCount = _allDegrees.Count(d => d.DegreeType == "Ngoại ngữ");
             int majorCount = _allDegrees.Count(d => d.DegreeType == "Chuyên môn");
-            int stateCount = _allDegrees.Count(d => d.DegreeType == "Quản lý Nhà nước" || d.DegreeType == "Lý luận chính trị");
+            int stateCount = _allDegrees.Count(d => d.DegreeType == "Quản lý Nhà nước");
+            int polCount = _allDegrees.Count(d => d.DegreeType == "Lý luận chính trị");
 
-            txtDegreeSummary.Text = $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN & LLCT)";
+            txtDegreeSummary.Text = $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN, {polCount} LLCT)";
         }
 
         private void TabFilter_Checked(object sender, RoutedEventArgs e)
@@ -309,6 +318,8 @@ namespace TaxPersonnelManagement.Views
                 SelectComboBoxItemByText(cboDegreeType, "Chuyên môn");
             else if (rbTabState.IsChecked == true)
                 SelectComboBoxItemByText(cboDegreeType, "Quản lý Nhà nước");
+            else if (rbTabPolTheory.IsChecked == true)
+                SelectComboBoxItemByText(cboDegreeType, "Lý luận chính trị");
 
             ApplyFilterAndBind();
         }
@@ -316,6 +327,14 @@ namespace TaxPersonnelManagement.Views
         private void cboDegreeType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             PopulateDegreeNameSuggestions();
+        }
+
+        private void dgDegrees_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (dgDegrees != null && dgDegrees.SelectedItem != null)
+            {
+                dgDegrees.SelectedItem = null;
+            }
         }
 
         /// <summary>
@@ -841,10 +860,46 @@ namespace TaxPersonnelManagement.Views
     }
 
     /// <summary>
-    /// ViewModel hỗ trợ hiển thị trên DataGrid có kèm STT.
+    /// ViewModel hỗ trợ hiển thị trên DataGrid có kèm STT, màu danh mục và hiển thị thân thiện.
     /// </summary>
     public class DegreeViewModel
     {
+        private static readonly BrushConverter _brushConverter = new();
+
+        private static readonly Brush BlueBg = (Brush)_brushConverter.ConvertFrom("#EFF6FF")!;
+        private static readonly Brush BlueBorder = (Brush)_brushConverter.ConvertFrom("#BFDBFE")!;
+        private static readonly Brush BlueText = (Brush)_brushConverter.ConvertFrom("#1D4ED8")!;
+
+        private static readonly Brush PurpleBg = (Brush)_brushConverter.ConvertFrom("#F5F3FF")!;
+        private static readonly Brush PurpleBorder = (Brush)_brushConverter.ConvertFrom("#DDD6FE")!;
+        private static readonly Brush PurpleText = (Brush)_brushConverter.ConvertFrom("#6D28D9")!;
+
+        private static readonly Brush GreenBg = (Brush)_brushConverter.ConvertFrom("#ECFDF5")!;
+        private static readonly Brush GreenBorder = (Brush)_brushConverter.ConvertFrom("#A7F3D0")!;
+        private static readonly Brush GreenText = (Brush)_brushConverter.ConvertFrom("#047857")!;
+
+        private static readonly Brush AmberBg = (Brush)_brushConverter.ConvertFrom("#FFFBEB")!;
+        private static readonly Brush AmberBorder = (Brush)_brushConverter.ConvertFrom("#FDE68A")!;
+        private static readonly Brush AmberText = (Brush)_brushConverter.ConvertFrom("#B45309")!;
+
+        private static readonly Brush RoseBg = (Brush)_brushConverter.ConvertFrom("#FFF1F2")!;
+        private static readonly Brush RoseBorder = (Brush)_brushConverter.ConvertFrom("#FECDD3")!;
+        private static readonly Brush RoseText = (Brush)_brushConverter.ConvertFrom("#BE123C")!;
+
+        private static readonly Brush GrayBg = (Brush)_brushConverter.ConvertFrom("#F1F5F9")!;
+        private static readonly Brush GrayBorder = (Brush)_brushConverter.ConvertFrom("#E2E8F0")!;
+        private static readonly Brush GrayText = (Brush)_brushConverter.ConvertFrom("#64748B")!;
+        private static readonly Brush DarkText = (Brush)_brushConverter.ConvertFrom("#334155")!;
+        private static readonly Brush DashText = (Brush)_brushConverter.ConvertFrom("#94A3B8")!;
+
+        private static readonly Brush StarActiveBg = (Brush)_brushConverter.ConvertFrom("#FEF3C7")!;
+        private static readonly Brush StarActiveBorder = (Brush)_brushConverter.ConvertFrom("#FDE68A")!;
+        private static readonly Brush StarActiveFg = (Brush)_brushConverter.ConvertFrom("#D97706")!;
+
+        private static readonly Brush StarInactiveBg = (Brush)_brushConverter.ConvertFrom("#F8FAFC")!;
+        private static readonly Brush StarInactiveBorder = (Brush)_brushConverter.ConvertFrom("#E2E8F0")!;
+        private static readonly Brush StarInactiveFg = (Brush)_brushConverter.ConvertFrom("#94A3B8")!;
+
         public int STT { get; set; }
         public int Id { get; set; }
         public string DegreeType { get; set; }
@@ -854,6 +909,62 @@ namespace TaxPersonnelManagement.Views
         public string? Classification { get; set; }
         public string? GraduationYear { get; set; }
         public bool IsPrimary { get; set; }
+
+        public Brush CategoryBgBrush => DegreeType switch
+        {
+            "Tin học" => BlueBg,
+            "Ngoại ngữ" => PurpleBg,
+            "Chuyên môn" => GreenBg,
+            "Quản lý Nhà nước" => AmberBg,
+            "Lý luận chính trị" => RoseBg,
+            _ => GrayBg
+        };
+
+        public Brush CategoryBorderBrush => DegreeType switch
+        {
+            "Tin học" => BlueBorder,
+            "Ngoại ngữ" => PurpleBorder,
+            "Chuyên môn" => GreenBorder,
+            "Quản lý Nhà nước" => AmberBorder,
+            "Lý luận chính trị" => RoseBorder,
+            _ => GrayBorder
+        };
+
+        public Brush CategoryTextBrush => DegreeType switch
+        {
+            "Tin học" => BlueText,
+            "Ngoại ngữ" => PurpleText,
+            "Chuyên môn" => GreenText,
+            "Quản lý Nhà nước" => AmberText,
+            "Lý luận chính trị" => RoseText,
+            _ => GrayText
+        };
+
+        public PackIconKind CategoryIcon => DegreeType switch
+        {
+            "Tin học" => PackIconKind.Laptop,
+            "Ngoại ngữ" => PackIconKind.Translate,
+            "Chuyên môn" => PackIconKind.School,
+            "Quản lý Nhà nước" => PackIconKind.TownHall,
+            "Lý luận chính trị" => PackIconKind.BookOpenOutline,
+            _ => PackIconKind.CertificateOutline
+        };
+
+        public string DisplayMajor => string.IsNullOrWhiteSpace(Major) ? "—" : Major.Trim();
+        public string DisplayInstitution => string.IsNullOrWhiteSpace(Institution) ? "—" : Institution.Trim();
+        public string DisplayClassification => string.IsNullOrWhiteSpace(Classification) ? "—" : Classification.Trim();
+        public string DisplayGraduationYear => string.IsNullOrWhiteSpace(GraduationYear) ? "—" : GraduationYear.Trim();
+
+        public Brush MajorForeground => string.IsNullOrWhiteSpace(Major) ? DashText : DarkText;
+        public Brush InstitutionForeground => string.IsNullOrWhiteSpace(Institution) ? DashText : DarkText;
+        public Brush ClassificationForeground => string.IsNullOrWhiteSpace(Classification) ? DashText : DarkText;
+        public Brush GraduationYearForeground => string.IsNullOrWhiteSpace(GraduationYear) ? DashText : DarkText;
+
+        public Brush StarButtonBg => IsPrimary ? StarActiveBg : StarInactiveBg;
+        public Brush StarButtonBorder => IsPrimary ? StarActiveBorder : StarInactiveBorder;
+        public Brush StarButtonFg => IsPrimary ? StarActiveFg : StarInactiveFg;
+        public PackIconKind StarButtonIcon => IsPrimary ? PackIconKind.Star : PackIconKind.StarOutline;
+        public string StarButtonTooltip => IsPrimary ? "⭐ Bằng chính (đang hiển thị đại diện trên hồ sơ)" : "Nhấp để đặt làm bằng chính (hiển thị đại diện)";
 
         public DegreeViewModel(PersonnelDegree d, int stt)
         {

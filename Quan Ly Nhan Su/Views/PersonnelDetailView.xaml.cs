@@ -1015,7 +1015,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     // Update
                     // Update
-                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").FirstOrDefault(p => p.Id == _personnel.Id);
+                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").Include("PersonnelDegrees").FirstOrDefault(p => p.Id == _personnel.Id);
                     if (existingP != null)
                     {
                         existingP.StaffId = txtStaffId.Text;

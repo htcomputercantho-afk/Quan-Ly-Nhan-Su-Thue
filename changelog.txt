@@ -1,3 +1,23 @@
+## v1.6.2.8 — 2026-09-11
+- [Tính năng & Xuất dữ liệu] Nâng cấp Xuất file Excel & PDF đầy đủ Văn bằng Chứng chỉ:
+    + Xuất Excel (`ExcelExporter`): Giữ nguyên chuẩn 1 sheet duy nhất (`DanhSachNhanSu`) với đúng 42 cột chuẩn mực quy định. Toàn bộ văn bằng/chứng chỉ (Tin học, Ngoại ngữ, Chuyên môn, Quản lý Nhà nước, Lý luận chính trị) được hiển thị nhiều dòng trong cùng một ô (`Alt + Enter` / `WrapText` tự động co giãn dòng), không bị sót bằng cấp. Tự động gom các chứng chỉ khác vào cột Ghi chú mà không làm lệch thứ tự các cột quy định.
+    + Xuất PDF (`PdfExporter`): Bổ sung hiển thị đầy đủ danh sách văn bằng/chứng chỉ theo từng chuyên mục trong bảng Trình độ học vấn của file PDF lý lịch trích ngang.
+- [Tính năng & Phân loại] Tách biệt Danh mục Quản lý Nhà nước và Lý luận chính trị:
+    + Tách tab gộp "🏛️ QL Nhà nước & LLCT" thành 2 tab phân loại riêng biệt: 🏛️ Quản lý Nhà nước và 📕 Lý luận chính trị trong popup Quản lý văn bằng.
+    + Tự động chọn đúng loại bằng trên form thêm mới tương ứng khi nhấp vào từng tab.
+    + Tách riêng bộ đếm số lượng văn bằng ở thanh trạng thái (Footer) thành số lượng bằng QLNN và LLCT độc lập.
+- [Giao diện & Trải nghiệm] Nâng cấp Toàn diện Bảng Danh sách Văn bằng (`PersonnelDegreesDialog`):
+    + Gắn nhãn màu (Pill Badge) pastel kèm biểu tượng riêng biệt cho từng danh mục: 💻 Tin học (Xanh biển), 🌐 Ngoại ngữ (Tím), 🎓 Chuyên môn (Xanh lục ngọc), 🏛️ QL Nhà nước (Hổ phách), 📕 Lý luận chính trị (Hồng ngọc).
+    + Căn giữa đối xứng toàn bộ dữ liệu các cột trong bảng, thêm dấu gạch ngang `—` thanh lịch cho các ô trống, loại bỏ khoảng trắng trống trải.
+    + Cố định Tên văn bằng và nhãn ⭐ Bằng chính thẳng hàng trên cùng 1 dòng, chấm dứt tình trạng rớt dòng làm méo lệch chiều cao các hàng.
+    + Loại bỏ hoàn toàn vệt chọn xanh đậm mặc định (`SystemColors.Highlight`) khi nhấp chuột vào dòng, bổ sung màu nền xen kẽ (Zebra Striping) dịu mắt.
+    + Tiêu đề các cột tự động ngắt dòng (`TextWrapping="Wrap"`), mở rộng kích thước popup lên 1160px để không gian hiển thị rộng rãi, không bị cắt cụt chữ.
+    + Thiết kế lại 2 bộ chọn (ComboBox) Loại bằng & Tên bằng phẳng hiện đại, viền bo tròn thanh lịch, icon mũi tên chevron sắc nét.
+    + Tinh gọn bộ nút thao tác thành bộ 3 nút icon vuông bo góc 28x28px cực kỳ tinh tế: [ ⭐ Trạng thái chính ] [ ✏️ Sửa ] [ 🗑️ Xóa ].
+- [Cải tiến Giao diện] Thiết kế lại Nút "Quản lý danh sách văn bằng" (`PersonnelDetailView`):
+    + Nâng cấp từ nút xám tối màu chìm nghỉm thành dạng Pill Capsule màu trắng tinh tế, nổi bật trên thanh tiêu đề xám xanh `#607D8B`.
+    + Bo góc tròn mềm mại (`CornerRadius="15"`), viền thanh lịch, đổ bóng mờ (`DropShadowEffect`) cao cấp cùng hiệu ứng hover xanh êm dịu.
+
 ## v1.6.2.7 — 2026-09-10
 - [Cải tiến Giao diện] Tinh gọn Mục 3 (Trình độ - Đào tạo) trong Hồ sơ cán bộ:
     + Loại bỏ toàn bộ các nút "Xem các bằng" và icon con mắt riêng lẻ tại từng ô (Trình độ, Quản lý Nhà nước, Tin học, Ngoại ngữ).

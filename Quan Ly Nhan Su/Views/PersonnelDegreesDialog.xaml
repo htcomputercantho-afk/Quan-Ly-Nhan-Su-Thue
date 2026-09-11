@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Danh sách văn bằng, chứng chỉ" Height="720" Width="1100" MinWidth="1020" MinHeight="640"
+        Title="Danh sách văn bằng, chứng chỉ" Height="730" Width="1160" MinWidth="1050" MinHeight="640"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         FontFamily="{DynamicResource MaterialDesignFont}"
@@ -42,6 +42,279 @@
                                     <Setter TargetName="border" Property="Background" Value="#2563EB"/>
                                     <Setter TargetName="border" Property="BorderBrush" Value="#1D4ED8"/>
                                     <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Style cho từng Item trong Dropdown ComboBox (Pill bo góc, hiệu ứng hover nhẹ nhàng) -->
+            <Style TargetType="ComboBoxItem">
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Padding" Value="12 8"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Foreground" Value="#1E293B"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBoxItem">
+                            <Border x:Name="ItemBorder" 
+                                    Background="Transparent" 
+                                    CornerRadius="6" 
+                                    Margin="2 1" 
+                                    Padding="{TemplateBinding Padding}"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter VerticalAlignment="Center" 
+                                                  HorizontalAlignment="Left"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="#EFF6FF"/>
+                                    <Setter Property="Foreground" Value="#2563EB"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="#DBEAFE"/>
+                                    <Setter Property="Foreground" Value="#1D4ED8"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                        <Condition Property="IsHighlighted" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="#BFDBFE"/>
+                                    <Setter Property="Foreground" Value="#1D4ED8"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern Select ComboBox (Dành cho cboDegreeType) -->
+            <Style x:Key="ModernSelectComboBox" TargetType="ComboBox">
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Foreground" Value="#0F172A"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Padding" Value="12 0 0 0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="MaxDropDownHeight" Value="260"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        CornerRadius="7" SnapsToDevicePixels="True">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
+                                                          Content="{TemplateBinding SelectionBoxItem}"
+                                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                          Margin="{TemplateBinding Padding}"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalAlignment="Left"/>
+                                        
+                                        <materialDesign:PackIcon x:Name="chevronIcon" Kind="ChevronDown" Width="18" Height="18" 
+                                                                 Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                                                 Grid.Column="1" IsHitTestVisible="False"/>
+                                        
+                                        <ToggleButton x:Name="toggleButton" Grid.ColumnSpan="2" Focusable="False"
+                                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      ClickMode="Press" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="Transparent"/>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                    </Grid>
+                                </Border>
+                                
+                                <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" 
+                                       Focusable="False" PopupAnimation="Fade" HorizontalOffset="-4" VerticalOffset="4">
+                                    <Grid x:Name="DropDown" SnapsToDevicePixels="True" 
+                                          MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          MaxHeight="{TemplateBinding MaxDropDownHeight}" Margin="4,0,4,8">
+                                        <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" 
+                                                CornerRadius="8" Padding="4">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="12" Direction="-90" ShadowDepth="3" Opacity="0.12"/>
+                                            </Border.Effect>
+                                            <ScrollViewer MaxHeight="220" SnapsToDevicePixels="True" VerticalScrollBarVisibility="Auto">
+                                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                            </ScrollViewer>
+                                        </Border>
+                                    </Grid>
+                                </Popup>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+                                    <Setter TargetName="chevronIcon" Property="Foreground" Value="#2563EB"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                    <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                                    <Setter TargetName="chevronIcon" Property="Foreground" Value="#2563EB"/>
+                                </Trigger>
+                                <Trigger Property="IsDropDownOpen" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                    <Setter TargetName="chevronIcon" Property="Foreground" Value="#2563EB"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern Editable ComboBox (Dành cho cboDegreeName có autocomplete/nhập liệu) -->
+            <Style x:Key="ModernEditableComboBox" TargetType="ComboBox">
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Foreground" Value="#0F172A"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="12 0 4 0"/>
+                <Setter Property="MaxDropDownHeight" Value="260"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        CornerRadius="7" SnapsToDevicePixels="True">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- TextBox nhập liệu được WPF ComboBox nhận diện -->
+                                        <TextBox x:Name="PART_EditableTextBox"
+                                                 Grid.Column="0"
+                                                 Style="{x:Null}"
+                                                 Background="Transparent"
+                                                 BorderThickness="0"
+                                                 Padding="{TemplateBinding Padding}"
+                                                 VerticalContentAlignment="Center"
+                                                 HorizontalAlignment="Stretch"
+                                                 FontSize="{TemplateBinding FontSize}"
+                                                 FontFamily="{TemplateBinding FontFamily}"
+                                                 Foreground="{TemplateBinding Foreground}"
+                                                 IsReadOnly="{TemplateBinding IsReadOnly}"
+                                                 FocusVisualStyle="{x:Null}"
+                                                 Focusable="True"/>
+
+                                        <!-- Watermark / Chữ mờ gợi ý khi chưa có text -->
+                                        <TextBlock x:Name="PART_Placeholder" Grid.Column="0" Text="Nhập hoặc chọn tên văn bằng..." 
+                                                   Foreground="#94A3B8" IsHitTestVisible="False" Margin="13 0 0 0" 
+                                                   VerticalAlignment="Center" FontSize="13" Visibility="Collapsed"/>
+                                        
+                                        <!-- Nút mở dropdown với icon chevron -->
+                                        <ToggleButton x:Name="toggleButton" Grid.Column="1" Focusable="False"
+                                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      ClickMode="Press" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                            <ToggleButton.Template>
+                                                <ControlTemplate TargetType="ToggleButton">
+                                                    <Border Background="Transparent" Padding="0">
+                                                        <materialDesign:PackIcon x:Name="chevronIcon" Kind="ChevronDown" Width="18" Height="18" 
+                                                                                 Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="chevronIcon" Property="Foreground" Value="#2563EB"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </ToggleButton.Template>
+                                        </ToggleButton>
+                                    </Grid>
+                                </Border>
+                                
+                                <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" 
+                                       Focusable="False" PopupAnimation="Fade" HorizontalOffset="-4" VerticalOffset="4">
+                                    <Grid x:Name="DropDown" SnapsToDevicePixels="True" 
+                                          MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          MaxHeight="{TemplateBinding MaxDropDownHeight}" Margin="4,0,4,8">
+                                        <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" 
+                                                CornerRadius="8" Padding="4">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="12" Direction="-90" ShadowDepth="3" Opacity="0.12"/>
+                                            </Border.Effect>
+                                            <ScrollViewer MaxHeight="220" SnapsToDevicePixels="True" VerticalScrollBarVisibility="Auto">
+                                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                            </ScrollViewer>
+                                        </Border>
+                                    </Grid>
+                                </Popup>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="Text" Value="">
+                                    <Setter TargetName="PART_Placeholder" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                    <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                                </Trigger>
+                                <Trigger Property="IsDropDownOpen" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern TextBox dành cho các ô nhập liệu còn lại trong Dialog -->
+            <Style x:Key="ModernDialogTextBox" TargetType="TextBox">
+                <Setter Property="Height" Value="36"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="12 0"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Foreground" Value="#0F172A"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="TextBox">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="7" SnapsToDevicePixels="True">
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False" 
+                                              HorizontalScrollBarVisibility="Hidden" 
+                                              VerticalScrollBarVisibility="Hidden"
+                                              VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#3B82F6"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                    <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -151,7 +424,10 @@
                     <RadioButton x:Name="rbTabMajor" Content="🎓 Trình độ chuyên môn" GroupName="DegreeTypeTabs" 
                                  Style="{StaticResource SegmentedTabRadioButton}" 
                                  Checked="TabFilter_Checked"/>
-                    <RadioButton x:Name="rbTabState" Content="🏛️ QL Nhà nước &amp; LLCT" GroupName="DegreeTypeTabs" 
+                    <RadioButton x:Name="rbTabState" Content="🏛️ QL Nhà nước" GroupName="DegreeTypeTabs" 
+                                 Style="{StaticResource SegmentedTabRadioButton}" 
+                                 Checked="TabFilter_Checked"/>
+                    <RadioButton x:Name="rbTabPolTheory" Content="📕 Lý luận chính trị" GroupName="DegreeTypeTabs" 
                                  Style="{StaticResource SegmentedTabRadioButton}" 
                                  Checked="TabFilter_Checked"/>
                 </WrapPanel>
@@ -206,8 +482,11 @@
 
                             <!-- Loại bằng -->
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Loại bằng *" FontSize="12" Foreground="#475569" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                                <ComboBox x:Name="cboDegreeType" SelectionChanged="cboDegreeType_SelectionChanged" Height="34" Padding="8,4" FontSize="13" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1">
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                    <materialDesign:PackIcon Kind="TagOutline" Width="14" Height="14" Foreground="#475569" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="Loại bằng *" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ComboBox x:Name="cboDegreeType" SelectionChanged="cboDegreeType_SelectionChanged" Style="{StaticResource ModernSelectComboBox}">
                                     <ComboBoxItem Content="Tin học" IsSelected="True"/>
                                     <ComboBoxItem Content="Ngoại ngữ"/>
                                     <ComboBoxItem Content="Chuyên môn"/>
@@ -219,20 +498,29 @@
 
                             <!-- Tên bằng / chứng chỉ -->
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Tên bằng / Chứng chỉ *" FontSize="12" Foreground="#475569" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                                <ComboBox x:Name="cboDegreeName" IsEditable="True" Height="34" Padding="8,4" FontSize="13" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                    <materialDesign:PackIcon Kind="CertificateOutline" Width="14" Height="14" Foreground="#475569" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="Tên bằng / Chứng chỉ *" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ComboBox x:Name="cboDegreeName" IsEditable="True" Style="{StaticResource ModernEditableComboBox}"/>
                             </StackPanel>
 
                             <!-- Chuyên ngành -->
                             <StackPanel Grid.Column="4">
-                                <TextBlock Text="Chuyên ngành / Lĩnh vực" FontSize="12" Foreground="#475569" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                                <TextBox x:Name="txtDegreeMajor" Height="34" Padding="8,4" FontSize="13" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                    <materialDesign:PackIcon Kind="SchoolOutline" Width="14" Height="14" Foreground="#475569" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="Chuyên ngành / Lĩnh vực" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBox x:Name="txtDegreeMajor" Style="{StaticResource ModernDialogTextBox}"/>
                             </StackPanel>
 
                             <!-- Cơ sở đào tạo / Nơi cấp -->
                             <StackPanel Grid.Column="6">
-                                <TextBlock Text="Cơ sở đào tạo / Nơi cấp" FontSize="12" Foreground="#475569" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                                <TextBox x:Name="txtInstitution" Height="34" Padding="8,4" FontSize="13" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                    <materialDesign:PackIcon Kind="TownHall" Width="14" Height="14" Foreground="#475569" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="Cơ sở đào tạo / Nơi cấp" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBox x:Name="txtInstitution" Style="{StaticResource ModernDialogTextBox}"/>
                             </StackPanel>
                         </Grid>
 
@@ -249,26 +537,32 @@
 
                             <!-- Xếp loại / Điểm số -->
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="Xếp loại / Điểm" FontSize="12" Foreground="#475569" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                                <TextBox x:Name="txtClassification" Height="34" Padding="8,4" FontSize="13" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                    <materialDesign:PackIcon Kind="MedalOutline" Width="14" Height="14" Foreground="#475569" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="Xếp loại / Điểm" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBox x:Name="txtClassification" Style="{StaticResource ModernDialogTextBox}"/>
                             </StackPanel>
 
                             <!-- Năm cấp -->
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Năm cấp / Tốt nghiệp" FontSize="12" Foreground="#475569" FontWeight="SemiBold" Margin="0 0 0 4"/>
-                                <TextBox x:Name="txtGraduationYear" Height="34" Padding="8,4" FontSize="13" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1"/>
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                                    <materialDesign:PackIcon Kind="CalendarRange" Width="14" Height="14" Foreground="#475569" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                    <TextBlock Text="Năm cấp / Tốt nghiệp" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBox x:Name="txtGraduationYear" Style="{StaticResource ModernDialogTextBox}"/>
                             </StackPanel>
 
                             <!-- Checkbox Bằng chính & Ghi chú -->
-                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="10 16 0 0">
-                                <CheckBox x:Name="chkIsPrimary" Content="⭐ Đặt làm bằng cao nhất (bằng chính)" FontSize="13" FontWeight="SemiBold" Foreground="#D97706" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="10 0 0 8">
+                                <CheckBox x:Name="chkIsPrimary" Content="⭐ Đặt làm bằng cao nhất (bằng chính)" FontSize="13" FontWeight="SemiBold" Foreground="#D97706" Cursor="Hand"/>
                             </StackPanel>
 
                             <!-- Action Button -->
                             <Button x:Name="btnSaveDegree" Grid.Column="5" Click="btnSaveDegree_Click" 
-                                    Height="34" Padding="18 0" Margin="0 16 0 0" Cursor="Hand"
+                                    Height="36" Padding="20 0" VerticalAlignment="Bottom" Cursor="Hand"
                                     Background="#2563EB" BorderThickness="0" Foreground="White"
-                                    materialDesign:ButtonAssist.CornerRadius="6">
+                                    materialDesign:ButtonAssist.CornerRadius="7">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="txtBtnSaveText" Text="Thêm bằng" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
@@ -283,19 +577,68 @@
             <Border Grid.Row="4" Margin="20,4,20,8" Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" ClipToBounds="True">
                 <DataGrid x:Name="dgDegrees" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                           IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                          HorizontalGridLinesBrush="#F1F5F9" Background="White" RowHeight="42"
-                          ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                          HorizontalGridLinesBrush="#E2E8F0" Background="White" RowHeight="44"
+                          RowBackground="White" AlternatingRowBackground="#F8FAFC"
+                          SelectionMode="Single" SelectionUnit="FullRow"
+                          ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto"
+                          SelectionChanged="dgDegrees_SelectionChanged">
+                    <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0F172A"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A"/>
+                    </DataGrid.Resources>
+
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="SnapsToDevicePixels" Value="True"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F1F5F9"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#F8FAFC"/>
+                            <Setter Property="Background" Value="#F1F5F9"/>
                             <Setter Property="Foreground" Value="#334155"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="FontSize" Value="12.5"/>
-                            <Setter Property="Height" Value="40"/>
-                            <Setter Property="Padding" Value="10,0"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="MinHeight" Value="42"/>
+                            <Setter Property="Padding" Value="4,4"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="BorderBrush" Value="#CBD5E1"/>
                             <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            <Setter Property="ContentTemplate">
+                                <Setter.Value>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" LineHeight="16"/>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
                         </Style>
                     </DataGrid.ColumnHeaderStyle>
 
@@ -307,120 +650,116 @@
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="Foreground" Value="#64748B"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- Loại bằng -->
-                        <DataGridTemplateColumn Header="Loại bằng" Width="135">
+                        <!-- Loại bằng (Pill màu phong cách hiện đại với icon riêng cho từng danh mục) -->
+                        <DataGridTemplateColumn Header="Loại bằng" Width="145">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding DegreeType}" FontSize="12" FontWeight="SemiBold" Foreground="#334155"/>
+                                    <Border Background="{Binding CategoryBgBrush}" BorderBrush="{Binding CategoryBorderBrush}" 
+                                            BorderThickness="1" CornerRadius="12" Padding="8,3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="{Binding CategoryIcon}" Width="13" Height="13" Foreground="{Binding CategoryTextBrush}" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DegreeType}" FontSize="12" FontWeight="SemiBold" Foreground="{Binding CategoryTextBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Tên bằng / Chứng chỉ (Độ rộng 250, dùng WrapPanel và badge Bằng chính không bị cắt) -->
-                        <DataGridTemplateColumn Header="Tên bằng / Chứng chỉ" Width="250">
+                        <!-- Tên bằng / Chứng chỉ (Căn giữa cân đối, badge ⭐ Bằng chính cùng hàng) -->
+                        <DataGridTemplateColumn Header="Tên bằng / Chứng chỉ" Width="260">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <WrapPanel VerticalAlignment="Center" Margin="10,4">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                                         <TextBlock Text="{Binding DegreeName}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
                                         <!-- Badge ⭐ Bằng chính -->
-                                        <Border Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="4" Padding="6,1.5" Margin="8,0,0,0" VerticalAlignment="Center"
+                                        <Border Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" 
+                                                Padding="6,1.5" Margin="8,0,0,0" VerticalAlignment="Center"
                                                 Visibility="{Binding IsPrimary, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <materialDesign:PackIcon Kind="Star" Foreground="#D97706" Width="12" Height="12" Margin="0 0 3 0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Bằng chính" FontSize="11" FontWeight="Bold" Foreground="#92400E" VerticalAlignment="Center"/>
+                                                <materialDesign:PackIcon Kind="Star" Foreground="#D97706" Width="11" Height="11" Margin="0 0 3 0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Bằng chính" FontSize="10.5" FontWeight="Bold" Foreground="#92400E" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Border>
-                                    </WrapPanel>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Chuyên ngành -->
-                        <DataGridTextColumn Header="Chuyên ngành" Binding="{Binding Major}" Width="145">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="10,0"/>
-                                    <Setter Property="FontSize" Value="12.5"/>
-                                    <Setter Property="Foreground" Value="#475569"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <!-- Chuyên ngành (Căn giữa) -->
+                        <DataGridTemplateColumn Header="Chuyên ngành" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayMajor}" Foreground="{Binding MajorForeground}"
+                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                        <!-- Cơ sở đào tạo / Nơi cấp -->
-                        <DataGridTextColumn Header="Nơi đào tạo / Cấp" Binding="{Binding Institution}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="10,0"/>
-                                    <Setter Property="FontSize" Value="12.5"/>
-                                    <Setter Property="Foreground" Value="#475569"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <!-- Cơ sở đào tạo / Nơi cấp (Căn giữa) -->
+                        <DataGridTemplateColumn Header="Nơi đào tạo / Cấp" Width="*" MinWidth="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayInstitution}" Foreground="{Binding InstitutionForeground}"
+                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                        <!-- Xếp loại / Điểm (Rộng 125 đảm bảo tiêu đề không bị cắt) -->
-                        <DataGridTextColumn Header="Xếp loại / Điểm" Binding="{Binding Classification}" Width="125">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="12.5"/>
-                                    <Setter Property="Foreground" Value="#334155"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <!-- Xếp loại / Điểm -->
+                        <DataGridTemplateColumn Header="Xếp loại / Điểm" Width="110">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayClassification}" Foreground="{Binding ClassificationForeground}"
+                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
                         <!-- Năm cấp -->
-                        <DataGridTextColumn Header="Năm cấp" Binding="{Binding GraduationYear}" Width="85">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="12.5"/>
-                                    <Setter Property="Foreground" Value="#334155"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Header="Năm cấp" Width="85">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayGraduationYear}" Foreground="{Binding GraduationYearForeground}"
+                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                        <!-- Thao tác -->
-                        <DataGridTemplateColumn Header="Thao tác" Width="180">
+                        <!-- Thao tác (Bộ 3 nút icon vuông bo góc đồng bộ cực kỳ tinh tế) -->
+                        <DataGridTemplateColumn Header="Thao tác" Width="125">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <!-- Đặt làm bằng chính -->
+                                        <!-- Đặt / Báo trạng thái Bằng chính -->
                                         <Button Click="btnSetPrimary_Click" Tag="{Binding}"
-                                                Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" Cursor="Hand"
-                                                Height="26" Padding="6,0" Margin="0,0,5,0"
-                                                materialDesign:ButtonAssist.CornerRadius="4"
-                                                ToolTip="Đặt làm bằng hiển thị chính trên form">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="StarOutline" Width="14" Height="14" Foreground="#D97706" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Bằng chính" FontSize="11" Foreground="#92400E" FontWeight="SemiBold" Margin="3,0,0,0" VerticalAlignment="Center"/>
-                                            </StackPanel>
+                                                Background="{Binding StarButtonBg}" BorderBrush="{Binding StarButtonBorder}" BorderThickness="1" 
+                                                Width="28" Height="28" Padding="0" Cursor="Hand" Margin="0,0,5,0"
+                                                materialDesign:ButtonAssist.CornerRadius="6"
+                                                ToolTip="{Binding StarButtonTooltip}">
+                                            <materialDesign:PackIcon Kind="{Binding StarButtonIcon}" Width="15" Height="15" Foreground="{Binding StarButtonFg}"/>
                                         </Button>
 
                                         <!-- Sửa -->
                                         <Button Click="btnEdit_Click" Tag="{Binding}"
-                                                Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" Padding="0" Cursor="Hand"
-                                                Width="26" Height="26" Margin="0,0,3,0"
-                                                materialDesign:ButtonAssist.CornerRadius="4"
+                                                Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" 
+                                                Width="28" Height="28" Padding="0" Cursor="Hand" Margin="0,0,5,0"
+                                                materialDesign:ButtonAssist.CornerRadius="6"
                                                 ToolTip="Sửa văn bằng này">
                                             <materialDesign:PackIcon Kind="Pencil" Width="14" Height="14" Foreground="#2563EB"/>
                                         </Button>
 
                                         <!-- Xóa -->
                                         <Button Click="btnDelete_Click" Tag="{Binding}"
-                                                Background="#FEE2E2" BorderBrush="#FECACA" BorderThickness="1" Padding="0" Cursor="Hand"
-                                                Width="26" Height="26"
-                                                materialDesign:ButtonAssist.CornerRadius="4"
+                                                Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" 
+                                                Width="28" Height="28" Padding="0" Cursor="Hand"
+                                                materialDesign:ButtonAssist.CornerRadius="6"
                                                 ToolTip="Xóa văn bằng này">
                                             <materialDesign:PackIcon Kind="TrashCanOutline" Width="14" Height="14" Foreground="#DC2626"/>
                                         </Button>

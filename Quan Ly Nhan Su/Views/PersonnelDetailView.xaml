@@ -699,14 +699,36 @@
                                                 <TextBlock Text="TRÌNH ĐỘ - ĐÀO TẠO" Foreground="White" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <Button x:Name="btnManageAllDegrees" HorizontalAlignment="Right" Click="btnManageAllDegrees_Click"
-                                                    Background="#37474F" BorderThickness="1" BorderBrush="#546E7A" Foreground="White"
-                                                    materialDesign:ButtonAssist.CornerRadius="6" Cursor="Hand"
-                                                    Height="28" Padding="12 0"
+                                                    Cursor="Hand" Height="30" FocusVisualStyle="{x:Null}"
                                                     ToolTip="Xem và quản lý tất cả các văn bằng, chứng chỉ hiện có của cán bộ">
-                                                <StackPanel Orientation="Horizontal">
-                                                    <materialDesign:PackIcon Kind="CertificateOutline" Width="15" Height="15" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Quản lý danh sách văn bằng" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                                </StackPanel>
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="btnBorder" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" 
+                                                                CornerRadius="15" Padding="14,0" SnapsToDevicePixels="True">
+                                                            <Border.Effect>
+                                                                <DropShadowEffect BlurRadius="6" ShadowDepth="1.5" Direction="-90" Opacity="0.18"/>
+                                                            </Border.Effect>
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <materialDesign:PackIcon x:Name="btnIcon" Kind="CertificateOutline" Width="15" Height="15" 
+                                                                                         Foreground="#2563EB" Margin="0 0 7 0" VerticalAlignment="Center"/>
+                                                                <TextBlock x:Name="btnText" Text="Quản lý danh sách văn bằng" FontSize="12.5" FontWeight="SemiBold" 
+                                                                           Foreground="#1E293B" VerticalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="btnBorder" Property="Background" Value="#EFF6FF"/>
+                                                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#93C5FD"/>
+                                                                <Setter TargetName="btnText" Property="Foreground" Value="#1D4ED8"/>
+                                                                <Setter TargetName="btnIcon" Property="Foreground" Value="#1D4ED8"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsPressed" Value="True">
+                                                                <Setter TargetName="btnBorder" Property="Background" Value="#DBEAFE"/>
+                                                                <Setter TargetName="btnBorder" Property="BorderBrush" Value="#60A5FA"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
                                             </Button>
                                         </Grid>
                                     </Border>
