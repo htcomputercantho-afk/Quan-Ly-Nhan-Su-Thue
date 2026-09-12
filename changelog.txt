@@ -1,3 +1,14 @@
+## v1.6.3.0 — 2026-09-12
+- [Tính năng & Nghiệp vụ] Chuẩn hóa Quy tắc lùi thời hạn nâng lương theo Điều 2 Thông tư 03/2021/TT-BNV:
+    + Quy đổi ngày lẻ thành tháng bắt buộc: Cứ mỗi 30 ngày nghỉ vượt khung tính là 01 tháng; số ngày dư từ đủ 11 ngày trở lên (>= 11 ngày) làm tròn thành 01 tháng đầy đủ; số ngày dư dưới 11 ngày không tính lùi.
+    + Tự động tính lùi nâng lương theo số tháng chẵn vào ngày đầu tháng chuẩn mực (ví dụ: nghỉ ốm vượt 81 ngày = 2 tháng chẵn + 21 ngày dư >= 11 ngày -> làm tròn lùi 3 tháng, chuyển ngày nâng lương từ 01/01/2027 sang đúng 01/04/2027).
+    + Hiển thị nhãn trực quan, minh bạch lý do: "Nghỉ ốm quá hạn 81 ngày (Lùi 3 tháng)" kèm ToolTip diễn giải chi tiết căn cứ Thông tư 03/2021/TT-BNV, tránh hiểu nhầm giữa tổng số ngày nghỉ và số ngày vượt khung.
+    + Áp dụng đồng bộ quy tắc làm tròn tháng cho cả trường hợp Nghỉ không lương.
+- [Tối ưu & Dọn dẹp mã nguồn] Rà soát và làm sạch toàn diện hệ thống:
+    + Dọn dẹp toàn bộ các file log, file tạm và cơ sở dữ liệu rỗng (debug.log, tax_personnel.db rỗng ở root).
+    + Lược bỏ các đoạn code nháp/debug cũ và comment dư thừa trong `PersonnelDetailView`.
+    + Việt hóa 100% chú thích kỹ thuật sang tiếng Việt trong toàn bộ các file cốt lõi (`PersonnelDetailView`, `EvaluationListView`, `App.xaml.cs`).
+
 ## v1.6.2.9 — 2026-09-12
 - [Tính năng & Phân loại] Bổ sung Danh mục "Chứng chỉ khác" trong Quản lý văn bằng (`PersonnelDegreesDialog`):
     + Bổ sung tab phân loại riêng biệt "📜 Chứng chỉ khác" để quản lý và lọc nhanh các loại chứng chỉ nghề, bồi dưỡng kỹ năng, chứng chỉ ngắn hạn...

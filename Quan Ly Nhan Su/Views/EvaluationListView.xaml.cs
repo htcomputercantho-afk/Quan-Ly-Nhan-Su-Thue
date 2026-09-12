@@ -40,7 +40,7 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             LoadFilterOptions();
 
-            // Set up search debounce timer (300ms)
+            // Thiết lập bộ đếm trễ tìm kiếm (300ms)
             _searchDebounceTimer = new System.Windows.Threading.DispatcherTimer();
             _searchDebounceTimer.Interval = TimeSpan.FromMilliseconds(300);
             _searchDebounceTimer.Tick += (s, e) =>
@@ -73,7 +73,7 @@ namespace TaxPersonnelManagement.Views
 
         private void LoadFilterOptions()
         {
-            // 1. Department Filter
+            // 1. Bộ lọc Phòng ban / Đơn vị
             var deptOrder = new List<string> {
                 "Ban lãnh đạo",
                 "Tổ Hành chính, tổng hợp",
@@ -117,7 +117,7 @@ namespace TaxPersonnelManagement.Views
                 warning.ShowDialog();
             }
 
-            // 3. Year Filter
+            // 3. Bộ lọc Năm
             var years = new List<FilterItem>();
             years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
 
@@ -154,7 +154,7 @@ namespace TaxPersonnelManagement.Views
             cbYear.ItemsSource = years;
             cbYear.SelectedIndex = 0;
 
-            // 2. Rating Filter
+            // 2. Bộ lọc Xếp loại
             var ratings = new List<string>
             {
                 "-- Tất cả xếp loại --",
@@ -204,7 +204,7 @@ namespace TaxPersonnelManagement.Views
                         filtered = filtered.Where(e => e.Year == year);
                     }
 
-                    // Calculate card statistics from filtered list BEFORE rating filter is applied
+                    // Tính toán số liệu thống kê cho các thẻ trước khi áp dụng bộ lọc xếp loại
                     var baseFiltered = filtered.ToList();
                     int total = baseFiltered.Count;
                     int excellent = baseFiltered.Count(e => e.Rating == "Hoàn thành xuất sắc nhiệm vụ");
@@ -223,7 +223,7 @@ namespace TaxPersonnelManagement.Views
                     if (txtSatisfactoryCount != null) txtSatisfactoryCount.Text = $"{satisfactory} ({satisfactoryPct}%)";
                     if (txtUnsatisfactoryCount != null) txtUnsatisfactoryCount.Text = $"{unsatisfactory} ({unsatisfactoryPct}%)";
 
-                    // Sync the active card filter visual state
+                    // Đồng bộ trạng thái giao diện của thẻ lọc đang chọn
                     if (rating == "Hoàn thành xuất sắc nhiệm vụ")
                         _currentCardFilter = "Excellent";
                     else if (rating == "Hoàn thành tốt nhiệm vụ")
@@ -557,7 +557,7 @@ namespace TaxPersonnelManagement.Views
                             oldYear = originalRecord.Year;
                         }
 
-                        // Check if duplicate year for this personnel
+                        // Kiểm tra trùng lặp năm đánh giá của cán bộ này
                         bool exists = db.EvaluationRecords.Any(r => r.PersonnelId == record.PersonnelId && r.Year == newYear && r.Id != record.Id);
                         if (exists)
                         {
@@ -790,7 +790,7 @@ namespace TaxPersonnelManagement.Views
                         cccdRange.Merge();
                         cccdRange.Value = "CCCD";
 
-                        // Merge Rating Header Group
+                        // Gom nhóm tiêu đề xếp loại
                         var ratingHeaderRange = worksheet.Range("E5:H5");
                         ratingHeaderRange.Merge();
                         ratingHeaderRange.Value = "Kết quả đánh giá, xếp loại chất lượng";
@@ -866,7 +866,7 @@ namespace TaxPersonnelManagement.Views
                             }
                             currentRow++;
 
-                            // Write evaluations in this group
+                            // Ghi dữ liệu đánh giá của nhóm này
                             foreach (var item in group)
                             {
                                 worksheet.Cell(currentRow, 1).Value = stt++;
@@ -993,7 +993,7 @@ namespace TaxPersonnelManagement.Views
                         {
                             using (var db = new AppDbContext())
                             {
-                                // Load all personnel to memory for fast lookup
+                                // Nạp toàn bộ nhân sự vào bộ nhớ để tra cứu nhanh
                                 var allPersonnel = db.Personnel.ToList();
 
                                 foreach (var item in result.Items)
@@ -1017,11 +1017,11 @@ namespace TaxPersonnelManagement.Views
 
                                         if (person != null)
                                         {
-                                            // Check if EvaluationRecord already exists for this person and year
+                                            // Kiểm tra xem bản ghi đánh giá đã tồn tại cho cán bộ và năm này chưa
                                             var record = db.EvaluationRecords.FirstOrDefault(r => r.PersonnelId == person.Id && r.Year == item.Year);
                                             if (record != null)
                                             {
-                                                // Update existing
+                                                // Cập nhật bản ghi hiện có
                                                 record.Rating = item.Rating;
                                                 record.DecisionNumber = item.DecisionNumber;
                                                 record.DecisionDate = item.DecisionDate;
@@ -1271,7 +1271,7 @@ namespace TaxPersonnelManagement.Views
                                 if (cccd.EndsWith(".0")) cccd = cccd.Substring(0, cccd.Length - 2);
                             }
 
-                            // Check if this is a Department header row
+                            // Kiểm tra xem đây có phải là dòng tiêu đề phòng ban không
                             if (string.IsNullOrEmpty(cccd) && (name.Contains("Tổ") || name.Contains("Ban") || name.Contains("Phòng")))
                             {
                                 continue; // Skip department group row

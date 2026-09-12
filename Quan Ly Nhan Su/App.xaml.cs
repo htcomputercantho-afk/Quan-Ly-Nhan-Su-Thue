@@ -83,7 +83,7 @@ namespace TaxPersonnelManagement
             culture.DateTimeFormat.ShortDatePattern = "dd/MM/yyyy";
             culture.DateTimeFormat.DateSeparator = "/";
 
-            // Explicitly set abbreviated day names to avoid single-letter truncation
+            // Thiết lập tên viết tắt các ngày trong tuần tránh bị cắt cụt 1 ký tự
             culture.DateTimeFormat.AbbreviatedDayNames = new string[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
             culture.DateTimeFormat.ShortestDayNames = new string[] { "CN", "T2", "T3", "T4", "T5", "T6", "T7" };
 
@@ -119,7 +119,7 @@ namespace TaxPersonnelManagement
             DebugLog("Application_Startup Fired");
             try
             {
-                // Initialize Database
+                // Khởi tạo cơ sở dữ liệu
                 using (var context = new AppDbContext())
                 {
                     DebugLog("Ensuring Database Created...");
@@ -134,14 +134,14 @@ namespace TaxPersonnelManagement
                     }
 
 
-                    // Manual Migration for Departments table
+                    // Cập nhật cấu trúc bảng Phòng ban (Departments)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS Departments (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
                             Name TEXT NOT NULL
                         );");
 
-                    // Manual Migration for Positions table
+                    // Cập nhật cấu trúc bảng Chức vụ (Positions)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS Positions (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -150,14 +150,14 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN DepartmentName TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN GroupType TEXT"); } catch { }
 
-                    // Manual Migration for PlanningPositions table
+                    // Cập nhật cấu trúc bảng Chức danh quy hoạch (PlanningPositions)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS PlanningPositions (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
                             Name TEXT NOT NULL
                         );");
 
-                    // Manual Migration for Ranks table
+                    // Cập nhật cấu trúc bảng Ngạch công chức (Ranks)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS Ranks (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -246,7 +246,7 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN ExpectedSalaryIncreaseDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN SalaryHistoryLog TEXT"); } catch { }
 
-                    // Auto-migrate SalaryRecords (Robust way to remove NOT NULL constraints from old columns)
+                    // Tự động nâng cấp cấu trúc bảng Quá trình lương (SalaryRecords)
                     bool needsMigration = false;
                     try
                     {
@@ -332,13 +332,13 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN SalaryCalculationDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN StartDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE SalaryRecords ADD COLUMN ExceedFramePercent REAL DEFAULT 0"); } catch { }
-                    // Remove old columns that no longer exist (SQLite does not support DROP COLUMN in older versions, skip gracefully)
+                    // Dọn dẹp các cột cũ không còn sử dụng
 
                     // Manual Migration for Tab 7 Fields (Reward Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN EmulationTitles TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN RewardForms TEXT"); } catch { }
 
-                    // Manual Migration for DisciplineTypes table
+                    // Cập nhật cấu trúc bảng Hình thức kỷ luật (DisciplineTypes)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS DisciplineTypes (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -457,7 +457,7 @@ namespace TaxPersonnelManagement
                         context.PlanningTerms.Add(new PlanningTerm { TermName = "2031-2036" });
                         context.SaveChanges();
                     }
-                    // Update existing records with default Identity Place if empty
+                    // Cập nhật nơi cấp CCCD mặc định nếu còn trống
                     var emptyIdentityPersonnel = context.Personnel
                         .Where(p => string.IsNullOrEmpty(p.IdentityCardPlace) || p.IdentityCardPlace == "---")
                         .ToList();
@@ -576,10 +576,10 @@ namespace TaxPersonnelManagement
                         {
                             try
                             {
-                                // 1. Rename old table
+                                // 1. Đổi tên bảng cũ để sao lưu
                                 context.Database.ExecuteSqlRaw("ALTER TABLE Personnel RENAME TO Personnel_Old");
 
-                                // 2. Create new table (Schema from EF Core but manually defined to ensure correctness)
+                                // 2. Tạo bảng mới với cấu trúc chuẩn
                                 // We use a broad schema that matches current Entity
                                 context.Database.ExecuteSqlRaw(@"
                                     CREATE TABLE Personnel (
@@ -667,7 +667,7 @@ namespace TaxPersonnelManagement
                                         RetirementDate, PartyEntryDate, PartyOfficialDate
                                     FROM Personnel_Old");
 
-                                // 4. Drop Old Table
+                                // 4. Xóa bảng tạm cũ
                                 context.Database.ExecuteSqlRaw("DROP TABLE Personnel_Old");
 
                                 transaction.Commit();
@@ -809,7 +809,7 @@ namespace TaxPersonnelManagement
 
         private void SeedHolidaysForYear(AppDbContext context, int year)
         {
-            // Check if already seeded for this year
+            // Kiểm tra dữ liệu mẫu của năm này đã được tạo chưa
             if (context.PublicHolidays.Any(h => h.Date.Year == year)) return;
 
             var holidays = new System.Collections.Generic.List<PublicHoliday>();

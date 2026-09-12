@@ -31,20 +31,20 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             dpPositionCalculationDate.SelectedDate = DateTime.Now;
             if (activeTab > 0) tcPersonnelDetails.SelectedIndex = activeTab;
-            try { LoadSalaryDelayReasons(); } catch { /* Ignore DB init errors */ }
-            try { LoadDisciplineTypes(); } catch { /* Ignore DB init errors */ }
+            try { LoadSalaryDelayReasons(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
+            try { LoadDisciplineTypes(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
             _personnel = personnel;
 
             _isRefreshing = true; // NGĂN CHẶN TÍNH TOÁN TỰ ĐỘNG TRONG QUÁ TRÌNH NẠP DỮ LIỆU BAN ĐẦU
 
-            // Load Metadata First
+            // Nạp dữ liệu danh mục trước
             LoadDepartments();
             LoadPositions();
             LoadRanks();
 
             if (_personnel != null)
             {
-                // Load Data
+                // Nạp dữ liệu cán bộ
                 txtStaffId.Text = _personnel.StaffId;
                 txtName.Text = _personnel.FullName;
                 SetComboBoxByContent(cboGender, _personnel.Gender);
@@ -60,32 +60,14 @@ namespace TaxPersonnelManagement.Views
                 txtEthnicity.Text = _personnel.Ethnicity;
                 txtReligion.Text = _personnel.Religion;
 
-                // Work
-                // cboDepartment.Text handled in LoadDepartments which sets SelectedItem if _personnel is valid, 
-                // BUT we just moved LoadDepartments up. 
-                // LoadDepartments has logic: if (_personnel != null) cboDepartment.SelectedItem = ...
-                // Since _personnel is set, it might work inside the methods.
-                // However, the original code had manual setting inside LoadDepartments.
-                // Let's verify LoadDepartments logic below.
-
-                // If the Load methods ALREADY set the values using _personnel, we don't need to set them again here?
-                // LoadDepartments: uses _personnel.Department.
-                // LoadPositions: uses _personnel.Position.
-                // LoadRanks: uses _personnel.RankCode.
-
-                // So lines 41-44 might be redundant OR need to be careful not to overwrite if Load didn't work.
-                // The explicit assignments here (e.g. cboPosition.Text) are good backups or primary if Load methods didn't set Text property.
-                // Actually, let's keep explicit assignments for safety, but use SelectedValue were appropriate.
-
-                // cboDepartment is set inside LoadDepartments.
-                // cboPosition is set inside LoadPositions.
+                // Thông tin công tác (Phòng ban và Chức vụ đã được thiết lập qua LoadDepartments và LoadPositions)
 
                 txtRankName.Text = _personnel.RankName;
                 dpStartDate.SelectedDate = _personnel.TaxAuthorityStartDate;
                 SetComboBoxByContent(cboStatus, _personnel.Status ?? "Đang công tác");
 
 
-                // Education
+                // Trình độ học vấn & Chuyên môn
                 SetComboBoxByContent(cboEducationLevel, _personnel.EducationLevel);
                 txtMajor.Text = _personnel.Major;
                 txtUniversity.Text = _personnel.University;
@@ -96,7 +78,7 @@ namespace TaxPersonnelManagement.Views
                 txtLanguageSkill.Text = _personnel.LanguageSkillLevel;
                 UpdateDegreeBadges();
 
-                // Tab 2
+                // Tab 2: Thời gian giữ vị trí công tác
                 dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
                 dpPositionCalculationDate.SelectedDate = DateTime.Now;
                 txtPositionYear.Text = _personnel.PositionYear;
@@ -104,16 +86,16 @@ namespace TaxPersonnelManagement.Views
 
                 CalculateWorkDuration();
 
-                // Tab 3
+                // Tab 3: Thông tin nghỉ hưu
                 dpRetirementDate.SelectedDate = _personnel.RetirementDate;
                 CalculateRetirementInfo();
 
-                // Tab 4
+                // Tab 4: Thông tin Đảng viên
                 dpPartyEntryDate.SelectedDate = _personnel.PartyEntryDate;
                 dpPartyOfficialDate.SelectedDate = _personnel.PartyOfficialDate;
                 CalculatePartyAge();
 
-                // Tab 6: Salary Info
+                // Tab 6: Thông tin lương
                 cboSalaryStep.SelectedValue = _personnel.CurrentSalaryStep; // Use SelectedValue
                 txtSalaryCoefficient.Text = _personnel.CurrentSalaryCoefficient.ToString();
                 txtExceedFrame.Text = _personnel.ExceedFramePercent.ToString();
@@ -124,22 +106,22 @@ namespace TaxPersonnelManagement.Views
                 SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
 
                 dpExpectedSalaryIncrease.SelectedDate = _personnel.ExpectedSalaryIncreaseDate;
-                // Load Salary Records
+                // Nạp lịch sử diễn biến lương
                 if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
                 RefreshSalaryHistoryGrid();
 
-                // Tab 5: Leave Info
+                // Tab 5: Thông tin nghỉ phép
                 dpLeaveCalculationDate.SelectedDate = _personnel.LeaveCalculationDate;
-                // Ensure list is not null
+                // Đảm bảo danh sách không bị null
                 if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
                 RefreshLeaveHistoryGrid();
                 // UpdateLeaveStatistics(); // Handled by CalculateAnnualLeave via CalculateWorkDuration
 
-                // Tab 7: Reward Info
+                // Tab 7: Khen thưởng
                 txtEmulationTitles.Text = _personnel.EmulationTitles;
                 txtRewardForms.Text = _personnel.RewardForms;
 
-                // Tab 8: Discipline Info
+                // Tab 8: Kỷ luật
                 if (!string.IsNullOrEmpty(_personnel.DisciplineType))
                     SetComboBoxByContent(cboDisciplineType, _personnel.DisciplineType);
 
@@ -147,11 +129,11 @@ namespace TaxPersonnelManagement.Views
                 dpDisciplineDate.SelectedDate = _personnel.DisciplineDecisionDate;
                 txtDisciplineReason.Text = _personnel.DisciplineReason;
 
-                // Load Evaluation Records
+                // Nạp dữ liệu đánh giá xếp loại
                 if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new System.Collections.Generic.List<EvaluationRecord>();
                 RefreshEvaluationHistoryGrid();
 
-                // Load Avatar
+                // Nạp ảnh đại diện
                 if (!string.IsNullOrEmpty(_personnel.AvatarBase64))
                 {
                     try
@@ -161,7 +143,7 @@ namespace TaxPersonnelManagement.Views
                         iconAvatarPlaceholder.Visibility = Visibility.Collapsed;
                         btnRemoveAvatar.Visibility = Visibility.Visible;
                     }
-                    catch { /* Ignore invalid image data */ }
+                    catch { /* Bỏ qua dữ liệu ảnh không hợp lệ */ }
                 }
             }
             else
@@ -218,7 +200,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (App.CurrentUser?.Role == UserRole.Staff)
             {
-                // Hide Save button
+                // Ẩn nút Lưu
                 btnSave.Visibility = Visibility.Collapsed;
 
                 // Hide config/add buttons
@@ -229,7 +211,7 @@ namespace TaxPersonnelManagement.Views
                 // Hide avatar buttons (if they exist as explicit named buttons)
                 btnRemoveAvatar.Visibility = Visibility.Collapsed;
 
-                // Hide Add Leave button
+                // Ẩn nút Thêm đợt nghỉ
                 btnAddLeave.Visibility = Visibility.Collapsed;
             }
         }
@@ -307,7 +289,7 @@ namespace TaxPersonnelManagement.Views
 
             using (var context = new AppDbContext())
             {
-                // Load from Departments table
+                // Nạp danh sách từ bảng Phòng ban (Departments)
                 var dbDepts = context.Departments.Select(d => d.Name).ToList();
 
                 // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
@@ -451,7 +433,7 @@ namespace TaxPersonnelManagement.Views
             dialog.Owner = Window.GetWindow(this);
             dialog.ShowDialog();
 
-            // Refresh steps for current rank if selected
+            // Cập nhật lại các bậc lương theo ngạch đã chọn
             if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
             {
                 LoadSalarySteps(selectedRank.Code);
@@ -601,7 +583,7 @@ namespace TaxPersonnelManagement.Views
                                     Name TEXT NOT NULL
                                 );");
 
-                            // 2. Check and Insert using SQL
+                            // 2. Kiểm tra và chèn bằng câu lệnh SQL
                             var count = -1;
                             using (var command = repairContext.Database.GetDbConnection().CreateCommand())
                             {
@@ -625,7 +607,7 @@ namespace TaxPersonnelManagement.Views
                             }
                         }
 
-                        // Retry load with ANOTHER fresh context
+                        // Thử nạp lại với DbContext mới
                         using (var retryContext = new AppDbContext())
                         {
                             var retryReasons = retryContext.SalaryDelayReasons.OrderBy(r => r.Id).Select(r => r.Name).ToList();
@@ -653,7 +635,7 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                // Last resort: Just show default item if totally borked
+                // Phương án dự phòng cuối: hiển thị danh sách mặc định
                 cboSalaryDelay.Items.Clear();
                 cboSalaryDelay.Items.Add("-- Không lùi --");
                 cboSalaryDelay.Items.Add("Lùi 3 tháng (Khiển trách)");
@@ -684,7 +666,7 @@ namespace TaxPersonnelManagement.Views
             }
             else
             {
-                // Clear steps if rank is deselected or blank Rank is chosen
+                // Xóa danh sách bậc lương nếu bỏ chọn ngạch hoặc chọn ngạch trống
                 cboSalaryStep.ItemsSource = null;
                 txtRankName.Text = "";
             }
@@ -777,7 +759,7 @@ namespace TaxPersonnelManagement.Views
             }
             catch (Exception ex)
             {
-                // Silently log or ignore in production, or show status bar message
+                // Bỏ qua lỗi hoặc ghi log hệ thống
                 System.Diagnostics.Debug.WriteLine($"Error loading salary steps: {ex.Message}");
             }
         }
@@ -819,7 +801,7 @@ namespace TaxPersonnelManagement.Views
                 if (!string.IsNullOrEmpty(dialog.SelectedRankCode))
                 {
                     cboRankCode.SelectedValue = dialog.SelectedRankCode;
-                    // Trigger name update manually if needed, but SelectionChanged should handle it if item exists
+                    // Cập nhật tên ngạch tương ứng
                 }
             }
         }
@@ -915,20 +897,20 @@ namespace TaxPersonnelManagement.Views
                         LanguageSkillLevel = txtLanguageSkill.Text,
                         AvatarBase64 = _currentAvatarBase64, // Save new avatar
 
-                        // Tab 2
+                        // Tab 2: Thời gian giữ vị trí công tác
                         PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
                         PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate,
                         PositionYear = txtPositionYear.Text,
                         DetailedWorkHistory = txtDetailedWorkHistory.Text,
 
-                        // Tab 3
+                        // Tab 3: Thông tin nghỉ hưu
                         RetirementDate = dpRetirementDate.SelectedDate,
 
-                        // Tab 4
+                        // Tab 4: Thông tin Đảng viên
                         PartyEntryDate = dpPartyEntryDate.SelectedDate,
                         PartyOfficialDate = dpPartyOfficialDate.SelectedDate,
 
-                        // Tab 6
+                        // Tab 6: Lương
                         CurrentSalaryStep = cboSalaryStep.SelectedValue?.ToString(),
                         CurrentSalaryCoefficient = double.TryParse(txtSalaryCoefficient.Text, out double coeff) ? coeff : 0,
                         ExceedFramePercent = double.TryParse(txtExceedFrame.Text, out double exceed) ? exceed : 0,
@@ -940,17 +922,17 @@ namespace TaxPersonnelManagement.Views
                         SalaryHistoryLog = string.Join("\n", _personnel?.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? Enumerable.Empty<string>()), // Legacy fallback
                         SalaryRecords = _personnel?.SalaryRecords,
 
-                        // Tab 7
+                        // Tab 7: Khen thưởng
                         EmulationTitles = txtEmulationTitles.Text,
                         RewardForms = txtRewardForms.Text,
 
-                        // Tab 8
+                        // Tab 8: Kỷ luật
                         DisciplineType = cboDisciplineType.Text,
                         DisciplineDecisionNumber = txtDisciplineNumber.Text,
                         DisciplineDecisionDate = dpDisciplineDate.SelectedDate,
                         DisciplineReason = txtDisciplineReason.Text,
 
-                        // Tab 5 Leave
+                        // Tab 5: Nghỉ phép
                         TotalAnnualLeaveDays = int.TryParse(txtTotalAnnualLeave.Text, out int leaves) ? leaves : 12,
                         LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate,
                     };
@@ -1013,8 +995,8 @@ namespace TaxPersonnelManagement.Views
                 }
                 else
                 {
-                    // Update
-                    // Update
+                    // Cập nhật
+                    // Cập nhật
                     var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").Include("PersonnelDegrees").FirstOrDefault(p => p.Id == _personnel.Id);
                     if (existingP != null)
                     {
@@ -1057,20 +1039,20 @@ namespace TaxPersonnelManagement.Views
                             existingP.AvatarBase64 = _currentAvatarBase64;
                         }
 
-                        // Tab 2
+                        // Tab 2: Thời gian giữ vị trí công tác
                         existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
                         existingP.PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate;
                         existingP.PositionYear = txtPositionYear.Text;
                         existingP.DetailedWorkHistory = txtDetailedWorkHistory.Text;
 
-                        // Tab 3
+                        // Tab 3: Thông tin nghỉ hưu
                         existingP.RetirementDate = dpRetirementDate.SelectedDate;
 
-                        // Tab 4
+                        // Tab 4: Thông tin Đảng viên
                         existingP.PartyEntryDate = dpPartyEntryDate.SelectedDate;
                         existingP.PartyOfficialDate = dpPartyOfficialDate.SelectedDate;
 
-                        // Tab 6
+                        // Tab 6: Lương
                         existingP.CurrentSalaryStep = cboSalaryStep.Text;
                         existingP.CurrentSalaryCoefficient = double.TryParse(txtSalaryCoefficient.Text, out double sc2) ? sc2 : 0;
                         existingP.ExceedFramePercent = double.TryParse(txtExceedFrame.Text, out double ef2) ? ef2 : 0;
@@ -1102,7 +1084,7 @@ namespace TaxPersonnelManagement.Views
                                 context.SalaryRecords.Add(item);
                             }
 
-                            // 4. Update existing
+                            // 4. Cập nhật bản ghi hiện có
                             var toUpdateSalary = _personnel.SalaryRecords.Where(s => s.Id != 0).ToList();
                             foreach (var item in toUpdateSalary)
                             {
@@ -1122,19 +1104,19 @@ namespace TaxPersonnelManagement.Views
 
                         existingP.SalaryHistoryLog = string.Join("\n", existingP.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? new List<string>());
 
-                        // Tab 7
+                        // Tab 7: Khen thưởng
                         existingP.EmulationTitles = txtEmulationTitles.Text;
                         existingP.RewardForms = txtRewardForms.Text;
 
-                        // Tab 8
+                        // Tab 8: Kỷ luật
                         existingP.DisciplineType = cboDisciplineType.Text;
                         existingP.DisciplineDecisionNumber = txtDisciplineNumber.Text;
                         existingP.DisciplineDecisionDate = dpDisciplineDate.SelectedDate;
                         existingP.DisciplineReason = txtDisciplineReason.Text;
 
-                        // Salary Config Update Logic
-                        // Check if salary step changed to update history automatically?
-                        // Tab 5
+                        // Cập nhật cấu hình lương
+                        // Kiểm tra bậc lương có thay đổi để cập nhật lịch sử tự động
+                        // Tab 5: Nghỉ phép
                         if (int.TryParse(txtTotalAnnualLeave.Text, out int totalLeave))
                         {
                             existingP.TotalAnnualLeaveDays = totalLeave;
@@ -1162,7 +1144,7 @@ namespace TaxPersonnelManagement.Views
                                 context.LeaveHistories.Add(item);
                             }
 
-                            // 4. Update existing
+                            // 4. Cập nhật bản ghi hiện có
                             var toUpdate = _personnel.LeaveHistories.Where(lh => lh.Id != 0).ToList();
                             foreach (var item in toUpdate)
                             {
@@ -1201,7 +1183,7 @@ namespace TaxPersonnelManagement.Views
                                 context.EvaluationRecords.Add(item);
                             }
 
-                            // 4. Update existing
+                            // 4. Cập nhật bản ghi hiện có
                             var toUpdateEval = _personnel.EvaluationRecords.Where(e => e.Id != 0).ToList();
                             foreach (var item in toUpdateEval)
                             {
@@ -1288,12 +1270,12 @@ namespace TaxPersonnelManagement.Views
             _isAvatarChanged = true;
         }
 
-        // Helper: File -> Base64 (with resizing to max 500px width/height to save space, and correcting EXIF orientation)
+        // Hàm bổ trợ: Chuyển file ảnh thành Base64 (thu nhỏ tối đa 500px để tiết kiệm dung lượng, xoay đúng hướng EXIF)
         private string ImageToBase64(string path)
         {
             try
             {
-                // Load and orient the image first
+                // Nạp và điều chỉnh hướng ảnh theo EXIF
                 var image = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(path);
 
                 double scale = 1.0;
@@ -1321,7 +1303,7 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        // Helper: Base64 -> BitmapSource (Orient image using EXIF orientation metadata)
+        // Hàm bổ trợ: Chuyển Base64 thành BitmapSource (xoay ảnh đúng theo metadata EXIF)
         private System.Windows.Media.Imaging.BitmapSource? Base64ToImage(string base64String)
         {
             try
@@ -1387,7 +1369,7 @@ namespace TaxPersonnelManagement.Views
                 txtITSkill.Clear();
                 txtLanguageSkill.Clear();
 
-                // Tab 2
+                // Tab 2: Thời gian giữ vị trí công tác
                 dpPositionDecisionDate.SelectedDate = null;
                 dpPositionCalculationDate.SelectedDate = DateTime.Now;
                 txtPositionYear.Clear();
@@ -1396,17 +1378,17 @@ namespace TaxPersonnelManagement.Views
                 txtYearsWorked.Clear();
                 txtMonthsWorked.Clear();
 
-                // Tab 3
+                // Tab 3: Thông tin nghỉ hưu
                 dpRetirementDate.SelectedDate = null;
                 txtRetirementYearsWorked.Clear();
                 txtRemainingYears.Clear();
 
-                // Tab 4
+                // Tab 4: Thông tin Đảng viên
                 dpPartyEntryDate.SelectedDate = null;
                 dpPartyOfficialDate.SelectedDate = null;
                 txtPartyAge.Clear();
 
-                // Tab 6: Salary Info
+                // Tab 6: Thông tin lương
                 cboSalaryStep.ItemsSource = null;
                 cboSalaryStep.SelectedIndex = -1;
                 cboSalaryStep.Text = "";
@@ -1418,7 +1400,7 @@ namespace TaxPersonnelManagement.Views
                 cboSalaryDelay.SelectedIndex = -1;
                 cboSalaryDelay.Text = "";
                 dpExpectedSalaryIncrease.SelectedDate = null;
-                // Tab 6
+                // Tab 6: Lương
                 if (_personnel == null) _personnel = new Personnel();
                 if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
                 _personnel.SalaryRecords.Clear();
@@ -1432,8 +1414,8 @@ namespace TaxPersonnelManagement.Views
                 txtSalaryHistDecisionNo.Clear();
                 dpSalaryHistDecisionDate.SelectedDate = null;
 
-                // Tab 5
-                // Tab 5
+                // Tab 5: Nghỉ phép
+                // Tab 5: Nghỉ phép
                 txtTotalAnnualLeave.Text = "12";
                 txtAnnualLeaveTaken.Text = "0";
                 txtAnnualLeaveRemaining.Text = "12";
@@ -1463,7 +1445,7 @@ namespace TaxPersonnelManagement.Views
                     }
                 }
 
-                // Tab 9 Resets
+                // Đặt lại dữ liệu Tab 9: Xếp loại
                 cboEvaluationYear.SelectedIndex = 0;
                 cboEvaluationRating.SelectedIndex = 0;
                 txtEvaluationDecisionNo.Clear();
@@ -1472,11 +1454,11 @@ namespace TaxPersonnelManagement.Views
                 _editingEvaluationRecord = null;
                 dgEvaluationHistory.ItemsSource = null;
 
-                // Clear Avatar
+                // Xóa ảnh đại diện
                 btnRemoveAvatar_Click(sender, e);
                 _isAvatarChanged = false; // Reset change flag as we are starting fresh
 
-                // Clear Errors
+                // Xóa thông báo lỗi
                 lblPhoneError.Visibility = Visibility.Collapsed;
                 lblEmailError.Visibility = Visibility.Collapsed;
 
@@ -1534,7 +1516,7 @@ namespace TaxPersonnelManagement.Views
 
         private void CalculateWorkDuration()
         {
-            // Requirement Update:
+            // Yêu cầu cập nhật:
             // Start Date = PositionDecisionDate ("Thời gian công tác tính theo QĐ gần nhất")
             // End Date = PositionCalculationDate or DateTime.Now
             if (dpPositionDecisionDate.SelectedDate.HasValue)
@@ -1620,17 +1602,17 @@ namespace TaxPersonnelManagement.Views
 
         private void CalculateRetirementInfo()
         {
-            // Requirement Update:
+            // Yêu cầu cập nhật:
             // 1. Số năm công tác = Now - StartDate (TaxAuthorityStartDate) -> Output: X năm Y tháng Z ngày
             // 2. Số năm còn công tác = RetirementDate - Now -> Output: X năm Y tháng Z ngày
 
             DateTime now = DateTime.Now.Date;
 
-            // Calculate Annual Leave (Tab 5)
+            // Tính toán phép năm (Tab 5)
             CalculateAnnualLeave(now);
 
 
-            // 1. Calculate Years Worked (Tax Authority Start Date -> Now)
+            // 1. Tính số năm đã công tác ngành Thuế (Ngày vào ngành -> Hiện tại)
             if (dpStartDate.SelectedDate.HasValue)
             {
                 DateTime start = dpStartDate.SelectedDate.Value;
@@ -1649,7 +1631,7 @@ namespace TaxPersonnelManagement.Views
                 txtRetirementYearsWorked.Clear();
             }
 
-            // 2. Calculate Remaining Years (Now -> Retirement Date)
+            // 2. Tính số năm công tác còn lại (Hiện tại -> Ngày nghỉ hưu)
             // Requirement: Add 1 day to the difference (Inclusive)
             if (dpRetirementDate.SelectedDate.HasValue)
             {
@@ -1695,7 +1677,7 @@ namespace TaxPersonnelManagement.Views
                 totalLeave = 12 + bonusDays;
             }
 
-            // Update Model and UI
+            // Cập nhật đối tượng dữ liệu và giao diện
             if (_personnel != null) _personnel.TotalAnnualLeaveDays = totalLeave;
             txtTotalAnnualLeave.Text = totalLeave.ToString();
             UpdateLeaveStatistics(); // Recalculate and display statistics for the current selected year
@@ -1734,7 +1716,7 @@ namespace TaxPersonnelManagement.Views
             SalaryRecord? predecessor = otherRecords.LastOrDefault(r => r.StartDate!.Value < newStart);
             SalaryRecord? successor = otherRecords.FirstOrDefault(r => r.StartDate!.Value > newStart);
 
-            // If newItem's EndDate is null and successor exists, set it
+            // Nếu đợt mới chưa có ngày kết thúc và có đợt kế tiếp, tự động gán ngày kết thúc
             if (newItem.EndDate == null && successor != null && successor.StartDate.HasValue)
             {
                 newItem.EndDate = successor.StartDate!.Value.AddDays(-1);
@@ -1784,7 +1766,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (editedItem.StartDate == oldStartDate)
             {
-                // Just check if we need to auto-calculate editedItem's own EndDate because it was set to null
+                // Tự động tính ngày kết thúc nếu trường này đang để trống
                 if (editedItem.EndDate == null && editedItem.StartDate.HasValue)
                 {
                     var successor = records
@@ -1930,7 +1912,7 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            // 3. If valid, apply to actual _personnel.SalaryRecords
+            // 3. Nếu hợp lệ, lưu vào danh sách quá trình lương
             if (_editingSalaryRecord != null)
             {
                 DateTime? oldStartDate = _editingSalaryRecord.StartDate;
@@ -1970,7 +1952,7 @@ namespace TaxPersonnelManagement.Views
 
             RefreshSalaryHistoryGrid();
 
-            // Clear inputs
+            // Xóa trắng các ô nhập liệu
             dpSalaryHistStart.SelectedDate = null;
             dpSalaryHistEnd.SelectedDate = null;
             dpSalaryHistCalc.SelectedDate = null;
@@ -1996,7 +1978,7 @@ namespace TaxPersonnelManagement.Views
                 var item = row.DataContext as SalaryRecord;
                 if (item == null) return;
 
-                // Load data back to form
+                // Nạp lại dữ liệu lên form để chỉnh sửa
                 dpSalaryHistStart.SelectedDate = item.StartDate;
                 dpSalaryHistEnd.SelectedDate = item.EndDate;
                 dpSalaryHistCalc.SelectedDate = item.SalaryCalculationDate;
@@ -2012,7 +1994,7 @@ namespace TaxPersonnelManagement.Views
                 txtSalaryHistDecisionNo.Text = item.DecisionNumber;
                 dpSalaryHistDecisionDate.SelectedDate = item.DecisionDate;
 
-                // Set as editing so we don't duplicate on save
+                // Đánh dấu đang sửa để không bị tạo trùng bản ghi khi lưu
                 _editingSalaryRecord = item;
             }
         }
@@ -2068,7 +2050,7 @@ namespace TaxPersonnelManagement.Views
             DateTime? end = dpLeaveEndDate.SelectedDate;
 
 
-            // Check for overlap
+            // Kiểm tra trùng lặp khoảng thời gian
             if (_personnel != null && _personnel.LeaveHistories != null)
             {
                 foreach (var history in _personnel.LeaveHistories)
@@ -2140,7 +2122,7 @@ namespace TaxPersonnelManagement.Views
 
             }
 
-            // --- VALIDATION START: Check Balance ---
+            // --- KIỂM TRA HỢP LỆ: Kiểm tra số ngày phép còn lại ---
             if (type == "Phép năm")
             {
                 int currentYear = DateTime.Now.Year;
@@ -2184,7 +2166,7 @@ namespace TaxPersonnelManagement.Views
 
             if (_editingLeaveHistory != null)
             {
-                // Update Existing
+                // Cập nhật bản ghi hiện có
                 _editingLeaveHistory.LeaveType = type;
                 _editingLeaveHistory.StartDate = start;
                 _editingLeaveHistory.EndDate = end;
@@ -2201,7 +2183,7 @@ namespace TaxPersonnelManagement.Views
                     _editingLeaveHistory.LeaveYear = null;
                 }
 
-                // Save system note from txtSystemNote
+                // Lưu ghi chú hệ thống
                 _editingLeaveHistory.SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim();
 
 
@@ -2227,14 +2209,14 @@ namespace TaxPersonnelManagement.Views
             else
 
             {
-                // NEW LOGIC: Check for Auto-Deduct (Splitting Records)
+                // Logic tự động trừ phép: Tách bản ghi nếu lấy từ phép năm cũ
                 // NEW LOGIC: Smart Consumption (Prioritize Previous Year)
                 if (type == "Phép năm")
                 {
                     int currentYear = DateTime.Now.Year;
                     int previousYear = currentYear - 1;
 
-                    // Check if there is remaining leave in the PREVIOUS year AND user wants to prioritize it
+                    // Kiểm tra nếu còn phép năm trước và ưu tiên trừ phép năm trước
                     double remainingOld = GetRemainingAnnualLeaveDays(previousYear);
                     int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? currentYear;
 
@@ -2336,12 +2318,12 @@ namespace TaxPersonnelManagement.Views
             }
 
             _isRefreshing = false;
-            // Refresh Grid
+            // Làm mới bảng danh sách
             RefreshLeaveHistoryGrid();
 
             UpdateLeaveStatistics();
 
-            // Clear inputs
+            // Xóa trắng các ô nhập liệu
             cboLeaveType.SelectedIndex = -1;
             cboLeaveYear.IsEnabled = false;
             cboLeaveYear.SelectedItem = DateTime.Now.Year;
@@ -2385,7 +2367,7 @@ namespace TaxPersonnelManagement.Views
                 chkPrioritizeOldYear.IsChecked = false;
             }
 
-            // Trigger Stat Update for selected year
+            // Cập nhật lại thống kê số ngày nghỉ theo năm đã chọn
             UpdateLeaveStatistics();
         }
 
@@ -2473,7 +2455,6 @@ namespace TaxPersonnelManagement.Views
         private void UpdateLeaveDuration()
         {
             // Debug logging
-            // MessageBox.Show($"Update triggered. Refreshing: {_isRefreshing}. Start: {dpLeaveStartDate.SelectedDate}, End: {dpLeaveEndDate.SelectedDate}");
 
             if (_isRefreshing) return;
 
@@ -2508,7 +2489,7 @@ namespace TaxPersonnelManagement.Views
 
             txtLeaveDuration.Text = duration.ToString();
 
-            // Auto-calculate System Note
+            // Tự động tính ghi chú hệ thống
             txtSystemNote.Text = GetLeaveBreakdownNote(start, end, type);
         }
 
@@ -2661,11 +2642,11 @@ namespace TaxPersonnelManagement.Views
                 // Note: If ID is 0 (newly added), we need to find by object reference logic or assume last one? 
                 // Or simply find by object in list matching the bounded item?
                 // The Tag binding binds to Id, which might be 0 for new items. 
-                // Better approach: Get DataContext of the row.
+                // Lấy DataContext của dòng được chọn
                 var item = btn.DataContext as LeaveHistory;
                 if (item != null && _personnel?.LeaveHistories != null)
                 {
-                    // Check for Linked Records
+                    // Kiểm tra các bản ghi liên kết
                     var linkedItems = new List<LeaveHistory>();
                     if (!string.IsNullOrEmpty(item.LinkId))
                     {
@@ -2702,7 +2683,7 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
 
-                    // Refresh Grid
+                    // Làm mới bảng danh sách
                     RefreshLeaveHistoryGrid();
                     UpdateLeaveStatistics();
                 }
@@ -2713,7 +2694,6 @@ namespace TaxPersonnelManagement.Views
 
         private void UpdateLeaveStatistics(int? yearOverride = null)
         {
-            // if (_personnel == null) return; // Removed to allow UI update with override values
             if (_personnel != null && _personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
 
             var histories = _personnel?.LeaveHistories ?? new List<LeaveHistory>();
@@ -2738,7 +2718,7 @@ namespace TaxPersonnelManagement.Views
                 maternityDisplay = $"{latest.StartDate:dd/MM/yyyy} - {latest.EndDate:dd/MM/yyyy}";
             }
 
-            // Determine which year to calculate for
+            // Xác định năm cần tính toán
             int yearToCalculate = yearOverride ?? DateTime.Now.Year;
 
             // If user selected a year in ComboBox, we might want to prioritize that for display
@@ -2751,7 +2731,7 @@ namespace TaxPersonnelManagement.Views
 
             foreach (var item in histories)
             {
-                // Always accumulate unpaid leave across ALL years for salary delay calculation
+                // Cộng dồn toàn bộ ngày nghỉ không lương qua các năm để tính lùi nâng lương
                 if (item.LeaveType == "Không lương")
                 {
                     totalUnpaidTakenAllYears += item.DurationDays;
@@ -2762,8 +2742,8 @@ namespace TaxPersonnelManagement.Views
                 {
                     if (item.LeaveType == "Phép năm")
                     {
-                        // Check if it's from old year quota
-                        // It's old year if LeaveYear is explicitly set to a previous year
+                        // Kiểm tra xem có thuộc hạn mức phép năm cũ không
+                        // Được coi là năm cũ nếu LeaveYear nhỏ hơn năm đang tính
                         if (item.LeaveYear.HasValue && item.LeaveYear.Value < yearToCalculate)
                         {
                             annualTakenOldYear += item.DurationDays;
@@ -2777,11 +2757,11 @@ namespace TaxPersonnelManagement.Views
                 }
             }
 
-            // Bind to UI
-            // Assuming default 12 if not set in UI text
+            // Hiển thị lên giao diện
+            // Mặc định 12 ngày phép nếu chưa thiết lập
             int totalAnnual = 12;
 
-            // Prefer Model over Text parsing
+            // Ưu tiên lấy từ Model hơn là lấy từ TextBox
             if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
             {
                 totalAnnual = _personnel.TotalAnnualLeaveDays;
@@ -2791,7 +2771,7 @@ namespace TaxPersonnelManagement.Views
                 int.TryParse(txtTotalAnnualLeave.Text, out totalAnnual);
             }
 
-            // Bind
+            // Gán dữ liệu lên giao diện
             txtAnnualLeaveTaken.Text = (annualTakenCurrentYear + annualTakenOldYear).ToString();
             txtAnnualLeaveRemaining.Text = (totalAnnual - annualTakenCurrentYear).ToString();
             txtSickLeaveTaken.Text = sickTaken.ToString();
@@ -2803,7 +2783,7 @@ namespace TaxPersonnelManagement.Views
 
         private double GetRemainingAnnualLeaveDays(int year)
         {
-            // Default to 12 or value from UI if personnel is null/empty
+            // Mặc định 12 ngày phép nếu nhân sự chưa có dữ liệu
             int total = 12;
 
             if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
@@ -2812,7 +2792,7 @@ namespace TaxPersonnelManagement.Views
             }
             else
             {
-                // Fallback to UI text if model not set (e.g. New User)
+                // Lấy từ giao diện nếu tạo mới nhân sự
                 if (int.TryParse(txtTotalAnnualLeave.Text, out int uiTotal))
                 {
                     total = uiTotal;
@@ -2834,10 +2814,6 @@ namespace TaxPersonnelManagement.Views
         {
             if (_personnel == null || _personnel.LeaveHistories == null) return;
 
-            // Auto-clean: Remove old years (Keep only current year OR overlapping)
-            // Rule: Remove if EndDate is in a previous year.
-            // MODIFIED: Keep all history as per user request
-            // int currentYear = DateTime.Now.Year;
             // _personnel.LeaveHistories.RemoveAll(x => x.EndDate.Year < currentYear);
 
             // Sort by StartDate Descending, then by Id Descending (newest leaves/recently added ones are placed on top)
@@ -2874,13 +2850,32 @@ namespace TaxPersonnelManagement.Views
             CalculateExpectedSalaryDate();
         }
 
+        /// <summary>
+        /// Quy đổi số ngày nghỉ lẻ thành số tháng lùi thời hạn nâng lương theo Điều 2 Thông tư 03/2021/TT-BNV:
+        /// - Mỗi 30 ngày = 1 tháng.
+        /// - Số ngày lẻ còn lại: nếu từ đủ 11 ngày trở lên (>= 11 ngày) thì làm tròn thành 1 tháng; nếu dưới 11 ngày thì không tính.
+        /// </summary>
+        public static int ConvertDaysToDelayMonths(double days)
+        {
+            if (days <= 0) return 0;
+            int totalDays = (int)Math.Round(days);
+            int months = totalDays / 30;
+            int remainder = totalDays % 30;
+            if (remainder >= 11)
+            {
+                months += 1;
+            }
+            return months;
+        }
+
         private void CalculateExpectedSalaryDate()
         {
             if (_isRefreshing) return;
 
-            // Handle dynamic insert/remove of "Nghỉ không lương (X ngày)" in cboSalaryDelay
+            // Handle dynamic insert/remove of "Nghỉ không lương (X ngày - Lùi Y tháng)" in cboSalaryDelay
             double unpaidDays = 0;
             bool hasUnpaidLeave = double.TryParse(txtUnpaidLeaveTaken.Text, out unpaidDays) && unpaidDays > 0;
+            int unpaidDelayMonths = hasUnpaidLeave ? ConvertDaysToDelayMonths(unpaidDays) : 0;
             if (cboSalaryDelay.Items.Count > 0)
             {
                 // Ensure the first item is always "-- Không lùi --"
@@ -2918,7 +2913,9 @@ namespace TaxPersonnelManagement.Views
                     }
                 }
 
-                string expectedUnpaidText = $"Nghỉ không lương ({unpaidDays} ngày)";
+                string expectedUnpaidText = unpaidDelayMonths > 0
+                    ? $"Nghỉ không lương ({unpaidDays} ngày - Lùi {unpaidDelayMonths} tháng)"
+                    : $"Nghỉ không lương ({unpaidDays} ngày)";
 
                 if (hasUnpaidLeave)
                 {
@@ -2931,7 +2928,7 @@ namespace TaxPersonnelManagement.Views
                             // Insert at index 1 (right after "-- Không lùi --")
                             cboSalaryDelay.Items.Insert(1, expectedUnpaidText);
                             
-                            // If selectedIndex was 0, -1, or "-- Không lương --", set it to 1 ("Nghỉ không lương (X ngày)")
+                            // If selectedIndex was 0, -1, or "-- Không lương --", set it to 1
                             int selectedIndex = cboSalaryDelay.SelectedIndex;
                             string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
                             if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
@@ -2965,7 +2962,7 @@ namespace TaxPersonnelManagement.Views
 
                         if (currentUnpaidTextInList != expectedUnpaidText)
                         {
-                            // Update the text in place
+                            // Cập nhật trực tiếp nội dung hiển thị
                             bool wasRefreshing = _isRefreshing;
                             _isRefreshing = true;
                             try
@@ -2980,7 +2977,7 @@ namespace TaxPersonnelManagement.Views
                                     cboSalaryDelay.Items[unpaidItemIndex] = expectedUnpaidText;
                                 }
                                 
-                                // Force selection refresh if this item is selected
+                                // Làm mới lại mục đang chọn nếu cần
                                 if (cboSalaryDelay.SelectedIndex == unpaidItemIndex)
                                 {
                                     cboSalaryDelay.SelectedIndex = -1;
@@ -3017,7 +3014,7 @@ namespace TaxPersonnelManagement.Views
                 }
             }
 
-            // 1. Base Date: Next Salary Step Date
+            // 1. Mốc thời gian gốc: Thời điểm tính bậc lương lần sau
             if (!dpNextSalaryStepDate.SelectedDate.HasValue)
             {
                 dpExpectedSalaryIncrease.SelectedDate = null;
@@ -3027,10 +3024,10 @@ namespace TaxPersonnelManagement.Views
             DateTime baseDate = dpNextSalaryStepDate.SelectedDate.Value;
             DateTime expectedDate = baseDate;
 
-            // 2. Period Calculation
+            // 2. Tính chu kỳ nâng bậc lương (2 năm hoặc 3 năm)
             int periodYears = 3; // Default 3 years
 
-            // Check Exceed Frame
+            // Kiểm tra tỷ lệ vượt khung (% vượt khung thì 1 năm nâng 1 lần)
             // "Tuy nhiên Có ai đã lên % vượt khung Thì 1 năm lên 1 lần"
             double exceedFrame = 0;
             if (double.TryParse(txtExceedFrame.Text, out exceedFrame) && exceedFrame > 0)
@@ -3039,7 +3036,7 @@ namespace TaxPersonnelManagement.Views
             }
             else
             {
-                // Check Rank Code
+                // Kiểm tra mã ngạch (các mã 06.039-1, 01.011, 01.009 thì 2 năm nâng 1 lần)
                 // "Nếu mã ngach là 06.039-1, 01.011, 01.009 thì 2 năm lên 1 lần"
                 string rankCode = "";
                 if (cboRankCode.SelectedItem is Rank r) rankCode = r.Code;
@@ -3056,10 +3053,10 @@ namespace TaxPersonnelManagement.Views
                 }
             }
 
-            // Apply Period
+            // Cộng chu kỳ nâng lương vào mốc gốc
             expectedDate = baseDate.AddYears(periodYears);
 
-            // 3. Delay Calculation (Disciplinary)
+            // 3. Tính thời gian lùi do kỷ luật
             // "kèm thêm xét điều kiện ở ô lùi thời gian nâng lương"
             string delayReason = "";
             if (cboSalaryDelay.SelectedItem is ComboBoxItem cbi)
@@ -3071,22 +3068,23 @@ namespace TaxPersonnelManagement.Views
 
             if (!string.IsNullOrEmpty(delayReason))
             {
-                if (delayReason.Contains("Lùi 3 tháng"))
+                if (delayReason.Contains("Khiển trách") || (delayReason.Contains("Lùi 3 tháng") && !delayReason.StartsWith("Nghỉ ốm") && !delayReason.StartsWith("Nghỉ không lương")))
                 {
                     expectedDate = expectedDate.AddMonths(3);
                 }
-                else if (delayReason.Contains("Lùi 6 tháng"))
+                else if (delayReason.Contains("Cảnh cáo") || (delayReason.Contains("Lùi 6 tháng") && !delayReason.StartsWith("Nghỉ ốm") && !delayReason.StartsWith("Nghỉ không lương")))
                 {
                     expectedDate = expectedDate.AddMonths(6);
                 }
-                else if (delayReason.Contains("Lùi 12 tháng"))
+                else if (delayReason.Contains("Giáng chức") || delayReason.Contains("Cách chức") || (delayReason.Contains("Lùi 12 tháng") && !delayReason.StartsWith("Nghỉ ốm") && !delayReason.StartsWith("Nghỉ không lương")))
                 {
                     expectedDate = expectedDate.AddMonths(12);
                 }
             }
 
             // 3b. Automatic Delay from Sick Leave (Nghỉ ốm > 6 tháng = 180 ngày trong kỳ)
-            // Kỳ tính: từ NextSalaryStepDate đến ngày dự kiến lên lương (baseDate đến expectedDate trước khi tính ốm)
+            // Quy đổi ngày lẻ thành tháng theo Điều 2 Thông tư 03/2021/TT-BNV:
+            // Cứ 30 ngày = 1 tháng; số ngày dư >= 11 ngày làm tròn thành 1 tháng.
             const double SickLeaveThreshold = 180.0; // 6 tháng
             double totalSickDaysInPeriod = 0;
             bool hasOngoingSickLeave = false;
@@ -3131,14 +3129,21 @@ namespace TaxPersonnelManagement.Views
             }
 
             double sickExcessDays = Math.Max(0, totalSickDaysInPeriod - SickLeaveThreshold);
+            int sickDelayMonths = ConvertDaysToDelayMonths(sickExcessDays);
 
             // Hiển thị/ẩn cảnh báo tạm tính
             if (txtSickLeaveProvisionalWarning != null)
+            {
                 txtSickLeaveProvisionalWarning.Visibility = hasOngoingSickLeave
                     ? Visibility.Visible
                     : Visibility.Collapsed;
+                if (hasOngoingSickLeave)
+                {
+                    txtSickLeaveProvisionalWarning.ToolTip = "Đang có đợt nghỉ ốm chưa xác định ngày kết thúc nên hệ thống tạm tính đến hôm nay. Khi cán bộ đi làm lại và nhập Ngày kết thúc, hệ thống sẽ chốt số tháng lùi chính xác.";
+                }
+            }
 
-            // Tự động thêm/xoá mục "Nghỉ ốm quá hạn (X ngày)" trong cboSalaryDelay để hiển thị lý do
+            // Tự động thêm/xoá mục "Nghỉ ốm quá hạn X ngày (Lùi Y tháng)" trong cboSalaryDelay để hiển thị lý do
             if (cboSalaryDelay.Items.Count > 0)
             {
                 int sickItemIndex = -1;
@@ -3148,16 +3153,16 @@ namespace TaxPersonnelManagement.Views
                     string itemText = itemObj is ComboBoxItem cbiSickCheck
                         ? cbiSickCheck.Content?.ToString() ?? ""
                         : itemObj.ToString() ?? "";
-                    if (itemText.StartsWith("Nghỉ ốm quá hạn (", StringComparison.OrdinalIgnoreCase))
+                    if (itemText.StartsWith("Nghỉ ốm quá hạn", StringComparison.OrdinalIgnoreCase))
                     {
                         sickItemIndex = i;
                         break;
                     }
                 }
 
-                if (sickExcessDays > 0)
+                if (sickDelayMonths > 0)
                 {
-                    string sickLabel = $"Nghỉ ốm quá hạn ({(int)Math.Round(sickExcessDays)} ngày)";
+                    string sickLabel = $"Nghỉ ốm quá hạn {(int)Math.Round(sickExcessDays)} ngày (Lùi {sickDelayMonths} tháng)";
                     bool wasRefreshing2 = _isRefreshing;
                     _isRefreshing = true;
                     try
@@ -3182,44 +3187,49 @@ namespace TaxPersonnelManagement.Views
                         }
 
                         // Tự động chọn mục này nếu người dùng chưa chọn lý do kỷ luật nào khác
-                        // (tức là đang ở "-- Không lùi --" hoặc chính mục nghỉ ốm)
                         string currentSel = cboSalaryDelay.SelectedItem is ComboBoxItem cbiCur
                             ? cbiCur.Content?.ToString() ?? ""
                             : cboSalaryDelay.SelectedItem?.ToString() ?? "";
 
-                        bool hasDisciplinary = currentSel.Contains("Lùi 3 tháng") ||
-                                               currentSel.Contains("Lùi 6 tháng") ||
-                                               currentSel.Contains("Lùi 12 tháng");
+                        bool hasDisciplinary = currentSel.Contains("Khiển trách") ||
+                                               currentSel.Contains("Cảnh cáo") ||
+                                               currentSel.Contains("Giáng chức") ||
+                                               currentSel.Contains("Cách chức");
 
                         if (!hasDisciplinary)
                         {
                             cboSalaryDelay.SelectedIndex = newSickIndex;
                         }
+
+                        cboSalaryDelay.ToolTip = $"Theo TT 03/2021/TT-BNV: Tổng nghỉ ốm {(int)Math.Round(totalSickDaysInPeriod)} ngày - 180 ngày BHXH = {(int)Math.Round(sickExcessDays)} ngày vượt hạn => Quy đổi lùi {sickDelayMonths} tháng.";
                     }
                     finally { _isRefreshing = wasRefreshing2; }
 
-                    // Tự động lùi: cộng số ngày vượt vào expectedDate
-                    expectedDate = expectedDate.AddDays(sickExcessDays);
+                    // Tự động lùi: cộng số THÁNG quy đổi theo TT 03/2021/TT-BNV vào expectedDate
+                    expectedDate = expectedDate.AddMonths(sickDelayMonths);
                 }
-
                 else if (sickItemIndex != -1)
                 {
-                    // Không còn vượt hạn → xoá mục khỏi dropdown
+                    // Không còn vượt hạn hoặc ngày dư < 11 ngày (không tính lùi) → xoá mục khỏi dropdown
                     bool wasRefreshing2 = _isRefreshing;
                     _isRefreshing = true;
-                    try { cboSalaryDelay.Items.RemoveAt(sickItemIndex); }
+                    try 
+                    { 
+                        cboSalaryDelay.Items.RemoveAt(sickItemIndex);
+                        cboSalaryDelay.ToolTip = null;
+                    }
                     finally { _isRefreshing = wasRefreshing2; }
                 }
             }
 
-            // 4. Automatic Delay from Unpaid Leave
-            // "trong đó nếu nghỉ không lương thì Nghỉ bao lâu Thì lùi đúng số tháng nghỉ"
-            if (delayReason != "-- Không lùi --" && unpaidDays > 0)
+            // 4. Tự động tính lùi thời hạn do nghỉ không lương
+            // Theo Điều 2 TT 03/2021/TT-BNV: quy đổi ngày lẻ thành tháng (cứ 30 ngày = 1 tháng, >= 11 ngày làm tròn 1 tháng)
+            if (delayReason != "-- Không lùi --" && unpaidDelayMonths > 0)
             {
-                expectedDate = expectedDate.AddDays(unpaidDays);
+                expectedDate = expectedDate.AddMonths(unpaidDelayMonths);
             }
 
-            // Set Result
+            // Cập nhật kết quả ngày dự kiến lên lương
             if (dpExpectedSalaryIncrease.SelectedDate != expectedDate)
             {
                 dpExpectedSalaryIncrease.SelectedDate = expectedDate;
