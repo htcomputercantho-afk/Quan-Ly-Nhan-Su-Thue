@@ -430,6 +430,9 @@
                     <RadioButton x:Name="rbTabPolTheory" Content="📕 Lý luận chính trị" GroupName="DegreeTypeTabs" 
                                  Style="{StaticResource SegmentedTabRadioButton}" 
                                  Checked="TabFilter_Checked"/>
+                    <RadioButton x:Name="rbTabOther" Content="📜 Chứng chỉ khác" GroupName="DegreeTypeTabs" 
+                                 Style="{StaticResource SegmentedTabRadioButton}" 
+                                 Checked="TabFilter_Checked"/>
                 </WrapPanel>
             </Border>
 

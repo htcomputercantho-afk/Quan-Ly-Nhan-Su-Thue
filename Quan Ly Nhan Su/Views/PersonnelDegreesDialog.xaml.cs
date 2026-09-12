@@ -69,6 +69,9 @@ namespace TaxPersonnelManagement.Views
                     case "Lý luận chính trị":
                         rbTabPolTheory.IsChecked = true;
                         break;
+                    case "Chứng chỉ khác":
+                        rbTabOther.IsChecked = true;
+                        break;
                     default:
                         rbTabAll.IsChecked = true;
                         break;
@@ -288,6 +291,11 @@ namespace TaxPersonnelManagement.Views
             {
                 filtered = filtered.Where(d => d.DegreeType == "Lý luận chính trị");
             }
+            else if (rbTabOther.IsChecked == true)
+            {
+                filtered = filtered.Where(d => d.DegreeType == "Chứng chỉ khác" ||
+                                              (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType)));
+            }
 
             var viewList = filtered.Select((d, idx) => new DegreeViewModel(d, idx + 1)).ToList();
             dgDegrees.ItemsSource = viewList;
@@ -301,8 +309,12 @@ namespace TaxPersonnelManagement.Views
             int majorCount = _allDegrees.Count(d => d.DegreeType == "Chuyên môn");
             int stateCount = _allDegrees.Count(d => d.DegreeType == "Quản lý Nhà nước");
             int polCount = _allDegrees.Count(d => d.DegreeType == "Lý luận chính trị");
+            int otherCount = _allDegrees.Count(d => d.DegreeType == "Chứng chỉ khác" ||
+                                                   (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType)));
 
-            txtDegreeSummary.Text = $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN, {polCount} LLCT)";
+            txtDegreeSummary.Text = otherCount > 0
+                ? $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN, {polCount} LLCT, {otherCount} CC khác)"
+                : $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN, {polCount} LLCT)";
         }
 
         private void TabFilter_Checked(object sender, RoutedEventArgs e)
@@ -320,6 +332,8 @@ namespace TaxPersonnelManagement.Views
                 SelectComboBoxItemByText(cboDegreeType, "Quản lý Nhà nước");
             else if (rbTabPolTheory.IsChecked == true)
                 SelectComboBoxItemByText(cboDegreeType, "Lý luận chính trị");
+            else if (rbTabOther.IsChecked == true)
+                SelectComboBoxItemByText(cboDegreeType, "Chứng chỉ khác");
 
             ApplyFilterAndBind();
         }
@@ -886,6 +900,10 @@ namespace TaxPersonnelManagement.Views
         private static readonly Brush RoseBorder = (Brush)_brushConverter.ConvertFrom("#FECDD3")!;
         private static readonly Brush RoseText = (Brush)_brushConverter.ConvertFrom("#BE123C")!;
 
+        private static readonly Brush TealBg = (Brush)_brushConverter.ConvertFrom("#F0FDFA")!;
+        private static readonly Brush TealBorder = (Brush)_brushConverter.ConvertFrom("#99F6E4")!;
+        private static readonly Brush TealText = (Brush)_brushConverter.ConvertFrom("#0D9488")!;
+
         private static readonly Brush GrayBg = (Brush)_brushConverter.ConvertFrom("#F1F5F9")!;
         private static readonly Brush GrayBorder = (Brush)_brushConverter.ConvertFrom("#E2E8F0")!;
         private static readonly Brush GrayText = (Brush)_brushConverter.ConvertFrom("#64748B")!;
@@ -917,6 +935,7 @@ namespace TaxPersonnelManagement.Views
             "Chuyên môn" => GreenBg,
             "Quản lý Nhà nước" => AmberBg,
             "Lý luận chính trị" => RoseBg,
+            "Chứng chỉ khác" => TealBg,
             _ => GrayBg
         };
 
@@ -927,6 +946,7 @@ namespace TaxPersonnelManagement.Views
             "Chuyên môn" => GreenBorder,
             "Quản lý Nhà nước" => AmberBorder,
             "Lý luận chính trị" => RoseBorder,
+            "Chứng chỉ khác" => TealBorder,
             _ => GrayBorder
         };
 
@@ -937,6 +957,7 @@ namespace TaxPersonnelManagement.Views
             "Chuyên môn" => GreenText,
             "Quản lý Nhà nước" => AmberText,
             "Lý luận chính trị" => RoseText,
+            "Chứng chỉ khác" => TealText,
             _ => GrayText
         };
 
@@ -947,7 +968,8 @@ namespace TaxPersonnelManagement.Views
             "Chuyên môn" => PackIconKind.School,
             "Quản lý Nhà nước" => PackIconKind.TownHall,
             "Lý luận chính trị" => PackIconKind.BookOpenOutline,
-            _ => PackIconKind.CertificateOutline
+            "Chứng chỉ khác" => PackIconKind.CertificateOutline,
+            _ => PackIconKind.FileDocumentOutline
         };
 
         public string DisplayMajor => string.IsNullOrWhiteSpace(Major) ? "—" : Major.Trim();

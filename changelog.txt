@@ -1,3 +1,10 @@
+## v1.6.2.9 — 2026-09-12
+- [Tính năng & Phân loại] Bổ sung Danh mục "Chứng chỉ khác" trong Quản lý văn bằng (`PersonnelDegreesDialog`):
+    + Bổ sung tab phân loại riêng biệt "📜 Chứng chỉ khác" để quản lý và lọc nhanh các loại chứng chỉ nghề, bồi dưỡng kỹ năng, chứng chỉ ngắn hạn...
+    + Tự động chọn đúng loại bằng "Chứng chỉ khác" trên form thêm mới tương ứng khi nhấp chọn tab.
+    + Gắn nhãn màu xanh ngọc tươi sáng (Teal `#F0FDFA` / viền `#99F6E4`) cùng biểu tượng chứng chỉ riêng biệt, phân biệt rõ nét trên bảng danh sách.
+    + Cập nhật bộ đếm thống kê số lượng văn bằng ở thanh trạng thái (Footer) hiển thị độc lập số lượng chứng chỉ khác.
+
 ## v1.6.2.8 — 2026-09-11
 - [Tính năng & Xuất dữ liệu] Nâng cấp Xuất file Excel & PDF đầy đủ Văn bằng Chứng chỉ:
     + Xuất Excel (`ExcelExporter`): Giữ nguyên chuẩn 1 sheet duy nhất (`DanhSachNhanSu`) với đúng 42 cột chuẩn mực quy định. Toàn bộ văn bằng/chứng chỉ (Tin học, Ngoại ngữ, Chuyên môn, Quản lý Nhà nước, Lý luận chính trị) được hiển thị nhiều dòng trong cùng một ô (`Alt + Enter` / `WrapText` tự động co giãn dòng), không bị sót bằng cấp. Tự động gom các chứng chỉ khác vào cột Ghi chú mà không làm lệch thứ tự các cột quy định.
