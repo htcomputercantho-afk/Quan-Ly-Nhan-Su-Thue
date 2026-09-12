@@ -1,3 +1,7 @@
+## v1.6.3.1 — 2026-09-13
+- [Sửa lỗi Giao diện] Khắc phục triệt để lỗi tràn chữ và đè chữ trong popup Xem chi tiết hồ sơ (`PersonnelProfileDialog`):
+    + Mở rộng không gian hiển thị cột "Lùi thời gian nâng lương", bổ sung tự động ngắt dòng (`TextWrapping="Wrap"`), chấm dứt hoàn toàn tình trạng chữ đè lên cột "Dự kiến lên lương".
+
 ## v1.6.3.0 — 2026-09-12
 - [Tính năng & Nghiệp vụ] Chuẩn hóa Quy tắc lùi thời hạn nâng lương theo Điều 2 Thông tư 03/2021/TT-BNV:
     + Quy đổi ngày lẻ thành tháng bắt buộc: Cứ mỗi 30 ngày nghỉ vượt khung tính là 01 tháng; số ngày dư từ đủ 11 ngày trở lên (>= 11 ngày) làm tròn thành 01 tháng đầy đủ; số ngày dư dưới 11 ngày không tính lùi.

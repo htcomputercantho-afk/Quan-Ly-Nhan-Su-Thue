@@ -339,9 +339,9 @@
                                 <Border Background="#FAFAFA" CornerRadius="4" Margin="15 0 15 15" Padding="15">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="170"/>
                                         </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -353,7 +353,7 @@
                                             <TextBlock Text="% Vượt khung:" Foreground="#78909C" FontSize="15"/>
                                             <TextBlock Text="{Binding ExceedFramePercent, StringFormat={}{0}%}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Row="0" Grid.Column="1">
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0 0 15 0">
                                             <TextBlock Text="PC chức vụ:" Foreground="#78909C" FontSize="15"/>
                                             <TextBlock Text="{Binding PositionAllowance, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
@@ -368,9 +368,9 @@
                                             <TextBlock Text="Mốc tính lương lần sau:" Foreground="#78909C" FontSize="15"/>
                                             <TextBlock Text="{Binding NextSalaryStepDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 2 0 0"/>
                                         </StackPanel>
-                                        <StackPanel Grid.Row="2" Grid.Column="1">
+                                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="0 0 15 0">
                                             <TextBlock Text="Lùi thời gian nâng lương:" Foreground="#78909C" FontSize="15"/>
-                                            <TextBlock Text="{Binding SalaryIncreaseDelayType, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" Margin="0 2 0 0"/>
+                                            <TextBlock Text="{Binding SalaryIncreaseDelayType, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="#D32F2F" FontSize="16" TextWrapping="Wrap" Margin="0 2 0 0"/>
                                         </StackPanel>
                                         <StackPanel Grid.Row="2" Grid.Column="2">
                                             <TextBlock Text="Dự kiến lên lương:" Foreground="#78909C" FontSize="15"/>
