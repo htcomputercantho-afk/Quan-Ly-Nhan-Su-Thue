@@ -9,6 +9,7 @@ using System.Linq;
 using System.Globalization;
 using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Services;
+using TaxPersonnelManagement.Helpers;
 
 
 
@@ -683,6 +684,16 @@ namespace TaxPersonnelManagement
                     }
 
                     DebugLog("Database Created/Updated.");
+
+                    // Tự động đồng bộ chuẩn hóa ngày dự kiến nâng lương và thời gian lùi lương theo TT 03/2021/TT-BNV
+                    try
+                    {
+                        SalaryHelper.SyncAllPersonnelSalaryIncreases(context);
+                    }
+                    catch (Exception exSync)
+                    {
+                        DebugLog("SalaryHelper.SyncAllPersonnelSalaryIncreases error: " + exSync.Message);
+                    }
                 }
 
                 // Show Login View

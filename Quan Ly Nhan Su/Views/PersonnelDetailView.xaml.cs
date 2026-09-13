@@ -8,6 +8,7 @@ using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
 using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
+using TaxPersonnelManagement.Helpers;
 using TaxPersonnelManagement.Models;
 namespace TaxPersonnelManagement.Views
 {
@@ -2322,6 +2323,7 @@ namespace TaxPersonnelManagement.Views
             RefreshLeaveHistoryGrid();
 
             UpdateLeaveStatistics();
+            CalculateExpectedSalaryDate();
 
             // Xóa trắng các ô nhập liệu
             cboLeaveType.SelectedIndex = -1;
@@ -2686,6 +2688,7 @@ namespace TaxPersonnelManagement.Views
                     // Làm mới bảng danh sách
                     RefreshLeaveHistoryGrid();
                     UpdateLeaveStatistics();
+                    CalculateExpectedSalaryDate();
                 }
             }
         }
@@ -2857,25 +2860,50 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         public static int ConvertDaysToDelayMonths(double days)
         {
-            if (days <= 0) return 0;
-            int totalDays = (int)Math.Round(days);
-            int months = totalDays / 30;
-            int remainder = totalDays % 30;
-            if (remainder >= 11)
-            {
-                months += 1;
-            }
-            return months;
+            return SalaryHelper.ConvertDaysToDelayMonths(days);
         }
 
         private void CalculateExpectedSalaryDate()
         {
             if (_isRefreshing) return;
 
-            // Handle dynamic insert/remove of "Nghỉ không lương (X ngày - Lùi Y tháng)" in cboSalaryDelay
-            double unpaidDays = 0;
-            bool hasUnpaidLeave = double.TryParse(txtUnpaidLeaveTaken.Text, out unpaidDays) && unpaidDays > 0;
-            int unpaidDelayMonths = hasUnpaidLeave ? ConvertDaysToDelayMonths(unpaidDays) : 0;
+            DateTime? baseDate = dpNextSalaryStepDate.SelectedDate;
+            if (!baseDate.HasValue)
+            {
+                dpExpectedSalaryIncrease.SelectedDate = null;
+                return;
+            }
+
+            double exceedFrame = 0;
+            double.TryParse(txtExceedFrame.Text, out exceedFrame);
+
+            string rankCode = "";
+            if (cboRankCode.SelectedItem is Rank r) rankCode = r.Code;
+            else if (cboRankCode.SelectedValue != null) rankCode = cboRankCode.SelectedValue.ToString() ?? "";
+            else rankCode = cboRankCode.Text;
+            rankCode = rankCode.Trim();
+
+            string currentDelayReason = "";
+            if (cboSalaryDelay.SelectedItem is ComboBoxItem cbi)
+                currentDelayReason = cbi.Content?.ToString() ?? "";
+            else if (cboSalaryDelay.SelectedItem != null)
+                currentDelayReason = cboSalaryDelay.SelectedItem.ToString() ?? "";
+            else
+                currentDelayReason = cboSalaryDelay.Text;
+
+            // Sử dụng SalaryHelper để tính toán chuẩn TT 03/2021/TT-BNV
+            var res = SalaryHelper.CalculateSalaryIncrease(
+                _personnel,
+                baseDateOverride: baseDate,
+                rankCodeOverride: rankCode,
+                exceedFrameOverride: exceedFrame,
+                delayReasonOverride: currentDelayReason);
+
+            double unpaidDays = res.UnpaidDays;
+            int unpaidDelayMonths = res.UnpaidDelayMonths;
+            bool hasUnpaidLeave = unpaidDays > 0;
+
+            // 1. Quản lý mục "Nghỉ không lương (X ngày - Lùi Y tháng)" trong cboSalaryDelay
             if (cboSalaryDelay.Items.Count > 0)
             {
                 // Ensure the first item is always "-- Không lùi --"
@@ -2892,13 +2920,9 @@ namespace TaxPersonnelManagement.Views
                         else
                             cboSalaryDelay.Items[0] = "-- Không lùi --";
                     }
-                    finally
-                    {
-                        _isRefreshing = wasRefreshing;
-                    }
+                    finally { _isRefreshing = wasRefreshing; }
                 }
 
-                // Check if any item starts with "Nghỉ không lương (" in cboSalaryDelay.Items
                 int unpaidItemIndex = -1;
                 string currentUnpaidTextInList = "";
                 for (int i = 0; i < cboSalaryDelay.Items.Count; i++)
@@ -2914,8 +2938,8 @@ namespace TaxPersonnelManagement.Views
                 }
 
                 string expectedUnpaidText = unpaidDelayMonths > 0
-                    ? $"Nghỉ không lương ({unpaidDays} ngày - Lùi {unpaidDelayMonths} tháng)"
-                    : $"Nghỉ không lương ({unpaidDays} ngày)";
+                    ? $"Nghỉ không lương ({(int)Math.Round(unpaidDays)} ngày - Lùi {unpaidDelayMonths} tháng)"
+                    : $"Nghỉ không lương ({(int)Math.Round(unpaidDays)} ngày)";
 
                 if (hasUnpaidLeave)
                 {
@@ -2925,10 +2949,7 @@ namespace TaxPersonnelManagement.Views
                         _isRefreshing = true;
                         try
                         {
-                            // Insert at index 1 (right after "-- Không lùi --")
                             cboSalaryDelay.Items.Insert(1, expectedUnpaidText);
-                            
-                            // If selectedIndex was 0, -1, or "-- Không lương --", set it to 1
                             int selectedIndex = cboSalaryDelay.SelectedIndex;
                             string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
                             if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
@@ -2936,214 +2957,67 @@ namespace TaxPersonnelManagement.Views
                                 cboSalaryDelay.SelectedIndex = 1;
                             }
                         }
-                        finally
-                        {
-                            _isRefreshing = wasRefreshing;
-                        }
+                        finally { _isRefreshing = wasRefreshing; }
                     }
                     else
                     {
-                        // Check if the current selected index is 0 or -1 or "-- Không lương --" / "-- Không lùi --", and force it to the unpaid item index
                         int selectedIndex = cboSalaryDelay.SelectedIndex;
                         string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
                         if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
                         {
                             bool wasRefreshing = _isRefreshing;
                             _isRefreshing = true;
-                            try
-                            {
-                                cboSalaryDelay.SelectedIndex = unpaidItemIndex;
-                            }
-                            finally
-                            {
-                                _isRefreshing = wasRefreshing;
-                            }
+                            try { cboSalaryDelay.SelectedIndex = unpaidItemIndex; }
+                            finally { _isRefreshing = wasRefreshing; }
                         }
 
                         if (currentUnpaidTextInList != expectedUnpaidText)
                         {
-                            // Cập nhật trực tiếp nội dung hiển thị
                             bool wasRefreshing = _isRefreshing;
                             _isRefreshing = true;
                             try
                             {
                                 var existingItem = cboSalaryDelay.Items[unpaidItemIndex];
-                                if (existingItem is ComboBoxItem cbiUpdate)
-                                {
-                                    cbiUpdate.Content = expectedUnpaidText;
-                                }
-                                else
-                                {
-                                    cboSalaryDelay.Items[unpaidItemIndex] = expectedUnpaidText;
-                                }
-                                
-                                // Làm mới lại mục đang chọn nếu cần
+                                if (existingItem is ComboBoxItem cbiUpdate) cbiUpdate.Content = expectedUnpaidText;
+                                else cboSalaryDelay.Items[unpaidItemIndex] = expectedUnpaidText;
+
                                 if (cboSalaryDelay.SelectedIndex == unpaidItemIndex)
                                 {
                                     cboSalaryDelay.SelectedIndex = -1;
                                     cboSalaryDelay.SelectedIndex = unpaidItemIndex;
                                 }
                             }
-                            finally
-                            {
-                                _isRefreshing = wasRefreshing;
-                            }
+                            finally { _isRefreshing = wasRefreshing; }
                         }
                     }
                 }
-                else
+                else if (unpaidItemIndex != -1)
                 {
-                    if (unpaidItemIndex != -1)
+                    bool wasRefreshing = _isRefreshing;
+                    _isRefreshing = true;
+                    try
                     {
-                        bool wasRefreshing = _isRefreshing;
-                        _isRefreshing = true;
-                        try
-                        {
-                            int selectedIndex = cboSalaryDelay.SelectedIndex;
-                            cboSalaryDelay.Items.RemoveAt(unpaidItemIndex);
-                            if (selectedIndex == unpaidItemIndex)
-                            {
-                                cboSalaryDelay.SelectedIndex = 0; // Default back to "-- Không lùi --"
-                            }
-                        }
-                        finally
-                        {
-                            _isRefreshing = wasRefreshing;
-                        }
+                        int selectedIndex = cboSalaryDelay.SelectedIndex;
+                        cboSalaryDelay.Items.RemoveAt(unpaidItemIndex);
+                        if (selectedIndex == unpaidItemIndex) cboSalaryDelay.SelectedIndex = 0;
                     }
+                    finally { _isRefreshing = wasRefreshing; }
                 }
             }
 
-            // 1. Mốc thời gian gốc: Thời điểm tính bậc lương lần sau
-            if (!dpNextSalaryStepDate.SelectedDate.HasValue)
-            {
-                dpExpectedSalaryIncrease.SelectedDate = null;
-                return;
-            }
-
-            DateTime baseDate = dpNextSalaryStepDate.SelectedDate.Value;
-            DateTime expectedDate = baseDate;
-
-            // 2. Tính chu kỳ nâng bậc lương (2 năm hoặc 3 năm)
-            int periodYears = 3; // Default 3 years
-
-            // Kiểm tra tỷ lệ vượt khung (% vượt khung thì 1 năm nâng 1 lần)
-            // "Tuy nhiên Có ai đã lên % vượt khung Thì 1 năm lên 1 lần"
-            double exceedFrame = 0;
-            if (double.TryParse(txtExceedFrame.Text, out exceedFrame) && exceedFrame > 0)
-            {
-                periodYears = 1;
-            }
-            else
-            {
-                // Kiểm tra mã ngạch (các mã 06.039-1, 01.011, 01.009 thì 2 năm nâng 1 lần)
-                // "Nếu mã ngach là 06.039-1, 01.011, 01.009 thì 2 năm lên 1 lần"
-                string rankCode = "";
-                if (cboRankCode.SelectedItem is Rank r) rankCode = r.Code;
-                else if (cboRankCode.SelectedValue != null) rankCode = cboRankCode.SelectedValue.ToString() ?? "";
-                else rankCode = cboRankCode.Text;
-
-                rankCode = rankCode.Trim();
-
-                if (string.Equals(rankCode, "06.039-1", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(rankCode, "01.011", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(rankCode, "01.009", StringComparison.OrdinalIgnoreCase))
-                {
-                    periodYears = 2;
-                }
-            }
-
-            // Cộng chu kỳ nâng lương vào mốc gốc
-            expectedDate = baseDate.AddYears(periodYears);
-
-            // 3. Tính thời gian lùi do kỷ luật
-            // "kèm thêm xét điều kiện ở ô lùi thời gian nâng lương"
-            string delayReason = "";
-            if (cboSalaryDelay.SelectedItem is ComboBoxItem cbi)
-                delayReason = cbi.Content?.ToString() ?? "";
-            else if (cboSalaryDelay.SelectedItem != null)
-                delayReason = cboSalaryDelay.SelectedItem.ToString() ?? "";
-            else
-                delayReason = cboSalaryDelay.Text;
-
-            if (!string.IsNullOrEmpty(delayReason))
-            {
-                if (delayReason.Contains("Khiển trách") || (delayReason.Contains("Lùi 3 tháng") && !delayReason.StartsWith("Nghỉ ốm") && !delayReason.StartsWith("Nghỉ không lương")))
-                {
-                    expectedDate = expectedDate.AddMonths(3);
-                }
-                else if (delayReason.Contains("Cảnh cáo") || (delayReason.Contains("Lùi 6 tháng") && !delayReason.StartsWith("Nghỉ ốm") && !delayReason.StartsWith("Nghỉ không lương")))
-                {
-                    expectedDate = expectedDate.AddMonths(6);
-                }
-                else if (delayReason.Contains("Giáng chức") || delayReason.Contains("Cách chức") || (delayReason.Contains("Lùi 12 tháng") && !delayReason.StartsWith("Nghỉ ốm") && !delayReason.StartsWith("Nghỉ không lương")))
-                {
-                    expectedDate = expectedDate.AddMonths(12);
-                }
-            }
-
-            // 3b. Automatic Delay from Sick Leave (Nghỉ ốm > 6 tháng = 180 ngày trong kỳ)
-            // Quy đổi ngày lẻ thành tháng theo Điều 2 Thông tư 03/2021/TT-BNV:
-            // Cứ 30 ngày = 1 tháng; số ngày dư >= 11 ngày làm tròn thành 1 tháng.
-            const double SickLeaveThreshold = 180.0; // 6 tháng
-            double totalSickDaysInPeriod = 0;
-            bool hasOngoingSickLeave = false;
-
-            if (_personnel?.LeaveHistories != null)
-            {
-                DateTime today = DateTime.Today;
-                DateTime periodStart = baseDate;          // Thời điểm tính bậc lương lần sau
-                DateTime periodEnd = baseDate.AddYears(periodYears); // Ngày dự kiến gốc (trước khi lùi)
-
-                foreach (var leave in _personnel.LeaveHistories)
-                {
-                    // Chỉ tính nghỉ ốm
-                    if (leave.LeaveType != "Nghỉ ốm" &&
-                        !leave.LeaveType.Contains("ốm", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    DateTime leaveStart = leave.StartDate.Date;
-
-                    if (!leave.EndDate.HasValue)
-                    {
-                        // Đang nghỉ ốm, chưa có ngày kết thúc → tính tạm đến hôm nay
-                        if (leaveStart <= today)
-                        {
-                            hasOngoingSickLeave = true;
-                            DateTime effectiveStart = leaveStart > periodStart ? leaveStart : periodStart;
-                            DateTime effectiveEnd = today < periodEnd ? today : periodEnd;
-                            if (effectiveEnd >= effectiveStart)
-                                totalSickDaysInPeriod += (effectiveEnd - effectiveStart).TotalDays + 1;
-                        }
-                    }
-                    else
-                    {
-                        // Đợt nghỉ đã xác định ngày kết thúc — tính phần giao với kỳ nâng lương
-                        DateTime leaveEnd = leave.EndDate.Value.Date;
-                        DateTime overlapStart = leaveStart > periodStart ? leaveStart : periodStart;
-                        DateTime overlapEnd   = leaveEnd  < periodEnd   ? leaveEnd  : periodEnd;
-                        if (overlapEnd >= overlapStart)
-                            totalSickDaysInPeriod += (overlapEnd - overlapStart).TotalDays + 1;
-                    }
-                }
-            }
-
-            double sickExcessDays = Math.Max(0, totalSickDaysInPeriod - SickLeaveThreshold);
-            int sickDelayMonths = ConvertDaysToDelayMonths(sickExcessDays);
-
-            // Hiển thị/ẩn cảnh báo tạm tính
+            // 2. Hiển thị/ẩn cảnh báo tạm tính nghỉ ốm
             if (txtSickLeaveProvisionalWarning != null)
             {
-                txtSickLeaveProvisionalWarning.Visibility = hasOngoingSickLeave
+                txtSickLeaveProvisionalWarning.Visibility = res.HasOngoingSickLeave
                     ? Visibility.Visible
                     : Visibility.Collapsed;
-                if (hasOngoingSickLeave)
+                if (res.HasOngoingSickLeave)
                 {
                     txtSickLeaveProvisionalWarning.ToolTip = "Đang có đợt nghỉ ốm chưa xác định ngày kết thúc nên hệ thống tạm tính đến hôm nay. Khi cán bộ đi làm lại và nhập Ngày kết thúc, hệ thống sẽ chốt số tháng lùi chính xác.";
                 }
             }
 
-            // Tự động thêm/xoá mục "Nghỉ ốm quá hạn X ngày (Lùi Y tháng)" trong cboSalaryDelay để hiển thị lý do
+            // 3. Tự động thêm/xoá mục "Nghỉ ốm quá hạn X ngày (Lùi Y tháng)" trong cboSalaryDelay
             if (cboSalaryDelay.Items.Count > 0)
             {
                 int sickItemIndex = -1;
@@ -3160,9 +3034,9 @@ namespace TaxPersonnelManagement.Views
                     }
                 }
 
-                if (sickDelayMonths > 0)
+                if (res.SickDelayMonths > 0)
                 {
-                    string sickLabel = $"Nghỉ ốm quá hạn {(int)Math.Round(sickExcessDays)} ngày (Lùi {sickDelayMonths} tháng)";
+                    string sickLabel = $"Nghỉ ốm quá hạn {(int)Math.Round(res.SickExcessDays)} ngày (Lùi {res.SickDelayMonths} tháng)";
                     bool wasRefreshing2 = _isRefreshing;
                     _isRefreshing = true;
                     try
@@ -3170,7 +3044,6 @@ namespace TaxPersonnelManagement.Views
                         int newSickIndex;
                         if (sickItemIndex == -1)
                         {
-                            // Thêm mới vào cuối danh sách
                             cboSalaryDelay.Items.Insert(cboSalaryDelay.Items.Count, sickLabel);
                             newSickIndex = cboSalaryDelay.Items.Count - 1;
                         }
@@ -3201,20 +3074,16 @@ namespace TaxPersonnelManagement.Views
                             cboSalaryDelay.SelectedIndex = newSickIndex;
                         }
 
-                        cboSalaryDelay.ToolTip = $"Theo TT 03/2021/TT-BNV: Tổng nghỉ ốm {(int)Math.Round(totalSickDaysInPeriod)} ngày - 180 ngày BHXH = {(int)Math.Round(sickExcessDays)} ngày vượt hạn => Quy đổi lùi {sickDelayMonths} tháng.";
+                        cboSalaryDelay.ToolTip = $"Theo TT 03/2021/TT-BNV: Tổng nghỉ ốm {(int)Math.Round(res.TotalSickDaysInPeriod)} ngày - 180 ngày BHXH = {(int)Math.Round(res.SickExcessDays)} ngày vượt hạn => Quy đổi lùi {res.SickDelayMonths} tháng.";
                     }
                     finally { _isRefreshing = wasRefreshing2; }
-
-                    // Tự động lùi: cộng số THÁNG quy đổi theo TT 03/2021/TT-BNV vào expectedDate
-                    expectedDate = expectedDate.AddMonths(sickDelayMonths);
                 }
                 else if (sickItemIndex != -1)
                 {
-                    // Không còn vượt hạn hoặc ngày dư < 11 ngày (không tính lùi) → xoá mục khỏi dropdown
                     bool wasRefreshing2 = _isRefreshing;
                     _isRefreshing = true;
-                    try 
-                    { 
+                    try
+                    {
                         cboSalaryDelay.Items.RemoveAt(sickItemIndex);
                         cboSalaryDelay.ToolTip = null;
                     }
@@ -3222,17 +3091,10 @@ namespace TaxPersonnelManagement.Views
                 }
             }
 
-            // 4. Tự động tính lùi thời hạn do nghỉ không lương
-            // Theo Điều 2 TT 03/2021/TT-BNV: quy đổi ngày lẻ thành tháng (cứ 30 ngày = 1 tháng, >= 11 ngày làm tròn 1 tháng)
-            if (delayReason != "-- Không lùi --" && unpaidDelayMonths > 0)
+            // 4. Cập nhật kết quả ngày dự kiến lên lương
+            if (dpExpectedSalaryIncrease.SelectedDate != res.ExpectedDate)
             {
-                expectedDate = expectedDate.AddMonths(unpaidDelayMonths);
-            }
-
-            // Cập nhật kết quả ngày dự kiến lên lương
-            if (dpExpectedSalaryIncrease.SelectedDate != expectedDate)
-            {
-                dpExpectedSalaryIncrease.SelectedDate = expectedDate;
+                dpExpectedSalaryIncrease.SelectedDate = res.ExpectedDate;
             }
         }
 

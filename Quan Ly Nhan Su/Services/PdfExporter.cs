@@ -238,59 +238,11 @@ namespace TaxPersonnelManagement.Services
 
         static void ComposeSalary(ColumnDescriptor column, Personnel p)
         {
-            // 1. Calculate Salary Dates matching UI logic
-            DateTime? nextCalcDate = p.NextSalaryStepDate;
-
-            // If p.NextSalaryStepDate is null, try to get it from the latest SalaryRecord
-            if (!nextCalcDate.HasValue && p.SalaryRecords != null && p.SalaryRecords.Count > 0)
-            {
-                nextCalcDate = p.SalaryRecords.OrderByDescending(s => s.StartDate).FirstOrDefault()?.SalaryCalculationDate;
-            }
-
-            DateTime? expectedDate = null;
-            if (nextCalcDate.HasValue)
-            {
-                DateTime baseDate = nextCalcDate.Value;
-                int periodYears = 3;
-
-                // Check Exceed Frame
-                if (p.ExceedFramePercent > 0)
-                {
-                    periodYears = 1;
-                }
-                else
-                {
-                    // Check Rank Code
-                    string rc = p.RankCode?.Trim() ?? "";
-                    if (rc == "06.039-1" || rc == "01.011" || rc == "01.009")
-                    {
-                        periodYears = 2;
-                    }
-                }
-
-                DateTime calcDate = baseDate.AddYears(periodYears);
-
-                // Delay from Disciplinary Action
-                string delayType = p.SalaryIncreaseDelayType ?? "";
-                if (delayType.Contains("3 tháng")) calcDate = calcDate.AddMonths(3);
-                else if (delayType.Contains("6 tháng")) calcDate = calcDate.AddMonths(6);
-                else if (delayType.Contains("12 tháng")) calcDate = calcDate.AddMonths(12);
-
-                // Delay from Unpaid Leave
-                if (delayType != "-- Không lùi --" && p.LeaveHistories != null)
-                {
-                    double unpaidDays = p.LeaveHistories
-                        .Where(h => h.LeaveType == "Không lương")
-                        .Sum(h => h.DurationDays);
-
-                    if (unpaidDays > 0)
-                    {
-                        calcDate = calcDate.AddDays(unpaidDays);
-                    }
-                }
-
-                expectedDate = calcDate;
-            }
+            // Calculate Salary Dates matching UI and Thông tư 03/2021/TT-BNV logic
+            var salResult = SalaryHelper.CalculateSalaryIncrease(p);
+            DateTime? nextCalcDate = salResult.BaseDate;
+            DateTime? expectedDate = salResult.ExpectedDate;
+            string delayDisplay = salResult.DelayType;
 
             column.Item().PaddingTop(5).Background("#FAFAFA").CornerRadius(5).Padding(15).Row(row =>
             {
@@ -319,7 +271,7 @@ namespace TaxPersonnelManagement.Services
             column.Item().PaddingTop(5).Row(row =>
             {
                 row.RelativeItem().Column(c => LabelValue(c, "Mốc lương:", FormatDate(nextCalcDate)));
-                row.RelativeItem().Column(c => LabelValueRed(c, "Lùi thời gian nâng lương:", p.SalaryIncreaseDelayType));
+                row.RelativeItem().Column(c => LabelValueRed(c, "Lùi thời gian nâng lương:", delayDisplay));
                 row.RelativeItem().Column(c => LabelValue(c, "Dự kiến lên lương:", FormatDate(expectedDate)));
             });
 

@@ -1,3 +1,10 @@
+## v1.6.3.2 — 2026-09-13
+- [Nghiệp vụ & Đồng bộ Dữ liệu] Đồng bộ nhất quán 100% Thời gian lùi nâng lương và Ngày dự kiến lên lương:
+    + Khắc phục triệt để tình trạng lệch dữ liệu giữa Màn hình Xem hồ sơ (`PersonnelProfileDialog`), Màn hình Sửa nhân sự (`PersonnelDetailView`) và Bản Xuất file PDF (`PdfExporter`).
+    + Tái cấu trúc bộ máy tính toán tập trung (`SalaryHelper`): Thống nhất một đầu mối xử lý duy nhất cho toàn bộ hệ thống về chu kỳ nâng ngạch, lùi do kỷ luật, lùi do nghỉ ốm quá hạn 180 ngày và lùi do nghỉ không lương chuẩn theo Điều 2 Thông tư 03/2021/TT-BNV.
+    + Tự động quét và chuẩn hóa dữ liệu cũ khi khởi động app: Tự động phát hiện và chuyển đổi các bản ghi lưu chuỗi cũ dạng `Nghỉ ốm quá hạn (80 ngày)` hoặc các đợt nghỉ ốm đang tích lũy sang định dạng chuẩn mới `Nghỉ ốm quá hạn X ngày (Lùi Y tháng)` cùng ngày dự kiến chính xác, cập nhật đồng bộ cho cả Danh sách lương (`SalaryListView`) và Cảnh báo nâng lương trên trang chủ.
+    + Phản hồi tức thì khi chỉnh sửa nghỉ phép: Tự động cập nhật lại ngày dự kiến lên lương và lý do lùi lương ngay khi người dùng thêm mới hoặc xóa đợt nghỉ phép ở Tab 5.
+
 ## v1.6.3.1 — 2026-09-13
 - [Sửa lỗi Giao diện] Khắc phục triệt để lỗi tràn chữ và đè chữ trong popup Xem chi tiết hồ sơ (`PersonnelProfileDialog`):
     + Mở rộng không gian hiển thị cột "Lùi thời gian nâng lương", bổ sung tự động ngắt dòng (`TextWrapping="Wrap"`), chấm dứt hoàn toàn tình trạng chữ đè lên cột "Dự kiến lên lương".

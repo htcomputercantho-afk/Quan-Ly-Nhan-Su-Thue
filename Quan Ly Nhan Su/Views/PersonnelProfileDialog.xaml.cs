@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using TaxPersonnelManagement.Helpers;
 using TaxPersonnelManagement.Models;
 
 namespace TaxPersonnelManagement.Views
@@ -13,9 +14,19 @@ namespace TaxPersonnelManagement.Views
         public PersonnelProfileDialog(Personnel personnel)
         {
             InitializeComponent();
+
+            // Tự động tính toán lại và đồng bộ lùi thời gian nâng lương, ngày dự kiến nâng lương
+            if (personnel != null)
+            {
+                SalaryHelper.SyncSalaryIncreaseForPersonnel(personnel);
+            }
+
             this.DataContext = personnel;
 
-            CalculateStatistics(personnel);
+            if (personnel != null)
+            {
+                CalculateStatistics(personnel);
+            }
         }
 
         private void CalculateStatistics(Personnel p)
