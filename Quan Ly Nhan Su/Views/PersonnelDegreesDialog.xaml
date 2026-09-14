@@ -415,13 +415,13 @@
                     <RadioButton x:Name="rbTabAll" Content="📑 Tất cả văn bằng" GroupName="DegreeTypeTabs" 
                                  Style="{StaticResource SegmentedTabRadioButton}" 
                                  Checked="TabFilter_Checked" IsChecked="True"/>
+                    <RadioButton x:Name="rbTabMajor" Content="🎓 Trình độ chuyên môn" GroupName="DegreeTypeTabs" 
+                                 Style="{StaticResource SegmentedTabRadioButton}" 
+                                 Checked="TabFilter_Checked"/>
                     <RadioButton x:Name="rbTabIT" Content="💻 Tin học" GroupName="DegreeTypeTabs" 
                                  Style="{StaticResource SegmentedTabRadioButton}" 
                                  Checked="TabFilter_Checked"/>
                     <RadioButton x:Name="rbTabLang" Content="🌐 Ngoại ngữ" GroupName="DegreeTypeTabs" 
-                                 Style="{StaticResource SegmentedTabRadioButton}" 
-                                 Checked="TabFilter_Checked"/>
-                    <RadioButton x:Name="rbTabMajor" Content="🎓 Trình độ chuyên môn" GroupName="DegreeTypeTabs" 
                                  Style="{StaticResource SegmentedTabRadioButton}" 
                                  Checked="TabFilter_Checked"/>
                     <RadioButton x:Name="rbTabState" Content="🏛️ QL Nhà nước" GroupName="DegreeTypeTabs" 
@@ -490,9 +490,9 @@
                                     <TextBlock Text="Loại bằng *" FontSize="12" Foreground="#475569" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <ComboBox x:Name="cboDegreeType" SelectionChanged="cboDegreeType_SelectionChanged" Style="{StaticResource ModernSelectComboBox}">
-                                    <ComboBoxItem Content="Tin học" IsSelected="True"/>
+                                    <ComboBoxItem Content="Chuyên môn" IsSelected="True"/>
+                                    <ComboBoxItem Content="Tin học"/>
                                     <ComboBoxItem Content="Ngoại ngữ"/>
-                                    <ComboBoxItem Content="Chuyên môn"/>
                                     <ComboBoxItem Content="Quản lý Nhà nước"/>
                                     <ComboBoxItem Content="Lý luận chính trị"/>
                                     <ComboBoxItem Content="Chứng chỉ khác"/>
@@ -580,7 +580,7 @@
             <Border Grid.Row="4" Margin="20,4,20,8" Background="White" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" ClipToBounds="True">
                 <DataGrid x:Name="dgDegrees" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                           IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                          HorizontalGridLinesBrush="#E2E8F0" Background="White" RowHeight="44"
+                          HorizontalGridLinesBrush="#E2E8F0" Background="White" MinRowHeight="44"
                           RowBackground="White" AlternatingRowBackground="#F8FAFC"
                           SelectionMode="Single" SelectionUnit="FullRow"
                           ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto"
@@ -660,7 +660,7 @@
                         </DataGridTextColumn>
 
                         <!-- Loại bằng (Pill màu phong cách hiện đại với icon riêng cho từng danh mục) -->
-                        <DataGridTemplateColumn Header="Loại bằng" Width="145">
+                        <DataGridTemplateColumn Header="Loại bằng" Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding CategoryBgBrush}" BorderBrush="{Binding CategoryBorderBrush}" 
@@ -674,14 +674,13 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Tên bằng / Chứng chỉ (Căn giữa cân đối, badge ⭐ Bằng chính cùng hàng) -->
-                        <DataGridTemplateColumn Header="Tên bằng / Chứng chỉ" Width="260">
+                        <!-- Tên bằng / Chứng chỉ (Căn lề trái, tự động xuống dòng khi dài, badge ⭐ Bằng chính) -->
+                        <DataGridTemplateColumn Header="Tên bằng / Chứng chỉ" Width="1.5*" MinWidth="220">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding DegreeName}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                    <DockPanel LastChildFill="True" VerticalAlignment="Center" Margin="10,6,8,6">
                                         <!-- Badge ⭐ Bằng chính -->
-                                        <Border Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" 
+                                        <Border DockPanel.Dock="Right" Background="#FEF3C7" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10" 
                                                 Padding="6,1.5" Margin="8,0,0,0" VerticalAlignment="Center"
                                                 Visibility="{Binding IsPrimary, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -689,28 +688,32 @@
                                                 <TextBlock Text="Bằng chính" FontSize="10.5" FontWeight="Bold" Foreground="#92400E" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Border>
-                                    </StackPanel>
+                                        <TextBlock Text="{Binding DegreeName}" FontSize="13" FontWeight="Bold" Foreground="#0F172A" 
+                                                   VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"
+                                                   TextWrapping="Wrap" ToolTip="{Binding DegreeName}"/>
+                                    </DockPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Chuyên ngành (Căn giữa) -->
-                        <DataGridTemplateColumn Header="Chuyên ngành" Width="140">
+                        <!-- Chuyên ngành (Căn lề trái, tự động xuống dòng khi dài) -->
+                        <DataGridTemplateColumn Header="Chuyên ngành" Width="130" MinWidth="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayMajor}" Foreground="{Binding MajorForeground}"
-                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"
+                                               TextWrapping="Wrap" Margin="10,6,8,6" ToolTip="{Binding DisplayMajor}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!-- Cơ sở đào tạo / Nơi cấp (Căn giữa) -->
-                        <DataGridTemplateColumn Header="Nơi đào tạo / Cấp" Width="*" MinWidth="180">
+                        <!-- Cơ sở đào tạo / Nơi cấp (Căn lề trái, tự động xuống dòng khi dài) -->
+                        <DataGridTemplateColumn Header="Nơi đào tạo / Cấp" Width="1.5*" MinWidth="200">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayInstitution}" Foreground="{Binding InstitutionForeground}"
-                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"
-                                               TextTrimming="CharacterEllipsis"/>
+                                               FontSize="12.5" VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left"
+                                               TextWrapping="Wrap" Margin="10,6,8,6" ToolTip="{Binding DisplayInstitution}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

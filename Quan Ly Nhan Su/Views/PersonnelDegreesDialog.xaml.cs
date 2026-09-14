@@ -97,6 +97,20 @@ namespace TaxPersonnelManagement.Views
                 if (!_personnel.PersonnelDegrees.Any())
                 {
                     int tempId = -1;
+
+                    if (!string.IsNullOrWhiteSpace(_personnel.EducationLevel))
+                    {
+                        _personnel.PersonnelDegrees.Add(new PersonnelDegree
+                        {
+                            Id = tempId--,
+                            DegreeType = "Chuyên môn",
+                            DegreeName = _personnel.EducationLevel.Trim(),
+                            Major = _personnel.Major,
+                            Institution = _personnel.University,
+                            IsPrimary = true
+                        });
+                    }
+
                     if (!string.IsNullOrWhiteSpace(_personnel.ITSkillLevel))
                     {
                         _personnel.PersonnelDegrees.Add(new PersonnelDegree
@@ -115,19 +129,6 @@ namespace TaxPersonnelManagement.Views
                             Id = tempId--,
                             DegreeType = "Ngoại ngữ",
                             DegreeName = _personnel.LanguageSkillLevel.Trim(),
-                            IsPrimary = true
-                        });
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_personnel.EducationLevel))
-                    {
-                        _personnel.PersonnelDegrees.Add(new PersonnelDegree
-                        {
-                            Id = tempId--,
-                            DegreeType = "Chuyên môn",
-                            DegreeName = _personnel.EducationLevel.Trim(),
-                            Major = _personnel.Major,
-                            Institution = _personnel.University,
                             IsPrimary = true
                         });
                     }
@@ -165,6 +166,19 @@ namespace TaxPersonnelManagement.Views
                 {
                     var seeded = new List<PersonnelDegree>();
 
+                    if (!string.IsNullOrWhiteSpace(_personnel.EducationLevel))
+                    {
+                        seeded.Add(new PersonnelDegree
+                        {
+                            PersonnelId = _personnel.Id,
+                            DegreeType = "Chuyên môn",
+                            DegreeName = _personnel.EducationLevel.Trim(),
+                            Major = _personnel.Major,
+                            Institution = _personnel.University,
+                            IsPrimary = true
+                        });
+                    }
+
                     if (!string.IsNullOrWhiteSpace(_personnel.ITSkillLevel))
                     {
                         seeded.Add(new PersonnelDegree
@@ -183,19 +197,6 @@ namespace TaxPersonnelManagement.Views
                             PersonnelId = _personnel.Id,
                             DegreeType = "Ngoại ngữ",
                             DegreeName = _personnel.LanguageSkillLevel.Trim(),
-                            IsPrimary = true
-                        });
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(_personnel.EducationLevel))
-                    {
-                        seeded.Add(new PersonnelDegree
-                        {
-                            PersonnelId = _personnel.Id,
-                            DegreeType = "Chuyên môn",
-                            DegreeName = _personnel.EducationLevel.Trim(),
-                            Major = _personnel.Major,
-                            Institution = _personnel.University,
                             IsPrimary = true
                         });
                     }
@@ -236,28 +237,156 @@ namespace TaxPersonnelManagement.Views
         }
 
         /// <summary>
+        /// Thứ tự ưu tiên hiển thị theo nhóm Loại bằng:
+        /// 1. Chuyên môn -> 2. Tin học -> 3. Ngoại ngữ -> 4. Quản lý Nhà nước -> 5. Lý luận chính trị -> 6. Chứng chỉ khác.
+        /// </summary>
+        private static int GetCategoryRank(string? degreeType)
+        {
+            if (string.IsNullOrWhiteSpace(degreeType)) return 99;
+            string type = degreeType.Trim().ToLowerInvariant();
+
+            if (type.Contains("chuyên môn")) return 1;
+            if (type.Contains("tin học")) return 2;
+            if (type.Contains("ngoại ngữ")) return 3;
+            if (type.Contains("quản lý nhà nước") || type.Contains("ql nhà nước") || type.Contains("qlnn")) return 4;
+            if (type.Contains("lý luận chính trị") || type.Contains("llct")) return 5;
+            if (type.Contains("chứng chỉ khác") || type.Contains("khác")) return 6;
+
+            return 7;
+        }
+
+        /// <summary>
+        /// Phân cấp trình độ chuyên môn từ cao xuống thấp:
+        /// 1. Tiến sĩ (Tiến sĩ, Tiến sỹ, TS, TSKH, PhD...)
+        /// 2. Thạc sĩ (Thạc sĩ, Thạc sỹ, ThS, Master, Cao học...)
+        /// 3. Đại học (Đại học, ĐH, Cử nhân, Kỹ sư, Bác sĩ, Dược sĩ, Kiến trúc sư...)
+        /// 4. Cao đẳng (Cao đẳng, CĐ...)
+        /// 5. Trung cấp (Trung cấp, TC, Trung học chuyên nghiệp...)
+        /// 6. Sơ cấp (Sơ cấp, Chứng chỉ nghề, Đào tạo nghề...)
+        /// 7. Khác
+        /// </summary>
+        private static int GetEducationLevelRank(string? degreeName)
+        {
+            if (string.IsNullOrWhiteSpace(degreeName)) return 99;
+            string name = degreeName.Trim().ToLowerInvariant();
+
+            // 1. Tiến sĩ
+            if (name.Contains("tiến sĩ") || name.Contains("tiến sỹ") || name.Contains("tien si") || name.Contains("tien sy") ||
+                name.Contains("tskh") || name == "ts" || name.StartsWith("ts.") || name.StartsWith("ts ") || name.EndsWith(" ts") ||
+                name.Contains("phd") || name.Contains("doctor"))
+            {
+                return 1;
+            }
+
+            // 2. Thạc sĩ
+            if (name.Contains("thạc sĩ") || name.Contains("thạc sỹ") || name.Contains("thac si") || name.Contains("thac sy") ||
+                name.Contains("cao học") || name.Contains("cao hoc") || name == "ths" || name.StartsWith("ths.") ||
+                name.StartsWith("ths ") || name.EndsWith(" ths") || name.Contains("master"))
+            {
+                return 2;
+            }
+
+            // 3. Đại học / Cử nhân / Kỹ sư
+            if (name.Contains("đại học") || name.Contains("dai hoc") || name.Contains("cử nhân") || name.Contains("cu nhan") ||
+                name.Contains("kỹ sư") || name.Contains("ky su") || name.Contains("bác sĩ") || name.Contains("bác sỹ") ||
+                name.Contains("dược sĩ") || name.Contains("dược sỹ") || name.Contains("kiến trúc sư") ||
+                name == "đh" || name.StartsWith("đh ") || name.StartsWith("đh-") || name.StartsWith("đh.") || name.EndsWith(" đh"))
+            {
+                return 3;
+            }
+
+            // 4. Cao đẳng
+            if (name.Contains("cao đẳng") || name.Contains("cao dang") ||
+                name == "cđ" || name.StartsWith("cđ ") || name.StartsWith("cđ-") || name.StartsWith("cđ.") || name.EndsWith(" cđ"))
+            {
+                return 4;
+            }
+
+            // 5. Trung cấp
+            if (name.Contains("trung cấp") || name.Contains("trung cap") || name.Contains("trung học chuyên nghiệp") ||
+                name == "tc" || name.StartsWith("tc ") || name.StartsWith("tc-") || name.StartsWith("tc.") || name.EndsWith(" tc"))
+            {
+                return 5;
+            }
+
+            // 6. Sơ cấp
+            if (name.Contains("sơ cấp") || name.Contains("so cap") || name.Contains("chứng chỉ nghề") || name.Contains("đào tạo nghề"))
+            {
+                return 6;
+            }
+
+            return 7;
+        }
+
+        /// <summary>
+        /// Trích xuất năm cấp / tốt nghiệp từ GraduationYear hoặc IssueDate.
+        /// </summary>
+        private static int ParseGraduationYear(string? yearStr, DateTime? issueDate = null)
+        {
+            if (!string.IsNullOrWhiteSpace(yearStr))
+            {
+                string s = yearStr.Trim();
+                if (int.TryParse(s, out int exactYear) && exactYear >= 1900 && exactYear <= 2100)
+                {
+                    return exactYear;
+                }
+
+                var match = System.Text.RegularExpressions.Regex.Match(s, @"\b(19\d\d|20\d\d)\b");
+                if (match.Success && int.TryParse(match.Value, out int regexYear))
+                {
+                    return regexYear;
+                }
+            }
+
+            if (issueDate.HasValue && issueDate.Value.Year >= 1900 && issueDate.Value.Year <= 2100)
+            {
+                return issueDate.Value.Year;
+            }
+
+            return 0;
+        }
+
+        private static bool IsMajorCategory(string? degreeType)
+        {
+            if (string.IsNullOrWhiteSpace(degreeType)) return false;
+            return degreeType.Trim().ToLowerInvariant().Contains("chuyên môn");
+        }
+
+        /// <summary>
+        /// Sắp xếp danh sách văn bằng theo đúng quy tắc:
+        /// 1. Nhóm Loại bằng: Chuyên môn -> Tin học -> Ngoại ngữ -> QL Nhà nước -> Lý luận chính trị -> Chứng chỉ khác.
+        /// 2. Trong chuyên môn: Sắp xếp theo trình độ từ cao xuống thấp (Tiến sĩ -> Thạc sĩ -> Đại học -> Cao đẳng -> Trung cấp -> Sơ cấp).
+        ///    Nếu cùng trình độ: Năm cấp gần nhất trước.
+        /// 3. Các loại bằng còn lại (Tin học, Ngoại ngữ, QLNN, LLCT, Chứng chỉ khác): Sắp xếp theo Năm cấp gần nhất trước.
+        /// </summary>
+        private static IEnumerable<PersonnelDegree> SortDegrees(IEnumerable<PersonnelDegree> degrees)
+        {
+            return degrees
+                .OrderBy(d => GetCategoryRank(d.DegreeType))
+                .ThenBy(d => IsMajorCategory(d.DegreeType) ? GetEducationLevelRank(d.DegreeName) : 0)
+                .ThenByDescending(d => ParseGraduationYear(d.GraduationYear, d.IssueDate))
+                .ThenByDescending(d => d.IsPrimary)
+                .ThenBy(d => d.Id);
+        }
+
+        /// <summary>
         /// Tải toàn bộ danh sách văn bằng từ CSDL hoặc bộ nhớ và làm mới bảng hiển thị.
         /// </summary>
         private void LoadDegrees()
         {
             if (_personnel.Id <= 0)
             {
-                _allDegrees = _personnel.PersonnelDegrees?
-                    .OrderByDescending(d => d.IsPrimary)
-                    .ThenBy(d => d.DegreeType)
-                    .ThenBy(d => d.Id)
-                    .ToList() ?? new List<PersonnelDegree>();
+                var list = _personnel.PersonnelDegrees?.ToList() ?? new List<PersonnelDegree>();
+                _allDegrees = SortDegrees(list).ToList();
             }
             else
             {
                 using var db = new AppDbContext();
-                _allDegrees = db.PersonnelDegrees
+                var list = db.PersonnelDegrees
                     .AsNoTracking()
                     .Where(d => d.PersonnelId == _personnel.Id)
-                    .OrderByDescending(d => d.IsPrimary)
-                    .ThenBy(d => d.DegreeType)
-                    .ThenBy(d => d.Id)
                     .ToList();
+                _allDegrees = SortDegrees(list).ToList();
             }
 
             ApplyFilterAndBind();
@@ -297,24 +426,25 @@ namespace TaxPersonnelManagement.Views
                                               (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType)));
             }
 
-            var viewList = filtered.Select((d, idx) => new DegreeViewModel(d, idx + 1)).ToList();
+            var sortedList = SortDegrees(filtered).ToList();
+            var viewList = sortedList.Select((d, idx) => new DegreeViewModel(d, idx + 1)).ToList();
             dgDegrees.ItemsSource = viewList;
         }
 
         private void UpdateSummary()
         {
             int total = _allDegrees.Count;
+            int majorCount = _allDegrees.Count(d => d.DegreeType == "Chuyên môn");
             int itCount = _allDegrees.Count(d => d.DegreeType == "Tin học");
             int langCount = _allDegrees.Count(d => d.DegreeType == "Ngoại ngữ");
-            int majorCount = _allDegrees.Count(d => d.DegreeType == "Chuyên môn");
             int stateCount = _allDegrees.Count(d => d.DegreeType == "Quản lý Nhà nước");
             int polCount = _allDegrees.Count(d => d.DegreeType == "Lý luận chính trị");
             int otherCount = _allDegrees.Count(d => d.DegreeType == "Chứng chỉ khác" ||
                                                    (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType)));
 
             txtDegreeSummary.Text = otherCount > 0
-                ? $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN, {polCount} LLCT, {otherCount} CC khác)"
-                : $"Tổng số: {total} văn bằng, chứng chỉ ({itCount} Tin học, {langCount} Ngoại ngữ, {majorCount} Chuyên môn, {stateCount} QLNN, {polCount} LLCT)";
+                ? $"Tổng số: {total} văn bằng, chứng chỉ ({majorCount} Chuyên môn, {itCount} Tin học, {langCount} Ngoại ngữ, {stateCount} QLNN, {polCount} LLCT, {otherCount} CC khác)"
+                : $"Tổng số: {total} văn bằng, chứng chỉ ({majorCount} Chuyên môn, {itCount} Tin học, {langCount} Ngoại ngữ, {stateCount} QLNN, {polCount} LLCT)";
         }
 
         private void TabFilter_Checked(object sender, RoutedEventArgs e)
@@ -322,12 +452,12 @@ namespace TaxPersonnelManagement.Views
             if (!IsLoaded) return;
 
             // Đồng bộ loại bằng mặc định trên form nhập liệu theo tab đang chọn
-            if (rbTabIT.IsChecked == true)
+            if (rbTabMajor.IsChecked == true)
+                SelectComboBoxItemByText(cboDegreeType, "Chuyên môn");
+            else if (rbTabIT.IsChecked == true)
                 SelectComboBoxItemByText(cboDegreeType, "Tin học");
             else if (rbTabLang.IsChecked == true)
                 SelectComboBoxItemByText(cboDegreeType, "Ngoại ngữ");
-            else if (rbTabMajor.IsChecked == true)
-                SelectComboBoxItemByText(cboDegreeType, "Chuyên môn");
             else if (rbTabState.IsChecked == true)
                 SelectComboBoxItemByText(cboDegreeType, "Quản lý Nhà nước");
             else if (rbTabPolTheory.IsChecked == true)
@@ -358,16 +488,16 @@ namespace TaxPersonnelManagement.Views
         {
             if (cboDegreeName == null || cboDegreeType == null) return;
 
-            string selectedType = (cboDegreeType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Tin học";
+            string selectedType = (cboDegreeType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Chuyên môn";
             string currentText = cboDegreeName.Text;
 
             cboDegreeName.Items.Clear();
 
             string[] suggestions = selectedType switch
             {
+                "Chuyên môn" => new[] { "Tiến sĩ", "Thạc sĩ", "Cử nhân", "Kỹ sư", "Cao đẳng", "Trung cấp", "Sơ cấp", "Đại học văn bằng 2" },
                 "Tin học" => new[] { "Bằng A", "Bằng B", "Bằng C", "Ứng dụng CNTT cơ bản", "Ứng dụng CNTT nâng cao", "IC3", "MOS", "Tin học văn phòng", "Cử nhân CNTT" },
                 "Ngoại ngữ" => new[] { "Bằng A", "Bằng B", "Bằng C", "Aptis B1", "Aptis B2", "IELTS 5.5", "IELTS 6.0", "IELTS 6.5", "IELTS 7.0", "TOEIC 500", "TOEIC 650", "TOEIC 750", "Khung 6 bậc B1", "Khung 6 bậc B2", "Tiếng Pháp B", "Tiếng Trung B" },
-                "Chuyên môn" => new[] { "Thạc sĩ", "Tiến sĩ", "Cử nhân", "Kỹ sư", "Cao đẳng", "Trung cấp", "Sơ cấp", "Đại học văn bằng 2" },
                 "Quản lý Nhà nước" => new[] { "Chuyên viên", "Chuyên viên chính", "Chuyên viên cao cấp", "Lãnh đạo cấp phòng", "Bồi dưỡng ngạch kiểm soát viên" },
                 "Lý luận chính trị" => new[] { "Sơ cấp", "Trung cấp", "Cao cấp", "Cử nhân chính trị" },
                 _ => new[] { "Chứng chỉ đào tạo nghề", "Chứng chỉ bồi dưỡng kỹ năng", "Bằng khen / Giấy chứng nhận" }
@@ -386,7 +516,7 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         private void btnSaveDegree_Click(object sender, RoutedEventArgs e)
         {
-            string type = (cboDegreeType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Tin học";
+            string type = (cboDegreeType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Chuyên môn";
             string name = cboDegreeName.Text?.Trim() ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(name))

@@ -333,11 +333,12 @@ namespace TaxPersonnelManagement.Services
             return (degreeType ?? "").Trim() switch
             {
                 "Chuyên môn" => 1,
-                "Lý luận chính trị" => 2,
-                "Quản lý Nhà nước" => 3,
-                "Ngoại ngữ" => 4,
-                "Tin học" => 5,
-                _ => 6
+                "Tin học" => 2,
+                "Ngoại ngữ" => 3,
+                "Quản lý Nhà nước" => 4,
+                "Lý luận chính trị" => 5,
+                "Chứng chỉ khác" => 6,
+                _ => 7
             };
         }
 

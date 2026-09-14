@@ -1,3 +1,15 @@
+## v1.6.3.3 — 2026-09-14
+- [Sắp xếp & Phân cấp Văn bằng] Chuẩn hóa Thứ tự Hiển thị Danh sách Văn bằng & Chứng chỉ (`PersonnelDegreesDialog`):
+    + Sắp xếp thứ tự ưu tiên nhóm Loại bằng chuẩn mực: **Chuyên môn -> Tin học -> Ngoại ngữ -> Quản lý Nhà nước -> Lý luận chính trị -> Chứng chỉ khác**.
+    + Phân cấp chuyên môn từ cao xuống thấp: Trong nhóm Chuyên môn, các văn bằng được xếp chính xác theo thứ tự học vị từ cao đến thấp: **Tiến sĩ -> Thạc sĩ -> Đại học / Cử nhân / Kỹ sư -> Cao đẳng -> Trung cấp -> Sơ cấp**.
+    + Sắp xếp theo Năm cấp gần nhất: Đối với các văn bằng cùng học vị chuyên môn hoặc thuộc các nhóm loại bằng còn lại (Tin học, Ngoại ngữ, QL Nhà nước, LLCT, Chứng chỉ khác), hệ thống tự động ưu tiên bằng cấp/chứng chỉ có **Năm tốt nghiệp / cấp bằng gần nhất** lên trên đầu.
+    + Đồng bộ thứ tự thanh điều hướng và chọn loại bằng: Sắp xếp lại thứ tự các Tab danh mục và danh sách ComboBox Loại bằng nhất quán với thứ tự hiển thị; cập nhật dòng tổng kết số lượng thống kê theo đúng thứ tự phân nhóm.
+- [Giao diện & Trải nghiệm] Cải tiến hiển thị Danh sách Văn bằng & Chứng chỉ (`PersonnelDegreesDialog`):
+    + Căn lề trái toàn bộ nội dung văn bản ở các cột: "Tên bằng / Chứng chỉ", "Chuyên ngành", "Nơi đào tạo / Cấp", tạo sự ngay ngắn, dễ theo dõi và thẩm mỹ hơn so với căn giữa.
+    + Tự động xuống dòng khi nội dung quá dài: Bật tính năng `TextWrapping="Wrap"` và thay đổi chiều cao dòng linh hoạt (`MinRowHeight="44"`), chấm dứt hoàn toàn tình trạng tên chứng chỉ hay tên trường/cơ sở đào tạo dài bị cắt cụt chữ hoặc mất chữ.
+    + Bổ sung ToolTip hiển thị đầy đủ thông tin khi di chuột vào Tên bằng, Chuyên ngành và Nơi đào tạo.
+    + Tối ưu độ rộng cột co giãn thông minh: Tự động phân bổ không gian tối ưu cho Tên bằng và Nơi đào tạo khi người dùng phóng to/thay đổi kích thước cửa sổ.
+
 ## v1.6.3.2 — 2026-09-13
 - [Nghiệp vụ & Đồng bộ Dữ liệu] Đồng bộ nhất quán 100% Thời gian lùi nâng lương và Ngày dự kiến lên lương:
     + Khắc phục triệt để tình trạng lệch dữ liệu giữa Màn hình Xem hồ sơ (`PersonnelProfileDialog`), Màn hình Sửa nhân sự (`PersonnelDetailView`) và Bản Xuất file PDF (`PdfExporter`).
