@@ -1,3 +1,10 @@
+## v1.6.3.4 — 2026-09-15
+- [Sửa lỗi Cuộn bảng & Giao diện] Khắc phục triệt để hiện tượng thanh cuộn tự động nhảy lên đầu trong Danh sách Văn bằng (`PersonnelDegreesDialog`):
+    + Nguyên nhân gốc rễ: Khi thiết lập `MinRowHeight="44"` kết hợp tự động xuống dòng (`TextWrapping="Wrap"`), các dòng trong bảng có chiều cao biến thiên không đồng nhất. Chế độ ảo hóa mặc định `CanContentScroll="True"` của WPF tính toán sai lệch kích thước cuộn theo đơn vị phần tử (Item index), dẫn đến xung đột vòng lặp khi kéo thanh cuộn hoặc lăn chuột trên các màn hình có tỉ lệ thu phóng (125%, 150%) hoặc kích thước nhỏ.
+    + Chuyển sang cuộn mượt theo điểm ảnh (`ScrollViewer.CanContentScroll="False"`, `VirtualizingPanel.ScrollUnit="Pixel"`): Tắt chế độ ảo hóa không cần thiết cho danh sách văn bằng cán bộ (dưới 50 bản ghi), chuyển sang cơ chế cuộn theo pixel chuẩn xác 100%.
+    + Bổ sung cơ chế chặn sự kiện `RequestBringIntoView`: Ngăn chặn hoàn toàn việc các thành phần con khi nhận tiêu điểm (focus) hoặc hover tự ý kéo vị trí cuộn quay trở lại đầu danh sách.
+    + Kết quả: Lăn chuột và bấm giữ kéo thanh cuộn diễn ra mượt mà, ổn định tuyệt đối trên mọi cấu hình máy tính và độ phân giải màn hình.
+
 ## v1.6.3.3 — 2026-09-14
 - [Sắp xếp & Phân cấp Văn bằng] Chuẩn hóa Thứ tự Hiển thị Danh sách Văn bằng & Chứng chỉ (`PersonnelDegreesDialog`):
     + Sắp xếp thứ tự ưu tiên nhóm Loại bằng chuẩn mực: **Chuyên môn -> Tin học -> Ngoại ngữ -> Quản lý Nhà nước -> Lý luận chính trị -> Chứng chỉ khác**.

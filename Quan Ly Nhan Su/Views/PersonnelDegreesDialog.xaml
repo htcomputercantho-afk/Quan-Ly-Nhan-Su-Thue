@@ -583,7 +583,11 @@
                           HorizontalGridLinesBrush="#E2E8F0" Background="White" MinRowHeight="44"
                           RowBackground="White" AlternatingRowBackground="#F8FAFC"
                           SelectionMode="Single" SelectionUnit="FullRow"
-                          ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.CanContentScroll="False"
+                          VirtualizingPanel.IsVirtualizing="False"
+                          VirtualizingPanel.ScrollUnit="Pixel"
+                          RequestBringIntoView="dgDegrees_RequestBringIntoView"
+                          VerticalScrollBarVisibility="Auto"
                           SelectionChanged="dgDegrees_SelectionChanged">
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>

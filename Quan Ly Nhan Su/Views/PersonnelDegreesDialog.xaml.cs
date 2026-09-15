@@ -481,6 +481,12 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        private void dgDegrees_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
+        {
+            // Ngăn chặn các phần tử con hoặc thay đổi focus tự động kéo thanh cuộn nhảy lên đầu
+            e.Handled = true;
+        }
+
         /// <summary>
         /// Nạp các gợi ý bằng cấp/chứng chỉ tương ứng theo Loại bằng được chọn.
         /// </summary>
