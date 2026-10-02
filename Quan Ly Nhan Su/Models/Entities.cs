@@ -669,5 +669,48 @@ namespace TaxPersonnelManagement.Models
         /// <summary>Ghi chú</summary>
         public string? Note { get; set; }
     }
+
+    /// <summary>
+    /// Lưu trữ thông tin luân chuyển, điều động cán bộ.
+    /// Bao gồm cả điều động trong kế hoạch và ngoài kế hoạch.
+    /// </summary>
+    public class RotationRecord
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+
+        /// <summary>Bộ phận đang công tác (trước khi điều động)</summary>
+        public string? FromDepartment { get; set; }
+
+        /// <summary>Bộ phận dự kiến điều động đến</summary>
+        public string? ToDepartment { get; set; }
+
+        /// <summary>Loại: "Luân chuyển" hoặc "Điều động"</summary>
+        public string RotationType { get; set; } = "Điều động";
+
+        /// <summary>Phân loại kế hoạch: "Trong kế hoạch" hoặc "Ngoài kế hoạch"</summary>
+        public string PlanType { get; set; } = "Trong kế hoạch";
+
+        /// <summary>Đã thực hiện điều động/luân chuyển hay chưa</summary>
+        public bool IsCompleted { get; set; } = false;
+
+        /// <summary>Số quyết định điều động/luân chuyển</summary>
+        public string? DecisionNumber { get; set; }
+
+        /// <summary>Ngày ra quyết định điều động/luân chuyển</summary>
+        public DateTime? DecisionDate { get; set; }
+
+        /// <summary>Ngày hiệu lực (ngày bắt đầu điều động)</summary>
+        public DateTime? EffectiveDate { get; set; }
+
+        /// <summary>Ghi chú thêm</summary>
+        public string? Note { get; set; }
+    }
 }
 

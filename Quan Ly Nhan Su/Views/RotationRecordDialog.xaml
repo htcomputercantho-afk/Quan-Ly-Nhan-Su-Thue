@@ -1,0 +1,244 @@
+<Window x:Class="TaxPersonnelManagement.Views.RotationRecordDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
+        Language="vi-VN"
+        Title="Luân chuyển / Điều động"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Width="700" SizeToContent="Height"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        FontSize="14">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+            <!-- Label style -->
+            <Style x:Key="FormLabel" TargetType="TextBlock">
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Foreground" Value="#455A64"/>
+                <Setter Property="Margin" Value="0 0 0 4"/>
+            </Style>
+
+            <!-- Section header -->
+            <Style x:Key="SectionHeader" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Margin" Value="0 12 0 8"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryHueMidBrush}" Padding="20 16">
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="SwapHorizontal" Width="28" Height="28" Foreground="White"
+                                          VerticalAlignment="Center" Margin="0 0 12 0"/>
+                <StackPanel>
+                    <TextBlock x:Name="txtTitle" Text="Thêm mới Luân chuyển / Điều động"
+                               FontSize="17" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock x:Name="txtSubtitle" Text="Điền đầy đủ thông tin bên dưới"
+                               FontSize="12" Foreground="#B3FFFFFF" Margin="0 2 0 0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Form content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24 16">
+            <StackPanel>
+
+                <!-- Phần 1: Chọn cán bộ -->
+                <TextBlock Text="THÔNG TIN CÁN BỘ" Style="{StaticResource SectionHeader}"/>
+                <Border Background="#F8F9FA" CornerRadius="8" Padding="16 12" Margin="0 0 0 8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Cán bộ *" Style="{StaticResource FormLabel}"/>
+                            <TextBox x:Name="txtPersonnelName" IsReadOnly="True"
+                                     materialDesign:HintAssist.Hint="Chưa chọn cán bộ"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                     Padding="10 8" FontSize="14"/>
+                            <!-- Thông tin nhanh -->
+                            <StackPanel x:Name="pnlPersonnelInfo" Orientation="Horizontal" Margin="0 6 0 0" Visibility="Collapsed">
+                                <materialDesign:PackIcon Kind="Account" Width="16" Height="16" Foreground="Gray" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                <TextBlock x:Name="txtPersonnelDetails" FontSize="12" Foreground="#666" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" Content="Chọn cán bộ" Margin="12 0 0 0"
+                                Style="{StaticResource MaterialDesignOutlinedButton}"
+                                Padding="12 0" Height="42" VerticalAlignment="Bottom"
+                                materialDesign:ButtonAssist.CornerRadius="8"
+                                Click="BtnSelectPersonnel_Click"/>
+                    </Grid>
+                </Border>
+
+                <!-- Phần 2: Thông tin điều động -->
+                <TextBlock Text="THÔNG TIN ĐIỀU ĐỘNG / LUÂN CHUYỂN" Style="{StaticResource SectionHeader}"/>
+
+                <!-- Loại và Kế hoạch -->
+                <Grid Margin="0 0 0 12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Loại *" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="cmbRotationType"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  Padding="10 8">
+                            <ComboBoxItem Content="Điều động" IsSelected="True"/>
+                            <ComboBoxItem Content="Luân chuyển"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Kế hoạch *" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="cmbPlanType"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  Padding="10 8">
+                            <ComboBoxItem Content="Trong kế hoạch" IsSelected="True"/>
+                            <ComboBoxItem Content="Ngoài kế hoạch"/>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Bộ phận -->
+                <Grid Margin="0 0 0 12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Bộ phận đang công tác" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="cmbFromDepartment"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  IsEditable="True" Padding="10 8"
+                                  materialDesign:HintAssist.Hint="Chọn hoặc nhập bộ phận"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Bộ phận dự kiến điều động đến" Style="{StaticResource FormLabel}"/>
+                        <ComboBox x:Name="cmbToDepartment"
+                                  Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                  IsEditable="True" Padding="10 8"
+                                  materialDesign:HintAssist.Hint="Chọn hoặc nhập bộ phận"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Trạng thái thực hiện -->
+                <Border Background="#FFF8E1" CornerRadius="8" Padding="16 12" Margin="0 0 0 12">
+                    <StackPanel>
+                        <CheckBox x:Name="chkIsCompleted" Content="Đã thực hiện điều động / luân chuyển"
+                                  FontSize="14" FontWeight="SemiBold" Foreground="#E65100"
+                                  Checked="ChkIsCompleted_Changed" Unchecked="ChkIsCompleted_Changed"/>
+
+                        <!-- Thông tin quyết định (hiện khi đã thực hiện) -->
+                        <StackPanel x:Name="pnlDecision" Margin="0 12 0 0" Visibility="Collapsed">
+                            <Grid Margin="0 0 0 12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Số quyết định" Style="{StaticResource FormLabel}"/>
+                                    <TextBox x:Name="txtDecisionNumber"
+                                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                                             materialDesign:HintAssist.Hint="VD: 123/QĐ-CCT"
+                                             Padding="10 8"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Ngày ra quyết định" Style="{StaticResource FormLabel}"/>
+                                    <DatePicker x:Name="dpDecisionDate"
+                                                Style="{DynamicResource MaterialDesignOutlinedDatePicker}"
+                                                Padding="10 8"
+                                                materialDesign:HintAssist.Hint="dd/MM/yyyy"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel>
+                                <TextBlock Text="Ngày hiệu lực (ngày bắt đầu điều động)" Style="{StaticResource FormLabel}"/>
+                                <DatePicker x:Name="dpEffectiveDate"
+                                            Style="{DynamicResource MaterialDesignOutlinedDatePicker}"
+                                            Padding="10 8"
+                                            materialDesign:HintAssist.Hint="dd/MM/yyyy"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Ghi chú -->
+                <TextBlock Text="Ghi chú" Style="{StaticResource FormLabel}"/>
+                <TextBox x:Name="txtNote"
+                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                         materialDesign:HintAssist.Hint="Ghi chú thêm (nếu có)..."
+                         AcceptsReturn="True" TextWrapping="Wrap"
+                         MinHeight="70" MaxHeight="120" Padding="10 8"
+                         Margin="0 0 0 16"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer buttons -->
+        <Border Grid.Row="2" Background="#F5F5F5" Padding="20 12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Nút Xóa (chỉ hiện khi edit) -->
+                <Button x:Name="btnDelete" Grid.Column="0"
+                        Content="Xóa bản ghi" Foreground="#F44336"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        BorderBrush="#F44336" Padding="16 0" Height="40"
+                        materialDesign:ButtonAssist.CornerRadius="8"
+                        Visibility="Collapsed"
+                        Click="BtnDelete_Click"/>
+
+                <Button Grid.Column="2" Content="Hủy"
+                        Style="{StaticResource MaterialDesignOutlinedButton}"
+                        Padding="20 0" Height="40"
+                        materialDesign:ButtonAssist.CornerRadius="8"
+                        Click="BtnCancel_Click"/>
+
+                <Button x:Name="btnSave" Grid.Column="4" Content="Lưu"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Background="{DynamicResource PrimaryHueMidBrush}"
+                        Foreground="White" Padding="24 0" Height="40"
+                        materialDesign:ButtonAssist.CornerRadius="8"
+                        Click="BtnSave_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

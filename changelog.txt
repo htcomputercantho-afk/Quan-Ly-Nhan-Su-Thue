@@ -1,3 +1,25 @@
+## v1.6.3.5 — 2026-10-02
+- [Tính năng mới] Phân hệ Quản lý Luân chuyển, Điều động Công chức (`RotationManagementView`):
+    + Theo dõi toàn diện danh sách công chức luân chuyển, điều động: Phân loại rạch ròi 2 danh mục "Trong kế hoạch" và "Ngoài kế hoạch" kèm badge số lượng trực quan.
+    + Bảng điều khiển KPI Dashboard: Hiển thị 5 thẻ thống kê trực quan (Tổng số lượt, Trong kế hoạch, Ngoài kế hoạch, Đã thực hiện, Chưa thực hiện), tự động cập nhật theo thời gian thực.
+    + Bộ lọc đa tiêu chí linh hoạt: Lọc theo Bộ phận (custom bo viền chevron xanh), Lọc theo Năm (2026, 2025, 2024...), Lọc theo Trạng thái (Đã thực hiện / Chưa thực hiện) và Ô tìm kiếm tức thì theo Họ tên / Số CCCD.
+    + Bảng dữ liệu hiện đại & Tối ưu hiển thị: Avatar chữ lồng đa sắc màu, tự động xuống dòng (`TextWrapping="Wrap"`) không bị mất chữ, hiển thị đầy đủ thông tin cán bộ, đơn vị chuyển đi, bộ phận đến, số quyết định và ngày quyết định.
+- [Hộp thoại & Nghiệp vụ] Nâng cấp Dialog Thêm/Sửa Luân chuyển Điều động (`RotationRecordDialog`):
+    + Tích hợp chọn nhanh công chức từ danh mục nhân sự hệ thống, tự động điền đơn vị công tác hiện tại.
+    + Phân loại hình thức: Điều động / Luân chuyển và kế hoạch Trong/Ngoài kế hoạch.
+    + Quản lý quyết định: Nhập Số quyết định, Ngày ra quyết định, Ngày có hiệu lực và ghi chú.
+    + Chuẩn hóa thông báo: Thay thế toàn bộ hộp thoại cũ bằng `WarningWindow` và `ConfirmWindow` hiện đại, thông báo rõ ràng khi thiếu thông tin bắt buộc.
+- [Xuất dữ liệu & Báo cáo] Nâng cấp Toàn diện Xuất file Excel Báo cáo Luân chuyển Điều động:
+    + Xuất đa sheet chuyên nghiệp gồm 3 trang tính:
+        * Sheet 1: `Tổng Hợp Báo Cáo` — Chứa khối Thống kê KPI tổng quan tiến độ kế hoạch, cùng 3 bảng chi tiết:
+            - Bảng I: Danh sách công chức trong kế hoạch ĐÃ HOÀN THÀNH luân chuyển, điều động (kèm Số QĐ, Ngày ra QĐ).
+            - Bảng II: Danh sách công chức trong kế hoạch CHƯA THỰC HIỆN luân chuyển, điều động (kèm thời hạn dự kiến).
+            - Bảng III: Danh sách công chức NGOÀI KẾ HOẠCH ĐÃ LUÂN CHUYỂN, ĐIỀU ĐỘNG.
+        * Sheet 2: `Trong Kế Hoạch` — Danh sách chi tiết toàn bộ cán bộ trong kế hoạch, tự động kẻ viền và tích hợp bộ lọc AutoFilter.
+        * Sheet 3: `Ngoài Kế Hoạch` — Danh sách chi tiết toàn bộ cán bộ ngoài kế hoạch, tự động kẻ viền và tích hợp bộ lọc AutoFilter.
+    + Hiệu ứng chờ xuất file hiện đại (`LoadingOverlay`): Lớp phủ mờ với vòng xoay tiến trình Excel màu xanh lá, chạy bất đồng bộ (`Task.Run`) không gây đơ ứng dụng.
+    + Cửa sổ thông báo thành công `SuccessWindow`: Tích hợp các nút thao tác nhanh "Mở tệp" để xem ngay file Excel và "Mở thư mục" chứa file tiện lợi.
+
 ## v1.6.3.4 — 2026-09-15
 - [Sửa lỗi Cuộn bảng & Giao diện] Khắc phục triệt để hiện tượng thanh cuộn tự động nhảy lên đầu trong Danh sách Văn bằng (`PersonnelDegreesDialog`):
     + Nguyên nhân gốc rễ: Khi thiết lập `MinRowHeight="44"` kết hợp tự động xuống dòng (`TextWrapping="Wrap"`), các dòng trong bảng có chiều cao biến thiên không đồng nhất. Chế độ ảo hóa mặc định `CanContentScroll="True"` của WPF tính toán sai lệch kích thước cuộn theo đơn vị phần tử (Item index), dẫn đến xung đột vòng lặp khi kéo thanh cuộn hoặc lăn chuột trên các màn hình có tỉ lệ thu phóng (125%, 150%) hoặc kích thước nhỏ.

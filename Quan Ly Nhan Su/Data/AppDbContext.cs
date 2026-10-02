@@ -30,6 +30,7 @@ namespace TaxPersonnelManagement.Data
         public DbSet<PlanningTerm> PlanningTerms { get; set; }            // Bảng lưu danh mục nhiệm kỳ quy hoạch
         public DbSet<PlanningPosition> PlanningPositions { get; set; }    // Bảng danh mục chức danh quy hoạch (tách biệt với Positions)
         public DbSet<PersonnelDegree> PersonnelDegrees { get; set; }      // Bảng lưu danh sách văn bằng, chứng chỉ của cán bộ
+        public DbSet<RotationRecord> RotationRecords { get; set; }         // Bảng lưu thông tin luân chuyển, điều động cán bộ
 
 
         /// <summary>

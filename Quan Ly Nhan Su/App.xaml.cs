@@ -450,6 +450,24 @@ namespace TaxPersonnelManagement
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
 
+                    // Manual Migration for RotationRecords (Luân chuyển, điều động)
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS RotationRecords (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            PersonnelId INTEGER NOT NULL,
+                            FromDepartment TEXT,
+                            ToDepartment TEXT,
+                            RotationType TEXT NOT NULL,
+                            PlanType TEXT NOT NULL,
+                            IsCompleted INTEGER NOT NULL DEFAULT 0,
+                            DecisionNumber TEXT,
+                            DecisionDate TEXT,
+                            EffectiveDate TEXT,
+                            Note TEXT,
+                            FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                        );");
+                    try { context.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_RotationRecords_PersonnelId ON RotationRecords (PersonnelId);"); } catch { }
+
                     // Khởi tạo các nhiệm kỳ quy hoạch mặc định nếu bảng trống
                     if (!context.PlanningTerms.Any())
                     {
