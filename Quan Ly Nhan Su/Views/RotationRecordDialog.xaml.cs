@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 
@@ -37,6 +39,7 @@ namespace TaxPersonnelManagement.Views
             {
                 // Chế độ thêm mới — đặt kế hoạch mặc định
                 SetComboByText(cmbPlanType, defaultPlanType);
+                UpdatePersonnelDisplay();
             }
         }
 
@@ -85,8 +88,8 @@ namespace TaxPersonnelManagement.Views
                 txtDecisionNumber.Text = r.DecisionNumber ?? "";
                 dpDecisionDate.SelectedDate = r.DecisionDate;
                 dpEffectiveDate.SelectedDate = r.EffectiveDate;
-                pnlDecision.Visibility = Visibility.Visible;
             }
+            ChkIsCompleted_Changed(chkIsCompleted, new RoutedEventArgs());
 
             txtNote.Text = r.Note ?? "";
         }
@@ -95,26 +98,60 @@ namespace TaxPersonnelManagement.Views
         {
             if (_selectedPersonnel == null)
             {
-                txtPersonnelName.Text = "";
-                pnlPersonnelInfo.Visibility = Visibility.Collapsed;
+                if (pnlPersonnelEmpty != null) pnlPersonnelEmpty.Visibility = Visibility.Visible;
+                if (pnlPersonnelSelected != null) pnlPersonnelSelected.Visibility = Visibility.Collapsed;
+                if (txtPersonnelName != null) txtPersonnelName.Text = "";
+                if (pnlPersonnelInfo != null) pnlPersonnelInfo.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            txtPersonnelName.Text = _selectedPersonnel.FullName;
-            txtPersonnelDetails.Text =
-                $"CCCD: {_selectedPersonnel.IdentityCardNumber ?? "---"}  |  " +
-                $"Ngày sinh: {_selectedPersonnel.DateOfBirth?.ToString("dd/MM/yyyy") ?? "---"}  |  " +
-                $"Bộ phận: {_selectedPersonnel.Department ?? "---"}";
-            pnlPersonnelInfo.Visibility = Visibility.Visible;
+            if (pnlPersonnelEmpty != null) pnlPersonnelEmpty.Visibility = Visibility.Collapsed;
+            if (pnlPersonnelSelected != null) pnlPersonnelSelected.Visibility = Visibility.Visible;
+
+            if (txtPersonnelFullName != null) txtPersonnelFullName.Text = _selectedPersonnel.FullName;
+            if (txtPersonnelAvatar != null) txtPersonnelAvatar.Text = GetInitials(_selectedPersonnel.FullName);
+            if (txtPersonnelCCCD != null)
+                txtPersonnelCCCD.Text = string.IsNullOrEmpty(_selectedPersonnel.IdentityCardNumber) ? "CCCD: ---" : $"CCCD: {_selectedPersonnel.IdentityCardNumber}";
+            if (txtPersonnelDOB != null)
+                txtPersonnelDOB.Text = _selectedPersonnel.DateOfBirth?.ToString("dd/MM/yyyy") ?? "---";
+            if (txtPersonnelDept != null)
+                txtPersonnelDept.Text = string.IsNullOrEmpty(_selectedPersonnel.Department) ? "Chưa phân bộ phận" : _selectedPersonnel.Department;
+
+            // Đồng bộ dữ liệu tương thích
+            if (txtPersonnelName != null) txtPersonnelName.Text = _selectedPersonnel.FullName;
+            if (txtPersonnelDetails != null)
+            {
+                txtPersonnelDetails.Text =
+                    $"CCCD: {_selectedPersonnel.IdentityCardNumber ?? "---"}  |  " +
+                    $"Ngày sinh: {_selectedPersonnel.DateOfBirth?.ToString("dd/MM/yyyy") ?? "---"}  |  " +
+                    $"Bộ phận: {_selectedPersonnel.Department ?? "---"}";
+            }
+            if (pnlPersonnelInfo != null) pnlPersonnelInfo.Visibility = Visibility.Visible;
 
             // Tự động điền bộ phận đang công tác vào cmbFromDepartment nếu chưa có
             if (string.IsNullOrEmpty(cmbFromDepartment.Text) && !string.IsNullOrEmpty(_selectedPersonnel.Department))
                 cmbFromDepartment.Text = _selectedPersonnel.Department;
         }
 
+        private static string GetInitials(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "NV";
+            var parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+            return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+        }
+
         // ============================================================
         // Sự kiện UI
         // ============================================================
+        private void Header_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                try { DragMove(); } catch { }
+            }
+        }
+
         private void BtnSelectPersonnel_Click(object sender, RoutedEventArgs e)
         {
             var selector = new PersonnelSelectorDialog(new System.Collections.Generic.List<int>(), isSingleSelect: true);
@@ -130,7 +167,25 @@ namespace TaxPersonnelManagement.Views
 
         private void ChkIsCompleted_Changed(object sender, RoutedEventArgs e)
         {
-            pnlDecision.Visibility = chkIsCompleted.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            bool isDone = chkIsCompleted.IsChecked == true;
+            if (pnlDecision != null)
+            {
+                pnlDecision.Visibility = isDone ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            if (pnlCompletionCard != null)
+            {
+                if (isDone)
+                {
+                    pnlCompletionCard.Background = new SolidColorBrush(Color.FromRgb(240, 253, 244)); // #F0FDF4
+                    pnlCompletionCard.BorderBrush = new SolidColorBrush(Color.FromRgb(187, 247, 208)); // #BBF7D0
+                }
+                else
+                {
+                    pnlCompletionCard.Background = new SolidColorBrush(Color.FromRgb(248, 250, 252)); // #F8FAFC
+                    pnlCompletionCard.BorderBrush = new SolidColorBrush(Color.FromRgb(226, 232, 240)); // #E2E8F0
+                }
+            }
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)

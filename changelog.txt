@@ -1,3 +1,19 @@
+## v1.6.3.6 — 2026-10-03
+- [Thiết kế lại Giao diện Popup] Nâng cấp Toàn diện Hộp thoại Luân chuyển / Điều động (`RotationRecordDialog`):
+    + Phong cách Fluent Design & Windows 11 Blue hiện đại: Bo tròn góc mềm mại (`CornerRadius="16"`), hiệu ứng bóng đổ nổi (`DropShadowEffect`) cao cấp, header chuyển sắc mượt mà (`LinearGradientBrush` `#005A9E` -> `#0078D4` -> `#0284C7`), nút đóng tròn và hỗ trợ giữ chuột di chuyển cửa sổ linh hoạt.
+    + Thẻ hồ sơ cán bộ thông minh (Personnel Profile Card):
+        * Trạng thái chưa chọn: Giao diện thẻ rỗng trực quan, có avatar tìm kiếm, lời nhắc hướng dẫn và nút bấm nổi bật `[+ Chọn cán bộ]`.
+        * Trạng thái đã chọn: Tự động chuyển thành Thẻ hồ sơ chuyên nghiệp với Avatar tròn dập nổi 2 chữ cái viết tắt tên cán bộ, Họ tên in đậm rõ ràng, cùng 3 thẻ pill thông tin gọn gàng kèm icon đại diện: CCCD, Ngày sinh và Đơn vị/Bộ phận công tác; tích hợp nút `[Đổi cán bộ]` tinh tế.
+    + Mô phỏng trực quan luồng điều động bộ phận (Transfer Flow): Đặt "Bộ phận đang công tác" và "Bộ phận dự kiến chuyển đến" vào thẻ điều hướng với biểu tượng mũi tên chuyển tiếp (`ArrowRightBold`) ở vị trí trung tâm, giúp nhận biết ngay hướng luân chuyển.
+    + Thẻ Trạng thái & Quyết định tương tác (Reactive Card): Khi tích chọn "Đã thực hiện điều động / luân chuyển", thẻ tự động chuyển màu sang gam xanh bạc hà tươi sáng (`#F0FDF4`), mở ra khung nhập Số quyết định, Ngày ra quyết định và Ngày bắt đầu hiệu lực (hỗ trợ định dạng chuẩn tiếng Việt `vi-VN`).
+    + Thanh nút bấm chân hộp thoại (Footer): Thiết kế phẳng, nút Lưu thông tin nổi bật với icon kiểm tra, nút Hủy viền thanh lịch và nút Xóa cảnh báo an toàn khi chỉnh sửa.
+- [Giao diện & Trải nghiệm] Hoàn thiện Phân hệ Quản lý Luân chuyển, Điều động (`RotationManagementView`):
+    + Căn chỉnh chuẩn xác 5 thẻ KPI Dashboard: Chuẩn hóa kích thước biểu tượng (15x15 px), phân bố bố cục dạng lưới 2 hàng cân đối, căn giữa theo trục dọc, khắc phục triệt để tình trạng lệch icon và dòng chữ.
+    + Tối ưu hiển thị bảng dữ liệu trên màn hình rộng / siêu rộng: Tự động co giãn theo tỉ lệ (`*`), nền tiêu đề (HeaderPresenter) phủ kín toàn bộ bề rộng bảng, không còn hiện tượng hở viền trắng hoặc đứt đoạn khi phóng to.
+- [Thống kê & Báo cáo] Nâng cấp Bảng Thống kê Lãnh đạo Tổ (`StatisticsView`):
+    + Tự động xuống dòng khi tên bộ phận dài (`TextWrapping="Wrap"`): Chấm dứt hoàn toàn tình trạng tên tổ/bộ phận dài bị cắt chữ hoặc che khuất trên bảng biểu.
+    + Bổ sung dòng Tổng cộng chân bảng: Tổng hợp đầy đủ số lượng Tổ trưởng, Phó tổ trưởng, Công chức/Lao động và Tổng số toàn đơn vị với gam màu nổi bật.
+
 ## v1.6.3.5 — 2026-10-02
 - [Tính năng mới] Phân hệ Quản lý Luân chuyển, Điều động Công chức (`RotationManagementView`):
     + Theo dõi toàn diện danh sách công chức luân chuyển, điều động: Phân loại rạch ròi 2 danh mục "Trong kế hoạch" và "Ngoài kế hoạch" kèm badge số lượng trực quan.

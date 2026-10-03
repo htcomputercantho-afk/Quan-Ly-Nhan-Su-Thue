@@ -280,6 +280,20 @@ namespace TaxPersonnelManagement.Views
                     // 8. Thống kê lãnh đạo tổ theo từng bộ phận
                     var teamRows = CalculateTeamLeadershipRows(list);
                     icTeamLeadership.ItemsSource = teamRows;
+                    if (teamRows.Any())
+                    {
+                        txtTeamTotalLeaders.Text = teamRows.Sum(x => x.LeaderCount).ToString("#,##0");
+                        txtTeamTotalDeputies.Text = teamRows.Sum(x => x.DeputyCount).ToString("#,##0");
+                        txtTeamTotalStaff.Text = teamRows.Sum(x => x.StaffCount).ToString("#,##0");
+                        txtTeamTotalAll.Text = teamRows.Sum(x => x.TotalCount).ToString("#,##0");
+                    }
+                    else
+                    {
+                        txtTeamTotalLeaders.Text = "0";
+                        txtTeamTotalDeputies.Text = "0";
+                        txtTeamTotalStaff.Text = "0";
+                        txtTeamTotalAll.Text = "0";
+                    }
                 }
             }
             catch (Exception ex)
