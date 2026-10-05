@@ -45,13 +45,17 @@ namespace TaxPersonnelManagement.Views
         {
             get
             {
-                var name = Personnel?.FullName?.Trim();
+                var name = System.Text.RegularExpressions.Regex.Replace(Personnel?.FullName ?? "", @"\(.*?\)", "").Trim();
                 if (string.IsNullOrEmpty(name)) return "CB";
                 var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
                 return (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpper();
             }
         }
+
+        // Ảnh đại diện
+        public string? AvatarBase64 => Personnel?.AvatarBase64;
+        public bool HasAvatar => !string.IsNullOrWhiteSpace(Personnel?.AvatarBase64);
 
         // Màu nền Avatar phong phú, hiện đại
         public string AvatarBgColor
@@ -81,6 +85,7 @@ namespace TaxPersonnelManagement.Views
         public string DisplayCCCD => string.IsNullOrWhiteSpace(Personnel?.IdentityCardNumber) ? "-" : Personnel.IdentityCardNumber;
         public string DisplayPhone => string.IsNullOrWhiteSpace(Personnel?.PhoneNumber) ? "-" : Personnel.PhoneNumber;
         public string DisplayEmail => string.IsNullOrWhiteSpace(Personnel?.Email) ? "-" : Personnel.Email;
+        public string DisplayFromDepartment => !string.IsNullOrWhiteSpace(FromDepartment) ? FromDepartment : (Personnel?.Department ?? "-");
         public string DisplayToDepartment => string.IsNullOrWhiteSpace(ToDepartment) ? "-" : ToDepartment;
         public string DisplayDecisionNumber => string.IsNullOrWhiteSpace(DecisionNumber) ? "-" : DecisionNumber;
         public string DisplayDecisionDate => DecisionDate.HasValue ? DecisionDate.Value.ToString("dd/MM/yyyy") : "-";
@@ -112,6 +117,52 @@ namespace TaxPersonnelManagement.Views
         }
 
         // ============================================================
+        // Thuật toán sắp xếp danh sách cán bộ luân chuyển/điều động:
+        // - Các bản ghi có QĐ: xếp theo Ngày ra QĐ sớm nhất & Số QĐ nhỏ nhất
+        // - Sau đó mới đến các bản ghi chưa có QĐ xếp theo Tên (A-Z) tiếng Việt
+        // ============================================================
+        private static bool HasDecision(RotationRowViewModel r)
+        {
+            return r.DecisionDate.HasValue || !string.IsNullOrWhiteSpace(r.DecisionNumber);
+        }
+
+        private static int ExtractDecisionNumber(string? decisionNumber)
+        {
+            if (string.IsNullOrWhiteSpace(decisionNumber)) return int.MaxValue;
+            var match = System.Text.RegularExpressions.Regex.Match(decisionNumber, @"\d+");
+            if (match.Success && int.TryParse(match.Value, out int num))
+                return num;
+            return int.MaxValue;
+        }
+
+        private static string GetVietnameseNameSortKey(string? fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return "";
+            var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 1) return parts[0].ToLower();
+            string firstName = parts[^1].ToLower();
+            string middleAndLast = string.Join(" ", parts.Take(parts.Length - 1)).ToLower();
+            return firstName + " " + middleAndLast;
+        }
+
+        private static IEnumerable<RotationRowViewModel> ApplySorting(IEnumerable<RotationRowViewModel> source)
+        {
+            var culture = new System.Globalization.CultureInfo("vi-VN");
+            return source
+                // 1. Bản ghi có quyết định lên trước (0), chưa có quyết định xuống sau (1)
+                .OrderBy(r => HasDecision(r) ? 0 : 1)
+                // 2. Nhóm theo năm ra QĐ (nếu có)
+                .ThenBy(r => r.DecisionDate.HasValue ? r.DecisionDate.Value.Year : (r.EffectiveDate.HasValue ? r.EffectiveDate.Value.Year : 9999))
+                // 3. Ngày ra QĐ sớm nhất lên đầu tiên
+                .ThenBy(r => r.DecisionDate ?? DateTime.MaxValue)
+                // 4. Số QĐ nhỏ nhất lên đầu tiên
+                .ThenBy(r => ExtractDecisionNumber(r.DecisionNumber))
+                .ThenBy(r => r.DecisionNumber ?? "", StringComparer.Create(culture, true))
+                // 5. Thứ tự theo họ và tên (ưu tiên Tên chính theo chuẩn tiếng Việt, ví dụ: "Nguyễn Văn Thành" -> xếp theo "Thành")
+                .ThenBy(r => GetVietnameseNameSortKey(r.Personnel?.FullName), StringComparer.Create(culture, true));
+        }
+
+        // ============================================================
         // Tải dữ liệu từ cơ sở dữ liệu
         // ============================================================
         public void LoadData()
@@ -123,23 +174,18 @@ namespace TaxPersonnelManagement.Views
                 // Tải tất cả bản ghi luân chuyển điều động, kèm thông tin cán bộ
                 var records = db.RotationRecords
                     .Include(r => r.Personnel)
-                    .OrderByDescending(r => r.DecisionDate)
                     .ToList();
 
-                records = records.OrderByDescending(r => r.DecisionDate)
-                                 .ThenBy(r => r.Personnel?.FullName ?? "")
-                                 .ToList();
-
-                // Phân chia theo kế hoạch
+                // Phân chia theo kế hoạch và sắp xếp chuẩn
                 var inPlan = records.Where(r => r.PlanType == "Trong kế hoạch").ToList();
                 var outPlan = records.Where(r => r.PlanType == "Ngoài kế hoạch").ToList();
 
-                // Gán STT
-                for (int i = 0; i < inPlan.Count; i++) inPlan[i].STT = i + 1;
-                for (int i = 0; i < outPlan.Count; i++) outPlan[i].STT = i + 1;
+                _allInPlan = ApplySorting(inPlan.Select(r => new RotationRowViewModel(r))).ToList();
+                _allOutPlan = ApplySorting(outPlan.Select(r => new RotationRowViewModel(r))).ToList();
 
-                _allInPlan = inPlan.Select(r => new RotationRowViewModel(r)).ToList();
-                _allOutPlan = outPlan.Select(r => new RotationRowViewModel(r)).ToList();
+                // Gán STT
+                for (int i = 0; i < _allInPlan.Count; i++) _allInPlan[i].STT = i + 1;
+                for (int i = 0; i < _allOutPlan.Count; i++) _allOutPlan[i].STT = i + 1;
 
                 // Tải danh sách bộ phận để lọc
                 _departments = db.Departments
@@ -150,7 +196,6 @@ namespace TaxPersonnelManagement.Views
                 LoadDepartmentFilters();
                 LoadYearFilters();
                 ApplyFilters();
-                UpdateTotalCount(records.Count);
             }
             catch (Exception ex)
             {
@@ -163,22 +208,41 @@ namespace TaxPersonnelManagement.Views
             if (cmbFilterDeptInPlan == null || cmbFilterDeptOutPlan == null) return;
             _isFilterChanging = true;
 
+            // Ghi nhớ lựa chọn hiện tại để khôi phục sau khi nạp lại dữ liệu
+            string prevDept = GetSelectedComboText(cmbFilterDeptInPlan);
+
             // Cập nhật combobox lọc bộ phận cho tab "Trong kế hoạch"
             cmbFilterDeptInPlan.Items.Clear();
-            cmbFilterDeptInPlan.Items.Add(new ComboBoxItem { Content = "Tất cả bộ phận", IsSelected = true });
+            cmbFilterDeptInPlan.Items.Add(new ComboBoxItem { Content = "Tất cả bộ phận" });
             foreach (var d in _departments)
                 cmbFilterDeptInPlan.Items.Add(new ComboBoxItem { Content = d });
 
             // Cập nhật combobox lọc bộ phận cho tab "Ngoài kế hoạch"
             cmbFilterDeptOutPlan.Items.Clear();
-            cmbFilterDeptOutPlan.Items.Add(new ComboBoxItem { Content = "Tất cả bộ phận", IsSelected = true });
+            cmbFilterDeptOutPlan.Items.Add(new ComboBoxItem { Content = "Tất cả bộ phận" });
             foreach (var d in _departments)
                 cmbFilterDeptOutPlan.Items.Add(new ComboBoxItem { Content = d });
 
-            cmbFilterDeptInPlan.SelectedIndex = 0;
-            cmbFilterDeptOutPlan.SelectedIndex = 0;
+            string target = string.IsNullOrEmpty(prevDept) ? "Tất cả bộ phận" : prevDept;
+            SelectComboItemByText(cmbFilterDeptInPlan, target);
+            SelectComboItemByText(cmbFilterDeptOutPlan, target);
 
             _isFilterChanging = false;
+        }
+
+        /// <summary>Chọn mục theo nội dung; nếu không tìm thấy thì chọn mục đầu tiên.</summary>
+        private void SelectComboItemByText(ComboBox? combo, string text)
+        {
+            if (combo == null) return;
+            for (int i = 0; i < combo.Items.Count; i++)
+            {
+                if (combo.Items[i] is ComboBoxItem item && item.Content?.ToString() == text)
+                {
+                    combo.SelectedIndex = i;
+                    return;
+                }
+            }
+            combo.SelectedIndex = 0;
         }
 
         private void LoadYearFilters()
@@ -186,7 +250,11 @@ namespace TaxPersonnelManagement.Views
             if (cmbFilterYearInPlan == null || cmbFilterYearOutPlan == null) return;
             _isFilterChanging = true;
 
-            var years = new HashSet<int> { 2026, 2025, 2024 };
+            // Ghi nhớ năm đang lọc (mặc định "Tất cả" ở lần tải đầu tiên)
+            string prevYear = GetSelectedComboText(cmbFilterYearInPlan);
+            if (string.IsNullOrEmpty(prevYear)) prevYear = "Tất cả";
+
+            var years = new HashSet<int> { 2027, 2026, 2025, 2024 };
             foreach (var r in _allInPlan.Concat(_allOutPlan))
             {
                 if (r.DecisionDate.HasValue) years.Add(r.DecisionDate.Value.Year);
@@ -204,8 +272,8 @@ namespace TaxPersonnelManagement.Views
             foreach (var y in sortedYears)
                 cmbFilterYearOutPlan.Items.Add(new ComboBoxItem { Content = y.ToString() });
 
-            SelectYearInCombo(cmbFilterYearInPlan, "2026");
-            SelectYearInCombo(cmbFilterYearOutPlan, "2026");
+            SelectYearInCombo(cmbFilterYearInPlan, prevYear);
+            SelectYearInCombo(cmbFilterYearOutPlan, prevYear);
 
             _isFilterChanging = false;
         }
@@ -242,7 +310,8 @@ namespace TaxPersonnelManagement.Views
             if (yearInPlan != "Tất cả" && int.TryParse(yearInPlan, out int yIn))
                 inPlanFiltered = inPlanFiltered.Where(r =>
                     (r.DecisionDate.HasValue && r.DecisionDate.Value.Year == yIn) ||
-                    (r.EffectiveDate.HasValue && r.EffectiveDate.Value.Year == yIn));
+                    (r.EffectiveDate.HasValue && r.EffectiveDate.Value.Year == yIn) ||
+                    (!r.DecisionDate.HasValue && !r.EffectiveDate.HasValue && yIn == DateTime.Now.Year));
 
             string statusInPlan = GetSelectedComboText(cmbFilterStatusInPlan);
             if (statusInPlan == "Đã thực hiện")
@@ -263,7 +332,7 @@ namespace TaxPersonnelManagement.Views
                     (r.DecisionNumber?.ToLower().Contains(searchInPlan) ?? false) ||
                     (r.Personnel?.PhoneNumber?.ToLower().Contains(searchInPlan) ?? false));
 
-            var inList = inPlanFiltered.ToList();
+            var inList = ApplySorting(inPlanFiltered).ToList();
             for (int i = 0; i < inList.Count; i++) inList[i].STT = i + 1;
             dgInPlan.ItemsSource = inList;
 
@@ -278,7 +347,8 @@ namespace TaxPersonnelManagement.Views
             if (yearOutPlan != "Tất cả" && int.TryParse(yearOutPlan, out int yOut))
                 outPlanFiltered = outPlanFiltered.Where(r =>
                     (r.DecisionDate.HasValue && r.DecisionDate.Value.Year == yOut) ||
-                    (r.EffectiveDate.HasValue && r.EffectiveDate.Value.Year == yOut));
+                    (r.EffectiveDate.HasValue && r.EffectiveDate.Value.Year == yOut) ||
+                    (!r.DecisionDate.HasValue && !r.EffectiveDate.HasValue && yOut == DateTime.Now.Year));
 
             string statusOutPlan = GetSelectedComboText(cmbFilterStatusOutPlan);
             if (statusOutPlan == "Đã thực hiện")
@@ -299,9 +369,12 @@ namespace TaxPersonnelManagement.Views
                     (r.DecisionNumber?.ToLower().Contains(searchOutPlan) ?? false) ||
                     (r.Personnel?.PhoneNumber?.ToLower().Contains(searchOutPlan) ?? false));
 
-            var outList = outPlanFiltered.ToList();
+            var outList = ApplySorting(outPlanFiltered).ToList();
             for (int i = 0; i < outList.Count; i++) outList[i].STT = i + 1;
             dgOutPlan.ItemsSource = outList;
+
+            // Cập nhật động 5 thẻ KPI và badge số lượng theo kết quả lọc thực tế
+            UpdateKpiCounts(inList, outList);
         }
 
         private string GetSelectedComboText(ComboBox? combo)
@@ -312,15 +385,13 @@ namespace TaxPersonnelManagement.Views
             return combo.Text ?? "";
         }
 
-        private void UpdateTotalCount(int total)
+        private void UpdateKpiCounts(List<RotationRowViewModel> inList, List<RotationRowViewModel> outList)
         {
-            if (txtTotalCount != null)
-                txtTotalCount.Text = $"Theo dõi và quản lý tổng cộng {total} lượt luân chuyển & điều động công chức";
-
-            int inPlanCount = _allInPlan.Count;
-            int outPlanCount = _allOutPlan.Count;
-            int completedCount = _allInPlan.Count(r => r.IsCompleted) + _allOutPlan.Count(r => r.IsCompleted);
-            int pendingCount = _allInPlan.Count(r => !r.IsCompleted) + _allOutPlan.Count(r => !r.IsCompleted);
+            int inPlanCount = inList.Count;
+            int outPlanCount = outList.Count;
+            int total = inPlanCount + outPlanCount;
+            int completedCount = inList.Count(r => r.IsCompleted) + outList.Count(r => r.IsCompleted);
+            int pendingCount = inList.Count(r => !r.IsCompleted) + outList.Count(r => !r.IsCompleted);
 
             double inPlanPct = total > 0 ? (double)inPlanCount / total * 100 : 0;
             double outPlanPct = total > 0 ? (double)outPlanCount / total * 100 : 0;
@@ -335,6 +406,15 @@ namespace TaxPersonnelManagement.Views
 
             if (badgeInPlan != null) badgeInPlan.Text = inPlanCount.ToString();
             if (badgeOutPlan != null) badgeOutPlan.Text = outPlanCount.ToString();
+
+            if (txtTotalCount != null)
+            {
+                int grandTotal = (_allInPlan?.Count ?? 0) + (_allOutPlan?.Count ?? 0);
+                if (total == grandTotal)
+                    txtTotalCount.Text = $"Theo dõi và quản lý tổng cộng {total} cán bộ luân chuyển, điều động";
+                else
+                    txtTotalCount.Text = $"Hiển thị {total} / {grandTotal} cán bộ luân chuyển, điều động (theo bộ lọc)";
+            }
         }
 
         // ============================================================
@@ -389,8 +469,8 @@ namespace TaxPersonnelManagement.Views
             if (cmbFilterDeptOutPlan != null) cmbFilterDeptOutPlan.SelectedIndex = 0;
             if (cmbFilterStatusInPlan != null) cmbFilterStatusInPlan.SelectedIndex = 0;
             if (cmbFilterStatusOutPlan != null) cmbFilterStatusOutPlan.SelectedIndex = 0;
-            SelectYearInCombo(cmbFilterYearInPlan, "2026");
-            SelectYearInCombo(cmbFilterYearOutPlan, "2026");
+            SelectYearInCombo(cmbFilterYearInPlan, "Tất cả");
+            SelectYearInCombo(cmbFilterYearOutPlan, "Tất cả");
             if (chkCompletedInPlan != null) chkCompletedInPlan.IsChecked = false;
             if (chkCompletedOutPlan != null) chkCompletedOutPlan.IsChecked = false;
             _isFilterChanging = false;
@@ -403,18 +483,44 @@ namespace TaxPersonnelManagement.Views
         private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!_isLoaded || _isFilterChanging) return;
+            _isFilterChanging = true;
+            if (sender == txtSearchInPlan && txtSearchOutPlan != null)
+                txtSearchOutPlan.Text = txtSearchInPlan.Text;
+            else if (sender == txtSearchOutPlan && txtSearchInPlan != null)
+                txtSearchInPlan.Text = txtSearchOutPlan.Text;
+            _isFilterChanging = false;
             ApplyFilters();
         }
 
         private void FilterChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!_isLoaded || _isFilterChanging) return;
+            _isFilterChanging = true;
+            if (sender == cmbFilterDeptInPlan && cmbFilterDeptOutPlan != null)
+                cmbFilterDeptOutPlan.SelectedIndex = cmbFilterDeptInPlan.SelectedIndex;
+            else if (sender == cmbFilterDeptOutPlan && cmbFilterDeptInPlan != null)
+                cmbFilterDeptInPlan.SelectedIndex = cmbFilterDeptOutPlan.SelectedIndex;
+            else if (sender == cmbFilterYearInPlan && cmbFilterYearOutPlan != null)
+                cmbFilterYearOutPlan.SelectedIndex = cmbFilterYearInPlan.SelectedIndex;
+            else if (sender == cmbFilterYearOutPlan && cmbFilterYearInPlan != null)
+                cmbFilterYearInPlan.SelectedIndex = cmbFilterYearOutPlan.SelectedIndex;
+            else if (sender == cmbFilterStatusInPlan && cmbFilterStatusOutPlan != null)
+                cmbFilterStatusOutPlan.SelectedIndex = cmbFilterStatusInPlan.SelectedIndex;
+            else if (sender == cmbFilterStatusOutPlan && cmbFilterStatusInPlan != null)
+                cmbFilterStatusInPlan.SelectedIndex = cmbFilterStatusOutPlan.SelectedIndex;
+            _isFilterChanging = false;
             ApplyFilters();
         }
 
         private void ChkCompleted_Changed(object sender, RoutedEventArgs e)
         {
             if (!_isLoaded || _isFilterChanging) return;
+            _isFilterChanging = true;
+            if (sender == chkCompletedInPlan && chkCompletedOutPlan != null)
+                chkCompletedOutPlan.IsChecked = chkCompletedInPlan.IsChecked;
+            else if (sender == chkCompletedOutPlan && chkCompletedInPlan != null)
+                chkCompletedInPlan.IsChecked = chkCompletedOutPlan.IsChecked;
+            _isFilterChanging = false;
             ApplyFilters();
         }
 
@@ -430,7 +536,13 @@ namespace TaxPersonnelManagement.Views
             string defaultPlanType = (sender == btnAddRotationOutPlan || tabMain?.SelectedItem == tabOutPlan)
                 ? "Ngoài kế hoạch"
                 : "Trong kế hoạch";
-            var dialog = new RotationRecordDialog(null, defaultPlanType);
+
+            int currentYear = DateTime.Now.Year;
+            string yearText = GetSelectedComboText(sender == btnAddRotationOutPlan ? cmbFilterYearOutPlan : cmbFilterYearInPlan);
+            if (int.TryParse(yearText, out int parsedYear))
+                currentYear = parsedYear;
+
+            var dialog = new RotationRecordDialog(null, defaultPlanType, currentYear);
             dialog.Owner = Window.GetWindow(this);
             if (dialog.ShowDialog() == true)
             {

@@ -83,8 +83,8 @@
             </Border>
 
             <!-- Form content -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24 16">
-                <StackPanel>
+            <ScrollViewer Grid.Row="1" VerticalAlignment="Top" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="28 18 28 18">
 
                     <!-- Phần 1: Chọn cán bộ -->
                     <StackPanel Margin="0 0 0 16">
@@ -137,16 +137,19 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <!-- Avatar Initials -->
-                                    <Border Width="48" Height="48" CornerRadius="24" Margin="0 0 14 0" VerticalAlignment="Center">
-                                        <Border.Background>
-                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                                <GradientStop Color="#0078D4" Offset="0"/>
-                                                <GradientStop Color="#0284C7" Offset="1"/>
-                                            </LinearGradientBrush>
-                                        </Border.Background>
-                                        <TextBlock x:Name="txtPersonnelAvatar" Text="NV" FontWeight="Bold" FontSize="17" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
+                                    <!-- Avatar (Ảnh đại diện hoặc Initials) -->
+                                    <Grid Width="48" Height="48" Margin="0 0 14 0" VerticalAlignment="Center">
+                                        <Border CornerRadius="24">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#0078D4" Offset="0"/>
+                                                    <GradientStop Color="#0284C7" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                            <TextBlock x:Name="txtPersonnelAvatar" Text="NV" FontWeight="Bold" FontSize="17" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <Border x:Name="imgPersonnelAvatar" CornerRadius="24" Visibility="Collapsed"/>
+                                    </Grid>
 
                                     <!-- Information Details -->
                                     <StackPanel VerticalAlignment="Center">
@@ -192,12 +195,6 @@
                                 </Button>
                             </Grid>
                         </Border>
-
-                        <!-- Hidden compatibility controls for existing code-behind references -->
-                        <TextBox x:Name="txtPersonnelName" Visibility="Collapsed"/>
-                        <StackPanel x:Name="pnlPersonnelInfo" Visibility="Collapsed">
-                            <TextBlock x:Name="txtPersonnelDetails"/>
-                        </StackPanel>
                     </StackPanel>
 
                     <!-- Phần 2: Thông tin điều động -->
@@ -211,12 +208,14 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- Loại và Kế hoạch -->
+                        <!-- Loại, Kế hoạch và Năm -->
                         <Grid Margin="0 0 0 12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="14"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="14"/>
+                                <ColumnDefinition Width="110"/>
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
@@ -246,6 +245,23 @@
                                     <ComboBoxItem Content="Ngoài kế hoạch"/>
                                 </ComboBox>
                             </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                                    <materialDesign:PackIcon Kind="CalendarClock" Width="15" Height="15" Foreground="#0078D4" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Năm *" FontWeight="SemiBold" FontSize="13" Foreground="#334155"/>
+                                </StackPanel>
+                                <ComboBox x:Name="cmbPlanYear"
+                                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                                          Padding="12 10 4 10" FontSize="14" Height="42"
+                                          materialDesign:TextFieldAssist.UnderlineBrush="#0078D4">
+                                    <ComboBoxItem Content="2028"/>
+                                    <ComboBoxItem Content="2027"/>
+                                    <ComboBoxItem Content="2026" IsSelected="True"/>
+                                    <ComboBoxItem Content="2025"/>
+                                    <ComboBoxItem Content="2024"/>
+                                </ComboBox>
+                            </StackPanel>
                         </Grid>
 
                         <!-- Bộ phận From -> To Transition Flow Card -->
@@ -265,9 +281,9 @@
                                     </StackPanel>
                                     <ComboBox x:Name="cmbFromDepartment"
                                               Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                              IsEditable="True" Padding="10 8" Height="40"
-                                              Background="White"
-                                              materialDesign:HintAssist.Hint="Chọn hoặc nhập bộ phận..."/>
+                                              IsTextSearchEnabled="True" FontSize="13.5"
+                                              Padding="10 8" Height="40"
+                                              Background="White"/>
                                 </StackPanel>
 
                                 <!-- Arrow Indicator -->
@@ -283,9 +299,9 @@
                                     </StackPanel>
                                     <ComboBox x:Name="cmbToDepartment"
                                               Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                                              IsEditable="True" Padding="10 8" Height="40"
-                                              Background="White"
-                                              materialDesign:HintAssist.Hint="Chọn hoặc nhập bộ phận..."/>
+                                              IsTextSearchEnabled="True" FontSize="13.5"
+                                              Padding="10 8" Height="40"
+                                              Background="White"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

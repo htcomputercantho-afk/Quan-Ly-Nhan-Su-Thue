@@ -20,13 +20,17 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         /// <param name="record">Bản ghi cần chỉnh sửa (null nếu thêm mới)</param>
         /// <param name="defaultPlanType">Loại kế hoạch mặc định cho bản ghi mới</param>
-        public RotationRecordDialog(RotationRecord? record, string defaultPlanType = "Trong kế hoạch")
+        /// <param name="defaultYear">Năm kế hoạch mặc định (nếu có)</param>
+        public RotationRecordDialog(RotationRecord? record, string defaultPlanType = "Trong kế hoạch", int? defaultYear = null)
         {
             InitializeComponent();
             _existingRecord = record;
             _defaultPlanType = defaultPlanType;
 
             LoadDepartments();
+
+            int initialYear = defaultYear ?? DateTime.Now.Year;
+            SetComboByText(cmbPlanYear, initialYear.ToString());
 
             if (record != null)
             {
@@ -51,15 +55,26 @@ namespace TaxPersonnelManagement.Views
             try
             {
                 using var db = new AppDbContext();
-                var depts = db.Departments.OrderBy(d => d.Name).Select(d => d.Name).ToList();
+                var depts = db.Departments
+                    .AsEnumerable()
+                    .OrderBy(d => DepartmentSorter.GetSortKey(d.Name).Order)
+                    .ThenBy(d => DepartmentSorter.GetSortKey(d.Name).Number)
+                    .ThenBy(d => DepartmentSorter.GetSortKey(d.Name).Name)
+                    .Select(d => d.Name)
+                    .ToList();
 
                 cmbFromDepartment.Items.Clear();
                 cmbToDepartment.Items.Clear();
+
+                cmbToDepartment.Items.Add("-- Chưa xác định / Tùy chọn --");
+
                 foreach (var d in depts)
                 {
                     cmbFromDepartment.Items.Add(d);
                     cmbToDepartment.Items.Add(d);
                 }
+
+                cmbToDepartment.SelectedIndex = 0;
             }
             catch { /* Bỏ qua lỗi tải bộ phận */ }
         }
@@ -79,8 +94,11 @@ namespace TaxPersonnelManagement.Views
             SetComboByText(cmbRotationType, r.RotationType);
             SetComboByText(cmbPlanType, r.PlanType);
 
-            cmbFromDepartment.Text = r.FromDepartment ?? "";
-            cmbToDepartment.Text = r.ToDepartment ?? "";
+            int recYear = r.DecisionDate?.Year ?? r.EffectiveDate?.Year ?? DateTime.Now.Year;
+            SetComboByText(cmbPlanYear, recYear.ToString());
+
+            SetComboByText(cmbFromDepartment, r.FromDepartment);
+            SetComboByText(cmbToDepartment, r.ToDepartment);
 
             chkIsCompleted.IsChecked = r.IsCompleted;
             if (r.IsCompleted)
@@ -100,8 +118,7 @@ namespace TaxPersonnelManagement.Views
             {
                 if (pnlPersonnelEmpty != null) pnlPersonnelEmpty.Visibility = Visibility.Visible;
                 if (pnlPersonnelSelected != null) pnlPersonnelSelected.Visibility = Visibility.Collapsed;
-                if (txtPersonnelName != null) txtPersonnelName.Text = "";
-                if (pnlPersonnelInfo != null) pnlPersonnelInfo.Visibility = Visibility.Collapsed;
+                if (imgPersonnelAvatar != null) imgPersonnelAvatar.Visibility = Visibility.Collapsed;
                 return;
             }
 
@@ -110,6 +127,34 @@ namespace TaxPersonnelManagement.Views
 
             if (txtPersonnelFullName != null) txtPersonnelFullName.Text = _selectedPersonnel.FullName;
             if (txtPersonnelAvatar != null) txtPersonnelAvatar.Text = GetInitials(_selectedPersonnel.FullName);
+
+            // Hiển thị ảnh đại diện thật nếu có
+            if (!string.IsNullOrWhiteSpace(_selectedPersonnel.AvatarBase64))
+            {
+                try
+                {
+                    byte[] binaryData = Convert.FromBase64String(_selectedPersonnel.AvatarBase64);
+                    var bitmap = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(binaryData);
+                    if (bitmap != null && imgPersonnelAvatar != null)
+                    {
+                        imgPersonnelAvatar.Background = new ImageBrush(bitmap) { Stretch = Stretch.UniformToFill };
+                        imgPersonnelAvatar.Visibility = Visibility.Visible;
+                    }
+                    else if (imgPersonnelAvatar != null)
+                    {
+                        imgPersonnelAvatar.Visibility = Visibility.Collapsed;
+                    }
+                }
+                catch
+                {
+                    if (imgPersonnelAvatar != null) imgPersonnelAvatar.Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                if (imgPersonnelAvatar != null) imgPersonnelAvatar.Visibility = Visibility.Collapsed;
+            }
+
             if (txtPersonnelCCCD != null)
                 txtPersonnelCCCD.Text = string.IsNullOrEmpty(_selectedPersonnel.IdentityCardNumber) ? "CCCD: ---" : $"CCCD: {_selectedPersonnel.IdentityCardNumber}";
             if (txtPersonnelDOB != null)
@@ -117,26 +162,22 @@ namespace TaxPersonnelManagement.Views
             if (txtPersonnelDept != null)
                 txtPersonnelDept.Text = string.IsNullOrEmpty(_selectedPersonnel.Department) ? "Chưa phân bộ phận" : _selectedPersonnel.Department;
 
-            // Đồng bộ dữ liệu tương thích
-            if (txtPersonnelName != null) txtPersonnelName.Text = _selectedPersonnel.FullName;
-            if (txtPersonnelDetails != null)
-            {
-                txtPersonnelDetails.Text =
-                    $"CCCD: {_selectedPersonnel.IdentityCardNumber ?? "---"}  |  " +
-                    $"Ngày sinh: {_selectedPersonnel.DateOfBirth?.ToString("dd/MM/yyyy") ?? "---"}  |  " +
-                    $"Bộ phận: {_selectedPersonnel.Department ?? "---"}";
-            }
-            if (pnlPersonnelInfo != null) pnlPersonnelInfo.Visibility = Visibility.Visible;
+            // (Đã bỏ khối "Đồng bộ dữ liệu tương thích" vì làm hiện lại dòng CCCD | Ngày sinh | Bộ phận trùng lặp với thẻ cán bộ ở trên)
 
-            // Tự động điền bộ phận đang công tác vào cmbFromDepartment nếu chưa có
-            if (string.IsNullOrEmpty(cmbFromDepartment.Text) && !string.IsNullOrEmpty(_selectedPersonnel.Department))
-                cmbFromDepartment.Text = _selectedPersonnel.Department;
+            // Tự động điền bộ phận đang công tác vào cmbFromDepartment nếu đang thêm mới và có thông tin
+            if (_existingRecord == null && _selectedPersonnel != null && !string.IsNullOrEmpty(_selectedPersonnel.Department))
+            {
+                SetComboByText(cmbFromDepartment, _selectedPersonnel.Department);
+            }
         }
 
         private static string GetInitials(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName)) return "NV";
-            var parts = fullName.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            // Bỏ phần ghi chú trong ngoặc, ví dụ "Phan Xuân Triết (Test)" -> "Phan Xuân Triết"
+            string clean = System.Text.RegularExpressions.Regex.Replace(fullName, @"\(.*?\)", "").Trim();
+            var parts = clean.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0) return "NV";
             if (parts.Length == 1) return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
             return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
         }
@@ -162,6 +203,10 @@ namespace TaxPersonnelManagement.Views
                 using var db = new AppDbContext();
                 _selectedPersonnel = db.Personnel.Find(selectedId);
                 UpdatePersonnelDisplay();
+                if (!string.IsNullOrEmpty(_selectedPersonnel?.Department))
+                {
+                    SetComboByText(cmbFromDepartment, _selectedPersonnel.Department);
+                }
             }
         }
 
@@ -288,34 +333,74 @@ namespace TaxPersonnelManagement.Views
 
         private void ApplyToRecord(RotationRecord r)
         {
+            int planYear = DateTime.Now.Year;
+            if (int.TryParse(GetComboText(cmbPlanYear), out int py)) planYear = py;
+
             r.PersonnelId       = _selectedPersonnel!.Id;
             r.RotationType      = GetComboText(cmbRotationType);
             r.PlanType          = GetComboText(cmbPlanType);
-            r.FromDepartment    = cmbFromDepartment.Text.Trim().NullIfEmpty();
-            r.ToDepartment      = cmbToDepartment.Text.Trim().NullIfEmpty();
+            r.FromDepartment    = GetComboText(cmbFromDepartment).NullIfEmpty();
+            r.ToDepartment      = GetComboText(cmbToDepartment).NullIfEmpty();
             r.IsCompleted       = chkIsCompleted.IsChecked == true;
             r.DecisionNumber    = r.IsCompleted ? txtDecisionNumber.Text.Trim().NullIfEmpty() : null;
             r.DecisionDate      = r.IsCompleted ? dpDecisionDate.SelectedDate : null;
-            r.EffectiveDate     = r.IsCompleted ? dpEffectiveDate.SelectedDate : null;
+            r.EffectiveDate     = r.IsCompleted 
+                ? (dpEffectiveDate.SelectedDate ?? dpDecisionDate.SelectedDate ?? new DateTime(planYear, 1, 1))
+                : (dpEffectiveDate.SelectedDate ?? new DateTime(planYear, 1, 1));
             r.Note              = txtNote.Text.Trim().NullIfEmpty();
         }
 
         private string GetComboText(ComboBox combo)
         {
+            string? text = null;
             if (combo.SelectedItem is ComboBoxItem item)
-                return item.Content?.ToString() ?? "";
-            return combo.Text ?? "";
+                text = item.Content?.ToString();
+            else if (combo.SelectedItem is string str)
+                text = str;
+            else
+                text = combo.Text;
+
+            if (string.IsNullOrWhiteSpace(text) || text.StartsWith("--"))
+                return "";
+            return text.Trim();
         }
 
-        private void SetComboByText(ComboBox combo, string text)
+        private void SetComboByText(ComboBox combo, string? text)
         {
-            foreach (ComboBoxItem item in combo.Items)
+            if (string.IsNullOrWhiteSpace(text))
             {
-                if (item.Content?.ToString() == text)
+                if (combo.Items.Count > 0 && combo.Items[0]?.ToString()?.StartsWith("--") == true)
+                    combo.SelectedIndex = 0;
+                else
+                    combo.SelectedIndex = -1;
+                return;
+            }
+
+            foreach (var obj in combo.Items)
+            {
+                if (obj is ComboBoxItem item && string.Equals(item.Content?.ToString(), text, StringComparison.OrdinalIgnoreCase))
                 {
                     combo.SelectedItem = item;
                     return;
                 }
+                else if (obj is string str && string.Equals(str, text, StringComparison.OrdinalIgnoreCase))
+                {
+                    combo.SelectedItem = obj;
+                    return;
+                }
+            }
+
+            if (combo == cmbPlanYear)
+            {
+                var newItem = new ComboBoxItem { Content = text };
+                combo.Items.Add(newItem);
+                combo.SelectedItem = newItem;
+            }
+            else if (combo == cmbFromDepartment || combo == cmbToDepartment)
+            {
+                // Thêm vào danh sách để giữ đúng dữ liệu đã lưu
+                combo.Items.Add(text);
+                combo.SelectedItem = text;
             }
         }
     }

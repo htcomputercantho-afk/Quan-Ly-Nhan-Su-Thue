@@ -23,6 +23,7 @@
 
             <converters:DateFormatterConverter x:Key="DateFormatterConverter"/>
             <converters:EmptyStringToDashConverter x:Key="EmptyStringToDashConverter"/>
+            <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
             <!-- Modern Segmented Tab Control -->
@@ -191,7 +192,8 @@
                                         Background="{TemplateBinding Background}"
                                         BorderBrush="{TemplateBinding BorderBrush}"
                                         BorderThickness="{TemplateBinding BorderThickness}"
-                                        CornerRadius="6">
+                                        CornerRadius="6"
+                                        ToolTip="{Binding SelectionBoxItem, RelativeSource={RelativeSource TemplatedParent}}">
                                     <Grid>
                                         <ContentPresenter x:Name="ContentSite"
                                                           IsHitTestVisible="False"
@@ -200,7 +202,13 @@
                                                           ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                                           Margin="{TemplateBinding Padding}"
                                                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}">
+                                            <ContentPresenter.Resources>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                                </Style>
+                                            </ContentPresenter.Resources>
+                                        </ContentPresenter>
 
                                         <ToggleButton x:Name="toggleButton"
                                                       Focusable="False"
@@ -388,7 +396,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountSwitch" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="TỔNG SỐ LƯỢT" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="TỔNG SỐ" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Grid.Row="1" x:Name="txtTotalKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
                     </Grid>
@@ -577,10 +585,10 @@
                                 </StackPanel>
 
                                 <!-- Left: Filters & Search -->
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <!-- Search Box -->
                                     <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6"
-                                            Height="36" Width="220" Margin="0 0 10 0">
+                                            Height="36" Width="280" Margin="0 4 10 4">
                                         <Grid VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -598,23 +606,23 @@
                                     </Border>
 
                                     <!-- Bộ phận -->
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 10 4">
                                         <TextBlock Text="Bộ phận:" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <ComboBox x:Name="cmbFilterDeptInPlan" Width="135" Style="{StaticResource CustomFilterComboBox}"
+                                        <ComboBox x:Name="cmbFilterDeptInPlan" Width="215" Style="{StaticResource CustomFilterComboBox}"
                                                   SelectionChanged="FilterChanged"/>
                                     </StackPanel>
 
                                     <!-- Năm -->
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 10 4">
                                         <TextBlock Text="Năm:" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <ComboBox x:Name="cmbFilterYearInPlan" Width="80" Style="{StaticResource CustomFilterComboBox}"
+                                        <ComboBox x:Name="cmbFilterYearInPlan" Width="85" Style="{StaticResource CustomFilterComboBox}"
                                                   SelectionChanged="FilterChanged"/>
                                     </StackPanel>
 
                                     <!-- Trạng thái -->
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 10 4">
                                         <TextBlock Text="Trạng thái:" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <ComboBox x:Name="cmbFilterStatusInPlan" Width="140" Style="{StaticResource CustomFilterComboBox}"
+                                        <ComboBox x:Name="cmbFilterStatusInPlan" Width="150" Style="{StaticResource CustomFilterComboBox}"
                                                   SelectionChanged="FilterChanged">
                                             <ComboBoxItem Content="Tất cả trạng thái" IsSelected="True"/>
                                             <ComboBoxItem Content="Chưa thực hiện"/>
@@ -624,9 +632,9 @@
 
                                     <!-- Checkbox Đã điều động -->
                                     <CheckBox x:Name="chkCompletedInPlan" Content="Đã điều động"
-                                              FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="6 0 0 0"
+                                              FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="4 4 10 4"
                                               Checked="ChkCompleted_Changed" Unchecked="ChkCompleted_Changed"/>
-                                </StackPanel>
+                                </WrapPanel>
                             </DockPanel>
                         </materialDesign:Card>
 
@@ -670,11 +678,32 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <!-- Avatar Initials -->
-                                                    <Border Width="38" Height="38" CornerRadius="19" Background="{Binding AvatarBgColor}" Margin="0 0 10 0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="14"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
+                                                    <!-- Avatar circle (Ảnh đại diện hoặc Chữ cái viết tắt nếu chưa có ảnh) -->
+                                                    <Grid Width="38" Height="38" Margin="0 0 10 0" VerticalAlignment="Center">
+                                                        <!-- Lớp 1: Chữ cái viết tắt (Fallback) -->
+                                                        <Border CornerRadius="19" Background="{Binding AvatarBgColor}">
+                                                            <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="13.5"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <!-- Lớp 2: Ảnh đại diện thật (Hiện lên nếu có ảnh) -->
+                                                        <Border CornerRadius="19">
+                                                            <Border.Background>
+                                                                <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" 
+                                                                            Stretch="UniformToFill"
+                                                                            RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                            </Border.Background>
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+                                                    </Grid>
                                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Personnel.FullName}" FontWeight="Bold" FontSize="14"
                                                                    Foreground="#0F172A" TextWrapping="Wrap"/>
@@ -720,8 +749,18 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <!-- 6. BỘ PHẬN DỰ KIẾN ĐIỀU ĐỘNG -->
-                                    <DataGridTemplateColumn Header="BỘ PHẬN DỰ KIẾN&#x0a;ĐIỀU ĐỘNG" Width="2.8*" MinWidth="200">
+                                    <!-- 6. BỘ PHẬN ĐANG CÔNG TÁC -->
+                                    <DataGridTemplateColumn Header="BỘ PHẬN ĐANG&#x0a;CÔNG TÁC" Width="2.5*" MinWidth="180">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayFromDepartment}" FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="#334155" TextWrapping="Wrap" VerticalAlignment="Center" Margin="10 4"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- 7. BỘ PHẬN DỰ KIẾN ĐIỀU ĐỘNG -->
+                                    <DataGridTemplateColumn Header="BỘ PHẬN DỰ KIẾN&#x0a;ĐIỀU ĐỘNG" Width="2.5*" MinWidth="180">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding DisplayToDepartment}" FontSize="13" FontWeight="SemiBold"
@@ -870,10 +909,10 @@
                                 </StackPanel>
 
                                 <!-- Left: Filters & Search -->
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <!-- Search Box -->
                                     <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6"
-                                            Height="36" Width="220" Margin="0 0 10 0">
+                                            Height="36" Width="280" Margin="0 4 10 4">
                                         <Grid VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -891,23 +930,23 @@
                                     </Border>
 
                                     <!-- Bộ phận -->
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 10 4">
                                         <TextBlock Text="Bộ phận:" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <ComboBox x:Name="cmbFilterDeptOutPlan" Width="135" Style="{StaticResource CustomFilterComboBox}"
+                                        <ComboBox x:Name="cmbFilterDeptOutPlan" Width="215" Style="{StaticResource CustomFilterComboBox}"
                                                   SelectionChanged="FilterChanged"/>
                                     </StackPanel>
 
                                     <!-- Năm -->
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 10 4">
                                         <TextBlock Text="Năm:" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <ComboBox x:Name="cmbFilterYearOutPlan" Width="80" Style="{StaticResource CustomFilterComboBox}"
+                                        <ComboBox x:Name="cmbFilterYearOutPlan" Width="85" Style="{StaticResource CustomFilterComboBox}"
                                                   SelectionChanged="FilterChanged"/>
                                     </StackPanel>
 
                                     <!-- Trạng thái -->
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 10 0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 10 4">
                                         <TextBlock Text="Trạng thái:" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <ComboBox x:Name="cmbFilterStatusOutPlan" Width="140" Style="{StaticResource CustomFilterComboBox}"
+                                        <ComboBox x:Name="cmbFilterStatusOutPlan" Width="150" Style="{StaticResource CustomFilterComboBox}"
                                                   SelectionChanged="FilterChanged">
                                             <ComboBoxItem Content="Tất cả trạng thái" IsSelected="True"/>
                                             <ComboBoxItem Content="Chưa thực hiện"/>
@@ -917,9 +956,9 @@
 
                                     <!-- Checkbox Đã điều động -->
                                     <CheckBox x:Name="chkCompletedOutPlan" Content="Đã điều động"
-                                              FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="6 0 0 0"
+                                              FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="4 4 10 4"
                                               Checked="ChkCompleted_Changed" Unchecked="ChkCompleted_Changed"/>
-                                </StackPanel>
+                                </WrapPanel>
                             </DockPanel>
                         </materialDesign:Card>
 
@@ -963,11 +1002,32 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
-                                                    <!-- Avatar Initials -->
-                                                    <Border Width="38" Height="38" CornerRadius="19" Background="{Binding AvatarBgColor}" Margin="0 0 10 0" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="14"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
+                                                    <!-- Avatar circle (Ảnh đại diện hoặc Chữ cái viết tắt nếu chưa có ảnh) -->
+                                                    <Grid Width="38" Height="38" Margin="0 0 10 0" VerticalAlignment="Center">
+                                                        <!-- Lớp 1: Chữ cái viết tắt (Fallback) -->
+                                                        <Border CornerRadius="19" Background="{Binding AvatarBgColor}">
+                                                            <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="13.5"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <!-- Lớp 2: Ảnh đại diện thật (Hiện lên nếu có ảnh) -->
+                                                        <Border CornerRadius="19">
+                                                            <Border.Background>
+                                                                <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" 
+                                                                            Stretch="UniformToFill"
+                                                                            RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                            </Border.Background>
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                        </Border>
+                                                    </Grid>
                                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Personnel.FullName}" FontWeight="Bold" FontSize="14"
                                                                    Foreground="#0F172A" TextWrapping="Wrap"/>
@@ -1013,8 +1073,18 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
 
-                                    <!-- 6. BỘ PHẬN DỰ KIẾN ĐIỀU ĐỘNG -->
-                                    <DataGridTemplateColumn Header="BỘ PHẬN DỰ KIẾN&#x0a;ĐIỀU ĐỘNG" Width="2.8*" MinWidth="200">
+                                    <!-- 6. BỘ PHẬN ĐANG CÔNG TÁC -->
+                                    <DataGridTemplateColumn Header="BỘ PHẬN ĐANG&#x0a;CÔNG TÁC" Width="2.5*" MinWidth="180">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding DisplayFromDepartment}" FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="#334155" TextWrapping="Wrap" VerticalAlignment="Center" Margin="10 4"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- 7. BỘ PHẬN DỰ KIẾN ĐIỀU ĐỘNG -->
+                                    <DataGridTemplateColumn Header="BỘ PHẬN DỰ KIẾN&#x0a;ĐIỀU ĐỘNG" Width="2.5*" MinWidth="180">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding DisplayToDepartment}" FontSize="13" FontWeight="SemiBold"

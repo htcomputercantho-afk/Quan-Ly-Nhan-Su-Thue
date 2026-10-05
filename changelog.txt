@@ -1,3 +1,20 @@
+## v1.6.3.7 — 2026-10-05
+- [Sửa lỗi & Hoàn thiện] Nâng cấp Toàn diện Phân hệ Quản lý Luân chuyển, Điều động (`RotationManagementView`):
+    + Hiển thị Avatar cán bộ: Tích hợp hiển thị ảnh chân dung thật từ Base64 (`ImageHelper.LoadAndOrientImage`) trên bảng kế hoạch luân chuyển và hộp thoại; tự động hiển thị chữ lồng (Initials) thanh lịch khi chưa có ảnh (đã lọc bỏ phần ghi chú ngoặc đơn).
+    + Chuẩn hóa Bộ lọc Năm: Mặc định hiển thị "Tất cả" thay vì cố định năm 2026, cho phép người dùng xem được toàn bộ danh sách luân chuyển/điều động ngay khi mở màn hình.
+    + Thống kê KPI tương tác linh hoạt: 5 thẻ KPI tự động cập nhật số liệu chính xác theo thời gian thực tương ứng với các tiêu chí đang lọc (Bộ phận, Năm, Trạng thái, Tìm kiếm). Chuẩn hóa nhãn chỉ hiển thị "Tổng số: X" (bỏ chữ "Lượt").
+    + Cải tiến Thanh công cụ lọc chống tràn mép / mất chữ: Thay thế `StackPanel` bằng `WrapPanel` tự động xuống dòng khi màn hình thu nhỏ, mở rộng độ rộng ô tìm kiếm (280px) và các hộp chọn lọc; tích hợp `TextTrimming="CharacterEllipsis"` và `ToolTip` hiển thị đầy đủ tên phòng ban dài khi rê chuột.
+    + Bổ sung Cột & Chuẩn hóa Sắp xếp Bảng biểu:
+        * Bổ sung cột "Bộ phận đang công tác" đặt ngay trước cột "Bộ phận dự kiến điều động đến" trên cả 2 bảng Trong kế hoạch và Ngoài kế hoạch.
+        * Quy tắc sắp xếp thông minh: Ưu tiên các bản ghi ĐÃ CÓ QUYẾT ĐỊNH lên đầu danh sách (Số quyết định nhỏ nhất và Ngày quyết định sớm nhất lên trước); tiếp theo mới sắp xếp theo thứ tự Họ và tên cán bộ (A -> Z) cho các bản ghi chưa có quyết định.
+- [Bảo mật dữ liệu & Nghiệp vụ] Nâng cấp Hộp thoại Thêm/Sửa Luân chuyển Điều động (`RotationRecordDialog`):
+    + Ngăn chặn nhập tay tự do (`IsEditable="False"`): Khóa chế độ gõ tự do ở cả 2 trường "Bộ phận đang công tác" và "Bộ phận dự kiến điều động đến", bắt buộc chọn từ danh mục chuẩn phòng ban của hệ thống (`db.Departments`).
+    + Sắp xếp danh mục phòng ban chuẩn thứ bậc (`DepartmentSorter`): Hiển thị danh sách phòng ban theo đúng phân cấp tổ chức (Ban lãnh đạo, Tổ HC-TH, các Đội Kiểm tra...).
+    + Hỗ trợ tìm nhanh bằng bàn phím (`IsTextSearchEnabled="True"`): Cho phép gõ chữ cái đầu để cuộn nhanh đến phòng ban mà không làm sai lệch dữ liệu danh mục.
+    + Tùy chọn để trống bộ phận đến: Bổ sung mục `-- Chưa xác định / Tùy chọn --` cho bộ phận dự kiến chuyển đến, thuận tiện cho các trường hợp mới lập kế hoạch điều động.
+    + Tự động điền theo cán bộ: Tự động cập nhật "Bộ phận đang công tác" tương ứng theo thông tin hồ sơ của cán bộ khi chọn hoặc đổi cán bộ.
+    + Bổ sung trường chọn Năm kế hoạch trực tiếp trên form và loại bỏ khối thông tin trùng lặp phía dưới thẻ hồ sơ cán bộ.
+
 ## v1.6.3.6 — 2026-10-03
 - [Thiết kế lại Giao diện Popup] Nâng cấp Toàn diện Hộp thoại Luân chuyển / Điều động (`RotationRecordDialog`):
     + Phong cách Fluent Design & Windows 11 Blue hiện đại: Bo tròn góc mềm mại (`CornerRadius="16"`), hiệu ứng bóng đổ nổi (`DropShadowEffect`) cao cấp, header chuyển sắc mượt mà (`LinearGradientBrush` `#005A9E` -> `#0078D4` -> `#0284C7`), nút đóng tròn và hỗ trợ giữ chuột di chuyển cửa sổ linh hoạt.
