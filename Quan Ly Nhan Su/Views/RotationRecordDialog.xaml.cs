@@ -16,12 +16,13 @@ namespace TaxPersonnelManagement.Views
         private readonly string _defaultPlanType;
 
         /// <summary>
-        /// Tạo dialog thêm mới hoặc chỉnh sửa bản ghi luân chuyển/điều động.
+        /// Tạo dialog thêm mới, chỉnh sửa hoặc xem chi tiết bản ghi luân chuyển/điều động.
         /// </summary>
         /// <param name="record">Bản ghi cần chỉnh sửa (null nếu thêm mới)</param>
         /// <param name="defaultPlanType">Loại kế hoạch mặc định cho bản ghi mới</param>
         /// <param name="defaultYear">Năm kế hoạch mặc định (nếu có)</param>
-        public RotationRecordDialog(RotationRecord? record, string defaultPlanType = "Trong kế hoạch", int? defaultYear = null)
+        /// <param name="isViewOnly">True nếu chỉ mở để xem chi tiết</param>
+        public RotationRecordDialog(RotationRecord? record, string defaultPlanType = "Trong kế hoạch", int? defaultYear = null, bool isViewOnly = false)
         {
             InitializeComponent();
             _existingRecord = record;
@@ -34,16 +35,27 @@ namespace TaxPersonnelManagement.Views
 
             if (record != null)
             {
-                // Chế độ chỉnh sửa
-                txtTitle.Text = "Chỉnh sửa Luân chuyển / Điều động";
-                btnDelete.Visibility = Visibility.Visible;
                 FillForm(record);
+
+                if (isViewOnly)
+                {
+                    ApplyViewOnlyMode();
+                }
+                else
+                {
+                    // Chế độ chỉnh sửa
+                    txtTitle.Text = "Chỉnh sửa Luân chuyển / Điều động";
+                    btnDelete.Visibility = Visibility.Visible;
+                    btnEditMode.Visibility = Visibility.Collapsed;
+                    btnSave.Visibility = Visibility.Visible;
+                }
             }
             else
             {
                 // Chế độ thêm mới — đặt kế hoạch mặc định
                 SetComboByText(cmbPlanType, defaultPlanType);
                 UpdatePersonnelDisplay();
+                btnEditMode.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -66,6 +78,7 @@ namespace TaxPersonnelManagement.Views
                 cmbFromDepartment.Items.Clear();
                 cmbToDepartment.Items.Clear();
 
+                cmbFromDepartment.Items.Add("-- Chọn bộ phận đang công tác --");
                 cmbToDepartment.Items.Add("-- Chưa xác định / Tùy chọn --");
 
                 foreach (var d in depts)
@@ -74,6 +87,7 @@ namespace TaxPersonnelManagement.Views
                     cmbToDepartment.Items.Add(d);
                 }
 
+                cmbFromDepartment.SelectedIndex = 0;
                 cmbToDepartment.SelectedIndex = 0;
             }
             catch { /* Bỏ qua lỗi tải bộ phận */ }
@@ -319,6 +333,51 @@ namespace TaxPersonnelManagement.Views
                 warning.Owner = this;
                 warning.ShowDialog();
             }
+        }
+
+        // ============================================================
+        // Chế độ Xem chi tiết (View-Only)
+        // ============================================================
+        private void ApplyViewOnlyMode()
+        {
+            txtTitle.Text = "CHI TIẾT ĐIỀU ĐỘNG / LUÂN CHUYỂN";
+            btnDelete.Visibility = Visibility.Collapsed;
+            btnSave.Visibility = Visibility.Collapsed;
+            btnEditMode.Visibility = Visibility.Visible;
+            btnCancel.Content = "Đóng";
+            btnChangePersonnel.Visibility = Visibility.Collapsed;
+
+            cmbPlanType.IsEnabled = false;
+            cmbPlanYear.IsEnabled = false;
+            cmbRotationType.IsEnabled = false;
+            cmbFromDepartment.IsEnabled = false;
+            cmbToDepartment.IsEnabled = false;
+            chkIsCompleted.IsEnabled = false;
+            txtDecisionNumber.IsReadOnly = true;
+            dpDecisionDate.IsEnabled = false;
+            dpEffectiveDate.IsEnabled = false;
+            txtNote.IsReadOnly = true;
+        }
+
+        private void BtnEditMode_Click(object sender, RoutedEventArgs e)
+        {
+            txtTitle.Text = "Chỉnh sửa Luân chuyển / Điều động";
+            btnDelete.Visibility = Visibility.Visible;
+            btnSave.Visibility = Visibility.Visible;
+            btnEditMode.Visibility = Visibility.Collapsed;
+            btnCancel.Content = "Hủy bỏ";
+            btnChangePersonnel.Visibility = Visibility.Visible;
+
+            cmbPlanType.IsEnabled = true;
+            cmbPlanYear.IsEnabled = true;
+            cmbRotationType.IsEnabled = true;
+            cmbFromDepartment.IsEnabled = true;
+            cmbToDepartment.IsEnabled = true;
+            chkIsCompleted.IsEnabled = true;
+            txtDecisionNumber.IsReadOnly = false;
+            dpDecisionDate.IsEnabled = true;
+            dpEffectiveDate.IsEnabled = true;
+            txtNote.IsReadOnly = false;
         }
 
         // ============================================================

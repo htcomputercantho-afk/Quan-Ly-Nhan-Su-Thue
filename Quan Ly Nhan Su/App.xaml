@@ -43,9 +43,25 @@
 
 
             
-            <!-- Global Font Size Increase -->
+            <!-- Global Sharp Font & ClearType Settings to prevent blurry fonts -->
             <Style TargetType="{x:Type TextElement}">
-                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="FontSize" Value="14.5"/>
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+            </Style>
+
+            <Style TargetType="{x:Type Window}">
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+                <Setter Property="UseLayoutRounding" Value="True"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+            </Style>
+
+            <Style TargetType="{x:Type Page}">
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+                <Setter Property="UseLayoutRounding" Value="True"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
             </Style>
 
             <!-- Global Calendar Localization Fix -->

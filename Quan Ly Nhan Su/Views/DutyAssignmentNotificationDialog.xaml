@@ -1,0 +1,104 @@
+<Window x:Class="TaxPersonnelManagement.Views.DutyAssignmentNotificationDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Language="vi-VN"
+        SizeToContent="Height" Width="440"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        Topmost="True">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="18" BorderBrush="#E2E8F0" BorderThickness="1" Margin="16">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.18" Color="#0F172A" RenderingBias="Quality"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Top Indicator Bar -->
+            <Border x:Name="brdTopIndicator" Grid.Row="0" Height="5" CornerRadius="18 18 0 0" Background="#10B981"/>
+
+            <!-- Main Content Area -->
+            <StackPanel Grid.Row="1" Margin="28 24 28 16" VerticalAlignment="Center">
+                <!-- Icon Badge -->
+                <Border x:Name="brdIconContainer" Width="64" Height="64" CornerRadius="32"
+                        Background="#ECFDF5" HorizontalAlignment="Center" Margin="0 0 0 16">
+                    <materialDesign:PackIcon x:Name="iconMain" Kind="CheckCircle" Width="36" Height="36"
+                                            Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Title -->
+                <TextBlock x:Name="txtTitle" Text="THÀNH CÔNG" FontSize="18" FontWeight="Bold"
+                           Foreground="#0F172A" HorizontalAlignment="Center" Margin="0 0 0 10"/>
+
+                <!-- Message -->
+                <TextBlock x:Name="txtMessage" Text="Nội dung thông báo..." FontSize="14" Foreground="#475569"
+                           TextWrapping="Wrap" TextAlignment="Center" LineHeight="22" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Bottom Action Buttons -->
+            <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#F1F5F9" BorderThickness="0 1 0 0"
+                    CornerRadius="0 0 18 18" Padding="20 16">
+                <Grid>
+                    <!-- Chế độ 1 nút: Thông báo / Cảnh báo / Lỗi -->
+                    <Button x:Name="btnSingleOk" Click="BtnSingleOk_Click"
+                            Height="40" MinWidth="130"
+                            materialDesign:ButtonAssist.CornerRadius="8"
+                            Background="#059669" BorderThickness="0" Foreground="White"
+                            FontSize="13.5" FontWeight="SemiBold" Cursor="Hand"
+                            HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtSingleOk" Text="ĐÃ HIỂU" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Chế độ 2 nút: Xác nhận (Confirm) -->
+                    <StackPanel x:Name="pnlConfirmButtons" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <Button x:Name="btnCancel" Click="BtnCancel_Click"
+                                Height="40" Width="120" Margin="0 0 12 0"
+                                materialDesign:ButtonAssist.CornerRadius="8"
+                                Background="White" BorderBrush="#CBD5E1" BorderThickness="1" Foreground="#475569"
+                                FontSize="13.5" FontWeight="SemiBold" Cursor="Hand">
+                            <TextBlock Text="HỦY BỎ" VerticalAlignment="Center"/>
+                        </Button>
+
+                        <Button x:Name="btnConfirm" Click="BtnConfirm_Click"
+                                Height="40" Width="130"
+                                materialDesign:ButtonAssist.CornerRadius="8"
+                                Background="#DC2626" BorderThickness="0" Foreground="White"
+                                FontSize="13.5" FontWeight="SemiBold" Cursor="Hand">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconConfirmBtn" Kind="DeleteOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtConfirmBtn" Text="ĐỒNG Ý XÓA" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

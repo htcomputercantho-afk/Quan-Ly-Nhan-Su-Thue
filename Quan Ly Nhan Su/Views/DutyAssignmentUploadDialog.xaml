@@ -1,0 +1,167 @@
+<Window x:Class="TaxPersonnelManagement.Views.DutyAssignmentUploadDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Language="vi-VN"
+        Title="Tải lên phân công nhiệm vụ"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Width="620" MaxHeight="800" SizeToContent="Height"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        FontSize="13.5"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml"/>
+                <ResourceDictionary Source="/Views/FormStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Border CornerRadius="12" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" Margin="14">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.18" Color="#000000" RenderingBias="Quality"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="58"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="#1565C0" CornerRadius="11 11 0 0" Padding="18 0"
+                    MouseLeftButtonDown="Header_MouseDown" Cursor="SizeAll">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="FilePdfBox" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtTitle" Text="TẢI LÊN PHÂN CÔNG NHIỆM VỤ" Foreground="White" FontSize="15" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Click="BtnCancel_Click" Cursor="Hand"
+                            Style="{DynamicResource MaterialDesignToolButton}"
+                            Width="32" Height="32" Padding="0" Background="Transparent" BorderThickness="0">
+                        <materialDesign:PackIcon Kind="Close" Foreground="White" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Top">
+                <StackPanel Margin="24 16 24 14">
+
+                    <!-- Tổ / bộ phận -->
+                    <TextBlock Text="Tổ / bộ phận (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                    <ComboBox x:Name="cmbDepartment" Style="{StaticResource ModernFormComboBox}" Margin="0 0 0 14"
+                              ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}"/>
+
+                    <!-- Tháng thay đổi & Năm -->
+                    <Grid Margin="0 0 0 14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Thay đổi ở tháng (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                            <ComboBox x:Name="cmbMonth" Style="{StaticResource ModernFormComboBox}" SelectionChanged="MonthYear_Changed"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Năm (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                            <ComboBox x:Name="cmbYear" Style="{StaticResource ModernFormComboBox}" SelectionChanged="MonthYear_Changed"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Ngày hiệu lực -->
+                    <TextBlock Text="Có hiệu lực từ ngày (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                    <DatePicker x:Name="dpEffective" Style="{StaticResource ModernDatePicker}"
+                                SelectedDateChanged="DpEffective_Changed"/>
+                    <TextBlock Text="Bản phân công này áp dụng từ ngày trên cho đến khi có bản mới hơn."
+                               FontSize="12" Foreground="#64748B" Margin="0 4 0 14" TextWrapping="Wrap"/>
+
+                    <!-- Tiêu đề -->
+                    <TextBlock Text="Nội dung thay đổi / Số quyết định" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                    <TextBox x:Name="txtDecisionTitle" Style="{StaticResource ModernFormTextBox}" Margin="0 0 0 14"
+                             materialDesign:HintAssist.Hint="VD: QĐ số 25/QĐ-CCT — bổ sung nhân sự, điều chỉnh nhiệm vụ..."/>
+
+                    <!-- File PDF -->
+                    <TextBlock Text="File PDF (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                    <Border x:Name="dropZone" Background="#F0F9FF" BorderBrush="#7DD3FC" BorderThickness="1.5" CornerRadius="8" Padding="14 12"
+                            AllowDrop="True" DragOver="DropZone_DragOver" Drop="DropZone_Drop" Margin="0 0 0 14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="44" Height="44" CornerRadius="10" Background="#FEE2E2" VerticalAlignment="Center" Margin="0 0 12 0">
+                                <materialDesign:PackIcon Kind="FilePdfBox" Width="28" Height="28" Foreground="#DC2626" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock x:Name="txtFileName" Text="Chưa chọn file PDF" FontWeight="SemiBold" Foreground="#0F172A" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtFileHint" Text="Kéo thả file PDF vào đây hoặc bấm nút Chọn file (tối đa 50 MB)" FontSize="12" Foreground="#64748B" Margin="0 2 0 0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <Button Grid.Column="2" Click="BtnPickFile_Click" Cursor="Hand" VerticalAlignment="Center"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}"
+                                    BorderBrush="#1565C0" Foreground="#1565C0" Height="36" Padding="14 0"
+                                    materialDesign:ButtonAssist.CornerRadius="6">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Upload" Width="17" Height="17" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chọn file" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Ghi chú -->
+                    <TextBlock Text="Ghi chú thêm" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                    <TextBox x:Name="txtNote" Style="{StaticResource ModernFormMultiLineTextBox}"
+                             materialDesign:HintAssist.Hint="Lý do thay đổi, nhân sự điều chỉnh... (không bắt buộc)"
+                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" MaxHeight="90"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 1 0 0" Padding="18 10" CornerRadius="0 0 11 11">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="1" Content="Hủy bỏ"
+                            Style="{StaticResource MaterialDesignOutlinedButton}"
+                            BorderBrush="#CBD5E1" Foreground="#475569" Background="#F1F5F9"
+                            Padding="20 0" Height="38" FontSize="13"
+                            materialDesign:ButtonAssist.CornerRadius="6" Cursor="Hand"
+                            Click="BtnCancel_Click"/>
+                    <Button x:Name="btnSave" Grid.Column="3"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Background="#1565C0" Foreground="White"
+                            Padding="22 0" Height="38" FontSize="13"
+                            materialDesign:ButtonAssist.CornerRadius="6" Cursor="Hand"
+                            Click="BtnSave_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Foreground="White" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Lưu thông tin" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

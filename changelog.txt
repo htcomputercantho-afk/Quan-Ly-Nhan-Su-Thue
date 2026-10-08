@@ -1,3 +1,24 @@
+## v1.6.3.8 — 2026-10-08
+- [Tính năng mới] Phân hệ Quản lý & Theo dõi Phân công Nhiệm vụ theo Tổ và Tháng (`DutyAssignmentView`, `DutyAssignmentService`):
+    + Ma trận timeline trực quan 12 tháng (T1..T12): Theo dõi trực quan lịch sử và tần suất thay đổi phân công nhiệm vụ của từng Tổ/bộ phận trong cả năm.
+    + Trạng thái ô tháng đa dạng & thông minh:
+        * Tháng có văn bản mới: Hiển thị badge ngày/tháng ban hành hoặc số lượng văn bản trong tháng (xN), kèm tooltip chi tiết và nhấp chuột để xem ngay.
+        * Tháng giữ nguyên nhiệm vụ: Tự động kế thừa văn bản có hiệu lực trước đó, hiển thị icon ghim tinh tế.
+        * Tháng chưa có văn bản: Dấu chấm xám tối giản, phân biệt rõ ràng.
+        * Tự động làm nổi bật tháng hiện tại khi xem năm hiện hành.
+    + Xem văn bản PDF tích hợp (`DutyAssignmentViewerDialog`): Hỗ trợ xem trực tiếp văn bản phân công nhiệm vụ bên trong ứng dụng, hoặc mở nhanh bằng phần mềm đọc PDF mặc định của Windows.
+    + Tải lên và lưu trữ an toàn (`DutyAssignmentUploadDialog`): Cho phép chọn Tổ, Năm, Tháng, Ngày hiệu lực, Tiêu đề, Ghi chú và tải tệp PDF lên (lưu trữ trực tiếp dữ liệu nhị phân an toàn trong CSDL SQLite).
+    + Bộ lọc & Thống kê KPI hiện đại:
+        * Ô Select chọn Năm thiết kế mới (`ModernYearSelectBox`): Trực quan, sắc nét, hỗ trợ nhấp chuột ở bất kỳ vị trí nào trên ô để mở danh sách chọn năm.
+        * Ô tìm kiếm nhanh Tổ / bộ phận: Tự động lọc tức thì theo từ khóa.
+        * 4 thẻ KPI tương tác đa năng: Tổng số Tổ, Ổn định trong năm (≤ 1 lần thay đổi), Nhiều thay đổi (≥ 2 lần thay đổi), Chưa có văn bản.
+        * Hiệu ứng Active State trực quan: Bấm trực tiếp vào thẻ KPI để lọc nhanh danh sách với viền đậm nổi bật, đổi màu nền và huy hiệu "ĐANG LỌC", tự động đồng bộ hai chiều với thanh tab trạng thái. Hỗ trợ bấm lại để hủy lọc (Toggle).
+        * Thống kê tự động cập nhật linh hoạt theo năm và theo từ khóa tìm kiếm.
+    + Hộp thoại thông báo thiết kế mới (`DutyAssignmentNotificationDialog`): Chuẩn giao diện Fluent/Material Design hiện đại cho các thông báo Thành công, Lỗi, Cảnh báo.
+- [Sửa lỗi Giao diện] Khắc phục triệt để lỗi mất chữ / cắt cụt chữ trong Sao lưu & Phục hồi CSDL (`BackupRestoreView`):
+    + Thay thế cấu trúc `StackPanel Orientation="Horizontal"` cũ bằng `Grid` 2 cột (icon Auto, văn bản `*`), giúp `TextWrapping="Wrap"` nhận diện chính xác độ rộng khung thẻ và tự động xuống dòng mượt mà cho các thông báo Khuyến nghị sao lưu và Cảnh báo phục hồi.
+    + Tối ưu hiển thị đường dẫn file CSDL hiện tại (`txtDbPath`): Thêm dấu ba chấm `...` (`TextTrimming="CharacterEllipsis"`) và ToolTip xem đầy đủ đường dẫn khi rê chuột.
+
 ## v1.6.3.7 — 2026-10-05
 - [Sửa lỗi & Hoàn thiện] Nâng cấp Toàn diện Phân hệ Quản lý Luân chuyển, Điều động (`RotationManagementView`):
     + Hiển thị Avatar cán bộ: Tích hợp hiển thị ảnh chân dung thật từ Base64 (`ImageHelper.LoadAndOrientImage`) trên bảng kế hoạch luân chuyển và hộp thoại; tự động hiển thị chữ lồng (Initials) thanh lịch khi chưa có ảnh (đã lọc bỏ phần ghi chú ngoặc đơn).

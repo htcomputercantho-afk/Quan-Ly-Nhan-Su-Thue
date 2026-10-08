@@ -712,5 +712,46 @@ namespace TaxPersonnelManagement.Models
         /// <summary>Ghi chú thêm</summary>
         public string? Note { get; set; }
     }
+
+    /// <summary>
+    /// Một phiên bản (lần thay đổi) phân công nhiệm vụ của một Tổ, kèm file PDF quyết định/bảng phân công.
+    /// Chỉ lưu khi có thay đổi: các tháng không có bản ghi nghĩa là giữ nguyên phân công của lần gần nhất trước đó.
+    /// </summary>
+    public class DutyAssignmentRecord
+    {
+        [Key]
+        public int Id { get; set; }
+
+        /// <summary>Tên Tổ / bộ phận</summary>
+        public string Department { get; set; } = string.Empty;
+
+        /// <summary>Năm của tháng thay đổi</summary>
+        public int Year { get; set; }
+
+        /// <summary>Tháng thay đổi (1-12)</summary>
+        public int Month { get; set; }
+
+        /// <summary>Ngày bắt đầu có hiệu lực</summary>
+        public DateTime EffectiveDate { get; set; }
+
+        /// <summary>Tiêu đề / nội dung thay đổi (VD: QĐ số 12/QĐ-CCT, bổ sung nhân sự...)</summary>
+        public string? Title { get; set; }
+
+        /// <summary>Ghi chú thêm</summary>
+        public string? Note { get; set; }
+
+        /// <summary>Tên file PDF gốc</summary>
+        public string FileName { get; set; } = string.Empty;
+
+        /// <summary>Dung lượng file (byte)</summary>
+        public long FileSize { get; set; }
+
+        /// <summary>Nội dung file PDF (lưu trực tiếp trong CSDL để sao lưu/đồng bộ cùng dữ liệu)</summary>
+        public byte[] FileData { get; set; } = Array.Empty<byte>();
+
+        public DateTime UploadedAt { get; set; } = DateTime.Now;
+
+        public string? UploadedBy { get; set; }
+    }
 }
 

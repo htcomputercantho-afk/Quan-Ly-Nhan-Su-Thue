@@ -17,6 +17,7 @@ namespace TaxPersonnelManagement
         private StatisticsView? _statisticsCache;
         private PlanningManagementView? _planningCache;
         private RotationManagementView? _rotationCache;
+        private DutyAssignmentView? _dutyAssignmentCache;
 
 
         /// <summary>
@@ -599,6 +600,20 @@ namespace TaxPersonnelManagement
             MainFrame.Navigate(_rotationCache);
         }
 
+        private void NavigateDutyAssignment(object sender, RoutedEventArgs e)
+        {
+            UpdateMenuState(btnDutyAssignment);
+            if (_dutyAssignmentCache == null)
+            {
+                _dutyAssignmentCache = new DutyAssignmentView();
+            }
+            else
+            {
+                _dutyAssignmentCache.LoadData();
+            }
+            MainFrame.Navigate(_dutyAssignmentCache);
+        }
+
         private void NavigatePositionDuration(object sender, RoutedEventArgs e)
         {
             UpdateMenuState(btnPositionDuration);
@@ -644,6 +659,7 @@ namespace TaxPersonnelManagement
             btnTraining.Background = transparent;
             btnPlanning.Background = transparent;
             btnRotation.Background = transparent;
+            btnDutyAssignment.Background = transparent;
             btnUsers.Background = transparent;
             btnBackupRestore.Background = transparent;
 
@@ -674,6 +690,7 @@ namespace TaxPersonnelManagement
             txtTraining.Visibility = Visibility.Collapsed;
             txtPlanning.Visibility = Visibility.Collapsed;
             txtRotation.Visibility = Visibility.Collapsed;
+            txtDutyAssignment.Visibility = Visibility.Collapsed;
             txtUsers.Visibility = Visibility.Collapsed;
             txtBackupRestore.Visibility = Visibility.Collapsed;
             txtLogout.Visibility = Visibility.Collapsed;
@@ -681,7 +698,7 @@ namespace TaxPersonnelManagement
             txtVersion.Visibility = Visibility.Collapsed;
             imgLogo.Margin = new Thickness(0);
 
-            var buttons = new[] { btnDashboard, btnStatistics, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnTraining, btnPlanning, btnRotation, btnUsers, btnBackupRestore, btnLogout };
+            var buttons = new[] { btnDashboard, btnStatistics, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnTraining, btnPlanning, btnRotation, btnDutyAssignment, btnUsers, btnBackupRestore, btnLogout };
             foreach (var btn in buttons)
             {
                 btn.Padding = new Thickness(0);
@@ -710,6 +727,7 @@ namespace TaxPersonnelManagement
             txtTraining.Visibility = Visibility.Visible;
             txtPlanning.Visibility = Visibility.Visible;
             txtRotation.Visibility = Visibility.Visible;
+            txtDutyAssignment.Visibility = Visibility.Visible;
             txtUsers.Visibility = Visibility.Visible;
             txtBackupRestore.Visibility = Visibility.Visible;
             txtLogout.Visibility = Visibility.Visible;
@@ -717,7 +735,7 @@ namespace TaxPersonnelManagement
             txtVersion.Visibility = Visibility.Visible;
             imgLogo.Margin = new Thickness(0, 0, 10, 0);
 
-            var buttons = new[] { btnDashboard, btnStatistics, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnTraining, btnPlanning, btnRotation, btnUsers, btnBackupRestore, btnLogout };
+            var buttons = new[] { btnDashboard, btnStatistics, btnPersonnel, btnSalary, btnAnnualIncome, btnLeaveDetail, btnPositionDuration, btnEmulationReward, btnEvaluation, btnTraining, btnPlanning, btnRotation, btnDutyAssignment, btnUsers, btnBackupRestore, btnLogout };
             foreach (var btn in buttons)
             {
                 btn.Padding = new Thickness(25, 0, 25, 0);

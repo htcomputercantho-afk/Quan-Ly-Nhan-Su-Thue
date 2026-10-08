@@ -67,22 +67,30 @@
                             </TextBlock>
 
                             <Border Background="#E8F5E9" CornerRadius="8" Padding="12" Margin="0 0 0 15">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="InformationOutline" Width="20" Height="20" Foreground="#2E7D32" VerticalAlignment="Top" Margin="0 0 10 0"/>
-                                    <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#2E7D32">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="InformationOutline" Width="20" Height="20" Foreground="#2E7D32" VerticalAlignment="Top" Margin="0 2 10 0"/>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" LineHeight="19" Foreground="#2E7D32">
                                         Khuyến nghị sao lưu định kỳ để phòng tránh mất dữ liệu. File sao lưu sẽ được đặt tên tự động kèm ngày giờ.
                                     </TextBlock>
-                                </StackPanel>
+                                </Grid>
                             </Border>
 
                             <!-- Last Backup Info -->
                             <Border Background="#F5F5F5" CornerRadius="8" Padding="15" Margin="0 0 0 20">
                                 <StackPanel>
                                     <TextBlock Text="Thông tin CSDL hiện tại:" FontWeight="SemiBold" FontSize="14" Foreground="#37474F" Margin="0 0 0 8"/>
-                                    <StackPanel Orientation="Horizontal" Margin="0 0 0 4">
-                                        <materialDesign:PackIcon Kind="File" Width="16" Height="16" Foreground="#78909C" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                                        <TextBlock x:Name="txtDbPath" Text="..." FontSize="13" Foreground="#546E7A" TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
+                                    <Grid Margin="0 0 0 4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Grid.Column="0" Kind="File" Width="16" Height="16" Foreground="#78909C" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                                        <TextBlock Grid.Column="1" x:Name="txtDbPath" Text="..." FontSize="13" Foreground="#546E7A" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                                    </Grid>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="HarddiskPlus" Width="16" Height="16" Foreground="#78909C" VerticalAlignment="Center" Margin="0 0 6 0"/>
                                         <TextBlock x:Name="txtDbSize" Text="..." FontSize="13" Foreground="#546E7A"/>
@@ -135,14 +143,16 @@
                             </TextBlock>
 
                             <Border Background="#FFF3E0" CornerRadius="8" Padding="12" Margin="0 0 0 15">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="AlertOutline" Width="20" Height="20" Foreground="#E65100" VerticalAlignment="Top" Margin="0 0 10 0"/>
-                                    <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="#BF360C">
-                                        <Bold>Cảnh báo:</Bold> Phục hồi sẽ ghi đè toàn bộ CSDL hiện tại. 
-                                        Ứng dụng sẽ tự động sao lưu CSDL hiện tại trước khi phục hồi.
-                                        Sau khi phục hồi, ứng dụng sẽ khởi động lại.
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon Grid.Column="0" Kind="AlertOutline" Width="20" Height="20" Foreground="#E65100" VerticalAlignment="Top" Margin="0 2 10 0"/>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="13" LineHeight="19" Foreground="#BF360C">
+                                        <Bold>Cảnh báo:</Bold> Phục hồi sẽ ghi đè toàn bộ CSDL hiện tại. Ứng dụng sẽ tự động sao lưu CSDL hiện tại trước khi phục hồi. Sau khi phục hồi, ứng dụng sẽ khởi động lại.
                                     </TextBlock>
-                                </StackPanel>
+                                </Grid>
                             </Border>
 
                             <!-- Selected File Info -->

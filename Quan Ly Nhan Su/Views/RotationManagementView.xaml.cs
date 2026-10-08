@@ -90,6 +90,22 @@ namespace TaxPersonnelManagement.Views
         public string DisplayDecisionNumber => string.IsNullOrWhiteSpace(DecisionNumber) ? "-" : DecisionNumber;
         public string DisplayDecisionDate => DecisionDate.HasValue ? DecisionDate.Value.ToString("dd/MM/yyyy") : "-";
         public string DisplayBirthDate => Personnel?.DateOfBirth.HasValue == true ? Personnel.DateOfBirth.Value.ToString("dd/MM/yyyy") : "-";
+        public string DisplayStaffId => string.IsNullOrWhiteSpace(Personnel?.StaffId) ? (string.IsNullOrWhiteSpace(Personnel?.IdentityCardNumber) ? "CB" + Id : Personnel.IdentityCardNumber) : Personnel.StaffId;
+        public string DisplayPosition => string.IsNullOrWhiteSpace(Personnel?.Position) ? "Công chức" : Personnel.Position;
+        public string DisplayDecisionSummary
+        {
+            get
+            {
+                if (!IsCompleted) return "Chưa có quyết định";
+                if (!string.IsNullOrWhiteSpace(DecisionNumber) && DecisionDate.HasValue)
+                    return $"QĐ: {DecisionNumber} ({DecisionDate.Value:dd/MM/yyyy})";
+                if (!string.IsNullOrWhiteSpace(DecisionNumber))
+                    return $"QĐ: {DecisionNumber}";
+                if (DecisionDate.HasValue)
+                    return $"Ngày QĐ: {DecisionDate.Value:dd/MM/yyyy}";
+                return "Đã thực hiện";
+            }
+        }
 
         // Tham chiếu về bản ghi gốc để dùng khi mở dialog chỉnh sửa
         public RotationRecord Source => _record;
@@ -250,11 +266,15 @@ namespace TaxPersonnelManagement.Views
             if (cmbFilterYearInPlan == null || cmbFilterYearOutPlan == null) return;
             _isFilterChanging = true;
 
-            // Ghi nhớ năm đang lọc (mặc định "Tất cả" ở lần tải đầu tiên)
+            // Ghi nhớ năm đang lọc (mặc định năm hiện tại khi mở app lần đầu)
             string prevYear = GetSelectedComboText(cmbFilterYearInPlan);
-            if (string.IsNullOrEmpty(prevYear)) prevYear = "Tất cả";
+            if (string.IsNullOrEmpty(prevYear))
+            {
+                prevYear = DateTime.Now.Year.ToString();
+            }
 
-            var years = new HashSet<int> { 2027, 2026, 2025, 2024 };
+            int currentYear = DateTime.Now.Year;
+            var years = new HashSet<int> { currentYear, currentYear + 1, currentYear - 1, currentYear - 2 };
             foreach (var r in _allInPlan.Concat(_allOutPlan))
             {
                 if (r.DecisionDate.HasValue) years.Add(r.DecisionDate.Value.Year);
@@ -289,6 +309,18 @@ namespace TaxPersonnelManagement.Views
                     return;
                 }
             }
+
+            // Nếu không tìm thấy năm mong muốn, thử tìm năm hiện tại
+            string curYearStr = DateTime.Now.Year.ToString();
+            for (int i = 0; i < combo.Items.Count; i++)
+            {
+                if (combo.Items[i] is ComboBoxItem item && item.Content?.ToString() == curYearStr)
+                {
+                    combo.SelectedIndex = i;
+                    return;
+                }
+            }
+
             combo.SelectedIndex = 0;
         }
 
@@ -557,6 +589,47 @@ namespace TaxPersonnelManagement.Views
             if (dg?.SelectedItem is RotationRowViewModel row)
             {
                 var dialog = new RotationRecordDialog(row.Source, row.PlanType);
+                dialog.Owner = Window.GetWindow(this);
+                if (dialog.ShowDialog() == true)
+                {
+                    LoadData();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Xử lý co giãn cột DataGrid linh hoạt khi thay đổi kích thước cửa sổ (chia đôi màn hình / phóng to toàn màn hình).
+        /// Khi màn hình nhỏ hơn hoặc bằng 1440px (như khi chia đôi màn hình), giữ kích thước chuẩn để thanh cuộn ngang xuất hiện mượt mà,
+        /// không bao giờ ép cột làm vỡ chữ hay giấu thông tin cột.
+        /// Khi màn hình rộng hơn (toàn màn hình máy tính lớn), tự động dãn các cột nội dung dài (Họ tên, 2 đơn vị bộ phận) cho kín bảng.
+        /// </summary>
+        private void DgRotation_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is not DataGrid dg || dg.Columns.Count < 8) return;
+            const double baseTotal = 1440.0;
+            double currentWidth = e.NewSize.Width;
+
+            if (currentWidth > baseTotal)
+            {
+                double extra = currentWidth - baseTotal;
+                dg.Columns[1].Width = new DataGridLength(240 + extra * 0.30);
+                dg.Columns[3].Width = new DataGridLength(220 + extra * 0.35);
+                dg.Columns[4].Width = new DataGridLength(220 + extra * 0.35);
+            }
+            else
+            {
+                dg.Columns[1].Width = new DataGridLength(240);
+                dg.Columns[3].Width = new DataGridLength(220);
+                dg.Columns[4].Width = new DataGridLength(220);
+            }
+        }
+
+        /// <summary>Nút Xem chi tiết thông tin luân chuyển / điều động</summary>
+        private void BtnViewRow_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is RotationRowViewModel row)
+            {
+                var dialog = new RotationRecordDialog(row.Source, row.PlanType, isViewOnly: true);
                 dialog.Owner = Window.GetWindow(this);
                 if (dialog.ShowDialog() == true)
                 {

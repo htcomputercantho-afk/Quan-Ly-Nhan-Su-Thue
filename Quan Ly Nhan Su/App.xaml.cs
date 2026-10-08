@@ -468,6 +468,24 @@ namespace TaxPersonnelManagement
                         );");
                     try { context.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_RotationRecords_PersonnelId ON RotationRecords (PersonnelId);"); } catch { }
 
+                    // Manual Migration for DutyAssignmentRecords (Phân công nhiệm vụ - lưu PDF theo Tổ & tháng)
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS DutyAssignmentRecords (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Department TEXT NOT NULL,
+                            Year INTEGER NOT NULL,
+                            Month INTEGER NOT NULL,
+                            EffectiveDate TEXT NOT NULL,
+                            Title TEXT,
+                            Note TEXT,
+                            FileName TEXT NOT NULL,
+                            FileSize INTEGER NOT NULL DEFAULT 0,
+                            FileData BLOB NOT NULL,
+                            UploadedAt TEXT NOT NULL,
+                            UploadedBy TEXT
+                        );");
+                    try { context.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_DutyAssignmentRecords_Dept_Year ON DutyAssignmentRecords (Department, Year);"); } catch { }
+
                     // Khởi tạo các nhiệm kỳ quy hoạch mặc định nếu bảng trống
                     if (!context.PlanningTerms.Any())
                     {

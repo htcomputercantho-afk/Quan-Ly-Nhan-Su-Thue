@@ -1,0 +1,210 @@
+<Window x:Class="TaxPersonnelManagement.Views.DutyAssignmentViewerDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Language="vi-VN"
+        Title="Phân công nhiệm vụ"
+        WindowStartupLocation="CenterOwner"
+        Width="1260" Height="800" MinWidth="960" MinHeight="600"
+        Background="#F1F5F9"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        FontSize="13.5"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+            <!-- Thẻ phiên bản trong danh sách lịch sử -->
+            <Style x:Key="VersionItemStyle" TargetType="ListBoxItem">
+                <Setter Property="Margin" Value="8 4"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBoxItem">
+                            <Border x:Name="card" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12 10">
+                                <ContentPresenter/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="card" Property="BorderBrush" Value="#90CAF9"/>
+                                    <Setter TargetName="card" Property="Background" Value="#F5F9FF"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="card" Property="BorderBrush" Value="#1565C0"/>
+                                    <Setter TargetName="card" Property="Background" Value="#E3F2FD"/>
+                                    <Setter TargetName="card" Property="BorderThickness" Value="1.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="56"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#1565C0" Padding="20 0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                <TextBlock Text="PHÂN CÔNG NHIỆM VỤ" Foreground="#BBDEFB" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="  •  " Foreground="#90CAF9" FontSize="15" VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtDepartment" Text="Tổ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Danh sách lịch sử -->
+            <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 0 1 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="16 14 16 8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="LỊCH SỬ PHÂN CÔNG" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
+                                <TextBlock x:Name="txtCount" Text="0 lần phân công" FontSize="12" Foreground="#64748B" Margin="0 2 0 0"/>
+                            </StackPanel>
+                            <Button x:Name="btnAddVersion" Grid.Column="1" Click="BtnAddVersion_Click" Cursor="Hand"
+                                    Style="{StaticResource MaterialDesignRaisedButton}"
+                                    Background="#1565C0" Foreground="White" Height="34" Padding="12 0"
+                                    materialDesign:ButtonAssist.CornerRadius="6" ToolTip="Thêm bản phân công mới cho Tổ này">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Plus" Width="17" Height="17" Margin="0 0 4 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Thêm bản mới" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+
+                    <ListBox x:Name="lstVersions" Grid.Row="1" Background="Transparent" BorderThickness="0"
+                             ItemContainerStyle="{StaticResource VersionItemStyle}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             SelectionChanged="LstVersions_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Kind="FilePdfBox" Width="22" Height="22" Foreground="#DC2626" Margin="0 0 8 0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding MonthText}" FontWeight="Bold" FontSize="14" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Background="#DCFCE7" BorderBrush="#86EFAC" BorderThickness="1" CornerRadius="10" Padding="8 1"
+                                                Visibility="{Binding IsCurrent, Converter={StaticResource BoolToVis}}" VerticalAlignment="Center">
+                                            <TextBlock Text="Hiện hành" FontSize="11" FontWeight="SemiBold" Foreground="#166534"/>
+                                        </Border>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Margin="0 6 0 0">
+                                        <materialDesign:PackIcon Kind="CalendarCheck" Width="14" Height="14" Foreground="#64748B" Margin="0 0 5 0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding EffectiveText}" FontSize="12.5" Foreground="#334155" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding DisplayTitle}" FontSize="12.5" Foreground="#475569" TextWrapping="Wrap" Margin="0 4 0 0"/>
+                                    <TextBlock Text="{Binding FileName}" FontSize="11.5" Foreground="#94A3B8" TextTrimming="CharacterEllipsis" Margin="0 4 0 0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Khu vực xem PDF -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Thanh công cụ -->
+                <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0 0 0 1" Padding="18 10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Margin="0 0 12 0">
+                            <TextBlock x:Name="txtVersionTitle" Text="" FontWeight="Bold" FontSize="15" Foreground="#0F172A" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="txtVersionMeta" Text="" FontSize="12" Foreground="#64748B" Margin="0 3 0 0" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="btnDownload" Click="BtnDownload_Click" Cursor="Hand" Margin="0 0 8 0" Height="36" Padding="14 0"
+                                    Style="{StaticResource MaterialDesignRaisedButton}" Background="#1565C0" Foreground="White"
+                                    materialDesign:ButtonAssist.CornerRadius="6" ToolTip="Tải file PDF về máy để lưu hoặc in">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Download" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Tải về" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="btnOpenExternal" Click="BtnOpenExternal_Click" Cursor="Hand" Margin="0 0 8 0" Height="36" Padding="12 0"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}" BorderBrush="#1565C0" Foreground="#1565C0"
+                                    materialDesign:ButtonAssist.CornerRadius="6" ToolTip="Mở bằng ứng dụng đọc PDF của máy">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="OpenInNew" Width="17" Height="17" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Mở ngoài" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="btnEdit" Click="BtnEdit_Click" Cursor="Hand" Margin="0 0 8 0" Height="36" Padding="12 0"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}" BorderBrush="#CBD5E1" Foreground="#3949AB"
+                                    materialDesign:ButtonAssist.CornerRadius="6" ToolTip="Chỉnh sửa thông tin / thay file">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Pencil" Width="17" Height="17" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Sửa" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="btnDelete" Click="BtnDelete_Click" Cursor="Hand" Height="36" Padding="12 0"
+                                    Style="{StaticResource MaterialDesignOutlinedButton}" BorderBrush="#FECACA" Background="#FEF2F2" Foreground="#DC2626"
+                                    materialDesign:ButtonAssist.CornerRadius="6" ToolTip="Xóa bản phân công này">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="TrashCanOutline" Width="17" Height="17" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Xóa" FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- PDF + trạng thái -->
+                <Grid Grid.Row="1" Background="#E2E8F0">
+                    <wv2:WebView2 x:Name="webView" Visibility="Collapsed"/>
+
+                    <StackPanel x:Name="pnlPlaceholder" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="460">
+                        <materialDesign:PackIcon x:Name="iconPlaceholder" Kind="FilePdfBox" Width="64" Height="64" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="txtPlaceholder" Text="Đang tải..." FontSize="14" Foreground="#475569" TextAlignment="Center"
+                                   TextWrapping="Wrap" Margin="0 10 0 0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
