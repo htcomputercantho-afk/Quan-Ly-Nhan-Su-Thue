@@ -88,6 +88,7 @@
 
             <!-- Custom ColumnHeaderStyle with Royal Blue Background -->
             <Style x:Key="RoyalBlueHeaderStyle" TargetType="DataGridColumnHeader">
+                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="FontSize" Value="13"/>
@@ -98,13 +99,13 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="DataGridColumnHeader">
                             <Grid SnapsToDevicePixels="True">
-                                <Border Background="#1976D2"
+                                <Border Background="{DynamicResource PrimaryHueMidBrush}"
                                         BorderBrush="#1565C0" BorderThickness="0,0,1,0"
                                         Padding="3 4">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <ContentPresenter.ContentTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding}" TextWrapping="Wrap"
+                                                <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" TextWrapping="Wrap"
                                                            TextTrimming="CharacterEllipsis"
                                                            TextAlignment="Center" LineHeight="16"
                                                            FontWeight="Bold" Foreground="White"
@@ -131,7 +132,7 @@
 
             <!-- DataGrid Column Headers Presenter Background -->
             <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
-                <Setter Property="Background" Value="#1976D2"/>
+                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
             </Style>
 
             <!-- Custom DataGrid Row Style -->
@@ -357,11 +358,11 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#EFF6FF" CornerRadius="12" Width="48" Height="48" Margin="0 0 16 0" VerticalAlignment="Center">
                         <materialDesign:PackIcon Kind="SwapHorizontalBold" Width="26" Height="26"
-                                                 Foreground="#1976D2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                 Foreground="{DynamicResource PrimaryHueMidBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="LUÂN CHUYỂN, ĐIỀU ĐỘNG CÔNG CHỨC" FontSize="20" FontWeight="Bold"
-                                   Foreground="#0F172A"/>
+                        <TextBlock Text="LUÂN CHUYỂN, ĐIỀU ĐỘNG CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                         <TextBlock x:Name="txtTotalCount" Text="Theo dõi và quản lý kế hoạch điều động, luân chuyển cán bộ công chức thuế"
                                    FontSize="12.5" Foreground="#64748B" Margin="0 4 0 0"/>
                     </StackPanel>
@@ -409,7 +410,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountGroup" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="TỔNG SỐ" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="TỔNG SỐ" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Grid.Row="1" x:Name="txtTotalKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
                     </Grid>
@@ -438,7 +439,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="ClipboardCheckOutline" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="TRONG KẾ HOẠCH" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="TRONG KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Grid.Row="1" x:Name="txtInPlanKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
                     </Grid>
@@ -467,7 +468,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AlertCircleOutline" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="NGOÀI KẾ HOẠCH" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="NGOÀI KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Grid.Row="1" x:Name="txtOutPlanKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
                     </Grid>
@@ -496,7 +497,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="CheckDecagram" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="ĐÃ THỰC HIỆN" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="ĐÃ THỰC HIỆN" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Grid.Row="1" x:Name="txtCompletedKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
                     </Grid>
@@ -525,7 +526,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="ClockTimeFourOutline" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="CHƯA THỰC HIỆN" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="CHƯA THỰC HIỆN" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock Grid.Row="1" x:Name="txtPendingKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
                     </Grid>
@@ -653,7 +654,8 @@
 
                         <!-- DataGrid Container Card -->
                         <materialDesign:Card Grid.Row="1" UniformCornerRadius="10" Background="White"
-                                             materialDesign:ElevationAssist.Elevation="Dp1">
+                                             materialDesign:ElevationAssist.Elevation="Dp1"
+                                             ClipToBounds="True">
                             <DataGrid x:Name="dgInPlan"
                                       AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                                       CanUserResizeRows="False" CanUserResizeColumns="True" IsReadOnly="True"
@@ -1000,7 +1002,8 @@
 
                         <!-- DataGrid Container Card -->
                         <materialDesign:Card Grid.Row="1" UniformCornerRadius="10" Background="White"
-                                             materialDesign:ElevationAssist.Elevation="Dp1">
+                                             materialDesign:ElevationAssist.Elevation="Dp1"
+                                             ClipToBounds="True">
                             <DataGrid x:Name="dgOutPlan"
                                       AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
                                       CanUserResizeRows="False" CanUserResizeColumns="True" IsReadOnly="True"

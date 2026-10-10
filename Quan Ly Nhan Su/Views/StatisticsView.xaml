@@ -20,6 +20,7 @@
 
             <!-- Text styling utilities -->
             <Style x:Key="CardTitleText" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                 <Setter Property="FontSize" Value="15"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
@@ -45,7 +46,7 @@
         <!-- 1. Header -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0 0 0 15">
             <materialDesign:PackIcon Kind="ChartPie" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
-            <TextBlock Text="BÁO CÁO THỐNG KÊ NHÂN SỰ" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
+            <TextBlock Text="BÁO CÁO THỐNG KÊ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- 2. Filter Toolbar -->
@@ -110,7 +111,7 @@
                             </Grid.ColumnDefinitions>
                             <materialDesign:PackIcon Kind="AccountGroup" Width="56" Height="56" Foreground="White" Opacity="0.85" VerticalAlignment="Center" Grid.Column="0"/>
                             <StackPanel Grid.Column="1" Margin="20 0 0 0" VerticalAlignment="Center">
-                                <TextBlock Text="TỔNG SỐ CÔNG CHỨC" Foreground="White" Opacity="0.9" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Text="TỔNG SỐ CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" Foreground="White" Opacity="0.9" FontSize="13" FontWeight="Bold"/>
                                 <TextBlock x:Name="txtTotalPersonnel" Text="0" Foreground="White" FontSize="36" FontWeight="Black" Margin="0 4 0 0"/>
                                 <TextBlock Text="Đang công tác tại đơn vị" Foreground="White" Opacity="0.7" FontSize="11" Margin="0 2 0 0"/>
                             </StackPanel>
@@ -134,7 +135,7 @@
                                 </Grid.ColumnDefinitions>
                                 <materialDesign:PackIcon Kind="GenderMale" Width="44" Height="44" Foreground="#0288D1" VerticalAlignment="Center" Grid.Column="0" Margin="0 0 15 0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="NAM CÔNG CHỨC" FontSize="12" FontWeight="Bold" Foreground="Gray"/>
+                                    <TextBlock Text="NAM CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="Bold" Foreground="Gray"/>
                                     <TextBlock x:Name="txtMaleCount" Text="0 người" FontSize="20" FontWeight="Bold" Foreground="#0288D1" Margin="0 4 0 0"/>
                                     <TextBlock x:Name="txtMaleRatio" Text="Tỷ lệ: 0%" FontSize="13" Foreground="#555" FontWeight="Medium" Margin="0 2 0 0"/>
                                 </StackPanel>
@@ -155,7 +156,7 @@
                                 </Grid.ColumnDefinitions>
                                 <materialDesign:PackIcon Kind="GenderFemale" Width="44" Height="44" Foreground="#EC407A" VerticalAlignment="Center" Grid.Column="0" Margin="0 0 15 0"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="NỮ CÔNG CHỨC" FontSize="12" FontWeight="Bold" Foreground="Gray"/>
+                                    <TextBlock Text="NỮ CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="Bold" Foreground="Gray"/>
                                     <TextBlock x:Name="txtFemaleCount" Text="0 người" FontSize="20" FontWeight="Bold" Foreground="#EC407A" Margin="0 4 0 0"/>
                                     <TextBlock x:Name="txtFemaleRatio" Text="Tỷ lệ: 0%" FontSize="13" Foreground="#555" FontWeight="Medium" Margin="0 2 0 0"/>
                                 </StackPanel>
@@ -578,7 +579,7 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="160"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="STT" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="0" Text="STT" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
                                 <TextBlock Grid.Column="1" Text="Mã ngạch" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
                                 <TextBlock Grid.Column="2" Text="Tên ngạch công chức" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA"/>
                                 <TextBlock Grid.Column="3" Text="Nam" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
@@ -651,7 +652,7 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="160"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Text="TỔNG CỘNG" FontWeight="Bold" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Text="TỔNG CỘNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                 <TextBlock x:Name="txtRankTotalMale" Grid.Column="3" Text="0" FontSize="13" FontWeight="Black" Foreground="#0288D1" TextAlignment="Center" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="txtRankTotalFemale" Grid.Column="4" Text="0" FontSize="13" FontWeight="Black" Foreground="#EC407A" TextAlignment="Center" VerticalAlignment="Center"/>
                                 <Border Grid.Column="5" Background="#4338CA" CornerRadius="6" Padding="6,3" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -751,7 +752,7 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                     <materialDesign:PackIcon Kind="Sigma" Width="16" Height="16" Foreground="#0F766E" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="TỔNG CỘNG" FontWeight="Bold" FontSize="13" Foreground="#0F766E" VerticalAlignment="Center"/>
+                                    <TextBlock Text="TỔNG CỘNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" Foreground="#0F766E" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <TextBlock x:Name="txtTeamTotalLeaders" Grid.Column="1" Text="0" FontSize="13" FontWeight="Black" Foreground="#0369A1" TextAlignment="Center" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="txtTeamTotalDeputies" Grid.Column="2" Text="0" FontSize="13" FontWeight="Black" Foreground="#7C3AED" TextAlignment="Center" VerticalAlignment="Center"/>

@@ -49,10 +49,10 @@
 
         <StackPanel Orientation="Horizontal" Margin="0 0 0 24">
             <Border Background="#EFF6FF" CornerRadius="8" Padding="10" Margin="0 0 16 0">
-                <materialDesign:PackIcon Kind="Certificate" Width="26" Height="26" Foreground="#2563EB" VerticalAlignment="Center"/>
+                <materialDesign:PackIcon Kind="Certificate" Width="26" Height="26" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
             </Border>
             <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="THEO DÕI XẾP LOẠI CÔNG CHỨC" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                <TextBlock Text="THEO DÕI XẾP LOẠI CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                 <TextBlock Text="Quản lý, tìm kiếm và xuất báo cáo lịch sử xếp loại thi đua cán bộ hàng năm" FontSize="12.5" Foreground="#64748B" Margin="0 4 0 0"/>
             </StackPanel>
         </StackPanel>
@@ -70,7 +70,7 @@
                     </Grid.Background>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <materialDesign:PackIcon x:Name="iconTotal" Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                        <TextBlock x:Name="lblTotal" Text="TỔNG SỐ CÁN BỘ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="lblTotal" Text="TỔNG SỐ CÁN BỘ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                         <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
@@ -101,7 +101,7 @@
                             <materialDesign:PackIcon Kind="Star" Width="24" Height="24" Foreground="White" Margin="2 -4 2 0"/>
                             <materialDesign:PackIcon Kind="Star" Width="20" Height="20" Foreground="White"/>
                         </StackPanel>
-                        <TextBlock x:Name="lblExcellent" Text="XUẤT SẮC" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="lblExcellent" Text="XUẤT SẮC" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                         <TextBlock x:Name="txtExcellentCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
@@ -132,7 +132,7 @@
                             <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0"/>
                             <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0"/>
                         </StackPanel>
-                        <TextBlock x:Name="lblGood" Text="HOÀN THÀNH TỐT NHIỆM VỤ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="lblGood" Text="HOÀN THÀNH TỐT NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                         <TextBlock x:Name="txtGoodCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
@@ -163,7 +163,7 @@
                             <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0" Opacity="0.6"/>
                             <materialDesign:PackIcon Kind="Circle" Width="12" Height="12" Foreground="White" Margin="2 0" Opacity="0.3"/>
                         </StackPanel>
-                        <TextBlock x:Name="lblSatisfactory" Text="HOÀN THÀNH NHIỆM VỤ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="lblSatisfactory" Text="HOÀN THÀNH NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                         <TextBlock x:Name="txtSatisfactoryCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
@@ -190,7 +190,7 @@
                     </Grid.Background>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <materialDesign:PackIcon x:Name="iconUnsatisfactory" Kind="AlertCircle" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                        <TextBlock x:Name="lblUnsatisfactory" Text="KHÔNG HOÀN THÀNH NHIỆM VỤ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                        <TextBlock x:Name="lblUnsatisfactory" Text="KHÔNG HOÀN THÀNH NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                         <TextBlock x:Name="txtUnsatisfactoryCount" Text="0 (0%)" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
@@ -346,7 +346,7 @@
         </materialDesign:Card>
 
         <!-- Data Grid Card -->
-        <materialDesign:Card Grid.Row="3" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
+        <materialDesign:Card Grid.Row="3" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}" ClipToBounds="True">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -363,18 +363,24 @@
                           SelectionMode="Single"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Resources>
+                        <!-- Presenter Style to fill gap on right -->
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
+
                         <!-- Column Header Style -->
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
                             <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="Foreground" Value="#475569"/>
+                            <Setter Property="Foreground" Value="White"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             <Setter Property="VerticalContentAlignment" Value="Center"/>
                             <Setter Property="Padding" Value="8 12"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="DataGridColumnHeader">
-                                        <Border Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="0 0 0 1" Padding="{TemplateBinding Padding}">
+                                        <Border Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" Padding="{TemplateBinding Padding}">
                                             <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                               RecognizesAccessKey="True"/>
@@ -427,11 +433,14 @@
                         </Style>
 
                         <Style x:Key="WrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                             <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                             <Setter Property="FontWeight" Value="Bold"/>
+                             <Setter Property="Foreground" Value="White"/>
                              <Setter Property="MinHeight" Value="54"/>
                              <Setter Property="ContentTemplate">
                                  <Setter.Value>
                                      <DataTemplate>
-                                         <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Padding="2"/>
+                                         <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Padding="2" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="White"/>
                                      </DataTemplate>
                                  </Setter.Value>
                              </Setter>

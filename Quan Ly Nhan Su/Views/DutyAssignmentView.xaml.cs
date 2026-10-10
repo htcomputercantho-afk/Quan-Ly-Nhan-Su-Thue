@@ -439,8 +439,10 @@ namespace TaxPersonnelManagement.Views
             }
 
             var list = filtered.ToList();
-            icDepartmentRows.ItemsSource = null;
-            icDepartmentRows.ItemsSource = list;
+            icDepartmentRowsLeft.ItemsSource = null;
+            icDepartmentRowsLeft.ItemsSource = list;
+            icDepartmentRowsRight.ItemsSource = null;
+            icDepartmentRowsRight.ItemsSource = list;
             pnlEmptyState.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             txtFilterCount.Text = $"{list.Count} / {_allRows.Count} Tổ";
         }
@@ -618,6 +620,58 @@ namespace TaxPersonnelManagement.Views
                 {
                     LoadData();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Cho phép lăn chuột mượt mà khi con trỏ đang ở trên thanh tiêu đề/chú thích để cuộn bảng bên dưới.
+        /// </summary>
+        private void Header_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (svMatrixRowsRight != null)
+            {
+                svMatrixRowsRight.ScrollToVerticalOffset(svMatrixRowsRight.VerticalOffset - (e.Delta * 0.5));
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Lăn chuột trên cột BỘ PHẬN cố định bên trái sẽ cuộn đồng bộ toàn bộ bảng bên phải.
+        /// </summary>
+        private void SvMatrixRowsLeft_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (svMatrixRowsRight != null)
+            {
+                svMatrixRowsRight.ScrollToVerticalOffset(svMatrixRowsRight.VerticalOffset - (e.Delta * 0.5));
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Hỗ trợ Shift + Lăn chuột để cuộn ngang tiện lợi khi con trỏ chuột ở trên bảng.
+        /// </summary>
+        private void SvMatrixRowsRight_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+            {
+                svMatrixRowsRight.ScrollToHorizontalOffset(svMatrixRowsRight.HorizontalOffset - (e.Delta * 0.5));
+                e.Handled = true;
+            }
+        }
+
+        /// <summary>
+        /// Đồng bộ cuộn dọc giữa cột BỘ PHẬN bên trái và thân bảng, đồng thời đồng bộ cuộn ngang giữa thân bảng và tiêu đề/chú thích.
+        /// </summary>
+        private void SvMatrixRowsRight_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (e.VerticalChange != 0)
+            {
+                svMatrixRowsLeft?.ScrollToVerticalOffset(e.VerticalOffset);
+            }
+            if (e.HorizontalChange != 0)
+            {
+                svMatrixHeaderH?.ScrollToHorizontalOffset(e.HorizontalOffset);
+                svMatrixLegendH?.ScrollToHorizontalOffset(e.HorizontalOffset);
             }
         }
     }

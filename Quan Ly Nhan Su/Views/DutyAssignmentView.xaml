@@ -309,7 +309,7 @@
                         </Border>
 
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="PHÂN CÔNG NHIỆM VỤ" FontSize="19" FontWeight="Bold" Foreground="#0F172A"/>
+                            <TextBlock Text="PHÂN CÔNG NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                             <TextBlock Text="Theo dõi lịch sử và tần suất thay đổi phân công nhiệm vụ theo Tổ và từng tháng"
                                        FontSize="12.5" Foreground="#64748B" Margin="0 2 0 0"/>
                         </StackPanel>
@@ -380,7 +380,7 @@
                                     <materialDesign:PackIcon Grid.Column="0" Kind="Magnify" Width="18" Height="18" Foreground="#64748B" Margin="0 0 8 0" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txtSearch" Grid.Column="1" BorderThickness="0" Background="Transparent"
                                              FontSize="13" Foreground="#0F172A" VerticalContentAlignment="Center"
-                                             materialDesign:HintAssist.Hint="Tìm kiếm Tổ / bộ phận..." TextChanged="TxtSearch_TextChanged"/>
+                                             materialDesign:HintAssist.Hint="Tìm kiếm bộ phận..." TextChanged="TxtSearch_TextChanged"/>
                                     <Button x:Name="btnClearSearch" Grid.Column="2" Width="18" Height="18" Padding="0" Background="Transparent"
                                             BorderThickness="0" Cursor="Hand" Visibility="Collapsed" Click="BtnClearSearch_Click">
                                         <materialDesign:PackIcon Kind="CloseCircle" Width="14" Height="14" Foreground="#94A3B8"/>
@@ -442,13 +442,13 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="TỔNG SỐ TỔ" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="TỔNG SỐ TỔ" FontFamily="{StaticResource AppHeadingFont}" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="txtKpiTotal" Text="0" FontSize="26" FontWeight="Bold" Foreground="#0F172A" Margin="0 2 0 0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                         <Border x:Name="badgeKpiTotalActive" Background="#2563EB" CornerRadius="5" Padding="5 2" Margin="0 0 6 0" VerticalAlignment="Center">
-                            <TextBlock Text="ĐANG XEM" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="ĐANG XEM" FontFamily="{StaticResource AppHeadingFont}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                         </Border>
                         <Border Width="38" Height="38" CornerRadius="10" Background="#EFF6FF" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="OfficeBuildingOutline" Width="20" Height="20" Foreground="#2563EB" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -480,13 +480,13 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="ỔN ĐỊNH TRONG NĂM" FontSize="11" FontWeight="Bold" Foreground="#059669" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="ỔN ĐỊNH TRONG NĂM" FontFamily="{StaticResource AppHeadingFont}" FontSize="11" FontWeight="Bold" Foreground="#059669" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="txtKpiStable" Text="0" FontSize="26" FontWeight="Bold" Foreground="#059669" Margin="0 2 0 0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                         <Border x:Name="badgeKpiStableActive" Background="#059669" CornerRadius="5" Padding="5 2" Margin="0 0 6 0" Visibility="Collapsed" VerticalAlignment="Center">
-                            <TextBlock Text="ĐANG LỌC" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="ĐANG LỌC" FontFamily="{StaticResource AppHeadingFont}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                         </Border>
                         <Border Width="38" Height="38" CornerRadius="10" Background="#ECFDF5" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="CheckCircleOutline" Width="20" Height="20" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -518,13 +518,13 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="NHIỀU THAY ĐỔI" FontSize="11" FontWeight="Bold" Foreground="#D97706" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="NHIỀU THAY ĐỔI" FontFamily="{StaticResource AppHeadingFont}" FontSize="11" FontWeight="Bold" Foreground="#D97706" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="txtKpiMultiple" Text="0" FontSize="26" FontWeight="Bold" Foreground="#D97706" Margin="0 2 0 0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                         <Border x:Name="badgeKpiMultipleActive" Background="#D97706" CornerRadius="5" Padding="5 2" Margin="0 0 6 0" Visibility="Collapsed" VerticalAlignment="Center">
-                            <TextBlock Text="ĐANG LỌC" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="ĐANG LỌC" FontFamily="{StaticResource AppHeadingFont}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                         </Border>
                         <Border Width="38" Height="38" CornerRadius="10" Background="#FFFBEB" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AlertCircleOutline" Width="20" Height="20" Foreground="#D97706" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -556,13 +556,13 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="CHƯA CÓ VĂN BẢN" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="CHƯA CÓ VĂN BẢN" FontFamily="{StaticResource AppHeadingFont}" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="txtKpiNoFile" Text="0" FontSize="26" FontWeight="Bold" Foreground="#64748B" Margin="0 2 0 0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                         <Border x:Name="badgeKpiNoFileActive" Background="#475569" CornerRadius="5" Padding="5 2" Margin="0 0 6 0" Visibility="Collapsed" VerticalAlignment="Center">
-                            <TextBlock Text="ĐANG LỌC" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="ĐANG LỌC" FontFamily="{StaticResource AppHeadingFont}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                         </Border>
                         <Border Width="38" Height="38" CornerRadius="10" Background="#F1F5F9" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="FileQuestionOutline" Width="20" Height="20" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -571,141 +571,207 @@
 
                     <Border Grid.Row="1" Grid.ColumnSpan="2" Margin="0 6 0 0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Border Background="#E2E8F0" CornerRadius="4" Padding="5 1" Margin="0 0 6 0">
-                                <TextBlock x:Name="txtKpiNoFilePercent" Text="Chưa có" FontSize="10.5" FontWeight="Bold" Foreground="#475569"/>
+                            <Border Background="#F1F5F9" CornerRadius="4" Padding="5 1" Margin="0 0 6 0">
+                                <TextBlock x:Name="txtKpiNoFilePercent" Text="Thiếu file" FontSize="10.5" FontWeight="Bold" Foreground="#475569"/>
                             </Border>
-                            <TextBlock x:Name="txtKpiNoFileDesc" Text="Cần cập nhật" FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="txtKpiNoFileDesc" Text="Cần bổ sung" FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
                     </Border>
                 </Grid>
             </Border>
         </Grid>
 
-        <!-- ======================= ROW 2: MATRIX TIMELINE TABLE ======================= -->
+        <!-- ======================= ROW 2: MATRIX TIMELINE TABLE (GHIM CỐ ĐỊNH THANH TIÊU ĐỀ & CỘT BỘ PHẬN) ======================= -->
         <Border Grid.Row="2" Style="{StaticResource ModernCard}" Padding="0" ClipToBounds="True">
-            <!-- ScrollViewer cuộn cả ngang và dọc để không bao giờ bị dồn vỡ cột khi kéo nhỏ -->
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <Grid MinWidth="1160">
-                    <Grid.RowDefinitions>
-                        <!-- Tiêu đề cột ma trận -->
-                        <RowDefinition Height="46"/>
-                        <!-- Chú thích ký hiệu ma trận -->
-                        <RowDefinition Height="36"/>
-                        <!-- Danh sách các Tổ -->
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Tiêu đề cột ma trận: CỐ ĐỊNH Ở ĐỈNH -->
+                    <RowDefinition Height="46"/>
+                    <!-- Chú thích ký hiệu ma trận: CỐ ĐỊNH Ở ĐỈNH -->
+                    <RowDefinition Height="36"/>
+                    <!-- Danh sách các bộ phận: CUỘN DỌC TỰ DO -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                    <!-- HEADER CỘT MA TRẬN -->
-                    <Border Grid.Row="0" Background="#0F172A">
+                <!-- ================= HÀNG 0: HEADER (GHIM CỐ ĐỊNH Ở ĐỈNH) ================= -->
+                <Grid Grid.Row="0" PreviewMouseWheel="Header_PreviewMouseWheel">
+                    <Grid.ColumnDefinitions>
+                        <!-- Cột cố định: BỘ PHẬN (330px) -->
+                        <ColumnDefinition Width="330"/>
+                        <!-- Cột cuộn ngang: 12 Tháng + Trạng thái + Thao tác -->
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Header Cột BỘ PHẬN (Cố định trên cùng bên trái) -->
+                    <Border Grid.Column="0" Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" CornerRadius="11 0 0 0">
+                        <TextBlock Text="BỘ PHẬN" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="White"
+                                   VerticalAlignment="Center" Margin="20 0 10 0"/>
+                    </Border>
+
+                    <!-- Header Cột 12 Tháng + Trạng thái + Thao tác (Cuộn ngang đồng bộ) -->
+                    <Border Grid.Column="1" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="0 11 0 0">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="280"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="170"/>
-                                <ColumnDefinition Width="100"/>
+                                <!-- Spacer bù thanh cuộn dọc bên dưới để thẳng tắp -->
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Cột Tổ -->
-                            <TextBlock Grid.Column="0" Text="TỔ / BỘ PHẬN" FontWeight="Bold" FontSize="12.5" Foreground="White"
-                                       VerticalAlignment="Center" Margin="20 0 10 0"/>
+                            <ScrollViewer Grid.Column="0" x:Name="svMatrixHeaderH" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                                <Grid MinWidth="960">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
 
-                            <!-- Cột 12 Tháng -->
-                            <UniformGrid Grid.Column="1" Columns="12">
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.01" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.02" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.03" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.04" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.05" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.06" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.07" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.08" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.09" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.10" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border BorderBrush="#1E293B" BorderThickness="0 0 1 0"><TextBlock Text="T.11" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                                <Border><TextBlock Text="T.12" FontWeight="Bold" FontSize="11.5" Foreground="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
-                            </UniformGrid>
+                                    <!-- 12 Tháng -->
+                                    <UniformGrid Grid.Column="0" Columns="12">
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.01" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.02" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.03" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.04" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.05" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.06" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.07" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.08" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.09" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.10" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border BorderBrush="#1565C0" BorderThickness="0 0 1 0"><TextBlock Text="T.11" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                        <Border><TextBlock Text="T.12" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+                                    </UniformGrid>
 
-                            <!-- Cột Trạng thái -->
-                            <TextBlock Grid.Column="2" Text="TẦN SUẤT / TRẠNG THÁI" FontWeight="Bold" FontSize="11.5" Foreground="White"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <!-- Cột Trạng thái -->
+                                    <TextBlock Grid.Column="1" Text="TẦN SUẤT / TRẠNG THÁI" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                            <!-- Cột Thao tác -->
-                            <TextBlock Grid.Column="3" Text="THAO TÁC" FontWeight="Bold" FontSize="11.5" Foreground="White"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <!-- Cột Thao tác -->
+                                    <TextBlock Grid.Column="2" Text="THAO TÁC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11.5" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </ScrollViewer>
+
+                            <!-- Spacer bù thanh cuộn dọc -->
+                            <Border Grid.Column="1" Width="17" Background="{DynamicResource PrimaryHueMidBrush}"
+                                    Visibility="{Binding ComputedVerticalScrollBarVisibility, ElementName=svMatrixRowsRight}"/>
                         </Grid>
                     </Border>
+                </Grid>
 
-                    <!-- THANH CHÚ THÍCH KÝ HIỆU -->
-                    <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 0 0 1" Padding="20 0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Chú thích:" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 12 0" VerticalAlignment="Center"/>
+                <!-- ================= HÀNG 1: THANH CHÚ THÍCH (GHIM CỐ ĐỊNH Ở ĐỈNH) ================= -->
+                <Grid Grid.Row="1" PreviewMouseWheel="Header_PreviewMouseWheel">
+                    <Grid.ColumnDefinitions>
+                        <!-- Cột cố định: Tiêu đề chú thích (330px) -->
+                        <ColumnDefinition Width="330"/>
+                        <!-- Cột các ký hiệu chú thích -->
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                            <!-- Ký hiệu có file -->
-                            <Border Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="5" Padding="6 2" Margin="0 0 6 0">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="FilePdfBox" Width="13" Height="13" Foreground="#DC2626" Margin="0 0 3 0"/>
-                                    <TextBlock Text="PDF 15/03" FontSize="10.5" FontWeight="Bold" Foreground="#DC2626"/>
-                                </StackPanel>
-                            </Border>
-                            <TextBlock Text="Có ban hành/thay đổi phân công (Bấm để xem PDF)" FontSize="11.5" Foreground="#475569" Margin="0 0 18 0" VerticalAlignment="Center"/>
-
-                            <!-- Ký hiệu giữ nguyên -->
-                            <Border Width="22" Height="3" Background="#60A5FA" CornerRadius="1.5" Margin="0 0 4 0" VerticalAlignment="Center"/>
-                            <Ellipse Width="6" Height="6" Fill="#2563EB" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Giữ nguyên nhiệm vụ từ văn bản trước" FontSize="11.5" Foreground="#475569" Margin="0 0 18 0" VerticalAlignment="Center"/>
-
-                            <!-- Ký hiệu chưa có file -->
-                            <Ellipse Width="5" Height="5" Fill="#CBD5E1" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                            <TextBlock Text="Chưa có văn bản" FontSize="11.5" Foreground="#94A3B8" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 0 1 1" Padding="20 0">
+                        <TextBlock Text="Chú thích:" FontSize="11.5" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center"/>
                     </Border>
 
-                    <!-- DANH SÁCH TỔ (ROWS) -->
-                    <Grid Grid.Row="2">
-                        <ItemsControl x:Name="icDepartmentRows">
+                    <Border Grid.Column="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 0 0 1" Padding="14 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <!-- Spacer bù thanh cuộn dọc bên dưới để thẳng tắp -->
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ScrollViewer Grid.Column="0" x:Name="svMatrixLegendH" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" MinWidth="960">
+                                    <!-- Ký hiệu có file -->
+                                    <Border Background="#FEE2E2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="5" Padding="6 2" Margin="0 0 6 0">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="FilePdfBox" Width="13" Height="13" Foreground="#DC2626" Margin="0 0 3 0"/>
+                                            <TextBlock Text="PDF 15/03" FontSize="10.5" FontWeight="Bold" Foreground="#DC2626"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="Có ban hành/thay đổi phân công (Bấm để xem PDF)" FontSize="11.5" Foreground="#475569" Margin="0 0 18 0" VerticalAlignment="Center"/>
+
+                                    <!-- Ký hiệu giữ nguyên -->
+                                    <Border Width="22" Height="3" Background="#60A5FA" CornerRadius="1.5" Margin="0 0 4 0" VerticalAlignment="Center"/>
+                                    <Ellipse Width="6" Height="6" Fill="#2563EB" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Giữ nguyên nhiệm vụ từ văn bản trước" FontSize="11.5" Foreground="#475569" Margin="0 0 18 0" VerticalAlignment="Center"/>
+
+                                    <!-- Ký hiệu chưa có file -->
+                                    <Ellipse Width="5" Height="5" Fill="#CBD5E1" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Chưa có văn bản" FontSize="11.5" Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ScrollViewer>
+
+                            <!-- Spacer bù thanh cuộn dọc -->
+                            <Border Grid.Column="1" Width="17" Background="#F8FAFC"
+                                    Visibility="{Binding ComputedVerticalScrollBarVisibility, ElementName=svMatrixRowsRight}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ================= HÀNG 2: DANH SÁCH BỘ PHẬN (THANH CUỘN NGANG LUÔN CỐ ĐỊNH Ở ĐÁY KHUNG NHÌN) ================= -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <!-- Cột cố định (BỘ PHẬN): 330px, ghim cứng trên màn hình -->
+                        <ColumnDefinition Width="330"/>
+                        <!-- Cột cuộn ngang & dọc: 12 tháng, trạng thái, thao tác -->
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- CỘT BỘ PHẬN (FROZEN / CỐ ĐỊNH KHI CUỘN NGANG) -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ScrollViewer Grid.Row="0" x:Name="svMatrixRowsLeft"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      VerticalScrollBarVisibility="Hidden"
+                                      Focusable="False"
+                                      PreviewMouseWheel="SvMatrixRowsLeft_PreviewMouseWheel">
+                            <ItemsControl x:Name="icDepartmentRowsLeft">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Height="58" BorderBrush="#F1F5F9" BorderThickness="0 0 1 1" Background="White" Padding="18 6 10 6">
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold"
+                                                           Foreground="#0F172A" TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding Department}"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="#64748B"
+                                                           Margin="0 3 0 0" TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding Subtitle}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Spacer bù thanh cuộn ngang bên phải để đáy cột BỘ PHẬN thẳng hàng tắp với đáy bảng -->
+                        <Border Grid.Row="1" Height="17" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 1 1 0"
+                                Visibility="{Binding ComputedHorizontalScrollBarVisibility, ElementName=svMatrixRowsRight}"/>
+                    </Grid>
+
+                    <!-- CỘT CUỘN NGANG & DỌC: 12 THÁNG + TRẠNG THÁI + THAO TÁC (Thanh cuộn ngang luôn ở đáy Card) -->
+                    <ScrollViewer Grid.Column="1" x:Name="svMatrixRowsRight"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Focusable="False"
+                                  PreviewMouseWheel="SvMatrixRowsRight_PreviewMouseWheel"
+                                  ScrollChanged="SvMatrixRowsRight_ScrollChanged">
+                        <ItemsControl x:Name="icDepartmentRowsRight">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="#F1F5F9" BorderThickness="0 0 0 1" Background="Transparent"
-                                            x:Name="rowBorder">
-                                        <Grid MinHeight="58">
+                                    <Border Height="58" BorderBrush="#F1F5F9" BorderThickness="0 0 0 1" Background="White">
+                                        <Grid MinWidth="960">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="280"/>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="170"/>
                                                 <ColumnDefinition Width="100"/>
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- CỘT TỔ: Avatar Badge + Tên Tổ + Trạng thái hiện hành -->
-                                            <Border Grid.Column="0" Padding="16 8 10 8" VerticalAlignment="Center">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- Avatar / Icon Badge của Tổ -->
-                                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="9"
-                                                            Background="{Binding AvatarBackground}" Margin="0 0 10 0"
-                                                            VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Abbreviation}" FontSize="11.5" FontWeight="Bold"
-                                                                   Foreground="{Binding AvatarForeground}"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                    </Border>
-
-                                                    <!-- Tên Tổ & Thông tin hiện hành -->
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold"
-                                                                   Foreground="#0F172A" TextWrapping="Wrap" LineHeight="17"
-                                                                   ToolTip="{Binding Department}"/>
-                                                        <TextBlock Text="{Binding Subtitle}" FontSize="10.5" Foreground="#64748B"
-                                                                   Margin="0 2 0 0" TextTrimming="CharacterEllipsis"
-                                                                   ToolTip="{Binding Subtitle}"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-
                                             <!-- CỘT 12 THÁNG (UniformGrid) -->
-                                            <ItemsControl Grid.Column="1" ItemsSource="{Binding Cells}">
+                                            <ItemsControl Grid.Column="0" ItemsSource="{Binding Cells}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
                                                         <UniformGrid Columns="12"/>
@@ -771,7 +837,7 @@
                                             </ItemsControl>
 
                                             <!-- CỘT TRẠNG THÁI -->
-                                            <Border Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <Border Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
                                                 <Border Background="{Binding StatusBackground}" BorderBrush="{Binding StatusBorder}"
                                                         BorderThickness="1" CornerRadius="10" Padding="10 4">
                                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -784,7 +850,7 @@
                                             </Border>
 
                                             <!-- CỘT THAO TÁC -->
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <!-- Nút Xem toàn bộ lịch sử / PDF của Tổ -->
                                                 <Button Style="{StaticResource RowActionPillBtn}" Tag="{Binding Department}" Click="BtnViewHistory_Click"
                                                         Background="#EFF6FF" BorderBrush="#DBEAFE" BorderThickness="1"
@@ -806,17 +872,17 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                    </ScrollViewer>
 
-                        <!-- Empty state khi không tìm thấy kết quả -->
-                        <StackPanel x:Name="pnlEmptyState" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 60">
-                            <materialDesign:PackIcon Kind="FileSearchOutline" Width="48" Height="48" Foreground="#94A3B8" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Không tìm thấy Tổ / bộ phận nào phù hợp" FontSize="15" FontWeight="SemiBold"
-                                       Foreground="#475569" HorizontalAlignment="Center" Margin="0 10 0 4"/>
-                            <TextBlock Text="Vui lòng thử tìm kiếm với từ khóa khác" FontSize="12.5" Foreground="#94A3B8" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Grid>
+                    <!-- Empty state khi không tìm thấy kết quả -->
+                    <StackPanel x:Name="pnlEmptyState" Grid.ColumnSpan="2" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 60">
+                        <materialDesign:PackIcon Kind="FileSearchOutline" Width="48" Height="48" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Không tìm thấy bộ phận nào phù hợp" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="#475569" HorizontalAlignment="Center" Margin="0 10 0 4"/>
+                        <TextBlock Text="Vui lòng thử tìm kiếm với từ khóa khác" FontSize="12.5" Foreground="#94A3B8" HorizontalAlignment="Center"/>
+                    </StackPanel>
                 </Grid>
-            </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </Page>

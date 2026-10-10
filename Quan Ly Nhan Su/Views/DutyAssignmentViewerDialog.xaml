@@ -64,7 +64,7 @@
         <Border Grid.Row="0" Background="#1565C0" Padding="20 0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                <TextBlock Text="PHÂN CÔNG NHIỆM VỤ" Foreground="#BBDEFB" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Text="PHÂN CÔNG NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" Foreground="#BBDEFB" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 <TextBlock Text="  •  " Foreground="#90CAF9" FontSize="15" VerticalAlignment="Center"/>
                 <TextBlock x:Name="txtDepartment" Text="Tổ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
             </StackPanel>
@@ -91,7 +91,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="LỊCH SỬ PHÂN CÔNG" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
+                                <TextBlock Text="LỊCH SỬ PHÂN CÔNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
                                 <TextBlock x:Name="txtCount" Text="0 lần phân công" FontSize="12" Foreground="#64748B" Margin="0 2 0 0"/>
                             </StackPanel>
                             <Button x:Name="btnAddVersion" Grid.Column="1" Click="BtnAddVersion_Click" Cursor="Hand"

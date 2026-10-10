@@ -66,6 +66,7 @@ namespace TaxPersonnelManagement.Services
 
         private UserCredential? _credential;
         private DriveService?   _driveService;
+        private string?         _cachedFolderId;
 
         /// <summary>
         /// Thời điểm sửa đổi của file Drive ghi nhận lúc mở app (dùng để phát hiện xung đột khi đóng app).
@@ -104,12 +105,12 @@ namespace TaxPersonnelManagement.Services
                     SCOPES,
                     "user",
                     CancellationToken.None,
-                    new FileDataStore(TOKEN_FOLDER, fullPath: true));
+                    new FileDataStore(TOKEN_FOLDER, fullPath: true)).ConfigureAwait(false);
 
                 // Nếu token hết hạn, tự động refresh (không cần mở trình duyệt)
                 if (_credential.Token.IsStale)
                 {
-                    bool refreshed = await _credential.RefreshTokenAsync(CancellationToken.None);
+                    bool refreshed = await _credential.RefreshTokenAsync(CancellationToken.None).ConfigureAwait(false);
                     if (!refreshed) return false;
                 }
 
@@ -143,9 +144,10 @@ namespace TaxPersonnelManagement.Services
                 SCOPES,
                 "user",
                 CancellationToken.None,
-                new FileDataStore(TOKEN_FOLDER, fullPath: true));
+                new FileDataStore(TOKEN_FOLDER, fullPath: true)).ConfigureAwait(false);
 
             _driveService = BuildDriveService();
+            _cachedFolderId = null;
         }
 
         /// <summary>
@@ -164,8 +166,9 @@ namespace TaxPersonnelManagement.Services
             catch { /* bỏ qua lỗi khi xóa */ }
             finally
             {
-                _credential   = null;
-                _driveService = null;
+                _credential     = null;
+                _driveService   = null;
+                _cachedFolderId = null;
             }
         }
 
@@ -180,14 +183,18 @@ namespace TaxPersonnelManagement.Services
 
             try
             {
-                string? folderId = await GetOrCreateBackupFolderIdAsync();
-                string? existingFileId = await GetDriveFileIdAsync();
+                // Ép SQLite ghi toàn bộ các thay đổi từ file WAL vào file .db trước khi upload
+                CheckpointDatabase();
+
+                var cloudInfo = await GetCloudFileInfoAsync().ConfigureAwait(false);
+                string? existingFileId = cloudInfo?.Id;
+                string? folderId = await GetOrCreateBackupFolderIdAsync().ConfigureAwait(false);
 
                 using var stream = new FileStream(DB_PATH, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
                 DriveFile? uploadedFile = null;
 
-                if (existingFileId == null)
+                if (string.IsNullOrEmpty(existingFileId))
                 {
                     // Tạo file mới trong thư mục dedicated
                     var fileMetadata = new DriveFile
@@ -198,13 +205,14 @@ namespace TaxPersonnelManagement.Services
                     };
                     var createRequest = _driveService.Files.Create(fileMetadata, stream, "application/octet-stream");
                     createRequest.Fields = "id,name,modifiedTime,md5Checksum,size";
-                    var result = await createRequest.UploadAsync();
+                    var result = await createRequest.UploadAsync().ConfigureAwait(false);
                     if (result.Status == Google.Apis.Upload.UploadStatus.Completed)
                     {
                         uploadedFile = createRequest.ResponseBody;
                     }
                     else
                     {
+                        App.DebugLog($"PushAsync create failed: status={result.Status}, err={result.Exception?.Message}");
                         return false;
                     }
                 }
@@ -214,13 +222,14 @@ namespace TaxPersonnelManagement.Services
                     var fileMetadata = new DriveFile();
                     var updateRequest = _driveService.Files.Update(fileMetadata, existingFileId, stream, "application/octet-stream");
                     updateRequest.Fields = "id,name,modifiedTime,md5Checksum,size";
-                    var result = await updateRequest.UploadAsync();
+                    var result = await updateRequest.UploadAsync().ConfigureAwait(false);
                     if (result.Status == Google.Apis.Upload.UploadStatus.Completed)
                     {
                         uploadedFile = updateRequest.ResponseBody;
                     }
                     else
                     {
+                        App.DebugLog($"PushAsync update failed: status={result.Status}, err={result.Exception?.Message}");
                         return false;
                     }
                 }
@@ -272,8 +281,10 @@ namespace TaxPersonnelManagement.Services
 
             try
             {
-                string? fileId = await GetDriveFileIdAsync();
-                if (fileId == null) return false; // Chưa có file trên Drive
+                var cloudInfo = await GetCloudFileInfoAsync().ConfigureAwait(false);
+                if (cloudInfo == null || string.IsNullOrEmpty(cloudInfo.Id)) return false;
+
+                string fileId = cloudInfo.Id;
 
                 // Giải phóng các kết nối SQLite đang mở nếu có
                 try
@@ -296,30 +307,23 @@ namespace TaxPersonnelManagement.Services
                 using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
                 {
                     var getRequest = _driveService.Files.Get(fileId);
-                    await getRequest.DownloadAsync(stream);
+                    await getRequest.DownloadAsync(stream).ConfigureAwait(false);
                 }
-
-                // Lấy thông tin metadata của file trên Drive
-                DateTime? cloudModified = null;
-                string? cloudMd5 = null;
-                try
-                {
-                    var metaReq = _driveService.Files.Get(fileId);
-                    metaReq.Fields = "id,name,modifiedTime,md5Checksum,size";
-                    var fileMeta = await metaReq.ExecuteAsync();
-                    cloudModified = fileMeta.ModifiedTimeDateTimeOffset?.DateTime.ToLocalTime();
-                    cloudMd5 = fileMeta.Md5Checksum;
-                }
-                catch { }
 
                 // Ghi đè file local bằng file vừa tải
                 File.Move(tempPath, DB_PATH, overwrite: true);
 
-                if (cloudModified.HasValue)
+                // Xóa file WAL và SHM nếu có của database cũ để tránh SQLite đọc lại cache cũ
+                string walPath = DB_PATH + "-wal";
+                string shmPath = DB_PATH + "-shm";
+                if (File.Exists(walPath)) try { File.Delete(walPath); } catch { }
+                if (File.Exists(shmPath)) try { File.Delete(shmPath); } catch { }
+
+                if (cloudInfo.ModifiedTime.HasValue)
                 {
                     try
                     {
-                        File.SetLastWriteTime(DB_PATH, cloudModified.Value);
+                        File.SetLastWriteTime(DB_PATH, cloudInfo.ModifiedTime.Value);
                     }
                     catch { }
                 }
@@ -328,13 +332,13 @@ namespace TaxPersonnelManagement.Services
                 SaveSyncState(new SyncState
                 {
                     LastCloudFileId = fileId,
-                    LastCloudModifiedTime = cloudModified,
-                    LastCloudMd5 = cloudMd5 ?? localMd5,
+                    LastCloudModifiedTime = cloudInfo.ModifiedTime,
+                    LastCloudMd5 = cloudInfo.Md5Checksum ?? localMd5,
                     LastLocalDbMd5 = localMd5,
                     LastSyncLocalTime = DateTime.Now
                 });
 
-                InitialCloudModifiedTime = cloudModified;
+                InitialCloudModifiedTime = cloudInfo.ModifiedTime;
                 App.IsDataDirty = false;
                 return true;
             }
@@ -349,12 +353,45 @@ namespace TaxPersonnelManagement.Services
         }
 
         /// <summary>
+        /// Ép SQLite ghi toàn bộ các trang dữ liệu từ file nhật ký WAL (-wal) vào file CSDL chính (.db)
+        /// và giải phóng các kết nối để file .db luôn chứa đầy đủ dữ liệu mới nhất.
+        /// </summary>
+        public static void CheckpointDatabase()
+        {
+            try
+            {
+                if (!File.Exists(DB_PATH)) return;
+
+                using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={DB_PATH}"))
+                {
+                    connection.Open();
+                    using var cmd = connection.CreateCommand();
+                    cmd.CommandText = "PRAGMA wal_checkpoint(TRUNCATE);";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog($"CheckpointDatabase error: {ex.Message}");
+            }
+            finally
+            {
+                try
+                {
+                    Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>
         /// Lấy mã băm MD5 của file CSDL trên máy cục bộ.
         /// </summary>
         public string? GetLocalDbMd5()
         {
             try
             {
+                CheckpointDatabase();
                 if (!File.Exists(DB_PATH)) return null;
                 using var md5 = MD5.Create();
                 using var stream = new FileStream(DB_PATH, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -446,22 +483,12 @@ namespace TaxPersonnelManagement.Services
             var syncState = GetSyncState();
             if (syncState?.LastCloudModifiedTime.HasValue == true)
             {
-                // Nếu thời gian trên Drive không mới hơn mốc đã sync gần nhất (cho phép sai lệch 5 giây)
-                if (cloudInfo.ModifiedTime.Value <= syncState.LastCloudModifiedTime.Value.AddSeconds(5))
+                // Nếu thời gian trên Drive không mới hơn mốc đã sync gần nhất trên máy này
+                // VÀ mã MD5 trên Drive trùng với bản mà máy này đã từng tải/đẩy lên
+                if (cloudInfo.ModifiedTime.Value <= syncState.LastCloudModifiedTime.Value.AddSeconds(5)
+                    && string.Equals(cloudInfo.Md5Checksum, syncState.LastCloudMd5, StringComparison.OrdinalIgnoreCase))
                 {
                     reason = "Bản sao lưu trên Drive không mới hơn lần đồng bộ gần nhất của máy này";
-                    return false;
-                }
-            }
-
-            // 3. So sánh với thời gian ghi của file local
-            var localTime = GetLocalDbLastWriteTime();
-            if (localTime.HasValue)
-            {
-                // Bản trên Drive phải mới hơn file local ít nhất 2 phút để loại trừ độ trễ upload và sai lệch đồng hồ
-                if (cloudInfo.ModifiedTime.Value <= localTime.Value.AddMinutes(2))
-                {
-                    reason = "Thời gian trên Drive không mới hơn file local đủ ngưỡng (> 2 phút)";
                     return false;
                 }
             }
@@ -494,7 +521,7 @@ namespace TaxPersonnelManagement.Services
             if (_driveService == null) return null;
             try
             {
-                string? folderId = await GetOrCreateBackupFolderIdAsync();
+                string? folderId = await GetOrCreateBackupFolderIdAsync().ConfigureAwait(false);
                 var listRequest = _driveService.Files.List();
                 listRequest.Spaces  = "drive"; // My Drive (drive.file scope)
                 listRequest.Q       = folderId != null 
@@ -504,7 +531,7 @@ namespace TaxPersonnelManagement.Services
                 listRequest.OrderBy = "modifiedTime desc";
                 listRequest.PageSize = 1;
 
-                var list = await listRequest.ExecuteAsync();
+                var list = await listRequest.ExecuteAsync().ConfigureAwait(false);
                 if (list.Files != null && list.Files.Count > 0)
                 {
                     var f = list.Files[0];
@@ -525,7 +552,7 @@ namespace TaxPersonnelManagement.Services
                 rootSearch.Fields   = "files(id,name,modifiedTime,md5Checksum,size)";
                 rootSearch.OrderBy  = "modifiedTime desc";
                 rootSearch.PageSize = 1;
-                var rootList = await rootSearch.ExecuteAsync();
+                var rootList = await rootSearch.ExecuteAsync().ConfigureAwait(false);
                 if (rootList.Files != null && rootList.Files.Count > 0)
                 {
                     var f = rootList.Files[0];
@@ -554,7 +581,7 @@ namespace TaxPersonnelManagement.Services
         /// </summary>
         public async Task<DateTime?> GetCloudModifiedTimeAsync()
         {
-            var info = await GetCloudFileInfoAsync();
+            var info = await GetCloudFileInfoAsync().ConfigureAwait(false);
             return info?.ModifiedTime;
         }
 
@@ -563,7 +590,7 @@ namespace TaxPersonnelManagement.Services
         /// </summary>
         public async Task<bool> HasCloudBackupAsync()
         {
-            string? fileId = await GetDriveFileIdAsync();
+            string? fileId = await GetDriveFileIdAsync().ConfigureAwait(false);
             return fileId != null;
         }
 
@@ -601,10 +628,13 @@ namespace TaxPersonnelManagement.Services
 
         /// <summary>
         /// Tìm hoặc tự động tạo thư mục dedicated "Sao Lưu - Quản Lý Nhân Sự Thuế" trên Google Drive.
+        /// Sử dụng cache để không truy vấn lặp đi lặp lại.
         /// </summary>
         private async Task<string?> GetOrCreateBackupFolderIdAsync()
         {
             if (_driveService == null) return null;
+            if (!string.IsNullOrEmpty(_cachedFolderId)) return _cachedFolderId;
+
             try
             {
                 // 1. Kiểm tra xem thư mục đã tồn tại chưa
@@ -614,10 +644,11 @@ namespace TaxPersonnelManagement.Services
                 listReq.Fields   = "files(id,name)";
                 listReq.PageSize = 1;
 
-                var listRes = await listReq.ExecuteAsync();
+                var listRes = await listReq.ExecuteAsync().ConfigureAwait(false);
                 if (listRes.Files != null && listRes.Files.Count > 0)
                 {
-                    return listRes.Files[0].Id;
+                    _cachedFolderId = listRes.Files[0].Id;
+                    return _cachedFolderId;
                 }
 
                 // 2. Nếu chưa có, tạo mới thư mục
@@ -629,8 +660,9 @@ namespace TaxPersonnelManagement.Services
                 };
                 var createReq = _driveService.Files.Create(folderMeta);
                 createReq.Fields = "id";
-                var folder = await createReq.ExecuteAsync();
-                return folder?.Id;
+                var folder = await createReq.ExecuteAsync().ConfigureAwait(false);
+                _cachedFolderId = folder?.Id;
+                return _cachedFolderId;
             }
             catch
             {
@@ -640,38 +672,8 @@ namespace TaxPersonnelManagement.Services
 
         private async Task<string?> GetDriveFileIdAsync()
         {
-            if (_driveService == null) return null;
-            try
-            {
-                string? folderId = await GetOrCreateBackupFolderIdAsync();
-                var listRequest = _driveService.Files.List();
-                listRequest.Spaces   = "drive";
-                listRequest.Q        = folderId != null
-                    ? $"name = '{DRIVE_FILE_NAME}' and '{folderId}' in parents and trashed = false"
-                    : $"name = '{DRIVE_FILE_NAME}' and trashed = false";
-                listRequest.Fields   = "files(id,name)";
-                listRequest.PageSize = 1;
-
-                var list = await listRequest.ExecuteAsync();
-                if (list.Files != null && list.Files.Count > 0)
-                    return list.Files[0].Id;
-
-                // Mở rộng tìm file ngoài thư mục root nếu tạo từ phiên bản trước
-                var rootSearch = _driveService.Files.List();
-                rootSearch.Spaces   = "drive";
-                rootSearch.Q        = $"name = '{DRIVE_FILE_NAME}' and trashed = false";
-                rootSearch.Fields   = "files(id,name)";
-                rootSearch.PageSize = 1;
-                var rootList = await rootSearch.ExecuteAsync();
-                if (rootList.Files != null && rootList.Files.Count > 0)
-                    return rootList.Files[0].Id;
-
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
+            var info = await GetCloudFileInfoAsync().ConfigureAwait(false);
+            return info?.Id;
         }
     }
 }

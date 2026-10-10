@@ -35,11 +35,15 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock x:Name="txtHeaderTitle" Grid.Row="0" Grid.Column="0" 
-                               Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
-                               FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
-                               Foreground="{DynamicResource PrimaryHueMidBrush}"
-                               TextWrapping="Wrap" Margin="0 0 20 0"/>
+                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="CalendarClock" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                        <TextBlock x:Name="txtHeaderTitle" 
+                                   Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
+                                   FontFamily="{StaticResource AppHeadingFont}"
+                                   FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
+                                   Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                   TextWrapping="Wrap" Margin="0 0 20 0"/>
+                    </StackPanel>
 
                     <Button x:Name="btnExportExcel" Grid.Row="0" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
                             Style="{DynamicResource MaterialDesignRaisedButton}"
@@ -131,6 +135,7 @@
             <!-- Main DataGrid Container -->
             <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="0" 
                     BorderBrush="#E0E0E0" BorderThickness="1"
+                    ClipToBounds="True"
                     Effect="{DynamicResource MaterialDesignShadowDepth2}">
                 <Grid>
                     <Grid.RowDefinitions>
@@ -151,22 +156,30 @@
                           SizeChanged="dgLeaveSummary_SizeChanged"
                           FrozenColumnCount="2">
 
+                    <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
+                    </DataGrid.Resources>
+
                     <!-- Header Style: Nền xanh đậm, chữ trắng -->
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             <Setter Property="Padding" Value="10,8"/>
                             <Setter Property="MinHeight" Value="75"/>
-                            <Setter Property="Background" Value="#1565C0"/>
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                             <Setter Property="Foreground" Value="White"/>
                             <Setter Property="FontWeight" Value="Bold"/>
                             <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="BorderBrush" Value="#1256A8"/>
+                            <Setter Property="BorderBrush" Value="#1565C0"/>
                             <Setter Property="BorderThickness" Value="0,0,1,0"/>
                             <Setter Property="ContentTemplate">
                                 <Setter.Value>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" 
+                                                   FontFamily="{StaticResource AppHeadingFont}"
                                                    Foreground="White" FontWeight="Bold" FontSize="13.5"
                                                    LineHeight="20"/>
                                     </DataTemplate>
@@ -223,7 +236,7 @@
                         <!-- Mã số cán bộ - REMOVED BY USER REQUEST -->
 
                         <!-- Avatar + Họ và tên -->
-                        <DataGridTemplateColumn Header="Họ và tên" Width="300">
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,10">
@@ -251,7 +264,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Số CCCD -->
-                        <DataGridTextColumn Header="Số CCCD" Binding="{Binding IdentityCardNumber}" Width="180">
+                        <DataGridTextColumn Header="SỐ CCCD" Binding="{Binding IdentityCardNumber}" Width="180">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -263,7 +276,7 @@
                         </DataGridTextColumn>
 
                         <!-- Phép tiêu chuẩn -->
-                        <DataGridTemplateColumn Header="Phép tiêu chuẩn" Width="150">
+                        <DataGridTemplateColumn Header="PHÉP TIÊU CHUẨN" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -275,7 +288,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Phép năm cũ (n-1) -->
-                        <DataGridTemplateColumn x:Name="colOldYear" Header="Phép năm cũ" Width="150">
+                        <DataGridTemplateColumn x:Name="colOldYear" Header="PHÉP NĂM CŨ" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -287,7 +300,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Phép năm nay (n) -->
-                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="Phép năm nay" Width="150">
+                        <DataGridTemplateColumn x:Name="colCurrentYear" Header="PHÉP NĂM NAY" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -299,7 +312,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Thực tế đã nghỉ (Tổng) -->
-                        <DataGridTemplateColumn Header="Tổng" Width="130">
+                        <DataGridTemplateColumn Header="TỔNG ĐÃ NGHỈ" Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#FFF3E0" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
@@ -311,7 +324,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Nội dung chi tiết -->
-                        <DataGridTemplateColumn Header="Nội dung chi tiết" Width="400">
+                        <DataGridTemplateColumn Header="NỘI DUNG CHI TIẾT" Width="400">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
@@ -329,7 +342,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Số phép còn lại -->
-                        <DataGridTemplateColumn Header="Phép còn lại" Width="170">
+                        <DataGridTemplateColumn Header="PHÉP CÒN LẠI" Width="170">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#E8F5E9" CornerRadius="10" Padding="12,8" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">

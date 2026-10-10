@@ -68,7 +68,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     
-                    <TextBlock Text="DANH SÁCH HIỆN TẠI" FontSize="12" FontWeight="Bold" Foreground="#A0AEC0" Margin="5 0 0 15"/>
+                    <TextBlock Text="DANH SÁCH HIỆN TẠI" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="Bold" Foreground="#A0AEC0" Margin="5 0 0 15"/>
 
                     <ListBox x:Name="lstDepartments" Grid.Row="1" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Padding="0">
                         <ListBox.ItemContainerStyle>

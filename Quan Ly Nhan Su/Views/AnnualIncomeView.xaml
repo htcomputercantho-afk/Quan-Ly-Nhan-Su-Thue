@@ -39,7 +39,10 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Text="Danh sách Công chức" FontWeight="Bold" FontSize="16" Margin="15 15 15 5" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 15 15 5">
+                    <materialDesign:PackIcon Kind="AccountMultiple" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                    <TextBlock Text="DANH SÁCH CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
                 
                 <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="20" Margin="15 5 15 10" Padding="10 5">
                     <StackPanel Orientation="Horizontal">
@@ -133,7 +136,10 @@
                     
                     <!-- Header -->
                     <WrapPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 5">
-                        <TextBlock Text="Chi tiết thu nhập từng tháng" FontWeight="Bold" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 5 15 5"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 5 15 5">
+                            <materialDesign:PackIcon Kind="CashMultiple" Width="26" Height="26" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                            <TextBlock Text="CHI TIẾT THU NHẬP TỪNG THÁNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                        </StackPanel>
                         <TextBlock Text="Năm:" VerticalAlignment="Center" Margin="0 5 10 5" FontSize="15" FontWeight="SemiBold"/>
                         <TextBlock Text="Cập nhật năm:" VerticalAlignment="Center" Margin="0 5 10 5" FontSize="14" Foreground="#555555"/>
                         <ComboBox x:Name="cboYear" Width="80" Height="32" Margin="0 5 15 5" SelectionChanged="CboYear_SelectionChanged"
@@ -187,7 +193,8 @@
                     <TextBlock Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Text="*Chọn một công chức và click đúp vào ô để sửa dữ liệu" Foreground="Gray" FontStyle="Italic"/>
 
                     <!-- DataGrid -->
-                    <DataGrid x:Name="dgMonthlyIncome" Grid.Row="2" BorderThickness="1" BorderBrush="#EEEEEE" Background="White"
+                    <Border Grid.Row="2" CornerRadius="8" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
+                    <DataGrid x:Name="dgMonthlyIncome" BorderThickness="0" Background="White"
                               AutoGenerateColumns="False" AlternatingRowBackground="#FAFAFA"
                               MinRowHeight="60"
                               FrozenColumnCount="1"
@@ -197,6 +204,9 @@
                               CellEditEnding="DgMonthlyIncome_CellEditEnding">
                         
                         <DataGrid.Resources>
+                            <Style TargetType="DataGridColumnHeadersPresenter">
+                                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                            </Style>
                             <converters:MathSubtractConverter x:Key="MathSubtractConverter"/>
                         <converters:CurrencyFormatConverter x:Key="CurrencyFormatConverter"/>
                             <!-- TextBlock Style for Amount -->
@@ -227,6 +237,7 @@
                                 <Setter Property="TextWrapping" Value="Wrap"/>
                                 <Setter Property="MaxWidth" Value="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=15}"/>
                                 <Setter Property="FontSize" Value="11"/>
+                                <Setter Property="TextAlignment" Value="Right"/>
                                 <Setter Property="TextAlignment" Value="Right"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
@@ -353,21 +364,35 @@
                         <!-- Column Header Style -->
                         <DataGrid.ColumnHeaderStyle>
                             <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="#F0F2F5"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                                 <Setter Property="Padding" Value="10"/>
-                                <Setter Property="BorderThickness" Value="0 0 1 1"/>
-                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                <Setter Property="BorderThickness" Value="0 0 1 0"/>
+                                <Setter Property="BorderBrush" Value="#1565C0"/>
                                 <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridColumnHeader">
+                                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                  RecognizesAccessKey="True"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
                             </Style>
                         </DataGrid.ColumnHeaderStyle>
                         
                         <DataGrid.Columns>
                             <!-- Income Type (Readonly) -->
-                            <DataGridTextColumn Header="Loại thu nhập" Binding="{Binding IncomeType}" Width="150" IsReadOnly="True" FontWeight="SemiBold"/>
+                            <DataGridTextColumn Header="LOẠI THU NHẬP" Binding="{Binding IncomeType}" Width="150" IsReadOnly="True" FontWeight="SemiBold"/>
                             
                             <!-- Month 1 -->
-                            <DataGridTemplateColumn Header="Tháng 1" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 1" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -445,7 +470,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 2 -->
-                            <DataGridTemplateColumn Header="Tháng 2" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 2" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -523,7 +548,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 3 -->
-                            <DataGridTemplateColumn Header="Tháng 3" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 3" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -601,7 +626,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 4 -->
-                            <DataGridTemplateColumn Header="Tháng 4" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 4" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -679,7 +704,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 5 -->
-                            <DataGridTemplateColumn Header="Tháng 5" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 5" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -757,7 +782,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 6 -->
-                            <DataGridTemplateColumn Header="Tháng 6" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 6" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -835,7 +860,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 7 -->
-                            <DataGridTemplateColumn Header="Tháng 7" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 7" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -913,7 +938,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 8 -->
-                            <DataGridTemplateColumn Header="Tháng 8" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 8" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -991,7 +1016,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 9 -->
-                            <DataGridTemplateColumn Header="Tháng 9" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 9" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -1069,7 +1094,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 10 -->
-                            <DataGridTemplateColumn Header="Tháng 10" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 10" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -1147,7 +1172,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 11 -->
-                            <DataGridTemplateColumn Header="Tháng 11" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 11" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -1225,7 +1250,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Month 12 -->
-                            <DataGridTemplateColumn Header="Tháng 12" Width="140">
+                            <DataGridTemplateColumn Header="THÁNG 12" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Margin="5">
@@ -1303,7 +1328,7 @@
                             </DataGridTemplateColumn>
 
                             <!-- Total (Readonly) -->
-                            <DataGridTextColumn Header="Tổng cả năm (VNĐ)" Binding="{Binding Total, Mode=OneWay, StringFormat='{}{0:N0} đ'}" Width="160" IsReadOnly="True" FontWeight="Bold">
+                            <DataGridTextColumn Header="TỔNG CẢ NĂM (VNĐ)" Binding="{Binding Total, Mode=OneWay, StringFormat='{}{0:N0} đ'}" Width="160" IsReadOnly="True" FontWeight="Bold">
                                 <DataGridTextColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
                                         <Setter Property="Foreground" Value="#2E7D32"/>
@@ -1314,6 +1339,7 @@
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

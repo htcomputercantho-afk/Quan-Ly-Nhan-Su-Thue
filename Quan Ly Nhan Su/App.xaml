@@ -27,7 +27,17 @@
             <SolidColorBrush x:Key="TextSecondary">#605E5C</SolidColorBrush>
 
             <!-- 2. Typography -->
-            <FontFamily x:Key="MaterialDesignFont">Segoe UI</FontFamily>
+            <FontFamily x:Key="AppRegularFont">Times New Roman</FontFamily>
+            <FontFamily x:Key="AppHeadingFont">UTM HelvetIns, UTM Helvetins, Arial, Segoe UI</FontFamily>
+            <FontFamily x:Key="MaterialDesignFont">Times New Roman</FontFamily>
+
+            <!-- Reusable Uppercase Heading Style -->
+            <Style x:Key="UppercaseHeadingStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+            </Style>
 
             <!-- Global Styles -->
             <Style TargetType="TextBlock" x:Key="CenterAlignedCell">
@@ -41,16 +51,16 @@
                 <Setter Property="Panel.ZIndex" Value="100"/>
             </Style>
 
-
-            
             <!-- Global Sharp Font & ClearType Settings to prevent blurry fonts -->
             <Style TargetType="{x:Type TextElement}">
+                <Setter Property="FontFamily" Value="{StaticResource AppRegularFont}"/>
                 <Setter Property="FontSize" Value="14.5"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
             </Style>
 
             <Style TargetType="{x:Type Window}">
+                <Setter Property="FontFamily" Value="{StaticResource AppRegularFont}"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
                 <Setter Property="UseLayoutRounding" Value="True"/>
@@ -58,6 +68,15 @@
             </Style>
 
             <Style TargetType="{x:Type Page}">
+                <Setter Property="FontFamily" Value="{StaticResource AppRegularFont}"/>
+                <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+                <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+                <Setter Property="UseLayoutRounding" Value="True"/>
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+            </Style>
+
+            <Style TargetType="{x:Type UserControl}">
+                <Setter Property="FontFamily" Value="{StaticResource AppRegularFont}"/>
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
                 <Setter Property="UseLayoutRounding" Value="True"/>
@@ -128,14 +147,29 @@
                 <Setter Property="FontSize" Value="14" />
             </Style>
 
+            <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
+                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+            </Style>
+
             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                <Setter Property="Background" Value="#F8F8F8" /> <!-- Very light gray header -->
+                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}" />
                 <Setter Property="FontWeight" Value="Bold" />
-                <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
-                <Setter Property="BorderThickness" Value="0 0 0 1" />
-                <Setter Property="BorderBrush" Value="#DDDDDD" />
-                <Setter Property="Padding" Value="10 0 0 0"/>
-                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="MinHeight" Value="50" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderThickness" Value="0 0 1 0" />
+                <Setter Property="BorderBrush" Value="#1565C0" />
+                <Setter Property="Padding" Value="10 8"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Foreground="White" FontWeight="Bold"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
             
             <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">

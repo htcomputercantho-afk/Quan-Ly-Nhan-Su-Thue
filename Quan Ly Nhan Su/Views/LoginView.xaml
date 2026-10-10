@@ -28,8 +28,8 @@
                 <StackPanel Margin="40 30">
                     <Image Source="/logo.png" Width="64" Height="64" HorizontalAlignment="Center" Margin="0 0 0 15" RenderOptions.BitmapScalingMode="HighQuality"/>
                     
-                    <TextBlock Text="ĐĂNG NHẬP" FontSize="26" FontWeight="ExtraBold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                    <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0 0 0 30"/>
+                    <TextBlock Text="ĐĂNG NHẬP" FontFamily="{StaticResource AppHeadingFont}" FontSize="26" FontWeight="ExtraBold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                    <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0 0 0 30"/>
 
                     <!-- Username -->
                     <TextBox x:Name="txtUsername" materialDesign:HintAssist.Hint="Tên đăng nhập" Style="{DynamicResource MaterialDesignOutlinedTextBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 10 0" VerticalContentAlignment="Center"/>
@@ -48,11 +48,11 @@
                     <CheckBox x:Name="chkRememberMe" Content="Ghi nhớ đăng nhập" Margin="0 10 0 0" IsChecked="True" Style="{DynamicResource MaterialDesignCheckBox}" Foreground="{DynamicResource TextSecondary}"/>
 
                     <!-- Primary Action Button -->
-                    <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" IsDefault="True" Margin="0 30 0 0" Click="btnLogin_Click" Style="{DynamicResource PremiumButtonStyle}"/>
+                    <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" FontFamily="{StaticResource AppHeadingFont}" IsDefault="True" Margin="0 30 0 0" Click="btnLogin_Click" Style="{DynamicResource PremiumButtonStyle}"/>
                     
                     <!-- Secondary Action Button -->
-                    <Button x:Name="btnExit" Content="THOÁT" Margin="0 15 0 0" Click="btnExit_Click" Style="{DynamicResource PremiumOutlineButtonStyle}" BorderThickness="0"/>
-                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.7" FontSize="11" FontWeight="SemiBold" FontFamily="Segoe UI" HorizontalAlignment="Center" Margin="0 25 0 0"/>
+                    <Button x:Name="btnExit" Content="THOÁT" FontFamily="{StaticResource AppHeadingFont}" Margin="0 15 0 0" Click="btnExit_Click" Style="{DynamicResource PremiumOutlineButtonStyle}" BorderThickness="0"/>
+                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.7" FontSize="11" FontWeight="SemiBold" FontFamily="{StaticResource AppRegularFont}" HorizontalAlignment="Center" Margin="0 25 0 0"/>
                     <TextBlock x:Name="txtVersion" Text="Phiên bản 1.0.0.0" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.5" FontSize="10" HorizontalAlignment="Center" Margin="0 2 0 0"/>
                 </StackPanel>
 

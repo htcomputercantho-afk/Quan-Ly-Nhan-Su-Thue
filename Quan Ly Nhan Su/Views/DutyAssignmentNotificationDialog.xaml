@@ -51,7 +51,7 @@
                 </Border>
 
                 <!-- Title -->
-                <TextBlock x:Name="txtTitle" Text="THÀNH CÔNG" FontSize="18" FontWeight="Bold"
+                <TextBlock x:Name="txtTitle" Text="THÀNH CÔNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold"
                            Foreground="#0F172A" HorizontalAlignment="Center" Margin="0 0 0 10"/>
 
                 <!-- Message -->
@@ -72,7 +72,7 @@
                             HorizontalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="Check" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="txtSingleOk" Text="ĐÃ HIỂU" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="txtSingleOk" Text="ĐÃ HIỂU" FontFamily="{StaticResource AppHeadingFont}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
 
@@ -83,7 +83,7 @@
                                 materialDesign:ButtonAssist.CornerRadius="8"
                                 Background="White" BorderBrush="#CBD5E1" BorderThickness="1" Foreground="#475569"
                                 FontSize="13.5" FontWeight="SemiBold" Cursor="Hand">
-                            <TextBlock Text="HỦY BỎ" VerticalAlignment="Center"/>
+                            <TextBlock Text="HỦY BỎ" FontFamily="{StaticResource AppHeadingFont}" VerticalAlignment="Center"/>
                         </Button>
 
                         <Button x:Name="btnConfirm" Click="BtnConfirm_Click"
@@ -93,7 +93,7 @@
                                 FontSize="13.5" FontWeight="SemiBold" Cursor="Hand">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon x:Name="iconConfirmBtn" Kind="DeleteOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtConfirmBtn" Text="ĐỒNG Ý XÓA" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtConfirmBtn" Text="ĐỒNG Ý XÓA" FontFamily="{StaticResource AppHeadingFont}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>

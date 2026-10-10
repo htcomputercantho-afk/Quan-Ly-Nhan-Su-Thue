@@ -47,7 +47,7 @@
             <Grid Grid.Row="0" Background="#1565C0" MouseDown="Header_MouseDown">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="15 0">
                     <materialDesign:PackIcon Kind="CardAccountDetails" Foreground="White" Width="24" Height="24" Margin="0 0 10 0"/>
-                    <TextBlock Text="HỒ SƠ CHI TIẾT NHÂN SỰ" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="HỒ SƠ CHI TIẾT NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" Foreground="White" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
                 </StackPanel>
                 <Button Click="btnClose_Click" HorizontalAlignment="Right" Width="32" Height="32" Margin="0 0 10 0" Padding="0" Background="Transparent" BorderThickness="0">
                     <Button.Style>
@@ -137,7 +137,7 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="Information" Foreground="#1565C0" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="1. THÔNG TIN CHUNG" FontWeight="Bold" Foreground="#1565C0" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="1. THÔNG TIN CHUNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#1565C0" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
@@ -230,7 +230,7 @@
                                     <Grid>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <materialDesign:PackIcon Kind="School" Foreground="#2E7D32" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                            <TextBlock Text="2. ĐÀO TẠO" FontWeight="Bold" Foreground="#2E7D32" FontSize="17" VerticalAlignment="Center"/>
+                                            <TextBlock Text="2. ĐÀO TẠO" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#2E7D32" FontSize="17" VerticalAlignment="Center"/>
                                         </StackPanel>
                                         <Button HorizontalAlignment="Right" Click="btnViewAllDegrees_Click"
                                                 Background="Transparent" BorderBrush="#2E7D32" BorderThickness="1" Foreground="#2E7D32"
@@ -302,7 +302,7 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="CashMultiple" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="3. THÔNG TIN LƯƠNG" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="3. THÔNG TIN LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
@@ -387,7 +387,7 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="History" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="3.1 DIỄN BIẾN QUÁ TRÌNH LƯƠNG" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="3.1 DIỄN BIẾN QUÁ TRÌNH LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
@@ -433,21 +433,21 @@
                                         </Style>
                                     </DataGrid.CellStyle>
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Mã ngạch" Binding="{Binding RankCode}" Width="*">
+                                        <DataGridTextColumn Header="MÃ NGẠCH" Binding="{Binding RankCode}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Bậc lương" Binding="{Binding SalaryStep}" Width="*">
+                                        <DataGridTextColumn Header="BẬC LƯƠNG" Binding="{Binding SalaryStep}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Hệ số" Binding="{Binding Coefficient}" Width="50">
+                                        <DataGridTextColumn Header="HỆ SỐ" Binding="{Binding Coefficient}" Width="50">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -455,29 +455,21 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="% hưởng" Binding="{Binding Percentage, StringFormat={}{0}%}" Width="60">
+                                        <DataGridTextColumn Header="% HƯỞNG" Binding="{Binding Percentage, StringFormat={}{0}%}" Width="60">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="% vượt khung" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="70">
+                                        <DataGridTextColumn Header="% VƯỢT KHUNG" Binding="{Binding ExceedFramePercent, StringFormat={}{0}%}" Width="70">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Thời gian bắt đầu" Binding="{Binding StartDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
-                                            <DataGridTextColumn.ElementStyle>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                                    <Setter Property="TextWrapping" Value="Wrap"/>
-                                                </Style>
-                                            </DataGridTextColumn.ElementStyle>
-                                        </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Thời gian kết thúc" Binding="{Binding EndDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
+                                        <DataGridTextColumn Header="THỜI GIAN BẮT ĐẦU" Binding="{Binding StartDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -485,7 +477,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Mốc xét lương từ" Binding="{Binding SalaryCalculationDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
+                                        <DataGridTextColumn Header="THỜI GIAN KẾT THÚC" Binding="{Binding EndDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -493,7 +485,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Số VB/QĐ" Binding="{Binding DecisionNumber}" Width="*">
+                                        <DataGridTextColumn Header="MỐC XÉT LƯƠNG TỪ" Binding="{Binding SalaryCalculationDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -501,7 +493,15 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
+                                        <DataGridTextColumn Header="SỐ VB/QĐ" Binding="{Binding DecisionNumber}" Width="*">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="NGÀY KÝ QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -521,7 +521,7 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="PalmTree" Foreground="#7B1FA2" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="4. THÔNG TIN NGHỈ PHÉP" FontWeight="Bold" Foreground="#7B1FA2" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="4. THÔNG TIN NGHỈ PHÉP" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#7B1FA2" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
@@ -601,7 +601,7 @@
                                         </Style>
                                     </DataGrid.CellStyle>
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Loại" Binding="{Binding LeaveType}" Width="130">
+                                        <DataGridTextColumn Header="LOẠI" Binding="{Binding LeaveType}" Width="130">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="FontWeight" Value="Bold"/>
@@ -611,7 +611,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTemplateColumn Header="Thời gian" Width="200">
+                                        <DataGridTemplateColumn Header="THỜI GIAN" Width="200">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -622,7 +622,7 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTextColumn Header="Số ngày" Binding="{Binding DurationDays, StringFormat={}{0} ngày}" Width="100">
+                                        <DataGridTextColumn Header="SỐ NGÀY" Binding="{Binding DurationDays, StringFormat={}{0} ngày}" Width="100">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -630,7 +630,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTextColumn Header="Lí do" Binding="{Binding UserReasonDisplay}" Width="1.2*">
+                                        <DataGridTextColumn Header="LÝ DO" Binding="{Binding UserReasonDisplay}" Width="1.2*">
                                             <DataGridTextColumn.ElementStyle>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -642,7 +642,7 @@
                                                 </Style>
                                             </DataGridTextColumn.ElementStyle>
                                         </DataGridTextColumn>
-                                        <DataGridTemplateColumn Header="Ghi chú hệ thống" Width="2*">
+                                        <DataGridTemplateColumn Header="GHI CHÚ HỆ THỐNG" Width="2*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBlock VerticalAlignment="Center" HorizontalAlignment="Left" TextAlignment="Left" TextWrapping="Wrap" Margin="10 5">
@@ -664,12 +664,12 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="History" Foreground="#0288D1" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="5. CÔNG TÁC" FontWeight="Bold" Foreground="#0288D1" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="5. CÔNG TÁC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#0288D1" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
                                 <StackPanel Margin="15">
-                                    <TextBlock Text="A. THÔNG TIN CÔNG TÁC" FontWeight="Bold" Foreground="#1976D2" Margin="0 0 0 10"/>
+                                    <TextBlock Text="A. THÔNG TIN CÔNG TÁC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#1976D2" Margin="0 0 0 10"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -733,7 +733,7 @@
                                         </Border>
                                     </Grid>
 
-                                    <TextBlock Text="B. THÔNG TIN NGHỈ HƯU" FontWeight="Bold" Foreground="#D32F2F" Margin="0 10 0 10"/>
+                                    <TextBlock Text="B. THÔNG TIN NGHỈ HƯU" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#D32F2F" Margin="0 10 0 10"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -754,7 +754,7 @@
                                         </StackPanel>
                                     </Grid>
                                     
-                                     <TextBlock Text="C. QUÁ TRÌNH CÔNG TÁC CHI TIẾT:" FontWeight="Bold" Foreground="Black" Margin="0 20 0 10"/>
+                                     <TextBlock Text="C. QUÁ TRÌNH CÔNG TÁC CHI TIẾT:" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="Black" Margin="0 20 0 10"/>
                                      <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10">
                                          <TextBlock Text="{Binding DetailedWorkHistory}" TextWrapping="Wrap" Foreground="#455A64" FontSize="16"/>
                                      </Border>
@@ -768,7 +768,7 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="Star" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="6. THÔNG TIN ĐẢNG VIÊN" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="6. THÔNG TIN ĐẢNG VIÊN" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#D32F2F" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
@@ -800,12 +800,12 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="Medal" Foreground="Black" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                        <TextBlock Text="7. KHEN THƯỞNG &amp; KỶ LUẬT" FontWeight="Bold" Foreground="Black" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="7. KHEN THƯỞNG &amp; KỶ LUẬT" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="Black" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
                                 <StackPanel Margin="15">
-                                    <TextBlock Text="THÔNG TIN KHEN THƯỞNG" FontWeight="Bold" Foreground="#1976D2" Margin="0 0 0 10"/>
+                                    <TextBlock Text="THÔNG TIN KHEN THƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#1976D2" Margin="0 0 0 10"/>
                                     <TextBlock Text="Danh hiệu thi đua:" Foreground="#78909C" FontSize="15" Margin="0 0 0 2"/>
                                     <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0 0 0 10">
                                         <TextBlock Text="{Binding EmulationTitles, Converter={StaticResource EmptyStringToDashConverter}}" TextWrapping="Wrap" FontSize="16"/>
@@ -816,7 +816,7 @@
                                         <TextBlock Text="{Binding RewardForms, Converter={StaticResource EmptyStringToDashConverter}}" TextWrapping="Wrap" FontSize="16"/>
                                     </Border>
                                     
-                                    <TextBlock Text="THÔNG TIN KỶ LUẬT" FontWeight="Bold" Foreground="#D32F2F" Margin="0 0 0 10"/>
+                                    <TextBlock Text="THÔNG TIN KỶ LUẬT" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#D32F2F" Margin="0 0 0 10"/>
                                     <!-- No Discipline (Green) -->
                                     <Border x:Name="bdrNoDiscipline" Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1" CornerRadius="4" Padding="10" Visibility="Collapsed">
                                         <StackPanel Orientation="Horizontal">
@@ -866,7 +866,7 @@
                                 <Border Background="Transparent" Padding="15 10">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="Star" Foreground="#FFA000" VerticalAlignment="Center" Margin="0 0 8 0" Width="22" Height="22"/>
-                                        <TextBlock Text="8. LỊCH SỬ XẾP LOẠI" FontWeight="Bold" Foreground="#FFA000" FontSize="17" VerticalAlignment="Center"/>
+                                        <TextBlock Text="8. LỊCH SỬ XẾP LOẠI" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#FFA000" FontSize="17" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
@@ -909,7 +909,7 @@
                                             </Style>
                                         </DataGrid.CellStyle>
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Năm" Binding="{Binding Year}" Width="80">
+                                            <DataGridTextColumn Header="NĂM" Binding="{Binding Year}" Width="80">
                                                 <DataGridTextColumn.ElementStyle>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -917,7 +917,7 @@
                                                     </Style>
                                                 </DataGridTextColumn.ElementStyle>
                                             </DataGridTextColumn>
-                                            <DataGridTextColumn Header="Xếp loại" Binding="{Binding Rating}" Width="2*">
+                                            <DataGridTextColumn Header="XẾP LOẠI" Binding="{Binding Rating}" Width="2*">
                                                 <DataGridTextColumn.ElementStyle>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -926,7 +926,7 @@
                                                     </Style>
                                                 </DataGridTextColumn.ElementStyle>
                                             </DataGridTextColumn>
-                                            <DataGridTextColumn Header="Số QĐ" Binding="{Binding DecisionNumber}" Width="1.5*">
+                                            <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber}" Width="1.5*">
                                                 <DataGridTextColumn.ElementStyle>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -934,7 +934,7 @@
                                                     </Style>
                                                 </DataGridTextColumn.ElementStyle>
                                             </DataGridTextColumn>
-                                            <DataGridTextColumn Header="Ngày ký QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="1.5*">
+                                            <DataGridTextColumn Header="NGÀY KÝ QĐ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="1.5*">
                                                 <DataGridTextColumn.ElementStyle>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -942,7 +942,7 @@
                                                     </Style>
                                                 </DataGridTextColumn.ElementStyle>
                                             </DataGridTextColumn>
-                                            <DataGridTextColumn Header="Đơn vị ra QĐ" Binding="{Binding DecisionAgency}" Width="2*">
+                                            <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionAgency}" Width="2*">
                                                 <DataGridTextColumn.ElementStyle>
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="HorizontalAlignment" Value="Center"/>

@@ -18,7 +18,13 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Quản lý tài khoản" FontSize="20" FontWeight="Bold" Margin="0 0 0 20"/>
+            <StackPanel Orientation="Horizontal" Margin="0 0 0 20">
+                <materialDesign:PackIcon Kind="AccountKey" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="QUẢN LÝ TÀI KHOẢN NGƯỜI DÙNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                    <TextBlock Text="Quản lý danh sách tài khoản và phân quyền truy cập hệ thống" FontSize="12.5" Foreground="#78909C" Margin="0 2 0 0"/>
+                </StackPanel>
+            </StackPanel>
 
             <!-- Toolbar -->
             <Grid Grid.Row="1" Margin="0 0 0 15">
@@ -60,25 +66,42 @@
             </Grid>
 
             <!-- DataGrid -->
-            <DataGrid Grid.Row="2" x:Name="dgUsers" AutoGenerateColumns="False" IsReadOnly="True"
+            <Border Grid.Row="2" CornerRadius="8" ClipToBounds="True" BorderBrush="#E0E0E0" BorderThickness="1">
+            <DataGrid x:Name="dgUsers" AutoGenerateColumns="False" IsReadOnly="True"
                       CanUserAddRows="False" CanUserDeleteRows="False"
                       SelectionMode="Single" HeadersVisibility="Column"
-                      BorderThickness="1" BorderBrush="#E0E0E0"
+                      BorderThickness="0"
                       RowHeight="45" Background="White" AlternatingRowBackground="#FAFAFA"
                       GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
                       VerticalGridLinesBrush="Transparent"
                       ScrollViewer.HorizontalScrollBarVisibility="Auto"
                       ScrollViewer.VerticalScrollBarVisibility="Auto">
                 <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeadersPresenter">
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                    </Style>
                     <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="#1976D2"/>
+                        <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                         <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="FontWeight" Value="SemiBold"/>
-                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="13"/>
                         <Setter Property="Padding" Value="10 5"/>
                         <Setter Property="HorizontalContentAlignment" Value="Center"/>
                         <Setter Property="VerticalContentAlignment" Value="Center"/>
-                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="BorderThickness" Value="0 0 1 0"/>
+                        <Setter Property="BorderBrush" Value="#1565C0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridColumnHeader">
+                                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                          RecognizesAccessKey="True"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                     <Style TargetType="DataGridCell">
                         <Setter Property="Padding" Value="0"/>
@@ -130,11 +153,11 @@
 
                 <DataGrid.Columns>
                     <DataGridTextColumn Binding="{Binding Id}" Header="ID" Width="60" ElementStyle="{StaticResource CenterAlignedCell}"/>
-                    <DataGridTextColumn Binding="{Binding Username}" Header="Tên đăng nhập" Width="*" MinWidth="150" ElementStyle="{StaticResource LeftAlignedCell}"/>
-                    <DataGridTextColumn Binding="{Binding FullName}" Header="Họ tên" Width="1.5*" MinWidth="200" ElementStyle="{StaticResource LeftAlignedCell}"/>
-                    <DataGridTextColumn Binding="{Binding Role, Converter={StaticResource RoleConverter}}" Header="Quyền hạn" Width="150" ElementStyle="{StaticResource CenterAlignedCell}"/>
+                    <DataGridTextColumn Binding="{Binding Username}" Header="TÊN ĐĂNG NHẬP" Width="*" MinWidth="150" ElementStyle="{StaticResource LeftAlignedCell}"/>
+                    <DataGridTextColumn Binding="{Binding FullName}" Header="HỌ VÀ TÊN" Width="1.5*" MinWidth="200" ElementStyle="{StaticResource LeftAlignedCell}"/>
+                    <DataGridTextColumn Binding="{Binding Role, Converter={StaticResource RoleConverter}}" Header="QUYỀN HẠN" Width="150" ElementStyle="{StaticResource CenterAlignedCell}"/>
                     
-                    <DataGridTemplateColumn Header="Hành động" Width="160">
+                    <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="160">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -156,6 +179,7 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
+            </Border>
         </Grid>
     </materialDesign:Card>
 </UserControl>

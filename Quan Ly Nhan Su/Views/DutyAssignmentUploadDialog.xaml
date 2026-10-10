@@ -49,7 +49,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <materialDesign:PackIcon Kind="FilePdfBox" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="txtTitle" Text="TẢI LÊN PHÂN CÔNG NHIỆM VỤ" Foreground="White" FontSize="15" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtTitle" Text="TẢI LÊN PHÂN CÔNG NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" Foreground="White" FontSize="15" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button Grid.Column="1" Click="BtnCancel_Click" Cursor="Hand"
                             Style="{DynamicResource MaterialDesignToolButton}"
@@ -63,8 +63,8 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalAlignment="Top">
                 <StackPanel Margin="24 16 24 14">
 
-                    <!-- Tổ / bộ phận -->
-                    <TextBlock Text="Tổ / bộ phận (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
+                    <!-- Bộ phận -->
+                    <TextBlock Text="Bộ phận (*)" FontWeight="SemiBold" Foreground="#334155" Margin="0 0 0 6"/>
                     <ComboBox x:Name="cmbDepartment" Style="{StaticResource ModernFormComboBox}" Margin="0 0 0 14"
                               ToolTip="{Binding Path=Text, RelativeSource={RelativeSource Self}}"/>
 

@@ -33,7 +33,7 @@
             </StackPanel>
             
             <Border Grid.Row="2" Background="#F7FAFC" CornerRadius="0 0 20 20" Padding="0 20">
-                <Button Content="ĐÃ HIỂU" Click="Close_Click" 
+                <Button Content="ĐÃ HIỂU" FontFamily="{StaticResource AppHeadingFont}" Click="Close_Click" 
                         Width="140" Height="45"
                         materialDesign:ButtonAssist.CornerRadius="10"
                         Style="{DynamicResource MaterialDesignRaisedButton}"

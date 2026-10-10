@@ -24,7 +24,7 @@
             <!-- Header -->
             <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0 0 0 20">
                 <materialDesign:PackIcon Kind="AccountEdit" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtTitle" Text="THÊM MỚI TÀI KHOẢN" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="10 0 0 0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtTitle" Text="THÊM MỚI TÀI KHOẢN" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="10 0 0 0" VerticalAlignment="Center"/>
             </StackPanel>
             
             <Separator Grid.Row="1" Margin="-20 0 -20 20" Background="#EEEEEE"/>

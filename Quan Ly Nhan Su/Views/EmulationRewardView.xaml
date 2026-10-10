@@ -34,7 +34,7 @@
                     <RowDefinition Height="*"/>    <!-- ListView -->
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="DANH SÁCH CÔNG CHỨC" FontWeight="Bold" FontSize="16" Foreground="#1976D2" Margin="0 0 0 15"/>
+                <TextBlock Grid.Row="0" Text="DANH SÁCH CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="16" Foreground="#1976D2" Margin="0 0 0 15"/>
 
                 <Border Grid.Row="1" Margin="0 0 0 15" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10 5">
                     <StackPanel Orientation="Horizontal">
@@ -124,7 +124,7 @@
                                 </Border.Background>
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Medal" Width="26" Height="26" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                    <TextBlock Text="DANH HIỆU THI ĐUA" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="DANH HIỆU THI ĐUA" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
@@ -164,7 +164,7 @@
                                 </Border.Background>
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Gift" Width="26" Height="26" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                    <TextBlock Text="HÌNH THỨC KHEN THƯỞNG" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <TextBlock Text="HÌNH THỨC KHEN THƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 

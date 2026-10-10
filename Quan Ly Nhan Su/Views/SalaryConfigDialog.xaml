@@ -98,9 +98,9 @@
                             <ColumnDefinition Width="80" SharedSizeGroup="ColAction"/>   <!-- Action -->
                         </Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Width="40" Margin="0 0 15 0"/> <!-- Spacer to match Icon -->
-                        <TextBlock Grid.Column="1" Text="BẬC LƯƠNG" FontWeight="Bold" Foreground="#555" FontSize="12" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" Text="HỆ SỐ" FontWeight="Bold" Foreground="#555" FontSize="12" Margin="0 0 20 0" HorizontalAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Text="THAO TÁC" FontWeight="Bold" Foreground="#555" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="BẬC LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#555" FontSize="12" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="HỆ SỐ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#555" FontSize="12" Margin="0 0 20 0" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Text="THAO TÁC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="#555" FontSize="12" HorizontalAlignment="Center"/>
                     </Grid>
                 </Border>
             </StackPanel>
@@ -114,7 +114,7 @@
                                 <DataTemplate>
                                     <Border BorderBrush="#F0F0F0" BorderThickness="0 0 0 1" Padding="15 12" Background="White">
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
+                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" SharedSizeGroup="ColIcon"/> <!-- Icon -->
                                                 <ColumnDefinition Width="*"/>    <!-- Text Info (No SharedSizeGroup for Star sizing) -->
                                                 <ColumnDefinition Width="Auto" SharedSizeGroup="ColBadge"/> <!-- Badge -->
@@ -129,7 +129,7 @@
 
                                             <!-- 2. Text Info -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="BẬC LƯƠNG" FontSize="10" Foreground="#888" FontWeight="SemiBold" Margin="0 0 0 2"/>
+                                                <TextBlock Text="BẬC LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="10" Foreground="#888" FontWeight="SemiBold" Margin="0 0 0 2"/>
                                                 <TextBlock Text="{Binding SalaryStep}" FontSize="15" FontWeight="Bold" Foreground="#333"/>
                                             </StackPanel>
 

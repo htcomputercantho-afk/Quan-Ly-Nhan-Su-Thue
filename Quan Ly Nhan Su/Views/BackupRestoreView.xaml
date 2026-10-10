@@ -22,7 +22,7 @@
             <StackPanel Orientation="Horizontal" Margin="0 0 0 25">
                 <materialDesign:PackIcon Kind="DatabaseCog" Width="32" Height="32" Foreground="#1976D2" VerticalAlignment="Center" Margin="0 0 12 0"/>
                 <StackPanel>
-                    <TextBlock Text="Sao lưu &amp; Phục hồi CSDL" FontSize="24" FontWeight="Bold" Foreground="#1976D2"/>
+                    <TextBlock Text="SAO LƯU &amp; PHỤC HỒI CƠ SỞ DỮ LIỆU" FontFamily="{StaticResource AppHeadingFont}" FontSize="22" FontWeight="Bold" Foreground="#1976D2"/>
                     <TextBlock Text="Quản lý sao lưu và phục hồi cơ sở dữ liệu" FontSize="13" Foreground="#78909C" Margin="0 3 0 0"/>
                 </StackPanel>
             </StackPanel>
@@ -55,7 +55,7 @@
                             </Border.Background>
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="DatabaseExport" Width="28" Height="28" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                <TextBlock Text="SAO LƯU DỮ LIỆU" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock Text="SAO LƯU DỮ LIỆU" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
@@ -131,7 +131,7 @@
                             </Border.Background>
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="DatabaseImport" Width="28" Height="28" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                <TextBlock Text="PHỤC HỒI DỮ LIỆU" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock Text="PHỤC HỒI DỮ LIỆU" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 
@@ -215,7 +215,7 @@
                             </Border.Background>
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="GoogleDrive" Width="28" Height="28" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                <TextBlock Text="GOOGLE DRIVE" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock Text="GOOGLE DRIVE" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
 

@@ -8,7 +8,7 @@
         Title="Nhập Hàng Loạt &amp; Import Excel" 
         Height="720" Width="920"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        Background="#F5F5F5" FontFamily="Roboto">
+        Background="#F5F5F5" FontFamily="{DynamicResource MaterialDesignFont}">
 
     <Window.Resources>
         <!-- Clean TabControl Style (Removes all default borders, underlines, and lines) -->
@@ -230,7 +230,7 @@
                                                             Height="28" Padding="10 0" VerticalAlignment="Center">
                                                         <StackPanel Orientation="Horizontal">
                                                             <materialDesign:PackIcon Kind="AccountMultipleCheck" Width="14" Height="14" Margin="0 0 4 0" VerticalAlignment="Center"/>
-                                                            <TextBlock Text="BỘ CHỌN LỚN" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="BỘ CHỌN LỚN" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
                                                         </StackPanel>
                                                     </Button>
                                                 </Grid>
@@ -292,7 +292,7 @@
                                                         Height="28" Padding="12 0" VerticalAlignment="Center">
                                                     <StackPanel Orientation="Horizontal">
                                                         <materialDesign:PackIcon Kind="FolderOpenOutline" Width="14" Height="14" Margin="0 0 4 0" VerticalAlignment="Center"/>
-                                                        <TextBlock Text="CHỌN FILE" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="CHỌN FILE" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
                                                     </StackPanel>
                                                 </Button>
                                             </Grid>
@@ -304,9 +304,9 @@
 
                         <!-- Buttons for Tab 1 -->
                         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0">
-                            <Button Content="ĐÓNG" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
+                            <Button Content="ĐÓNG" FontFamily="{StaticResource AppHeadingFont}" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
                                     Width="120" Height="40" Margin="0 0 15 0" FontSize="13" FontWeight="Bold"/>
-                            <Button Content="ÁP DỤNG" Click="BtnApply_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
+                            <Button Content="ÁP DỤNG" FontFamily="{StaticResource AppHeadingFont}" Click="BtnApply_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
                                     Foreground="White" Width="140" Height="40" FontSize="13" FontWeight="Bold"
                                     materialDesign:ButtonAssist.CornerRadius="5"/>
                         </StackPanel>
@@ -342,7 +342,7 @@
                                         Height="36" Padding="18 0" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Kind="FolderOpenOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="CHỌN FILE" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                                        <TextBlock Text="CHỌN FILE" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </Grid>
@@ -500,8 +500,8 @@
                                                                              AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" MaxHeight="120" FontSize="13" VerticalScrollBarVisibility="Auto"
                                                                              Text="{Binding Note, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 10 0 0">
-                                                                        <Button Content="HỦY" Click="BtnPopupCancel_Click" Style="{DynamicResource MaterialDesignFlatButton}" Height="30" FontSize="11" Padding="8 0" Margin="0 0 5 0"/>
-                                                                        <Button Content="LƯU" Click="BtnPopupSave_Click" Style="{DynamicResource MaterialDesignFlatButton}" Foreground="#7B1FA2" Height="30" FontSize="11" Padding="8 0"/>
+                                                                        <Button Content="HỦY" FontFamily="{StaticResource AppHeadingFont}" Click="BtnPopupCancel_Click" Style="{DynamicResource MaterialDesignFlatButton}" Height="30" FontSize="11" Padding="8 0" Margin="0 0 5 0"/>
+                                                                        <Button Content="LƯU" FontFamily="{StaticResource AppHeadingFont}" Click="BtnPopupSave_Click" Style="{DynamicResource MaterialDesignFlatButton}" Foreground="#7B1FA2" Height="30" FontSize="11" Padding="8 0"/>
                                                                     </StackPanel>
                                                                 </StackPanel>
                                                             </Border>
@@ -530,9 +530,9 @@
 
                         <!-- Buttons for Tab 2 -->
                         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0">
-                            <Button Content="ĐÓNG" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
+                            <Button Content="ĐÓNG" FontFamily="{StaticResource AppHeadingFont}" IsCancel="True" Style="{DynamicResource MaterialDesignOutlinedButton}" 
                                     Width="120" Height="40" Margin="0 0 15 0" FontSize="13" FontWeight="Bold"/>
-                            <Button x:Name="btnConfirmExcelImport" Content="XÁC NHẬN" Click="BtnConfirmExcelImport_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
+                            <Button x:Name="btnConfirmExcelImport" Content="XÁC NHẬN" FontFamily="{StaticResource AppHeadingFont}" Click="BtnConfirmExcelImport_Click" Background="#7B1FA2" BorderBrush="#7B1FA2" 
                                     Foreground="White" Width="140" Height="40" FontSize="13" FontWeight="Bold" IsEnabled="False"
                                     materialDesign:ButtonAssist.CornerRadius="5"/>
                         </StackPanel>

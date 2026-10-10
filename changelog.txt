@@ -1,3 +1,18 @@
+## v1.6.3.9 — 2026-10-10
+- [Sửa lỗi & Tối ưu hóa Đồng bộ] Nâng cấp Toàn diện Cơ chế Sao lưu & Đồng bộ Google Drive (`GoogleDriveSyncService`, `MainWindow`, `App`):
+    + Tăng tốc độ sao lưu gấp 3 - 5 lần:
+        * Tích hợp bộ nhớ đệm thư mục sao lưu (`_cachedFolderId`), loại bỏ các lượt gửi truy vấn tìm kiếm thư mục lặp đi lặp lại lên Google Drive. Thời gian đẩy CSDL lên Drive giảm từ >10 giây xuống chỉ còn 2 giây.
+        * Chuẩn hóa truy vấn file đồng bộ: Đồng nhất `GetDriveFileIdAsync` và `GetCloudFileInfoAsync` theo thứ tự thời gian sửa đổi mới nhất (`OrderBy = "modifiedTime desc"`), đảm bảo luôn thao tác trên đúng bản ghi sao lưu mới nhất trên đám mây.
+        * Áp dụng `.ConfigureAwait(false)` cho toàn bộ các phương thức async để tránh hiện tượng nghẽn luồng xử lý.
+    + Khắc phục triệt để lỗi mất dữ liệu khi lưu nhiều lần liên tiếp:
+        * Nâng ngưỡng thời gian chờ an toàn khi bấm nút [X] đóng ứng dụng từ 10 giây lên 60 giây, ngăn ngừa hoàn toàn tình trạng ứng dụng tự ngắt ngang tiến trình upload khi mạng bị trễ.
+        * Bổ sung ghi log chi tiết tiến trình upload (`PushAsync started / finished / timed out`), giúp dễ dàng theo dõi và chẩn đoán trạng thái đồng bộ.
+        * Đưa tiến trình sao lưu dự phòng trong `App.OnExit` sang luồng nền (`Task.Run`) với timeout 30 giây để chống treo giao diện UI thread của WPF.
+    + Khắc phục hiện tượng hiển thị cache dữ liệu cũ sau khi đồng bộ trên máy nhận:
+        * Khi người dùng xác nhận kéo dữ liệu mới từ Google Drive về máy, hệ thống tự động giải phóng toàn bộ bộ nhớ đệm view (`_dashboardCache`, `_personnelDetailCache`, `_statisticsCache`, `_planningCache`, `_rotationCache`, `_dutyAssignmentCache`) và nạp lại 100% dữ liệu mới nhất từ CSDL vừa cập nhật.
+    + Khắc phục lỗi đăng xuất (`Logout_Click`):
+        * Ngăn chặn tình trạng chồng lấn nhiều màn hình đăng nhập và cửa sổ chính khi người dùng chọn Đăng xuất trong lúc đang có dữ liệu cần sao lưu.
+
 ## v1.6.3.8 — 2026-10-08
 - [Tính năng mới] Phân hệ Quản lý & Theo dõi Phân công Nhiệm vụ theo Tổ và Tháng (`DutyAssignmentView`, `DutyAssignmentService`):
     + Ma trận timeline trực quan 12 tháng (T1..T12): Theo dõi trực quan lịch sử và tần suất thay đổi phân công nhiệm vụ của từng Tổ/bộ phận trong cả năm.

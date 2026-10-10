@@ -186,7 +186,7 @@
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon x:Name="iconTotal" Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblTotal" Text="TỔNG NHÂN SỰ" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="lblTotal" Text="TỔNG NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
@@ -213,7 +213,7 @@
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon x:Name="iconMaternity" Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblMaternity" Text="NGHỈ THAI SẢN" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="lblMaternity" Text="NGHỈ THAI SẢN" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
@@ -240,7 +240,7 @@
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon x:Name="iconSick" Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblSick" Text="NGHỈ ỐM" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="lblSick" Text="NGHỈ ỐM" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtSickCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
@@ -267,7 +267,7 @@
                                 </Grid.Background>
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <materialDesign:PackIcon x:Name="iconLeave" Kind="CalendarClock" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblLeave" Text="NGHỈ PHÉP" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="lblLeave" Text="NGHỈ PHÉP" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtLeaveCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
@@ -290,7 +290,7 @@
                     <StackPanel Margin="0 0 20 10">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountMultiple" Width="24" Height="24" Foreground="#1976D2" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <TextBlock Text="Danh sách nhân sự" FontSize="20" FontWeight="Bold" Foreground="#1976D2" VerticalAlignment="Center"/>
+                            <TextBlock Text="DANH SÁCH NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="#1976D2" VerticalAlignment="Center"/>
                         </StackPanel>
                         <TextBlock x:Name="txtSubtitle" Text="Quản lý toàn bộ hồ sơ nhân viên" FontSize="12" Foreground="#78909C" Margin="32 2 0 0"/>
                     </StackPanel>
@@ -357,7 +357,7 @@
         </materialDesign:Card>
 
         <!-- DataGrid -->
-        <materialDesign:Card Grid.Row="1" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10">
+        <materialDesign:Card Grid.Row="1" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10" ClipToBounds="True">
             <DataGrid x:Name="dgPersonnel"
                       AutoGenerateColumns="False" CanUserAddRows="False"
                       SelectionMode="Single" SelectionUnit="FullRow" IsReadOnly="True"
@@ -371,6 +371,9 @@
                       FrozenColumnCount="2">
 
                 <DataGrid.Resources>
+                    <Style TargetType="DataGridColumnHeadersPresenter">
+                        <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                    </Style>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#F5F5F5"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#F5F5F5"/>
                     <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
@@ -396,6 +399,7 @@
 
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                        <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Setter Property="Foreground" Value="White"/>
                         <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
@@ -408,7 +412,7 @@
                         <Setter Property="ContentTemplate">
                             <Setter.Value>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18"/>
+                                    <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18"/>
                                 </DataTemplate>
                             </Setter.Value>
                         </Setter>

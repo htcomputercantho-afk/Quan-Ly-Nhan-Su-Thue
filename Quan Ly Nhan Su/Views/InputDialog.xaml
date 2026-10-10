@@ -38,10 +38,10 @@
             <!-- Footer -->
             <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="0 0 11 11" BorderBrush="#EDF2F7" BorderThickness="0 1 0 0" Padding="20 12">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="HỦY BỎ" Click="btnCancel_Click" Style="{StaticResource PremiumOutlineButtonStyle}" 
+                    <Button Content="HỦY BỎ" FontFamily="{StaticResource AppHeadingFont}" Click="btnCancel_Click" Style="{StaticResource PremiumOutlineButtonStyle}" 
                             BorderBrush="#8A9099" Foreground="#555555"
                             Width="90" Height="36" Margin="0 0 10 0" FontSize="12" FontWeight="Bold"/>
-                    <Button Content="XÁC NHẬN" Click="btnConfirm_Click" Style="{StaticResource PremiumButtonStyle}" 
+                    <Button Content="XÁC NHẬN" FontFamily="{StaticResource AppHeadingFont}" Click="btnConfirm_Click" Style="{StaticResource PremiumButtonStyle}" 
                             Width="110" Height="36" FontSize="12" FontWeight="Bold"/>
                 </StackPanel>
             </Border>

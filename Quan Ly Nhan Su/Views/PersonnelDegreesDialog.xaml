@@ -344,7 +344,7 @@
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <materialDesign:PackIcon Kind="CertificateOutline" Foreground="#38BDF8" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="txtDialogTitle" Text="DANH SÁCH VĂN BẰNG &amp; CHỨNG CHỈ CỦA CÁN BỘ" Foreground="White" FontSize="15.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="txtDialogTitle" Text="DANH SÁCH VĂN BẰNG &amp; CHỨNG CHỈ CỦA CÁN BỘ" FontFamily="{StaticResource AppHeadingFont}" Foreground="White" FontSize="15.5" FontWeight="Bold" VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button HorizontalAlignment="Right" Click="btnClose_Click" Background="Transparent" BorderThickness="0" Padding="0" Width="32" Height="32" Cursor="Hand" ToolTip="Đóng">
                         <materialDesign:PackIcon Kind="Close" Foreground="#94A3B8" Width="22" Height="22"/>
@@ -593,7 +593,9 @@
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#0F172A"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#0F172A"/>
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
                     </DataGrid.Resources>
 
                     <DataGrid.RowStyle>
@@ -629,20 +631,21 @@
 
                     <DataGrid.ColumnHeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#F1F5F9"/>
-                            <Setter Property="Foreground" Value="#334155"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
-                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12.5"/>
                             <Setter Property="MinHeight" Value="42"/>
                             <Setter Property="Padding" Value="4,4"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
                             <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <Setter Property="BorderBrush" Value="#CBD5E1"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                            <Setter Property="BorderBrush" Value="#1565C0"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
                             <Setter Property="ContentTemplate">
                                 <Setter.Value>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" LineHeight="16"/>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center" LineHeight="16" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="White"/>
                                     </DataTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -664,7 +667,7 @@
                         </DataGridTextColumn>
 
                         <!-- Loại bằng (Pill màu phong cách hiện đại với icon riêng cho từng danh mục) -->
-                        <DataGridTemplateColumn Header="Loại bằng" Width="140">
+                        <DataGridTemplateColumn Header="LOẠI BẰNG" Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="{Binding CategoryBgBrush}" BorderBrush="{Binding CategoryBorderBrush}" 
@@ -679,7 +682,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Tên bằng / Chứng chỉ (Căn lề trái, tự động xuống dòng khi dài, badge ⭐ Bằng chính) -->
-                        <DataGridTemplateColumn Header="Tên bằng / Chứng chỉ" Width="1.5*" MinWidth="220">
+                        <DataGridTemplateColumn Header="TÊN BẰNG / CHỨNG CHỈ" Width="1.5*" MinWidth="220">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <DockPanel LastChildFill="True" VerticalAlignment="Center" Margin="10,6,8,6">
@@ -701,7 +704,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Chuyên ngành (Căn lề trái, tự động xuống dòng khi dài) -->
-                        <DataGridTemplateColumn Header="Chuyên ngành" Width="130" MinWidth="110">
+                        <DataGridTemplateColumn Header="CHUYÊN NGÀNH" Width="130" MinWidth="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayMajor}" Foreground="{Binding MajorForeground}"
@@ -712,7 +715,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Cơ sở đào tạo / Nơi cấp (Căn lề trái, tự động xuống dòng khi dài) -->
-                        <DataGridTemplateColumn Header="Nơi đào tạo / Cấp" Width="1.5*" MinWidth="200">
+                        <DataGridTemplateColumn Header="NƠI ĐÀO TẠO / CẤP" Width="1.5*" MinWidth="200">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayInstitution}" Foreground="{Binding InstitutionForeground}"
@@ -723,7 +726,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Xếp loại / Điểm -->
-                        <DataGridTemplateColumn Header="Xếp loại / Điểm" Width="110">
+                        <DataGridTemplateColumn Header="XẾP LOẠI / ĐIỂM" Width="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayClassification}" Foreground="{Binding ClassificationForeground}"
@@ -733,7 +736,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Năm cấp -->
-                        <DataGridTemplateColumn Header="Năm cấp" Width="85">
+                        <DataGridTemplateColumn Header="NĂM CẤP" Width="85">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayGraduationYear}" Foreground="{Binding GraduationYearForeground}"
@@ -743,7 +746,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- Thao tác (Bộ 3 nút icon vuông bo góc đồng bộ cực kỳ tinh tế) -->
-                        <DataGridTemplateColumn Header="Thao tác" Width="125">
+                        <DataGridTemplateColumn Header="THAO TÁC" Width="125">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">

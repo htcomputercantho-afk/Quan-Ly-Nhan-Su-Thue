@@ -159,13 +159,13 @@
             <!-- Content -->
             <StackPanel Grid.Row="1" Margin="24 12 24 16">
                 <!-- Năm áp dụng -->
-                <TextBlock Text="NĂM ÁP DỤNG" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBlock Text="NĂM ÁP DỤNG" FontFamily="{StaticResource AppHeadingFont}" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
                 <ComboBox x:Name="cboYear" Style="{StaticResource ModernComboBox}"
                           materialDesign:HintAssist.Hint="Chọn năm áp dụng xếp loại"
                           Margin="0 0 0 16"/>
 
                 <!-- Đối tượng áp dụng -->
-                <TextBlock Text="ĐỐI TƯỢNG ÁP DỤNG" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBlock Text="ĐỐI TƯỢNG ÁP DỤNG" FontFamily="{StaticResource AppHeadingFont}" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
                 <ComboBox x:Name="cboTargetAudience" Style="{StaticResource ModernComboBox}"
                           materialDesign:HintAssist.Hint="Chọn đối tượng áp dụng"
                           Margin="0 0 0 16">
@@ -178,18 +178,18 @@
                 </ComboBox>
 
                 <!-- Số Quyết định -->
-                <TextBlock Text="SỐ QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBlock Text="SỐ QUYẾT ĐỊNH" FontFamily="{StaticResource AppHeadingFont}" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
                 <TextBox x:Name="txtDecisionNumber" Style="{StaticResource ModernTextBox}"
                          materialDesign:HintAssist.Hint="Nhập số quyết định (ví dụ: 123/QĐ-TCT)"
                          Margin="0 0 0 16"/>
 
                 <!-- Ngày ký Quyết định -->
-                <TextBlock Text="NGÀY KÝ QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBlock Text="NGÀY KÝ QUYẾT ĐỊNH" FontFamily="{StaticResource AppHeadingFont}" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
                 <DatePicker x:Name="dpDecisionDate" Style="{StaticResource ModernDatePicker}"
                             Margin="0 0 0 16"/>
 
                 <!-- Đơn vị ra Quyết định -->
-                <TextBlock Text="ĐƠN VỊ RA QUYẾT ĐỊNH" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
+                <TextBlock Text="ĐƠN VỊ RA QUYẾT ĐỊNH" FontFamily="{StaticResource AppHeadingFont}" Style="{StaticResource ModernLabel}" Margin="0 0 0 6"/>
                 <TextBox x:Name="txtDecisionAgency" Style="{StaticResource ModernTextBox}"
                          materialDesign:HintAssist.Hint="Nhập đơn vị ra quyết định (ví dụ: Thuế cơ sở 1)"
                          Margin="0 0 0 10"/>
@@ -198,9 +198,9 @@
             <!-- Footer -->
             <Border Grid.Row="2" Background="#F8FAFC" CornerRadius="0 0 16 16" Padding="24 16">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="HỦY BỎ" Click="btnClose_Click" Style="{StaticResource GrayOutlineButtonStyle}" 
+                    <Button Content="HỦY BỎ" FontFamily="{StaticResource AppHeadingFont}" Click="btnClose_Click" Style="{StaticResource GrayOutlineButtonStyle}" 
                             Width="105" Height="40" Margin="0 0 12 0" FontSize="13" FontWeight="Bold"/>
-                    <Button Content="CẬP NHẬT" Click="btnSave_Click" Style="{StaticResource PurpleButtonStyle}" 
+                    <Button Content="CẬP NHẬT" FontFamily="{StaticResource AppHeadingFont}" Click="btnSave_Click" Style="{StaticResource PurpleButtonStyle}" 
                             Width="125" Height="40" FontSize="13" FontWeight="Bold"/>
                 </StackPanel>
             </Border>

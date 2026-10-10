@@ -61,6 +61,7 @@ namespace TaxPersonnelManagement
         }
 
         private bool _isClosingHandled = false;
+        private bool _isLoggingOut = false;
 
         /// <summary>
         /// Tự động kiểm tra xem trên Google Drive có bản sao lưu CSDL mới hơn máy hiện tại không khi mở app.
@@ -96,6 +97,7 @@ namespace TaxPersonnelManagement
                     if (confirmWin.ShowDialog() == true)
                     {
                         var syncDialog = new SyncOnCloseWindow();
+                        syncDialog.Owner = this;
                         syncDialog.Show();
 
                         try
@@ -106,8 +108,13 @@ namespace TaxPersonnelManagement
                             if (pullSuccess)
                             {
                                 App.IsDataDirty = false;
-                                // Làm mới lại giao diện hiển thị
+                                // Làm mới lại giao diện hiển thị và xóa toàn bộ các view cache
                                 _dashboardCache = null;
+                                _personnelDetailCache = null;
+                                _statisticsCache = null;
+                                _planningCache = null;
+                                _rotationCache = null;
+                                _dutyAssignmentCache = null;
                                 NavigateDashboard(null, null);
 
                                 var successWin = new SuccessWindow("Đã tải và cập nhật dữ liệu mới nhất từ Google Drive thành công!", "Đồng Bộ Thành Công");
@@ -415,12 +422,23 @@ namespace TaxPersonnelManagement
 
                         // Tiến hành Push
                         var syncDialog = new SyncOnCloseWindow();
+                        syncDialog.Owner = this;
                         syncDialog.Show();
 
                         try
                         {
+                            App.DebugLog("OnClosing: Starting PushAsync...");
                             var pushTask = App.DriveSync.PushAsync();
-                            await System.Threading.Tasks.Task.WhenAny(pushTask, System.Threading.Tasks.Task.Delay(10000));
+                            var completedTask = await System.Threading.Tasks.Task.WhenAny(pushTask, System.Threading.Tasks.Task.Delay(60000));
+                            if (completedTask == pushTask)
+                            {
+                                bool pushSuccess = await pushTask;
+                                App.DebugLog($"OnClosing: PushAsync finished. Result = {pushSuccess}");
+                            }
+                            else
+                            {
+                                App.DebugLog("OnClosing: PushAsync TIMED OUT after 60s.");
+                            }
                         }
                         finally
                         {
@@ -771,9 +789,21 @@ namespace TaxPersonnelManagement
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            LoginView login = new LoginView();
-            login.Show();
+            _isLoggingOut = true;
+            Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
             this.Close();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            if (_isLoggingOut)
+            {
+                var login = new LoginView();
+                Application.Current.MainWindow = login;
+                Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+                login.Show();
+            }
         }
     }
 }

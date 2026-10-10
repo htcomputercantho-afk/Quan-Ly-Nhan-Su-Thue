@@ -763,6 +763,7 @@ namespace TaxPersonnelManagement
         {
             try
             {
+                GoogleDriveSyncService.CheckpointDatabase();
                 string dbPath = Path.Combine(System.AppContext.BaseDirectory, "tax_personnel.db");
                 if (!File.Exists(dbPath))
                 {
@@ -952,10 +953,10 @@ namespace TaxPersonnelManagement
                 if (IsDataDirty && DriveSync.IsConnected)
                 {
                     DebugLog("Auto-pushing CSDL to Google Drive on exit (IsDataDirty = true)...");
-                    // Timeout 10 giây
-                    var task = DriveSync.PushAsync();
-                    task.Wait(TimeSpan.FromSeconds(10));
-                    DebugLog(task.IsCompletedSuccessfully && task.Result
+                    // Chạy trên luồng nền (Task.Run) để tránh deadlock giao diện UI thread của WPF
+                    var task = System.Threading.Tasks.Task.Run(async () => await DriveSync.PushAsync().ConfigureAwait(false));
+                    bool finished = task.Wait(TimeSpan.FromSeconds(30));
+                    DebugLog(finished && task.Result
                         ? "Auto-push to Drive: SUCCESS"
                         : "Auto-push to Drive: FAILED or TIMEOUT");
                 }

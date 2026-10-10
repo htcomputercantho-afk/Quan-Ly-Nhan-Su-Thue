@@ -57,6 +57,7 @@ namespace TaxPersonnelManagement.Views
         {
             try
             {
+                TaxPersonnelManagement.Services.GoogleDriveSyncService.CheckpointDatabase();
                 if (!File.Exists(_dbPath))
                 {
                     ShowWarning("Không tìm thấy file cơ sở dữ liệu!", "Lỗi");

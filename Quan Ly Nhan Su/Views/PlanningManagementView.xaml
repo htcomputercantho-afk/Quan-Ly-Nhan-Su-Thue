@@ -25,6 +25,7 @@
 
             <!-- Custom TabItem Style -->
             <Style x:Key="ModernTabItem" TargetType="TabItem">
+                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                 <Setter Property="FontSize" Value="14"/>
                 <Setter Property="FontWeight" Value="Bold"/>
                 <Setter Property="Background" Value="#E0E0E0"/>
@@ -136,7 +137,7 @@
         <!-- Header -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0 0 0 15">
             <materialDesign:PackIcon Kind="AccountStar" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
-            <TextBlock Text="QUẢN LÝ QUY HOẠCH NHÂN SỰ" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
+            <TextBlock Text="QUẢN LÝ QUY HOẠCH NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Tab Control for Professional / Party Planning -->
@@ -227,7 +228,8 @@
                         </materialDesign:Card>
 
                         <!-- DataGrid Professional -->
-                        <DataGrid x:Name="dgProf" Grid.Row="1"
+                        <materialDesign:Card Grid.Row="1" UniformCornerRadius="8" ClipToBounds="True">
+                        <DataGrid x:Name="dgProf"
                                   AutoGenerateColumns="False" IsReadOnly="True" 
                                   CanUserAddRows="False" HeadersVisibility="Column"
                                   BorderThickness="0" Background="White"
@@ -264,17 +266,33 @@
                                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#1F2937"/>
 
+                                <Style TargetType="DataGridColumnHeadersPresenter">
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                </Style>
                                 <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Background" Value="#F3F4F6"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                                     <Setter Property="Padding" Value="10"/>
                                     <Setter Property="MinHeight" Value="60"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridColumnHeader">
+                                                <Border Background="{TemplateBinding Background}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                      RecognizesAccessKey="True"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                     <Setter Property="ContentTemplate">
                                         <Setter.Value>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="White"/>
                                             </DataTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -481,6 +499,7 @@
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
+                        </materialDesign:Card>
 
                         <!-- Footer -->
                         <Border Grid.Row="2" Background="#FAFAFA" BorderBrush="#EEEEEE" BorderThickness="0 1 0 0" Padding="15 10" Margin="-15 15 -15 -15" CornerRadius="0 0 8 8">
@@ -570,7 +589,8 @@
                         </materialDesign:Card>
 
                         <!-- DataGrid Party -->
-                        <DataGrid x:Name="dgParty" Grid.Row="1"
+                        <materialDesign:Card Grid.Row="1" UniformCornerRadius="8" ClipToBounds="True">
+                        <DataGrid x:Name="dgParty"
                                   AutoGenerateColumns="False" IsReadOnly="True" 
                                   CanUserAddRows="False" HeadersVisibility="Column"
                                   BorderThickness="0" Background="White"
@@ -607,17 +627,33 @@
                                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#1F2937"/>
 
+                                <Style TargetType="DataGridColumnHeadersPresenter">
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                </Style>
                                 <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                                     <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Background" Value="#F3F4F6"/>
+                                    <Setter Property="FontSize" Value="13"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                                     <Setter Property="Padding" Value="10"/>
                                     <Setter Property="MinHeight" Value="60"/>
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="DataGridColumnHeader">
+                                                <Border Background="{TemplateBinding Background}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                                      RecognizesAccessKey="True"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
                                     <Setter Property="ContentTemplate">
                                         <Setter.Value>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="White"/>
                                             </DataTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -824,6 +860,7 @@
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
+                        </materialDesign:Card>
 
                         <!-- Footer -->
                         <Border Grid.Row="2" Background="#FAFAFA" BorderBrush="#EEEEEE" BorderThickness="0 1 0 0" Padding="15 10" Margin="-15 15 -15 -15" CornerRadius="0 0 8 8">

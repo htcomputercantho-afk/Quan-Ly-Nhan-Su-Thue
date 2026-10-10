@@ -59,7 +59,7 @@
                                 Style="{StaticResource {x:Type Button}}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Image x:Name="imgLogo" Source="/logo.png" Width="48" Height="48" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" Margin="0 0 10 0"/>
-                                <TextBlock x:Name="txtLogo" Text="QUẢN LÝ NHÂN SỰ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtLogo" Text="QUẢN LÝ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
@@ -67,122 +67,122 @@
         
                         <!-- Navigation Buttons (White on Blue) -->
                         <Button x:Name="btnDashboard" Click="NavigateDashboard" ToolTip="Tổng quan">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconDashboard" Kind="ViewDashboard" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtOverview" Text="Tổng quan" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconDashboard" Kind="ViewDashboard" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtOverview" Text="Tổng quan" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnStatistics" Click="NavigateStatistics" ToolTip="Thống kê">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconStatistics" Kind="ChartPie" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtStatistics" Text="Thống kê" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconStatistics" Kind="ChartPie" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtStatistics" Text="Thống kê" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnPersonnel" Click="NavigatePersonnel" ToolTip="Nhân sự">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconPersonnel" Kind="AccountGroup" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtPersonnel" Text="Nhân sự" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconPersonnel" Kind="AccountGroup" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtPersonnel" Text="Nhân sự" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnSalary" Click="NavigateSalary" ToolTip="Nâng lương">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconSalary" Kind="CashMultiple" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtSalary" Text="Nâng lương" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconSalary" Kind="CashMultiple" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtSalary" Text="Nâng lương" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnAnnualIncome" Click="NavigateAnnualIncome" ToolTip="Tổng thu nhập năm">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconAnnualIncome" Kind="ChartLine" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtAnnualIncome" Text="Tổng thu nhập năm" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconAnnualIncome" Kind="ChartLine" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtAnnualIncome" Text="Tổng thu nhập năm" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnLeaveDetail" Click="NavigateLeaveDetail" ToolTip="Chi tiết nghỉ phép">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="CalendarClock" Width="22" Height="22" VerticalAlignment="Center" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="14" FontWeight="Medium"/>
+                                <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnPositionDuration" Click="NavigatePositionDuration" ToolTip="Thời gian giữ vị trí công tác">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="Timer" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtPositionDuration" Text="Thời gian công tác" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtPositionDuration" Text="Thời gian công tác" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnEmulationReward" Click="NavigateEmulationReward" ToolTip="Thi đua khen thưởng">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon x:Name="iconEmulationReward" Kind="Medal" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtEmulationReward" Text="Thi đua khen thưởng" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtEmulationReward" Text="Thi đua khen thưởng" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnEvaluation" Click="NavigateEvaluation" ToolTip="Xếp loại">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon x:Name="iconEvaluation" Kind="Certificate" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtEvaluation" Text="Đánh giá xếp loại chất lượng công chức" FontSize="13" FontWeight="Medium" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="145"/>
+                                <TextBlock x:Name="txtEvaluation" Text="Đánh giá xếp loại chất lượng công chức" FontSize="13.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="145"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnTraining" Click="NavigateTraining" ToolTip="Đào tạo và Bồi dưỡng">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="School" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtTraining" Text="Đào tạo, Bồi dưỡng" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtTraining" Text="Đào tạo, Bồi dưỡng" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnPlanning" Click="NavigatePlanning" ToolTip="Quy hoạch">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="AccountStar" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtPlanning" Text="Quy hoạch" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtPlanning" Text="Quy hoạch" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnRotation" Click="NavigateRotation" ToolTip="Luân chuyển, Điều động">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="SwapHorizontal" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtRotation" Text="Luân chuyển, Điều động" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="145"/>
+                                <TextBlock x:Name="txtRotation" Text="Luân chuyển, Điều động" FontSize="14.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="150"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="btnDutyAssignment" Click="NavigateDutyAssignment" ToolTip="Phân công nhiệm vụ">
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="ClipboardTextClockOutline" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
-                                <TextBlock x:Name="txtDutyAssignment" Text="Phân công nhiệm vụ" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="145"/>
+                                <TextBlock x:Name="txtDutyAssignment" Text="Phân công nhiệm vụ" FontSize="14.5" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="150"/>
                             </StackPanel>
                         </Button>
 
                         <Separator Background="White" Margin="20" Opacity="0.3"/>
                         
                         <Button x:Name="btnUsers" Click="NavigateUsers" ToolTip="Tài khoản">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconUsers" Kind="AccountKey" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtUsers" Text="Tài khoản" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconUsers" Kind="AccountKey" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtUsers" Text="Tài khoản" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
         
                         <Button x:Name="btnBackupRestore" Click="NavigateBackupRestore" ToolTip="Sao lưu &amp; Phục hồi">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconBackupRestore" Kind="DatabaseCog" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtBackupRestore" Text="Sao lưu &amp; Phục hồi" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconBackupRestore" Kind="DatabaseCog" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtBackupRestore" Text="Sao lưu &amp; Phục hồi" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         
                         <Button x:Name="btnLogout" Click="Logout_Click" Margin="10 20" ToolTip="Đăng xuất">
-                            <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon x:Name="iconLogout" Kind="Logout" Width="22" Height="22" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtLogout" Text="Đăng xuất" FontSize="15" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconLogout" Kind="Logout" Width="22" Height="22" Margin="0 0 15 0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="txtLogout" Text="Đăng xuất" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
                 <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="White" Opacity="0.6" FontSize="13" FontFamily="Segoe UI" FontWeight="Medium" HorizontalAlignment="Center" Margin="0 5 0 0"/>
+                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="White" Opacity="0.6" FontSize="13" FontFamily="{StaticResource AppRegularFont}" FontWeight="Medium" HorizontalAlignment="Center" Margin="0 5 0 0"/>
                     <TextBlock x:Name="txtVersion" Text="Version 1.0.0.0" Foreground="White" Opacity="0.4" FontSize="11" HorizontalAlignment="Center" Margin="0 2 0 15"/>
                 </StackPanel>
             </Grid>
@@ -199,7 +199,7 @@
             <Border Grid.Row="0" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
                 <Grid Margin="10 0">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="15 0 0 0" VerticalAlignment="Center"/>
+                        <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="15 0 0 0" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <!-- Account Details (Right side of Header) -->

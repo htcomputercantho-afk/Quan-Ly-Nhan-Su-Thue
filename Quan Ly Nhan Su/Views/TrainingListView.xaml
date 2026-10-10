@@ -33,7 +33,7 @@
         <!-- Header -->
         <StackPanel Orientation="Horizontal" Margin="0 0 0 20">
             <materialDesign:PackIcon Kind="School" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
-            <TextBlock Text="QUẢN LÝ ĐÀO TẠO VÀ BỒI DƯỠNG" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
+            <TextBlock Text="QUẢN LÝ ĐÀO TẠO VÀ BỒI DƯỠNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Filter Toolbar -->
@@ -103,7 +103,7 @@
         </materialDesign:Card>
 
         <!-- Data Grid Card -->
-        <materialDesign:Card Grid.Row="2" Style="{DynamicResource MaterialDesignCard}">
+        <materialDesign:Card Grid.Row="2" Style="{DynamicResource MaterialDesignCard}" UniformCornerRadius="8" ClipToBounds="True">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -124,12 +124,29 @@
                           ScrollViewer.CanContentScroll="False"
                           FrozenColumnCount="2">
                     <DataGrid.Resources>
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
                         <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                             <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="FontSize" Value="14"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Padding" Value="10"/>
+                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                            <Setter Property="Padding" Value="4 10"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="DataGridColumnHeader">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                              RecognizesAccessKey="True"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
                         </Style>
                         <Style TargetType="DataGridCell">
                             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
@@ -159,12 +176,15 @@
                             <Setter Property="FontSize" Value="15"/>
                         </Style>
                         <Style x:Key="WrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="Foreground" Value="White"/>
                             <Setter Property="MinHeight" Value="60"/>
-                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="FontSize" Value="13"/>
                             <Setter Property="ContentTemplate">
                                 <Setter.Value>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Padding="2"/>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" Padding="2" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" Foreground="White"/>
                                     </DataTemplate>
                                 </Setter.Value>
                             </Setter>
