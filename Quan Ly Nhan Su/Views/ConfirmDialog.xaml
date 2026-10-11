@@ -24,7 +24,7 @@
 
             <!-- Header -->
             <Border Grid.Row="0" Background="White" CornerRadius="8 8 0 0" Padding="20 0" BorderBrush="#E0E0E0" BorderThickness="0 0 0 1">
-                <TextBlock Text="Xác nhận" Foreground="#333" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="XÁC NHẬN" FontFamily="{StaticResource AppHeadingFont}" Foreground="#333" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
             </Border>
 
             <!-- Content -->

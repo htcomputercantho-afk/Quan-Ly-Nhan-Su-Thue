@@ -81,6 +81,7 @@
                                   CanUserSortColumns="False" SelectionMode="Single" RowHeight="54">
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                                     <Setter Property="Background" Value="#FFF8F0"/>
                                     <Setter Property="Foreground" Value="#92400E"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -118,9 +119,10 @@
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
                                 <!-- Họ tên & Bộ phận -->
-                                <DataGridTemplateColumn Header="Họ và tên / Đơn vị" Width="*">
+                                <DataGridTemplateColumn Header="HỌ VÀ TÊN / ĐƠN VỊ" Width="*">
                                     <DataGridTemplateColumn.HeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                                             <Setter Property="Background" Value="#FFF8F0"/>
                                             <Setter Property="Foreground" Value="#92400E"/>
                                             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -141,7 +143,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <!-- Loại cảnh báo -->
-                                <DataGridTemplateColumn Header="Loại" Width="140">
+                                <DataGridTemplateColumn Header="LOẠI" Width="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -153,7 +155,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <!-- Ngày đến hạn -->
-                                <DataGridTemplateColumn Header="Ngày đến hạn" Width="145">
+                                <DataGridTemplateColumn Header="NGÀY ĐẾN HẠN" Width="145">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -164,7 +166,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                                 <!-- Còn lại -->
-                                <DataGridTemplateColumn Header="Thời gian" Width="110">
+                                <DataGridTemplateColumn Header="THỜI GIAN" Width="110">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center"

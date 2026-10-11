@@ -26,13 +26,13 @@ namespace TaxPersonnelManagement.Views
 
             if (_isPartyMode)
             {
-                txtTitle.Text = "Quản lý Chức danh Đảng";
+                txtTitle.Text = "QUẢN LÝ CHỨC DANH ĐẢNG";
                 MaterialDesignThemes.Wpf.HintAssist.SetHint(txtPositionName, "Nhập tên chức danh Đảng mới...");
                 btnAdd.ToolTip = "Thêm chức danh";
             }
             else if (_isPlanningMode)
             {
-                txtTitle.Text = "Quản lý Chức danh Quy hoạch";
+                txtTitle.Text = "QUẢN LÝ CHỨC DANH QUY HOẠCH";
                 MaterialDesignThemes.Wpf.HintAssist.SetHint(txtPositionName, "Nhập tên chức danh quy hoạch mới...");
                 btnAdd.ToolTip = "Thêm chức danh quy hoạch";
             }

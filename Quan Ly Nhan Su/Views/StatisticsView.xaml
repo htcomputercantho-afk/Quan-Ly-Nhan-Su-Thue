@@ -580,12 +580,12 @@
                                     <ColumnDefinition Width="160"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="STT" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="1" Text="Mã ngạch" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="Tên ngạch công chức" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA"/>
-                                <TextBlock Grid.Column="3" Text="Nam" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="4" Text="Nữ" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="5" Text="Tổng (người)" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="6" Text="Tỷ lệ (%)" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="MÃ NGẠCH" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="TÊN NGẠCH CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA"/>
+                                <TextBlock Grid.Column="3" Text="NAM" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="NỮ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="TỔNG (NGƯỜI)" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="6" Text="TỶ LỆ (%)" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#4338CA" TextAlignment="Center"/>
                             </Grid>
                         </Border>
 
@@ -697,11 +697,11 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="85"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Bộ phận / Tổ" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E"/>
-                                <TextBlock Grid.Column="1" Text="Tổ trưởng" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="2" Text="Phó Tổ trưởng" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="3" Text="Công chức" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
-                                <TextBlock Grid.Column="4" Text="Tổng" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="0" Text="BỘ PHẬN / TỔ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E"/>
+                                <TextBlock Grid.Column="1" Text="TỔ TRƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="PHÓ TỔ TRƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="TỔNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
                             </Grid>
                         </Border>
 

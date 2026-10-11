@@ -97,6 +97,7 @@
                             <!-- Header Style -->
                             <DataGrid.ColumnHeaderStyle>
                                 <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                                     <Setter Property="Background" Value="#F8FAFC"/>
                                     <Setter Property="Foreground" Value="#475569"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -117,7 +118,7 @@
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#EFF6FF"/>
+                                            <Setter Property="Background" Value="#E3F2FD"/>
                                             <Setter Property="Foreground" Value="#1E3A8A"/>
                                         </Trigger>
                                     </Style.Triggers>
@@ -138,9 +139,10 @@
                                 </DataGridTextColumn>
 
                                 <!-- Họ tên & Bộ phận -->
-                                <DataGridTemplateColumn Header="Họ và tên / Đơn vị" Width="*">
+                                <DataGridTemplateColumn Header="HỌ VÀ TÊN / ĐƠN VỊ" Width="*">
                                     <DataGridTemplateColumn.HeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                                             <Setter Property="Background" Value="#F8FAFC"/>
                                             <Setter Property="Foreground" Value="#475569"/>
                                             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -162,7 +164,7 @@
                                 </DataGridTemplateColumn>
 
                                 <!-- Loại nghỉ (Badge) -->
-                                <DataGridTemplateColumn Header="Loại nghỉ" Width="125">
+                                <DataGridTemplateColumn Header="LOẠI NGHỈ" Width="125">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -175,7 +177,7 @@
                                 </DataGridTemplateColumn>
 
                                 <!-- Ngày đi làm lại -->
-                                <DataGridTemplateColumn Header="Ngày đi làm lại" Width="145">
+                                <DataGridTemplateColumn Header="NGÀY ĐI LÀM LẠI" Width="145">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -187,7 +189,7 @@
                                 </DataGridTemplateColumn>
 
                                 <!-- Còn lại (Pill Badge) -->
-                                <DataGridTemplateColumn Header="Thời gian" Width="110">
+                                <DataGridTemplateColumn Header="THỜI GIAN" Width="110">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Border CornerRadius="12" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center"

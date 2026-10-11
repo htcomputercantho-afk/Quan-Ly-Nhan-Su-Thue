@@ -605,7 +605,7 @@
                     <!-- Header Cột BỘ PHẬN (Cố định trên cùng bên trái) -->
                     <Border Grid.Column="0" Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" CornerRadius="11 0 0 0">
                         <TextBlock Text="BỘ PHẬN" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="White"
-                                   VerticalAlignment="Center" Margin="20 0 10 0"/>
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
                     <!-- Header Cột 12 Tháng + Trạng thái + Thao tác (Cuộn ngang đồng bộ) -->

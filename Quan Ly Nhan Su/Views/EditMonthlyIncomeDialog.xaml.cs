@@ -17,7 +17,7 @@ namespace TaxPersonnelManagement.Views
         public EditMonthlyIncomeDialog(string incomeType, int month, string currentNote)
         {
             InitializeComponent();
-            txtHeaderTitle.Text = $"Chi tiết {incomeType} - Tháng {month}";
+            txtHeaderTitle.Text = $"CHI TIẾT {incomeType.ToUpper()} - THÁNG {month}";
 
             // Parse existing note
             var parsedItems = AnnualIncomeRowViewModel.ParseBreakdown(currentNote);

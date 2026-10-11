@@ -21,7 +21,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (_classId.HasValue)
             {
-                txtTitle.Text = "Sửa Lớp học / Hội nghị";
+                txtTitle.Text = "SỬA LỚP HỌC / HỘI NGHỊ";
                 try
                 {
                     using (var db = new AppDbContext())
@@ -46,7 +46,7 @@ namespace TaxPersonnelManagement.Views
             }
             else
             {
-                txtTitle.Text = "Thêm Lớp học / Hội nghị";
+                txtTitle.Text = "THÊM LỚP HỌC / HỘI NGHỊ";
             }
         }
 

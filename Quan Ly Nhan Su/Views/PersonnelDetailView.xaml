@@ -268,6 +268,7 @@
         </Style>
 
         <Style x:Key="ModernTabItem" TargetType="TabItem">
+            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -327,7 +328,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Thêm mới / Cập nhật hồ sơ" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 15"/>
+        <TextBlock Text="THÊM MỚI / CẬP NHẬT HỒ SƠ" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 15"/>
 
         <TabControl x:Name="tcPersonnelDetails" Grid.Row="1" Background="Transparent" BorderThickness="0" Padding="0">
             <TabControl.Resources>
@@ -360,7 +361,7 @@
             </TabControl.Style>
 
             <!-- Tab 1: General Information -->
-            <TabItem Header="1. Thông tin cá nhân">
+            <TabItem Header="1. THÔNG TIN CÁ NHÂN">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0 15 0 0">
                     <Grid Background="Transparent">
                         <Grid.ColumnDefinitions>
@@ -874,7 +875,7 @@
             </TabItem>
 
             <!-- Tab 2: Position History -->
-            <TabItem Header="2. Thời Gian Giữ Vị Trí Công Tác Tới Thời Điểm Hiện Tại" Style="{DynamicResource ModernTabItem}">
+            <TabItem Header="2. THỜI GIAN GIỮ VỊ TRÍ CÔNG TÁC TỚI THỜI ĐIỂM HIỆN TẠI" Style="{DynamicResource ModernTabItem}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
                         <!-- Section: Quá Trình Công Tác -->
@@ -959,7 +960,7 @@
             </TabItem>
 
             <!-- Tab 3: Thông tin nghỉ hưu -->
-            <TabItem Header="3. Thông tin nghỉ hưu" Style="{DynamicResource ModernTabItem}">
+            <TabItem Header="3. THÔNG TIN NGHỈ HƯU" Style="{DynamicResource ModernTabItem}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Border Background="White" Margin="10" Padding="15" CornerRadius="8" Effect="{DynamicResource MaterialDesignShadowDepth1}">
                         <Grid>
@@ -1014,8 +1015,7 @@
             </TabItem>
 
             <!-- Tab 4: Party Info -->
-            <!-- Tab 4: Party Info -->
-            <TabItem Header="4. Thông tin Đảng viên" Style="{DynamicResource ModernTabItem}">
+            <TabItem Header="4. THÔNG TIN ĐẢNG VIÊN" Style="{DynamicResource ModernTabItem}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Border Background="White" Margin="10" Padding="15" CornerRadius="8" Effect="{DynamicResource MaterialDesignShadowDepth1}">
                         <Grid>
@@ -1076,7 +1076,7 @@
             </TabItem>
 
             <!-- Tab 5: Leave -->
-            <TabItem Header="5. Thông tin nghỉ phép" Style="{DynamicResource ModernTabItem}">
+            <TabItem Header="5. THÔNG TIN NGHỈ PHÉP" Style="{DynamicResource ModernTabItem}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10">
                         <!-- Summary Cards -->
@@ -1485,7 +1485,7 @@
             </TabItem>
 
             <!-- Tab 6: Salary -->
-            <TabItem Header="6. Thông tin lương">
+            <TabItem Header="6. THÔNG TIN LƯƠNG">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid Margin="10">
                         <Grid.RowDefinitions>
@@ -1883,7 +1883,7 @@
 
 
             <!-- Tab 7: Rewards -->
-            <TabItem Header="7. Thông tin khen thưởng">
+            <TabItem Header="7. THÔNG TIN KHEN THƯỞNG">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid Margin="20">
                         <Grid.RowDefinitions>
@@ -1920,7 +1920,7 @@
             </TabItem>
 
             <!-- Tab 8: Discipline -->
-            <TabItem Header="8. Kỷ luật">
+            <TabItem Header="8. KỶ LUẬT">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid Margin="20">
                          <!-- Card Style Container -->
@@ -2004,7 +2004,7 @@
             </TabItem>
 
             <!-- Tab 9: Xếp loại -->
-            <TabItem Header="9. Xếp loại">
+            <TabItem Header="9. XẾP LOẠI">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="20">
                         <!-- Card Style Container for Inputs -->

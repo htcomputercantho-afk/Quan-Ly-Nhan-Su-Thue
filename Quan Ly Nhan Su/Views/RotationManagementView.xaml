@@ -546,7 +546,7 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="ClipboardCheckOutline" Width="18" Height="18"
                                                      Foreground="#1976D2" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <TextBlock Text="Trong Kế Hoạch" FontSize="14" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
+                            <TextBlock Text="TRONG KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="14" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
                             <Border Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="10"
                                     Padding="8 2" Margin="8 0 0 0" VerticalAlignment="Center">
                                 <TextBlock x:Name="badgeInPlan" Text="0" FontSize="11.5" FontWeight="Bold" Foreground="#1976D2"/>
@@ -894,7 +894,7 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AlertCircleOutline" Width="18" Height="18"
                                                      Foreground="#D97706" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <TextBlock Text="Ngoài Kế Hoạch" FontSize="14" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
+                            <TextBlock Text="NGOÀI KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="14" FontWeight="Bold" Foreground="#1E293B" VerticalAlignment="Center"/>
                             <Border Background="#FFFBEB" BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="10"
                                     Padding="8 2" Margin="8 0 0 0" VerticalAlignment="Center">
                                 <TextBlock x:Name="badgeOutPlan" Text="0" FontSize="11.5" FontWeight="Bold" Foreground="#D97706"/>

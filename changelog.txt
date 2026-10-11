@@ -1,3 +1,16 @@
+## v1.6.4.0 — 2026-10-11
+- [Giao diện & Typography] Nhúng và áp dụng toàn diện Bộ font UTM HelvetIns cho 100% ứng dụng:
+    + Tích hợp font `UTM HelvetIns.ttf` trực tiếp vào tài nguyên Resource của ứng dụng, hoạt động độc lập không cần cài đặt font thủ công trên hệ thống Windows của từng máy con.
+    + Áp dụng đồng bộ font UTM HelvetIns cho toàn bộ ứng dụng: bao gồm Tiêu đề, Header bảng dữ liệu, nhãn thông tin, ô nhập liệu và các danh sách.
+    + Khắc phục hoàn toàn hiện tượng hiển thị font mặc định (Arial/Segoe UI) khi máy trạm chưa cài đặt font.
+- [Chuẩn hóa Giao diện] Rà soát và đồng bộ chữ IN HOA cho toàn bộ hệ thống Tiêu đề & Cửa sổ Popup:
+    + Chuẩn hóa chữ IN HOA cho tất cả các tiêu đề trang, thẻ thống kê (Dashboard, Thống kê, Bổ nhiệm...).
+    + Chuẩn hóa tiêu đề hộp thoại/dialog (Thêm phòng ban, Thêm ngạch, Thêm chức vụ, Thêm lớp đào tạo, Kỷ luật, Thu nhập, Quy hoạch...).
+    + Đảm bảo tính nhất quán và chỉn chu trên toàn bộ giao diện phần mềm.
+- [Tối ưu Trải nghiệm Bảng biểu] Chuẩn hóa Màu sắc Chọn dòng (Row Selection) trên Toàn hệ thống:
+    + Đồng bộ màu nền khi chọn dòng về chuẩn xanh lam dịu mắt `#E3F2FD` (Material Design Light Blue) và hover `#F5F9FF` trên tất cả các bảng dữ liệu (Bảng lương, Đào tạo, Đánh giá, Nghỉ phép, Thu nhập năm, Quản lý tài khoản, Chọn cán bộ...).
+    + Khắc phục hoàn toàn các vị trí bị mất viền hoặc tương phản kém khi chọn dòng.
+
 ## v1.6.3.9 — 2026-10-10
 - [Sửa lỗi & Tối ưu hóa Đồng bộ] Nâng cấp Toàn diện Cơ chế Sao lưu & Đồng bộ Google Drive (`GoogleDriveSyncService`, `MainWindow`, `App`):
     + Tăng tốc độ sao lưu gấp 3 - 5 lần:

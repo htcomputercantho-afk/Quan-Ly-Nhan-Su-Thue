@@ -25,7 +25,7 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             _planningType = planningType;
             _isEditMode = false;
-            txtTitle.Text = $"Thêm Quy hoạch {_planningType}";
+            txtTitle.Text = $"THÊM QUY HOẠCH {_planningType.ToUpper()}";
             
             InitializeReferenceYears();
             // Đặt mặc định ngày ký là hôm nay
@@ -47,7 +47,7 @@ namespace TaxPersonnelManagement.Views
             _planningType = record.PlanningType;
             _isEditMode = true;
             _recordId = record.Id;
-            txtTitle.Text = $"Cập nhật Quy hoạch {_planningType}";
+            txtTitle.Text = $"CẬP NHẬT QUY HOẠCH {_planningType.ToUpper()}";
 
             InitializeReferenceYears();
             // Tải thông tin bản ghi lên giao diện

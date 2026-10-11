@@ -20,7 +20,7 @@
 
             <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <materialDesign:PackIcon Kind="Information" Width="50" Height="50" Foreground="#2196F3" HorizontalAlignment="Center" Margin="0 0 0 15"/>
-                <TextBlock x:Name="txtTitle" Text="Thông báo" FontSize="20" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0 0 0 10"/>
+                <TextBlock x:Name="txtTitle" Text="THÔNG BÁO" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="0 0 0 10"/>
                 <TextBlock x:Name="txtMessage" Text="Nội dung thông báo..." FontSize="15" Foreground="#555" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="24"/>
             </StackPanel>
             

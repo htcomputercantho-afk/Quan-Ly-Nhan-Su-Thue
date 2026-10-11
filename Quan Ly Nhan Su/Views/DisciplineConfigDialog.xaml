@@ -26,7 +26,7 @@
             <!-- Header -->
             <Border Grid.Row="0" Background="White" CornerRadius="8 8 0 0" Padding="20 0" BorderBrush="#E0E0E0" BorderThickness="0 0 0 1">
                 <Grid>
-                    <TextBlock Text="Danh mục Hình thức kỷ luật" Foreground="#333" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <TextBlock Text="DANH MỤC HÌNH THỨC KỶ LUẬT" FontFamily="{StaticResource AppHeadingFont}" Foreground="#333" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
                     <Button HorizontalAlignment="Right" Click="btnClose_Click" Background="Transparent" BorderThickness="0" Padding="0" Width="30" Height="30">
                         <materialDesign:PackIcon Kind="Close" Foreground="#777" Width="20" Height="20"/>
                     </Button>

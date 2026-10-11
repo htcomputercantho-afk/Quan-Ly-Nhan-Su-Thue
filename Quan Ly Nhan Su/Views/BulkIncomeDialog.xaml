@@ -44,6 +44,7 @@
 
         <!-- Modern Capsule TabItem Style -->
         <Style x:Key="ModernTabItem" TargetType="TabItem">
+            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Background" Value="Transparent"/>
@@ -108,7 +109,7 @@
             <StackPanel Grid.Row="0" Margin="0 0 0 15">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <materialDesign:PackIcon Kind="CardsOutline" Width="28" Height="28" Foreground="#7B1FA2" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Nhập Hàng Loạt &amp; Import" FontSize="22" FontWeight="Bold" Foreground="#7B1FA2" VerticalAlignment="Center"/>
+                    <TextBlock Text="NHẬP HÀNG LOẠT &amp; IMPORT" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="#7B1FA2" VerticalAlignment="Center"/>
                 </StackPanel>
                 <TextBlock Text="Nhập thủ công hoặc import dữ liệu thu nhập từ file Excel cho nhiều công chức" Foreground="Gray" FontSize="13" TextAlignment="Center" Margin="0 5 0 0"/>
             </StackPanel>
@@ -117,7 +118,7 @@
             <TabControl x:Name="tcBulkIncome" Grid.Row="1" Style="{StaticResource CleanTabControl}">
                 
                 <!-- TAB 1: NHẬP THỦ CÔNG -->
-                <TabItem Header="✍️ Nhập thủ công" Style="{StaticResource ModernTabItem}">
+                <TabItem Header="✍️ NHẬP THỦ CÔNG" Style="{StaticResource ModernTabItem}">
                     <Grid Margin="0 5 0 0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -314,7 +315,7 @@
                 </TabItem>
 
                 <!-- TAB 2: IMPORT EXCEL & MAPPING -->
-                <TabItem Header="📄 Nhập từ file Excel" Style="{StaticResource ModernTabItem}">
+                <TabItem Header="📄 NHẬP TỪ FILE EXCEL" Style="{StaticResource ModernTabItem}">
                     <Grid Margin="0 5 0 0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/> <!-- Browse panel -->

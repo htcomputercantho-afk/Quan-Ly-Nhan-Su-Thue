@@ -44,7 +44,7 @@ namespace TaxPersonnelManagement.Views
                 else
                 {
                     // Chế độ chỉnh sửa
-                    txtTitle.Text = "Chỉnh sửa Luân chuyển / Điều động";
+                    txtTitle.Text = "CHỈNH SỬA LUÂN CHUYỂN / ĐIỀU ĐỘNG";
                     btnDelete.Visibility = Visibility.Visible;
                     btnEditMode.Visibility = Visibility.Collapsed;
                     btnSave.Visibility = Visibility.Visible;
@@ -361,7 +361,7 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnEditMode_Click(object sender, RoutedEventArgs e)
         {
-            txtTitle.Text = "Chỉnh sửa Luân chuyển / Điều động";
+            txtTitle.Text = "CHỈNH SỬA LUÂN CHUYỂN / ĐIỀU ĐỘNG";
             btnDelete.Visibility = Visibility.Visible;
             btnSave.Visibility = Visibility.Visible;
             btnEditMode.Visibility = Visibility.Collapsed;
