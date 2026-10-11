@@ -30,6 +30,7 @@ namespace TaxPersonnelManagement.Views
                 using (var db = new AppDbContext())
                 {
                     var classes = db.TrainingClasses
+                                    .AsNoTracking()
                                     .Include(tc => tc.PersonnelTrainings)
                                     .ToList();
 

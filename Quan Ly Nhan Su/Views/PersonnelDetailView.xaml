@@ -1302,16 +1302,14 @@
                                     <Style TargetType="DataGridCell">
                                         <Setter Property="Padding" Value="12 4"/>
                                         <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                                         <Setter Property="VerticalContentAlignment" Value="Center"/>
                                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="DataGridCell">
-                                                    <Border Padding="{TemplateBinding Padding}" 
-                                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                                            BorderThickness="{TemplateBinding BorderThickness}" 
-                                                            Background="{TemplateBinding Background}" 
-                                                            SnapsToDevicePixels="True">
+                                                    <Border Padding="{TemplateBinding Padding}" Background="Transparent" SnapsToDevicePixels="True">
                                                         <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
                                                                           VerticalAlignment="Center" 
                                                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
@@ -2089,16 +2087,14 @@
                                     <Style TargetType="DataGridCell">
                                         <Setter Property="Padding" Value="12 4"/>
                                         <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                                         <Setter Property="VerticalContentAlignment" Value="Center"/>
                                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="DataGridCell">
-                                                    <Border Padding="{TemplateBinding Padding}" 
-                                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                                            BorderThickness="{TemplateBinding BorderThickness}" 
-                                                            Background="{TemplateBinding Background}" 
-                                                            SnapsToDevicePixels="True">
+                                                    <Border Padding="{TemplateBinding Padding}" Background="Transparent" SnapsToDevicePixels="True">
                                                         <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
                                                                           VerticalAlignment="Center" 
                                                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>

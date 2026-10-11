@@ -26,10 +26,10 @@
             <SolidColorBrush x:Key="TextPrimary">#323130</SolidColorBrush>
             <SolidColorBrush x:Key="TextSecondary">#605E5C</SolidColorBrush>
 
-            <!-- 2. Typography -->
-            <FontFamily x:Key="AppRegularFont">Times New Roman</FontFamily>
-            <FontFamily x:Key="AppHeadingFont">pack://application:,,,/Quan_Ly_Nhan_Su;component/Fonts/#UTM HelvetIns, ./Fonts/#UTM HelvetIns, UTM HelvetIns, Arial, Segoe UI</FontFamily>
-            <FontFamily x:Key="MaterialDesignFont">Times New Roman</FontFamily>
+            <!-- 2. Typography (Bộ font Segoe UI hiện đại, thanh lịch, chuẩn mực Fluent & Windows 11) -->
+            <FontFamily x:Key="AppRegularFont">Segoe UI, Helvetica Neue, Arial, sans-serif</FontFamily>
+            <FontFamily x:Key="AppHeadingFont">Segoe UI, Helvetica Neue, Arial, sans-serif</FontFamily>
+            <FontFamily x:Key="MaterialDesignFont">Segoe UI, Helvetica Neue, Arial, sans-serif</FontFamily>
 
             <!-- Reusable Uppercase Heading Style -->
             <Style x:Key="UppercaseHeadingStyle" TargetType="TextBlock">
@@ -49,7 +49,13 @@
             <Style TargetType="DataGridCell" x:Key="LeaveHistoryCellStyle">
                 <Setter Property="ClipToBounds" Value="False"/>
                 <Setter Property="Panel.ZIndex" Value="100"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             </Style>
+
+            <!-- Global DataGrid Focus & Selection Border Removal (Khắc phục viền đen khi click cell) -->
+            <SolidColorBrush x:Key="{x:Static DataGrid.FocusBorderBrushKey}" Color="Transparent"/>
 
             <!-- Global Sharp Font & ClearType Settings to prevent blurry fonts -->
             <Style TargetType="{x:Type TextElement}">
@@ -132,6 +138,7 @@
 
             <!-- 5. DATAGRID STYLE (Clean, Professional) -->
             <Style TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Background" Value="White" />
                 <Setter Property="BorderThickness" Value="0" />
                 <Setter Property="GridLinesVisibility" Value="Horizontal" />
@@ -154,7 +161,7 @@
             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                 <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                 <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}" />
-                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontWeight" Value="SemiBold" />
                 <Setter Property="FontSize" Value="13" />
                 <Setter Property="MinHeight" Value="50" />
                 <Setter Property="Foreground" Value="White" />
@@ -166,7 +173,7 @@
                 <Setter Property="ContentTemplate">
                     <Setter.Value>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Foreground="White" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Foreground="White" FontWeight="SemiBold"/>
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>
@@ -180,6 +187,7 @@
 
             <!-- GLOBAL DATAGRID ROW STYLE: Hiệu ứng chọn dòng đồng bộ toàn hệ thống (#E3F2FD) -->
             <Style TargetType="{x:Type DataGridRow}" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Background" Value="White"/>
                 <Setter Property="BorderThickness" Value="0 0 0 1"/>
                 <Setter Property="BorderBrush" Value="#F1F5F9"/>

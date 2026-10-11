@@ -11,10 +11,6 @@ using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Services;
 using TaxPersonnelManagement.Helpers;
 
-
-
-
-
 namespace TaxPersonnelManagement
 {
     public partial class App : Application
@@ -903,44 +899,21 @@ namespace TaxPersonnelManagement
 
         private DateTime GetSolarFromLunar(ChineseLunisolarCalendar lunar, int year, int lMonth, int lDay)
         {
-            // ChineseLunisolarCalendar year cycle is different, we need to find the solar year
-            // that contains this lunar date.
-            // For a given solar year, the Lunar New Year usually falls in Jan or Feb.
-
-            // Try to find the solar date in the range [year, year+1]
-            for (int y = year - 1; y <= year + 1; y++)
+            try
             {
-                try
-                {
-                    int monthsInYear = lunar.GetMonthsInYear(y);
-                    for (int m = 1; m <= monthsInYear; m++)
-                    {
-                        // Handle leap months: we usually only care about the non-leap month for holidays
-                        // but GetMonth returns 1..13 if there is a leap month.
-                        // Simplified check:
-                        if (lunar.GetDayOfMonth(lunar.ToDateTime(y, m, lDay, 0, 0, 0, 0)) == lDay)
-                        {
-                            // This is complex. Let's use a simpler approach.
-                        }
-                    }
-                }
-                catch { }
+                DateTime date1 = lunar.ToDateTime(year, lMonth, lDay, 0, 0, 0, 0);
+                if (date1.Year == year || (lMonth == 1 && date1.Year == year)) return date1;
             }
+            catch { }
 
-            // Simplified accurate enough for standard years:
-            // The ToDateTime(year, month, day, ...) uses Lunar parameters.
-            // We need to map the "Solar Year" to the "Lunar Year" which is tricky.
-            // Actually, for Tet of solar year Y, the Lunar Year is usually Y or Y-1.
+            try
+            {
+                DateTime date2 = lunar.ToDateTime(year - 1, lMonth, lDay, 0, 0, 0, 0);
+                return date2;
+            }
+            catch { }
 
-            // Standard approach for Tet in Solar Year Y:
-            // Tet usually starts in Jan/Feb of Year Y.
-            // So we try Lunar Year Y or Y-1.
-
-            DateTime date1 = lunar.ToDateTime(year, lMonth, lDay, 0, 0, 0, 0);
-            if (date1.Year == year || (lMonth == 1 && date1.Year == year)) return date1;
-
-            DateTime date2 = lunar.ToDateTime(year - 1, lMonth, lDay, 0, 0, 0, 0);
-            return date2;
+            return new DateTime(year, lMonth, lDay);
         }
 
         /// <summary>

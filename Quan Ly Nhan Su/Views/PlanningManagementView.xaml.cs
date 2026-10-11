@@ -120,6 +120,7 @@ namespace TaxPersonnelManagement.Views
 
                     // Lấy tất cả bản ghi quy hoạch kèm thông tin Personnel liên quan
                     var records = db.PlanningRecords
+                                    .AsNoTracking()
                                     .Include(r => r.Personnel)
                                     .ToList();
 

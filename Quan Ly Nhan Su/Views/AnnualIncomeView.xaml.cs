@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Data;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Collections.ObjectModel;
@@ -70,6 +71,7 @@ namespace TaxPersonnelManagement.Views
                 };
 
                 _allPersonnel = db.Personnel
+                                  .AsNoTracking()
                                   .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
                                   .AsEnumerable()
                                   .OrderBy(p =>

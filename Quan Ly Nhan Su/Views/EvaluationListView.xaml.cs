@@ -179,6 +179,7 @@ namespace TaxPersonnelManagement.Views
                 using (var context = new AppDbContext())
                 {
                     var query = context.EvaluationRecords
+                                       .AsNoTracking()
                                        .Include(e => e.Personnel)
                                        .AsQueryable();
 

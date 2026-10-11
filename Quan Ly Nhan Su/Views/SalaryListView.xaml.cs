@@ -148,6 +148,7 @@ namespace TaxPersonnelManagement.Views
                 using (var context = new AppDbContext())
                 {
                     var query = context.Personnel
+                                       .AsNoTracking()
                                        .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
                                        .AsQueryable();
 

@@ -189,6 +189,7 @@ namespace TaxPersonnelManagement.Views
 
                 // Tải tất cả bản ghi luân chuyển điều động, kèm thông tin cán bộ
                 var records = db.RotationRecords
+                    .AsNoTracking()
                     .Include(r => r.Personnel)
                     .ToList();
 

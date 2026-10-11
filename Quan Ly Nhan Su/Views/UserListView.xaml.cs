@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -24,7 +25,7 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    _allUsers = context.Users.ToList();
+                    _allUsers = context.Users.AsNoTracking().ToList();
                     dgUsers.ItemsSource = _allUsers;
                 }
             }

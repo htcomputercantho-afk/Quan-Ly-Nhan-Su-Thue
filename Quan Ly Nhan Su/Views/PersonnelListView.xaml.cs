@@ -182,6 +182,7 @@ namespace TaxPersonnelManagement.Views
             using (var context = new AppDbContext())
             {
                 var query = context.Personnel
+                                   .AsNoTracking()
                                    .Include(p => p.LeaveHistories)
                                    .Include(p => p.SalaryRecords)
                                    .Include(p => p.PersonnelDegrees)

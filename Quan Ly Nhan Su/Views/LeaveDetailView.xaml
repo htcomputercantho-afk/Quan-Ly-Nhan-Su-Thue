@@ -212,6 +212,7 @@
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
                             <Setter Property="Padding" Value="8,6"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
                             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>

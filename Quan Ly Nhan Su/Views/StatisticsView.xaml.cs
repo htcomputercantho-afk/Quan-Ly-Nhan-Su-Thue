@@ -96,7 +96,7 @@ namespace TaxPersonnelManagement.Views
         // Lấy danh sách nhân sự theo các bộ lọc hiện tại
         private List<Personnel> GetFilteredPersonnel(AppDbContext db, out int filterYear, out string departmentStr, out string yearStr)
         {
-            var query = db.Personnel.AsQueryable();
+            var query = db.Personnel.AsNoTracking().AsQueryable();
 
             // Chỉ thống kê công chức đang làm việc / đang công tác (loại trừ luân chuyển điều động, nghỉ hưu, nghỉ việc)
             query = query.Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác");

@@ -361,7 +361,7 @@
                           AlternationCount="2" AlternatingRowBackground="#F8FAFC"
                           MinRowHeight="56" VerticalContentAlignment="Center"
                           SelectionMode="Single"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto" FocusVisualStyle="{x:Null}">
                     <DataGrid.Resources>
                         <!-- Presenter Style to fill gap on right -->
                         <Style TargetType="DataGridColumnHeadersPresenter">
@@ -396,10 +396,13 @@
                             <Setter Property="FontSize" Value="13"/>
                             <Setter Property="Padding" Value="8 6"/>
                             <Setter Property="Foreground" Value="#1E293B"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" SnapsToDevicePixels="True" Padding="{TemplateBinding Padding}">
+                                        <Border Background="Transparent" SnapsToDevicePixels="True" Padding="{TemplateBinding Padding}">
                                             <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
                                         </Border>
                                     </ControlTemplate>
@@ -409,6 +412,8 @@
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="BorderBrush" Value="Transparent"/>
                                     <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
                                 </Trigger>
                             </Style.Triggers>
@@ -417,6 +422,7 @@
                         <!-- Grid Row Style -->
                         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                             <Setter Property="Background" Value="White"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             <Setter Property="BorderThickness" Value="0 0 0 1"/>
                             <Setter Property="BorderBrush" Value="#F1F5F9"/>
                             <Setter Property="Cursor" Value="Hand"/>

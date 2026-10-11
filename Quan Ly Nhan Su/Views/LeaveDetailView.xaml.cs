@@ -289,6 +289,7 @@ namespace TaxPersonnelManagement.Views
                     };
 
                     var query = db.Personnel
+                                  .AsNoTracking()
                                   .Include(p => p.LeaveHistories)
                                   .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
                                   .AsQueryable();

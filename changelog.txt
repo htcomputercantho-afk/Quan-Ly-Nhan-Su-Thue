@@ -1,8 +1,17 @@
+## v1.6.4.1 — 2026-10-11
+- [Giao diện & Typography] Nâng cấp Toàn diện Bộ Typography Hiện đại & Thanh lịch (Segoe UI):
+    + Thay thế hoàn toàn font `UTM HelvetIns` (font tiêu đề thô, bẹp dí) và `Times New Roman` (font có chân cũ) bằng chuẩn typography `Segoe UI` hiện đại, thanh thoát của Microsoft Windows.
+    + Áp dụng đồng bộ `Segoe UI` cho 100% ứng dụng: Tiêu đề trang, Header bảng dữ liệu (DataGrid), Menu Sidebar, Ô nhập liệu, Nhãn thông tin và Dòng dữ liệu cán bộ.
+    + Hiển thị tiếng Việt có dấu và các con số (CCCD, hệ số lương, ngày tháng) cực kỳ sắc nét, cân đối, thoáng mắt, tối ưu hiển thị ClearType và chuẩn hóa giao diện Fluent Design cao cấp.
+- [Tối ưu Hiệu năng & Tinh gọn Mã nguồn]:
+    + Áp dụng `AsNoTracking()` trên toàn bộ các câu truy vấn chỉ đọc (Danh sách nhân sự, Đánh giá xếp loại, Quy hoạch cán bộ, Luân chuyển điều động, Nâng lương, Nghỉ phép, Thu nhập năm, Thống kê, Quản lý tài khoản), giúp giảm mạnh tiêu thụ bộ nhớ RAM và tăng tốc tải dữ liệu cho các bảng lớn.
+    + Tối ưu thuật toán tính lịch âm/dương trong `App.xaml.cs`, loại bỏ vòng lặp tính toán thừa khi khởi động ứng dụng.
+    + Dọn dẹp tệp font `UTM HelvetIns.ttf`, làm sạch tệp cấu hình dự án `.csproj` và các dòng trống, using thừa thãi mà không làm thay đổi hay gián đoạn bất kỳ logic nghiệp vụ nào.
+- [Dọn dẹp Cơ sở Dữ liệu]:
+    + Xóa bỏ các tệp cơ sở dữ liệu rác 0 byte (`app.db`, `personnel.db`, `tax_personnel.db` 0 byte ở thư mục code).
+    + Di chuyển an toàn tệp CSDL sao lưu dự phòng vào thư mục `backup/` riêng biệt.
+
 ## v1.6.4.0 — 2026-10-11
-- [Giao diện & Typography] Nhúng và áp dụng toàn diện Bộ font UTM HelvetIns cho 100% ứng dụng:
-    + Tích hợp font `UTM HelvetIns.ttf` trực tiếp vào tài nguyên Resource của ứng dụng, hoạt động độc lập không cần cài đặt font thủ công trên hệ thống Windows của từng máy con.
-    + Áp dụng đồng bộ font UTM HelvetIns cho toàn bộ ứng dụng: bao gồm Tiêu đề, Header bảng dữ liệu, nhãn thông tin, ô nhập liệu và các danh sách.
-    + Khắc phục hoàn toàn hiện tượng hiển thị font mặc định (Arial/Segoe UI) khi máy trạm chưa cài đặt font.
 - [Chuẩn hóa Giao diện] Rà soát và đồng bộ chữ IN HOA cho toàn bộ hệ thống Tiêu đề & Cửa sổ Popup:
     + Chuẩn hóa chữ IN HOA cho tất cả các tiêu đề trang, thẻ thống kê (Dashboard, Thống kê, Bổ nhiệm...).
     + Chuẩn hóa tiêu đề hộp thoại/dialog (Thêm phòng ban, Thêm ngạch, Thêm chức vụ, Thêm lớp đào tạo, Kỷ luật, Thu nhập, Quy hoạch...).
