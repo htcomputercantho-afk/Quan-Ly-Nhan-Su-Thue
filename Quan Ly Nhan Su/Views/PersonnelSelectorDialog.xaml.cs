@@ -74,7 +74,7 @@ namespace TaxPersonnelManagement.Views
                                         .Select(d => d.Name)
                                         .ToList();
 
-                    var filterList = new List<string> { "Tất cả tổ/bộ phận" };
+                    var filterList = new List<string> { "Tất cả bộ phận" };
                     filterList.AddRange(departments);
 
                     cboDepartmentFilter.ItemsSource = filterList;
@@ -173,12 +173,12 @@ namespace TaxPersonnelManagement.Views
         {
             if (_allPersonnel == null) return;
 
-            string selectedDept = cboDepartmentFilter.SelectedItem as string ?? "Tất cả tổ/bộ phận";
+            string selectedDept = cboDepartmentFilter.SelectedItem as string ?? "Tất cả bộ phận";
             string search = txtSearchQuery.Text.Trim();
 
             var filtered = _allPersonnel.AsEnumerable();
 
-            if (selectedDept != "Tất cả tổ/bộ phận")
+            if (selectedDept != "Tất cả bộ phận")
             {
                 filtered = filtered.Where(p => p.Department == selectedDept);
             }

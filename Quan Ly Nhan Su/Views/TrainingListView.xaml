@@ -148,6 +148,10 @@
                                 </Setter.Value>
                             </Setter>
                         </Style>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+
                         <Style TargetType="DataGridCell">
                             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
                             <Setter Property="FontSize" Value="15"/>
@@ -166,7 +170,7 @@
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -183,6 +187,7 @@
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -229,18 +234,7 @@
                         <DataGridTemplateColumn Header="TÊN CÁC LỚP, HỘI NGHỊ" Width="*" MinWidth="260" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding ClassName}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="#333"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridCell}}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
+                                    <TextBlock Text="{Binding ClassName}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" FontWeight="SemiBold" Margin="10,0" VerticalAlignment="Center" Foreground="#1F2937"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -279,17 +273,9 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Click="btnDetail_Click" Tag="{Binding Id}"
-                                             Height="32" Padding="8 0" VerticalAlignment="Center">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-                                                <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidBrush}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=DataGridCell}}" Value="True">
-                                                        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                            Height="32" Padding="8 0" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
                                             <materialDesign:PackIcon Kind="Eye" Width="16" Height="16" Margin="0 0 4 0" VerticalAlignment="Center"/>
                                             <TextBlock Text="Chi tiết" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>

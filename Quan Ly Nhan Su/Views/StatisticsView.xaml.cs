@@ -426,25 +426,18 @@ namespace TaxPersonnelManagement.Views
         }
 
         /// <summary>
-        /// Tính toán danh sách thống kê lãnh đạo tổ theo từng bộ phận.
+        /// Tính toán danh sách thống kê lãnh đạo theo từng bộ phận (đồng bộ với tổng số nhân sự).
         /// </summary>
         private static List<TeamLeadershipRow> CalculateTeamLeadershipRows(List<Personnel> list)
         {
             var leaderPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở" };
+                { "Tổ trưởng", "Đội trưởng", "Trưởng phòng", "Trưởng Thuế cơ sở", "Chi cục trưởng", "Cục trưởng", "Trưởng ban" };
             var deputyPositions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở" };
-
-            // Bộ phận bị loại khỏi bảng thống kê lãnh đạo tổ (không có khái niệm Tổ trưởng/Phó Tổ trưởng)
-            var excludedDepts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                { "Ban Lãnh đạo", "Ban lãnh đạo", "Lãnh đạo đơn vị", "Ban Giám đốc", "Ban giám đốc",
-                  "HĐLĐ", "Hội đồng lao động", "Hợp đồng lao động" };
+                { "Phó Tổ trưởng", "Phó Đội trưởng", "Phó Trưởng phòng", "Phó Trưởng Thuế cơ sở", "Phó Chi cục trưởng", "Phó Cục trưởng", "Phó ban" };
 
             return list
-                .Where(p => !string.IsNullOrWhiteSpace(p.Department)
-                         && !excludedDepts.Contains(p.Department!))
-                .GroupBy(p => p.Department!)
-                .OrderBy(g => g.Key)
+                .GroupBy(p => string.IsNullOrWhiteSpace(p.Department) ? "Chưa phân bộ phận" : p.Department.Trim())
+                .OrderBy(g => (g.Key.StartsWith("Ban Lãnh đạo", StringComparison.OrdinalIgnoreCase) || g.Key.StartsWith("Ban Giám đốc", StringComparison.OrdinalIgnoreCase)) ? " 0" : (g.Key == "Chưa phân bộ phận" ? "zzz" : g.Key))
                 .Select(g =>
                 {
                     int leaders  = g.Count(p => leaderPositions.Contains(p.Position ?? ""));
@@ -805,12 +798,12 @@ namespace TaxPersonnelManagement.Views
 
                         wsRank.Columns().AdjustToContents();
 
-                        // --- Sheet 3: Thống kê lãnh đạo tổ ---
-                        var wsTeam = workbook.Worksheets.Add("Lãnh đạo tổ");
+                        // --- Sheet 3: Thống kê lãnh đạo theo bộ phận ---
+                        var wsTeam = workbook.Worksheets.Add("Lãnh đạo bộ phận");
 
                         var teamTitleRange = wsTeam.Range("A1:F1");
                         teamTitleRange.Merge();
-                        teamTitleRange.Value = "BẢNG THỐNG KÊ LÃNH ĐẠO TỔ THEO BỘ PHẬN";
+                        teamTitleRange.Value = "BẢNG THỐNG KÊ LÃNH ĐẠO THEO BỘ PHẬN";
                         teamTitleRange.Style.Font.Bold = true;
                         teamTitleRange.Style.Font.FontSize = 16;
                         teamTitleRange.Style.Font.FontColor = XLColor.FromHtml("#0F766E");
@@ -826,7 +819,7 @@ namespace TaxPersonnelManagement.Views
                         wsTeam.Cell(3, 1).Style.Font.Bold = true;
                         wsTeam.Cell(3, 2).Value = yearStr;
 
-                        string[] teamHeaders = { "STT", "Bộ phận / Tổ", "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Tổng cộng" };
+                        string[] teamHeaders = { "STT", "Bộ phận", "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Tổng cộng" };
                         for (int col = 1; col <= teamHeaders.Length; col++)
                         {
                             var cell = wsTeam.Cell(5, col);

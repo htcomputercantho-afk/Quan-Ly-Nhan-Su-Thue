@@ -411,7 +411,7 @@
                         </WrapPanel>
 
                         <!-- Đếm số kết quả lọc -->
-                        <TextBlock x:Name="txtFilterCount" Grid.Column="1" Text="13 Tổ"
+                        <TextBlock x:Name="txtFilterCount" Grid.Column="1" Text="13 Bộ phận"
                                    FontSize="12" FontWeight="SemiBold" Foreground="#64748B"
                                    VerticalAlignment="Center" Margin="10 0 4 0"/>
                     </Grid>
@@ -428,9 +428,9 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Card 1: Tổng số Tổ -->
+            <!-- Card 1: Tổng số Bộ phận -->
             <Border x:Name="cardKpiTotal" Grid.Column="0" Style="{StaticResource ModernCard}" Padding="14 12" Margin="0 0 6 0"
-                    Cursor="Hand" PreviewMouseLeftButtonDown="KpiCardTotal_PreviewMouseLeftButtonDown" ToolTip="Nhấp để hiển thị tất cả các Tổ">
+                    Cursor="Hand" PreviewMouseLeftButtonDown="KpiCardTotal_PreviewMouseLeftButtonDown" ToolTip="Nhấp để hiển thị tất cả các Bộ phận">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -442,7 +442,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0">
-                        <TextBlock Text="TỔNG SỐ TỔ" FontFamily="{StaticResource AppHeadingFont}" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="TỔNG SỐ BỘ PHẬN" FontFamily="{StaticResource AppHeadingFont}" FontSize="11" FontWeight="Bold" Foreground="#64748B" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="txtKpiTotal" Text="0" FontSize="26" FontWeight="Bold" Foreground="#0F172A" Margin="0 2 0 0"/>
                     </StackPanel>
 
@@ -506,7 +506,7 @@
 
             <!-- Card 3: Nhiều thay đổi -->
             <Border x:Name="cardKpiMultiple" Grid.Column="2" Style="{StaticResource ModernCard}" Padding="14 12" Margin="3 0 3 0"
-                    Cursor="Hand" PreviewMouseLeftButtonDown="KpiCardMultiple_PreviewMouseLeftButtonDown" ToolTip="Nhấp để chỉ xem các Tổ có nhiều thay đổi (hoặc bấm lại để bỏ lọc)">
+                    Cursor="Hand" PreviewMouseLeftButtonDown="KpiCardMultiple_PreviewMouseLeftButtonDown" ToolTip="Nhấp để chỉ xem các Bộ phận có nhiều thay đổi (hoặc bấm lại để bỏ lọc)">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

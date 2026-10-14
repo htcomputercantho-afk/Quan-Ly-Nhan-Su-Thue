@@ -196,7 +196,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (cmbDepartment.SelectedItem is not string department || string.IsNullOrWhiteSpace(department))
             {
-                ShowWarning("Vui lòng chọn Tổ / bộ phận.");
+                ShowWarning("Vui lòng chọn Bộ phận.");
                 return;
             }
             if (cmbMonth.SelectedIndex < 0 || cmbYear.SelectedItem is not int year)

@@ -297,9 +297,25 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
+                                <Style x:Key="PlanningCellLeft" TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="8 0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                </Style>
+                                <Style x:Key="PlanningCellCenter" TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                </Style>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="TextBlock.TextAlignment" Value="Left"/>
-                                    <Setter Property="FontSize" Value="15"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                     <Setter Property="Padding" Value="6"/>
                                     <Setter Property="BorderThickness" Value="0"/>
                                     <Setter Property="BorderBrush" Value="Transparent"/>
@@ -326,166 +342,30 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="55">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="55" ElementStyle="{StaticResource PlanningCellCenter}"/>
 
                                 <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="170" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Personnel.FullName}" FontWeight="Bold" Margin="8 0" VerticalAlignment="Center" TextWrapping="Wrap">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="#1F2937"/>
-                                                        <Style.Triggers>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                            <TextBlock Text="{Binding Personnel.FullName}" FontWeight="SemiBold" FontSize="13.5" Margin="8 0" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="#1F2937"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="CCCD" Binding="{Binding Personnel.IdentityCardNumber}" Width="125">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding Personnel.DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="110">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Personnel.Department}" Width="130">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="CHỨC VỤ HIỆN TẠI" Binding="{Binding Personnel.Position}" Width="130">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="CHỨC DANH QUY HOẠCH" Binding="{Binding PlannedPosition}" Width="150">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="CHỨC DANH CHUYỂN TIẾP" Binding="{Binding PlannedTransitionPosition}" Width="150">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="TRÌNH ĐỘ CHUYÊN MÔN" Binding="{Binding TrainingLevel}" Width="130">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="LÝ LUẬN CHÍNH TRỊ" Binding="{Binding PoliticalTheoryLevel}" Width="120">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="NHIỆM KỲ" Binding="{Binding PlanningTerm}" Width="95">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber, Converter={StaticResource EmptyStringToDashConverter}}" Width="110">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="NGÀY KÝ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="110">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionUnit}" Width="135">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="ĐÁNH GIÁ 3 NĂM GẦN NHẤT" Binding="{Binding Evaluation3Years}" Width="160">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Note}" Width="150">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="CCCD" Binding="{Binding Personnel.IdentityCardNumber}" Width="125" ElementStyle="{StaticResource PlanningCellCenter}"/>
+                                <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding Personnel.DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="110" ElementStyle="{StaticResource PlanningCellCenter}"/>
+                                <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Personnel.Department}" Width="130" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="CHỨC VỤ HIỆN TẠI" Binding="{Binding Personnel.Position}" Width="130" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="CHỨC DANH QUY HOẠCH" Binding="{Binding PlannedPosition}" Width="150" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="CHỨC DANH CHUYỂN TIẾP" Binding="{Binding PlannedTransitionPosition}" Width="150" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="TRÌNH ĐỘ CHUYÊN MÔN" Binding="{Binding TrainingLevel}" Width="130" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="LÝ LUẬN CHÍNH TRỊ" Binding="{Binding PoliticalTheoryLevel}" Width="120" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="NHIỆM KỲ" Binding="{Binding PlanningTerm}" Width="95" ElementStyle="{StaticResource PlanningCellCenter}"/>
+                                <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber, Converter={StaticResource EmptyStringToDashConverter}}" Width="110" ElementStyle="{StaticResource PlanningCellCenter}"/>
+                                <DataGridTextColumn Header="NGÀY KÝ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="110" ElementStyle="{StaticResource PlanningCellCenter}"/>
+                                <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionUnit}" Width="135" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="ĐÁNH GIÁ 3 NĂM GẦN NHẤT" Binding="{Binding Evaluation3Years}" Width="160" ElementStyle="{StaticResource PlanningCellLeft}"/>
+                                <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Note}" Width="150" ElementStyle="{StaticResource PlanningCellLeft}"/>
 
                                 <DataGridTemplateColumn Header="THAO TÁC" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -664,9 +544,25 @@
                                         </Setter.Value>
                                     </Setter>
                                 </Style>
+                                <Style x:Key="PlanningCellLeft2" TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="8 0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                </Style>
+                                <Style x:Key="PlanningCellCenter2" TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="FontWeight" Value="Normal"/>
+                                </Style>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="TextBlock.TextAlignment" Value="Left"/>
-                                    <Setter Property="FontSize" Value="15"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                     <Setter Property="Padding" Value="6"/>
                                     <Setter Property="BorderThickness" Value="0"/>
                                     <Setter Property="BorderBrush" Value="Transparent"/>
@@ -693,166 +589,30 @@
                             </DataGrid.Resources>
 
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="55">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="55" ElementStyle="{StaticResource PlanningCellCenter2}"/>
 
                                 <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="170" MinWidth="140">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Personnel.FullName}" FontWeight="Bold" Margin="8 0" VerticalAlignment="Center" TextWrapping="Wrap">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="#1F2937"/>
-                                                        <Style.Triggers>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
+                                            <TextBlock Text="{Binding Personnel.FullName}" FontWeight="SemiBold" FontSize="13.5" Margin="8 0" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="#1F2937"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTextColumn Header="CCCD" Binding="{Binding Personnel.IdentityCardNumber}" Width="125">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding Personnel.DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="110">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Personnel.Department}" Width="130">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="CHỨC VỤ HIỆN TẠI" Binding="{Binding Personnel.Position}" Width="130">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="CHỨC DANH QUY HOẠCH" Binding="{Binding PlannedPosition}" Width="150">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                            <Setter Property="FontWeight" Value="SemiBold"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="CHỨC DANH CHUYỂN TIẾP" Binding="{Binding PlannedTransitionPosition}" Width="150">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="TRÌNH ĐỘ CHUYÊN MÔN" Binding="{Binding TrainingLevel}" Width="130">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="LÝ LUẬN CHÍNH TRỊ" Binding="{Binding PoliticalTheoryLevel}" Width="120">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="NHIỆM KỲ" Binding="{Binding PlanningTerm}" Width="95">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber, Converter={StaticResource EmptyStringToDashConverter}}" Width="110">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="NGÀY KÝ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="110">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionUnit}" Width="135">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="ĐÁNH GIÁ 3 NĂM GẦN NHẤT" Binding="{Binding Evaluation3Years}" Width="160">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-
-                                <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Note}" Width="150">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Margin" Value="8 0"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                            <Setter Property="TextWrapping" Value="Wrap"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="CCCD" Binding="{Binding Personnel.IdentityCardNumber}" Width="125" ElementStyle="{StaticResource PlanningCellCenter2}"/>
+                                <DataGridTextColumn Header="NGÀY SINH" Binding="{Binding Personnel.DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="110" ElementStyle="{StaticResource PlanningCellCenter2}"/>
+                                <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Personnel.Department}" Width="130" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="CHỨC VỤ HIỆN TẠI" Binding="{Binding Personnel.Position}" Width="130" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="CHỨC DANH QUY HOẠCH" Binding="{Binding PlannedPosition}" Width="150" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="CHỨC DANH CHUYỂN TIẾP" Binding="{Binding PlannedTransitionPosition}" Width="150" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="TRÌNH ĐỘ CHUYÊN MÔN" Binding="{Binding TrainingLevel}" Width="130" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="LÝ LUẬN CHÍNH TRỊ" Binding="{Binding PoliticalTheoryLevel}" Width="120" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="NHIỆM KỲ" Binding="{Binding PlanningTerm}" Width="95" ElementStyle="{StaticResource PlanningCellCenter2}"/>
+                                <DataGridTextColumn Header="SỐ QĐ" Binding="{Binding DecisionNumber, Converter={StaticResource EmptyStringToDashConverter}}" Width="110" ElementStyle="{StaticResource PlanningCellCenter2}"/>
+                                <DataGridTextColumn Header="NGÀY KÝ" Binding="{Binding DecisionDate, Converter={StaticResource DateFormatterConverter}}" Width="110" ElementStyle="{StaticResource PlanningCellCenter2}"/>
+                                <DataGridTextColumn Header="ĐƠN VỊ RA QĐ" Binding="{Binding DecisionUnit}" Width="135" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="ĐÁNH GIÁ 3 NĂM GẦN NHẤT" Binding="{Binding Evaluation3Years}" Width="160" ElementStyle="{StaticResource PlanningCellLeft2}"/>
+                                <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Note}" Width="150" ElementStyle="{StaticResource PlanningCellLeft2}"/>
 
                                 <DataGridTemplateColumn Header="THAO TÁC" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>

@@ -66,7 +66,7 @@
                 <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" Foreground="White" Width="24" Height="24" Margin="0 0 10 0" VerticalAlignment="Center"/>
                 <TextBlock Text="PHÂN CÔNG NHIỆM VỤ" FontFamily="{StaticResource AppHeadingFont}" Foreground="#BBDEFB" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 <TextBlock Text="  •  " Foreground="#90CAF9" FontSize="15" VerticalAlignment="Center"/>
-                <TextBlock x:Name="txtDepartment" Text="Tổ" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="txtDepartment" Text="Bộ phận" Foreground="White" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
             </StackPanel>
         </Border>
 

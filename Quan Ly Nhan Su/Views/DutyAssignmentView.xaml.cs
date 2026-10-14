@@ -444,7 +444,7 @@ namespace TaxPersonnelManagement.Views
             icDepartmentRowsRight.ItemsSource = null;
             icDepartmentRowsRight.ItemsSource = list;
             pnlEmptyState.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            txtFilterCount.Text = $"{list.Count} / {_allRows.Count} Tổ";
+            txtFilterCount.Text = $"{list.Count} / {_allRows.Count} Bộ phận";
         }
 
         private void CboYear_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)

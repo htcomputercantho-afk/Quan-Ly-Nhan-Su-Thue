@@ -641,7 +641,7 @@
                         </ItemsControl>
 
                         <!-- Total Row (Footer) -->
-                        <Border Grid.Row="3" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="0,1.5,0,0" Padding="14,10">
+                        <Border Grid.Row="3" Background="#EEF2FF" BorderBrush="#C7D2FE" BorderThickness="0,1.5,0,0" Padding="14,10">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="50"/>
@@ -652,7 +652,10 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="160"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Grid.ColumnSpan="3" Text="TỔNG CỘNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" Foreground="#1E293B" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                <StackPanel Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <materialDesign:PackIcon Kind="Sigma" Width="16" Height="16" Foreground="#4338CA" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="TỔNG CỘNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" Foreground="#4338CA" VerticalAlignment="Center"/>
+                                </StackPanel>
                                 <TextBlock x:Name="txtRankTotalMale" Grid.Column="3" Text="0" FontSize="13" FontWeight="Black" Foreground="#0288D1" TextAlignment="Center" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="txtRankTotalFemale" Grid.Column="4" Text="0" FontSize="13" FontWeight="Black" Foreground="#EC407A" TextAlignment="Center" VerticalAlignment="Center"/>
                                 <Border Grid.Column="5" Background="#4338CA" CornerRadius="6" Padding="6,3" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -670,7 +673,7 @@
                 </materialDesign:Card>
             </StackPanel>
 
-            <!-- ═══ THỐNG KÊ LÃNH ĐẠO TỔ ═══ -->
+            <!-- ═══ THỐNG KÊ LÃNH ĐẠO THEO BỘ PHẬN ═══ -->
             <StackPanel Margin="0,16,0,20">
                 <materialDesign:Card Padding="22" UniformCornerRadius="12" Background="White">
                     <Grid>
@@ -684,7 +687,7 @@
                         <!-- Header -->
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,16">
                             <materialDesign:PackIcon Kind="AccountGroup" Width="22" Height="22" Foreground="#0F766E" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="THỐNG KÊ LÃNH ĐẠO TỔ" Style="{StaticResource CardTitleText}" Foreground="#0F766E"/>
+                            <TextBlock Text="THỐNG KÊ LÃNH ĐẠO THEO BỘ PHẬN" Style="{StaticResource CardTitleText}" Foreground="#0F766E"/>
                         </StackPanel>
 
                         <!-- Column Headers -->
@@ -697,7 +700,7 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="85"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="BỘ PHẬN / TỔ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E"/>
+                                <TextBlock Grid.Column="0" Text="BỘ PHẬN" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E"/>
                                 <TextBlock Grid.Column="1" Text="TỔ TRƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
                                 <TextBlock Grid.Column="2" Text="PHÓ TỔ TRƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>
                                 <TextBlock Grid.Column="3" Text="CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="12.5" Foreground="#0F766E" TextAlignment="Center"/>

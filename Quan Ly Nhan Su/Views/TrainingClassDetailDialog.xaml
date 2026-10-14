@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Chi tiết lớp học / Hội nghị" Height="600" Width="800"
+        Title="Chi tiết lớp học / Hội nghị" Height="640" Width="840"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         FontFamily="{DynamicResource MaterialDesignFont}"
@@ -49,8 +49,7 @@
             </Border>
 
             <!-- Class Details Summary -->
-            <!-- Class Details Summary -->
-            <materialDesign:Card Grid.Row="1" Margin="20 15 20 10" Padding="20" UniformCornerRadius="8" Background="White" materialDesign:ElevationAssist.Elevation="Dp2">
+            <materialDesign:Card Grid.Row="1" Margin="20 14 20 14" Padding="20" UniformCornerRadius="8" Background="White" materialDesign:ElevationAssist.Elevation="Dp2">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -127,7 +126,7 @@
             </materialDesign:Card>
 
             <!-- Add Participant Area -->
-            <Grid Grid.Row="2" Margin="20 0 20 10">
+            <Grid Grid.Row="2" Margin="20 0 20 14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -198,7 +197,7 @@
             </Grid>
 
             <!-- Participants Grid -->
-            <materialDesign:Card Grid.Row="3" Margin="20 0 20 10" Style="{DynamicResource MaterialDesignCard}">
+            <materialDesign:Card Grid.Row="3" Margin="20 0 20 14" Style="{DynamicResource MaterialDesignCard}" ClipToBounds="True">
                 <DataGrid x:Name="dgParticipants" AutoGenerateColumns="False" IsReadOnly="True" 
                           CanUserAddRows="False" HeadersVisibility="Column"
                           BorderThickness="0"
@@ -208,7 +207,8 @@
                           AlternationCount="2" AlternatingRowBackground="#FAFAFA"
                           MinRowHeight="45" VerticalContentAlignment="Center"
                           SelectionMode="Single"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <DataGrid.Resources>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
@@ -218,6 +218,10 @@
                             <Setter Property="Padding" Value="8"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
                         </Style>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+
                         <Style TargetType="DataGridCell">
                             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
                             <Setter Property="FontSize" Value="14"/>
@@ -238,7 +242,7 @@
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -255,6 +259,7 @@
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>

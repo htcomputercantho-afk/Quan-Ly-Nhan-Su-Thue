@@ -1,3 +1,15 @@
+## v1.6.4.2 — 2026-10-14
+- [Sửa lỗi Giao diện & Hiển thị Chọn dòng (Row Selection)]:
+    + Khắc phục triệt để lỗi khi click chọn một dòng trong bảng Đào tạo bồi dưỡng (`TrainingListView`), chữ tên lớp và nút "Chi tiết" bị biến thành màu trắng tàng hình trên nền chọn xanh nhạt (`#E3F2FD`).
+    + Cập nhật màu chữ hiển thị đậm nét, dễ đọc (`#1F2937` / `#0F172A`) khi chọn dòng trên toàn hệ thống (`App.xaml`, `TrainingListView`, `TrainingClassDetailDialog`, `SalaryListView`, `PositionDurationView`, `UserListView`).
+- [Đồng bộ Thống kê]:
+    + Đồng bộ dữ liệu và định dạng 2 mục "Tổng cộng" ở giao diện Thống kê (`StatisticsView`), đảm bảo số liệu tính toán chuẩn xác và trực quan.
+- [Chuẩn hóa Giao diện & Typography]:
+    + Chuẩn hóa độ đậm nhạt của chữ (font-weight: SemiBold / 13px) tại bảng Quy hoạch cán bộ (`PlanningManagementView`), loại bỏ hiện tượng các cột đậm nhạt không đồng nhất.
+    + Khắc phục lỗi thanh cuộn (scrollbar) bị dính sát và che mất khung nhập liệu ở các hộp thoại Thêm/Xem lớp đào tạo bồi dưỡng (`AddTrainingClassDialog`, `TrainingClassDetailDialog`).
+    + Mở rộng khung và điều chỉnh bố cục chọn cán bộ nhiều người (`PersonnelSelectorDialog`), tránh hiện tượng tên đơn vị/bộ phận bị cắt cụt.
+    + Thống nhất danh xưng thuật ngữ: Chuẩn hóa toàn bộ các nơi có "Tổ", "Tổ/Bộ phận" thành "Bộ phận" trên toàn ứng dụng.
+
 ## v1.6.4.1 — 2026-10-11
 - [Giao diện & Typography] Nâng cấp Toàn diện Bộ Typography Hiện đại & Thanh lịch (Segoe UI):
     + Thay thế hoàn toàn font `UTM HelvetIns` (font tiêu đề thô, bẹp dí) và `Times New Roman` (font có chân cũ) bằng chuẩn typography `Segoe UI` hiện đại, thanh thoát của Microsoft Windows.
