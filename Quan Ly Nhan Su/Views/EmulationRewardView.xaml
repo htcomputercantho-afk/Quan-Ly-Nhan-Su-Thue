@@ -17,29 +17,29 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Background="#F5F5F5" Margin="20">
+    <Grid Background="#F5F5F5" Margin="10 5 10 10">
         <!-- Main Layout: 2 Columns -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="320"/>
-            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- LEFT PANE: PERSONNEL LIST -->
-        <Border Grid.Column="0" Background="White" CornerRadius="12" Effect="{DynamicResource MaterialDesignShadowDepth2}">
-            <Grid Margin="15">
+        <Border Grid.Column="0" Background="White" CornerRadius="8" Effect="{DynamicResource MaterialDesignShadowDepth1}">
+            <Grid Margin="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Header Text -->
                     <RowDefinition Height="Auto"/> <!-- Search -->
                     <RowDefinition Height="*"/>    <!-- ListView -->
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="DANH SÁCH CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="16" Foreground="#1976D2" Margin="0 0 0 15"/>
+                <TextBlock Grid.Row="0" Text="DANH SÁCH CÔNG CHỨC" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="16" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="0 0 0 10"/>
 
-                <Border Grid.Row="1" Margin="0 0 0 15" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10 5">
+                <Border Grid.Row="1" Margin="0 0 0 10" Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8" Padding="10 5">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" Foreground="Gray" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                        <TextBox x:Name="txtSearch" Width="240" materialDesign:HintAssist.Hint="Tìm kiếm theo Tên, CCCD..." 
+                        <TextBox x:Name="txtSearch" Width="210" materialDesign:HintAssist.Hint="Tìm kiếm theo Tên, CCCD..." 
                                  materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
                                  BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
                                  TextChanged="TxtSearch_TextChanged"/>
@@ -52,10 +52,10 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Margin="5 8">
-                                <TextBlock Text="{Binding FullName}" FontWeight="Bold" FontSize="15" Foreground="#333333" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" FontSize="14" Foreground="#263238" TextWrapping="Wrap"/>
                                 <StackPanel Orientation="Horizontal" Margin="0 3 0 0">
-                                    <materialDesign:PackIcon Kind="IdCard" Width="14" Height="14" Foreground="Gray" VerticalAlignment="Center" Margin="0 0 5 0"/>
-                                    <TextBlock Text="{Binding IdentityCardNumber}" FontSize="13" Foreground="Gray" VerticalAlignment="Center"/>
+                                    <materialDesign:PackIcon Kind="IdCard" Width="14" Height="14" Foreground="#78909C" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                                    <TextBlock Text="{Binding IdentityCardNumber}" FontSize="12.5" Foreground="#78909C" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </StackPanel>
                         </DataTemplate>
@@ -79,7 +79,7 @@
             </Grid.RowDefinitions>
 
             <!-- Top Header for Right Pane -->
-            <Grid Grid.Row="0" Margin="0 0 20 15">
+            <Grid Grid.Row="0" Margin="0 0 10 10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -87,17 +87,17 @@
 
                 <TextBlock x:Name="txtPrompt" Grid.Column="0" 
                            Text="Vui lòng chọn một công chức bên trái để xem danh hiệu thi đua, khen thưởng." 
-                           Foreground="#78909C" FontStyle="Italic" FontSize="14" 
+                           Foreground="#78909C" FontStyle="Italic" FontSize="13.5" 
                            VerticalAlignment="Center" HorizontalAlignment="Left"/>
 
-                <Button x:Name="btnExportExcel" Grid.Column="1" Height="38" Click="BtnExportExcel_Click" 
+                <Button x:Name="btnExportExcel" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
                         Style="{DynamicResource MaterialDesignRaisedButton}"
-                        Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White" Padding="16,0"
-                        materialDesign:ButtonAssist.CornerRadius="19" VerticalAlignment="Center"
+                        Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White" Padding="15,0"
+                        materialDesign:ButtonAssist.CornerRadius="18" VerticalAlignment="Center"
                         Effect="{DynamicResource MaterialDesignShadowDepth1}">
                     <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FileExcel" Width="20" Height="20" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
-                        <TextBlock Text="Xuất Excel" FontWeight="Bold" VerticalAlignment="Center" FontSize="14"/>
+                        <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                        <TextBlock Text="Xuất Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
                     </StackPanel>
                 </Button>
             </Grid>
@@ -107,7 +107,7 @@
                 <StackPanel x:Name="pnlDetails" IsEnabled="False" Opacity="0.5">
 
                     <!-- CARD 1: EMULATION (Danh hiệu thi đua) -->
-                    <materialDesign:Card UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Padding="0" Margin="0 0 20 20">
+                    <materialDesign:Card UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp2" Padding="0" Margin="0 0 10 15">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -115,7 +115,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Card Header -->
-                            <Border Grid.Row="0" CornerRadius="12 12 0 0" Padding="25 15">
+                            <Border Grid.Row="0" CornerRadius="8 8 0 0" Padding="18 12">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Color="#1976D2" Offset="0.0"/>
@@ -123,22 +123,22 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Medal" Width="26" Height="26" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                    <TextBlock Text="DANH HIỆU THI ĐUA" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <materialDesign:PackIcon Kind="Medal" Width="22" Height="22" Foreground="White" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                    <TextBlock Text="DANH HIỆU THI ĐUA" FontFamily="{StaticResource AppHeadingFont}" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Card Body -->
-                            <StackPanel Grid.Row="1" Margin="25">
-                                <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#546E7A" Margin="0 0 0 15">
+                            <StackPanel Grid.Row="1" Margin="16">
+                                <TextBlock TextWrapping="Wrap" FontSize="13.5" Foreground="#546E7A" Margin="0 0 0 10">
                                     Danh sách các danh hiệu thi đua mà Công chức đã đạt được.
                                 </TextBlock>
 
-                                <Border Background="#F5F5F5" CornerRadius="8" Padding="15" Margin="0 0 0 10">
+                                <Border Background="#F5F5F5" CornerRadius="6" Padding="12" Margin="0 0 0 5">
                                     <TextBox x:Name="txtEmulationTitles" AcceptsReturn="True" TextWrapping="Wrap" 
                                              IsReadOnly="True"
                                              VerticalScrollBarVisibility="Auto" MinHeight="100" MaxHeight="250"
-                                             FontSize="15" materialDesign:HintAssist.Hint="Không có dữ liệu danh hiệu"
+                                             FontSize="14" materialDesign:HintAssist.Hint="Không có dữ liệu danh hiệu"
                                              materialDesign:TextFieldAssist.DecorationVisibility="Collapsed" BorderThickness="0" Background="Transparent"/>
                                 </Border>
                             </StackPanel>
@@ -147,7 +147,7 @@
 
 
                     <!-- CARD 2: REWARDS (Hình thức khen thưởng) -->
-                    <materialDesign:Card UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Padding="0" Margin="0 0 20 20">
+                    <materialDesign:Card UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp2" Padding="0" Margin="0 0 10 15">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -155,7 +155,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Card Header -->
-                            <Border Grid.Row="0" CornerRadius="12 12 0 0" Padding="25 15">
+                            <Border Grid.Row="0" CornerRadius="8 8 0 0" Padding="18 12">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                         <GradientStop Color="#E65100" Offset="0.0"/>
@@ -163,22 +163,22 @@
                                     </LinearGradientBrush>
                                 </Border.Background>
                                 <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Gift" Width="26" Height="26" Foreground="White" VerticalAlignment="Center" Margin="0 0 12 0"/>
-                                    <TextBlock Text="HÌNH THỨC KHEN THƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    <materialDesign:PackIcon Kind="Gift" Width="22" Height="22" Foreground="White" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                    <TextBlock Text="HÌNH THỨC KHEN THƯỞNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Card Body -->
-                            <StackPanel Grid.Row="1" Margin="25">
-                                <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#546E7A" Margin="0 0 0 15">
+                            <StackPanel Grid.Row="1" Margin="16">
+                                <TextBlock TextWrapping="Wrap" FontSize="13.5" Foreground="#546E7A" Margin="0 0 0 10">
                                     Danh sách các hình thức khen thưởng mà Công chức đã đạt được.
                                 </TextBlock>
 
-                                <Border Background="#FFF3E0" CornerRadius="8" Padding="15" Margin="0 0 0 10">
+                                <Border Background="#FFF3E0" CornerRadius="6" Padding="12" Margin="0 0 0 5">
                                     <TextBox x:Name="txtRewardForms" AcceptsReturn="True" TextWrapping="Wrap" 
                                              IsReadOnly="True"
                                              VerticalScrollBarVisibility="Auto" MinHeight="100" MaxHeight="250"
-                                             FontSize="15" materialDesign:HintAssist.Hint="Không có dữ liệu khen thưởng"
+                                             FontSize="14" materialDesign:HintAssist.Hint="Không có dữ liệu khen thưởng"
                                              materialDesign:TextFieldAssist.DecorationVisibility="Collapsed" BorderThickness="0" Background="Transparent"/>
                                 </Border>
                             </StackPanel>

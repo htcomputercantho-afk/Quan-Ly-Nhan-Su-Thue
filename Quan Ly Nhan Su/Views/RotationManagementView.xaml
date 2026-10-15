@@ -130,6 +130,11 @@
                 </Setter>
             </Style>
 
+            <!-- System Selection Brush Overrides -->
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+
             <!-- DataGrid Column Headers Presenter Background -->
             <Style TargetType="{x:Type DataGridColumnHeadersPresenter}">
                 <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
@@ -141,6 +146,8 @@
                 <Setter Property="Background" Value="White"/>
                 <Setter Property="BorderThickness" Value="0 0 0 1"/>
                 <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Foreground" Value="#263238"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
                 <Style.Triggers>
@@ -149,6 +156,7 @@
                     </Trigger>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="#E3F2FD"/>
+                        <Setter Property="Foreground" Value="#1F2937"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -180,7 +188,7 @@
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                        <Setter Property="Foreground" Value="#1F2937"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -333,7 +341,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="10 5 10 10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Row 0: Hero Header Bar -->
             <RowDefinition Height="Auto"/> <!-- Row 1: 5 KPI Summary Cards -->
@@ -343,7 +351,7 @@
         <!-- ============================================================ -->
         <!-- ROW 0: HERO HEADER BAR -->
         <!-- ============================================================ -->
-        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20 16" Margin="0 0 0 16"
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20 16" Margin="0 0 0 10"
                 BorderBrush="#E2E8F0" BorderThickness="1">
             <Border.Effect>
                 <DropShadowEffect Color="#64748B" BlurRadius="12" ShadowDepth="2" Opacity="0.06" Direction="270"/>
@@ -387,7 +395,7 @@
         <!-- ============================================================ -->
         <!-- ROW 1: 5 KPI SUMMARY CARDS -->
         <!-- ============================================================ -->
-        <UniformGrid Grid.Row="1" Columns="5" Margin="0 0 0 16">
+        <UniformGrid Grid.Row="1" Columns="5" Margin="0 0 0 10">
             <!-- Card 1: Tổng số -->
             <materialDesign:Card x:Name="cardTotal" Height="92" Margin="0 0 4 0" UniformCornerRadius="12"
                                  materialDesign:ElevationAssist.Elevation="Dp2" Cursor="Hand"
@@ -410,9 +418,9 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AccountGroup" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="TỔNG SỐ" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="TỔNG SỐ" FontFamily="{StaticResource AppHeadingFont}" FontSize="12.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="1" x:Name="txtTotalKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" x:Name="txtTotalKPICount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0 4 0 0" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </materialDesign:Card>
@@ -439,9 +447,9 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="ClipboardCheckOutline" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="TRONG KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="TRONG KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="12.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="1" x:Name="txtInPlanKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" x:Name="txtInPlanKPICount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0 4 0 0" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </materialDesign:Card>
@@ -468,9 +476,9 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="AlertCircleOutline" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="NGOÀI KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="NGOÀI KẾ HOẠCH" FontFamily="{StaticResource AppHeadingFont}" FontSize="12.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="1" x:Name="txtOutPlanKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" x:Name="txtOutPlanKPICount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0 4 0 0" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </materialDesign:Card>
@@ -497,9 +505,9 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="CheckDecagram" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="ĐÃ THỰC HIỆN" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="ĐÃ THỰC HIỆN" FontFamily="{StaticResource AppHeadingFont}" FontSize="12.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="1" x:Name="txtCompletedKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" x:Name="txtCompletedKPICount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0 4 0 0" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </materialDesign:Card>
@@ -526,9 +534,9 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="ClockTimeFourOutline" Width="15" Height="15" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                            <TextBlock Text="CHƯA THỰC HIỆN" FontFamily="{StaticResource AppHeadingFont}" FontSize="11.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
+                            <TextBlock Text="CHƯA THỰC HIỆN" FontFamily="{StaticResource AppHeadingFont}" FontSize="12.5" FontWeight="SemiBold" Foreground="White" Opacity="0.95" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="1" x:Name="txtPendingKPICount" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0 6 0 0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" x:Name="txtPendingKPICount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0 4 0 0" VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
             </materialDesign:Card>
@@ -563,7 +571,7 @@
                         <!-- Filter Toolbar matching user screenshot -->
                         <materialDesign:Card Grid.Row="0" UniformCornerRadius="8" Background="White"
                                              materialDesign:ElevationAssist.Elevation="Dp1"
-                                             Padding="12 8" Margin="0 0 0 12">
+                                             Padding="12 8" Margin="0 0 0 10">
                             <DockPanel LastChildFill="True">
                                 <!-- Right: Action Buttons (ALWAYS visible on the right) -->
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10 0 0 0">
@@ -911,7 +919,7 @@
                         <!-- Filter Toolbar matching user screenshot -->
                         <materialDesign:Card Grid.Row="0" UniformCornerRadius="8" Background="White"
                                              materialDesign:ElevationAssist.Elevation="Dp1"
-                                             Padding="12 8" Margin="0 0 0 12">
+                                             Padding="12 8" Margin="0 0 0 10">
                             <DockPanel LastChildFill="True">
                                 <!-- Right: Action Buttons (ALWAYS visible on the right) -->
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10 0 0 0">

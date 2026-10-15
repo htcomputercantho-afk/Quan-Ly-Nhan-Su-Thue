@@ -24,7 +24,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="24">
+    <Grid Margin="10 5 10 10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/> <!-- KPIs -->
@@ -47,7 +47,7 @@
             </materialDesign:Card>
         </Grid>
 
-        <StackPanel Orientation="Horizontal" Margin="0 0 0 24">
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 15">
             <Border Background="#EFF6FF" CornerRadius="8" Padding="10" Margin="0 0 16 0">
                 <materialDesign:PackIcon Kind="Certificate" Width="26" Height="26" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
             </Border>
@@ -208,7 +208,7 @@
         </WrapPanel>
 
         <!-- Filter Toolbar Card -->
-        <materialDesign:Card Grid.Row="2" Margin="0 0 0 20" Padding="16" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
+        <materialDesign:Card Grid.Row="2" Margin="0 0 0 10" Padding="16" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0">
                 <!-- Group 1: Filters -->
                 <StackPanel Orientation="Horizontal" Margin="0 0 16 10" VerticalAlignment="Center">
@@ -358,11 +358,15 @@
                           CanUserAddRows="False" HeadersVisibility="Column"
                           BorderThickness="0" VerticalGridLinesBrush="Transparent" HorizontalGridLinesBrush="#F1F5F9"
                           GridLinesVisibility="Horizontal" 
-                          AlternationCount="2" AlternatingRowBackground="#F8FAFC"
-                          MinRowHeight="56" VerticalContentAlignment="Center"
+                          AlternationCount="0" AlternatingRowBackground="{x:Null}"
+                          MinRowHeight="60" VerticalContentAlignment="Center"
                           SelectionMode="Single"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto" FocusVisualStyle="{x:Null}">
                     <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+
                         <!-- Presenter Style to fill gap on right -->
                         <Style TargetType="DataGridColumnHeadersPresenter">
                             <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
@@ -393,7 +397,7 @@
                         <!-- Cell Style -->
                         <Style TargetType="DataGridCell">
                             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-                            <Setter Property="FontSize" Value="13"/>
+                            <Setter Property="FontSize" Value="13.5"/>
                             <Setter Property="Padding" Value="8 6"/>
                             <Setter Property="Foreground" Value="#1E293B"/>
                             <Setter Property="BorderThickness" Value="0"/>
@@ -414,7 +418,7 @@
                                     <Setter Property="Background" Value="Transparent"/>
                                     <Setter Property="BorderThickness" Value="0"/>
                                     <Setter Property="BorderBrush" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -425,6 +429,8 @@
                             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             <Setter Property="BorderThickness" Value="0 0 0 1"/>
                             <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                            <Setter Property="FontSize" Value="14"/>
+                            <Setter Property="Foreground" Value="#263238"/>
                             <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="VerticalContentAlignment" Value="Center"/>
                             <Style.Triggers>
@@ -433,6 +439,7 @@
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -441,7 +448,7 @@
                              <Setter Property="HorizontalAlignment" Value="Center"/>
                              <Setter Property="VerticalAlignment" Value="Center"/>
                              <Setter Property="TextWrapping" Value="Wrap"/>
-                             <Setter Property="FontSize" Value="13"/>
+                             <Setter Property="FontSize" Value="13.5"/>
                              <Setter Property="Foreground" Value="#334155"/>
                         </Style>
 
@@ -449,7 +456,7 @@
                              <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                              <Setter Property="FontWeight" Value="Bold"/>
                              <Setter Property="Foreground" Value="White"/>
-                             <Setter Property="MinHeight" Value="54"/>
+                             <Setter Property="MinHeight" Value="50"/>
                              <Setter Property="ContentTemplate">
                                  <Setter.Value>
                                      <DataTemplate>
@@ -465,7 +472,7 @@
                         <DataGridTemplateColumn Header="STT" IsReadOnly="True" Width="60" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding STT}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#64748B"/>
+                                    <TextBlock Text="{Binding STT}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#546E7A"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -509,7 +516,7 @@
                                                 </Ellipse.Style>
                                             </Ellipse>
                                         </Grid>
-                                        <TextBlock Text="{Binding Personnel.FullName}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0F172A" TextWrapping="Wrap" FontSize="13"/>
+                                        <TextBlock Text="{Binding Personnel.FullName}" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#263238" TextWrapping="Wrap" FontSize="14"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -526,7 +533,7 @@
                                         <Border Background="#E3F2FD" CornerRadius="5" Padding="8 3" HorizontalAlignment="Center" Margin="0 0 0 4">
                                             <TextBlock Text="{Binding Personnel.Department}" FontSize="13" FontWeight="SemiBold" Foreground="#1565C0" TextWrapping="Wrap" TextAlignment="Center"/>
                                         </Border>
-                                        <TextBlock Text="{Binding Personnel.Position}" FontSize="12.5" Foreground="#37474F" TextWrapping="Wrap" TextAlignment="Center"/>
+                                        <TextBlock Text="{Binding Personnel.Position}" FontSize="13" Foreground="#37474F" TextWrapping="Wrap" TextAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -537,7 +544,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border x:Name="brdRating" Background="#F1F5F9" CornerRadius="6" Padding="10 6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0 4">
-                                        <TextBlock x:Name="txtRatingText" Text="{Binding Rating}" Foreground="#475569" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center" FontSize="12.5"/>
+                                        <TextBlock x:Name="txtRatingText" Text="{Binding Rating}" Foreground="#475569" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"/>
                                     </Border>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding Rating}" Value="Hoàn thành xuất sắc nhiệm vụ">

@@ -387,6 +387,10 @@ namespace TaxPersonnelManagement.Views
                         {
                             title = $"DANH SÁCH NHÂN SỰ ĐẾN HẠN NÂNG LƯƠNG - {yearText}".ToUpper();
                         }
+                        else if (string.IsNullOrEmpty(yearText))
+                        {
+                            title = $"DANH SÁCH NHÂN SỰ ĐẾN HẠN NÂNG LƯƠNG ({periodText})".ToUpper();
+                        }
                         else
                         {
                             title = $"DANH SÁCH NHÂN SỰ ĐẾN HẠN NÂNG LƯƠNG - {yearText} ({periodText})".ToUpper();
@@ -417,30 +421,28 @@ namespace TaxPersonnelManagement.Views
                             cell.Style.Alignment.WrapText = true;
                         }
 
-                        // 3. Ghi dữ liệu từng dòng
-                        int row = 4;
-                        int stt = 1;
-                        foreach (var item in data)
+                        // Helper ghi một dòng dữ liệu nhân sự
+                        void WritePersonnelRow(int r, int sttVal, Personnel item)
                         {
-                            worksheet.Cell(row, 1).Value = stt++;
-                            worksheet.Cell(row, 2).Value = item.FullName;
-                            worksheet.Cell(row, 3).Value = item.DateOfBirth.HasValue ? DatePickerHelper.FormatDateForDisplay(item.DateOfBirth.Value) : "";
-                            worksheet.Cell(row, 4).Value = item.RankCode;
-                            worksheet.Cell(row, 5).Value = item.CurrentSalaryStep;
-                            worksheet.Cell(row, 6).Value = item.CurrentSalaryCoefficient;
-                            worksheet.Cell(row, 7).Value = item.ExceedFramePercent > 0 ? $"{item.ExceedFramePercent}%" : "";
+                            worksheet.Cell(r, 1).Value = sttVal;
+                            worksheet.Cell(r, 2).Value = item.FullName;
+                            worksheet.Cell(r, 3).Value = item.DateOfBirth.HasValue ? DatePickerHelper.FormatDateForDisplay(item.DateOfBirth.Value) : "";
+                            worksheet.Cell(r, 4).Value = item.RankCode;
+                            worksheet.Cell(r, 5).Value = item.CurrentSalaryStep;
+                            worksheet.Cell(r, 6).Value = item.CurrentSalaryCoefficient;
+                            worksheet.Cell(r, 7).Value = item.ExceedFramePercent > 0 ? $"{item.ExceedFramePercent}%" : "";
 
                             if (item.NextSalaryStepDate.HasValue)
                             {
-                                var nextStepCell = worksheet.Cell(row, 8);
+                                var nextStepCell = worksheet.Cell(r, 8);
                                 nextStepCell.Value = DatePickerHelper.FormatDateForDisplay(item.NextSalaryStepDate.Value);
                             }
 
                             if (item.ExpectedSalaryIncreaseDate.HasValue)
                             {
                                 int month = item.ExpectedSalaryIncreaseDate.Value.Month;
-                                worksheet.Cell(row, 9).Value = month <= 2 ? month.ToString("00") : month.ToString();
-                                var nextDateCell = worksheet.Cell(row, 10);
+                                worksheet.Cell(r, 9).Value = month <= 2 ? month.ToString("00") : month.ToString();
+                                var nextDateCell = worksheet.Cell(r, 10);
                                 nextDateCell.Value = DatePickerHelper.FormatDateForDisplay(item.ExpectedSalaryIncreaseDate.Value);
                                 nextDateCell.Style.Font.FontColor = XLColor.FromHtml("#1565C0"); // Professional Navy Blue
                                 nextDateCell.Style.Font.Bold = true;
@@ -448,7 +450,7 @@ namespace TaxPersonnelManagement.Views
 
                             if (!string.IsNullOrEmpty(item.SalaryIncreaseDelayType) && item.SalaryIncreaseDelayType != "-- Không lùi --")
                             {
-                                var noteCell = worksheet.Cell(row, 11);
+                                var noteCell = worksheet.Cell(r, 11);
                                 noteCell.Value = item.SalaryIncreaseDelayType;
                                 noteCell.Style.Font.Bold = true;
                                 noteCell.Style.Font.FontColor = XLColor.FromHtml("#C62828"); // Prominent Dark Red
@@ -456,30 +458,94 @@ namespace TaxPersonnelManagement.Views
                             }
                             else
                             {
-                                worksheet.Cell(row, 11).Value = "";
+                                worksheet.Cell(r, 11).Value = "";
                             }
 
                             // Borders
                             for (int col = 1; col <= 11; col++)
                             {
+                                worksheet.Cell(r, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            }
+                        }
+
+                        // 3. Ghi dữ liệu từng dòng
+                        int row = 4;
+
+                        if (isAllPeriod)
+                        {
+                            // Trường hợp 1: Chọn "Tất cả" hoặc "Cả năm" -> Giữ nguyên danh sách 1 bảng phẳng liền mạch
+                            int stt = 1;
+                            foreach (var item in data)
+                            {
+                                WritePersonnelRow(row, stt++, item);
+                                row++;
+                            }
+                        }
+                        else
+                        {
+                            // Trường hợp 2: Chọn tiêu chí khác ngoài "Cả năm" (Quý, Bán niên, Tháng)
+                            // Chia dữ liệu thành 2 phần:
+                            // A. Nâng bậc lương thường xuyên (% Vượt khung <= 0)
+                            // B. Nâng phụ cấp thâm niên vượt khung (% Vượt khung > 0)
+
+                            // Hàng tiêu đề Phần A
+                            worksheet.Cell(row, 1).Value = "A";
+                            worksheet.Cell(row, 1).Style.Font.Bold = true;
+                            worksheet.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            worksheet.Cell(row, 2).Value = "NÂNG BẬC LƯƠNG THƯỜNG XUYÊN";
+                            worksheet.Cell(row, 2).Style.Font.Bold = true;
+                            worksheet.Cell(row, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                            for (int col = 1; col <= 11; col++)
+                            {
                                 worksheet.Cell(row, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                             }
-
                             row++;
+
+                            var regularList = data.Where(p => p.ExceedFramePercent <= 0).ToList();
+                            int sttA = 1;
+                            foreach (var item in regularList)
+                            {
+                                WritePersonnelRow(row, sttA++, item);
+                                row++;
+                            }
+
+                            // Hàng tiêu đề Phần B
+                            worksheet.Cell(row, 1).Value = "B";
+                            worksheet.Cell(row, 1).Style.Font.Bold = true;
+                            worksheet.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            worksheet.Cell(row, 2).Value = "NÂNG PHỤ CẤP THÂM NIÊN VƯỢT KHUNG";
+                            worksheet.Cell(row, 2).Style.Font.Bold = true;
+                            worksheet.Cell(row, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                            for (int col = 1; col <= 11; col++)
+                            {
+                                worksheet.Cell(row, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                            }
+                            row++;
+
+                            var exceedList = data.Where(p => p.ExceedFramePercent > 0).ToList();
+                            int sttB = 1;
+                            foreach (var item in exceedList)
+                            {
+                                WritePersonnelRow(row, sttB++, item);
+                                row++;
+                            }
                         }
 
                         // 4. Định dạng: Tự động điều chỉnh độ rộng cột, căn giữa dữ liệu
-                        worksheet.Columns().AdjustToContents();
-                        worksheet.Column(8).Width = 20;
-                        worksheet.Column(10).Width = 20;
+                        if (row > 4)
+                        {
+                            worksheet.Columns().AdjustToContents();
+                            worksheet.Column(8).Width = 20;
+                            worksheet.Column(10).Width = 20;
 
-                        // Alignment: Center all data cells by default, except Name (Col 2)
-                        var dataRange = worksheet.Range(4, 1, row - 1, 11);
-                        dataRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            // Alignment: Center all data cells by default, except Name (Col 2)
+                            var dataRange = worksheet.Range(4, 1, row - 1, 11);
+                            dataRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                        // Left align Names
-                        var nameRange = worksheet.Range(4, 2, row - 1, 2);
-                        nameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                            // Left align Names and section titles
+                            var nameRange = worksheet.Range(4, 2, row - 1, 2);
+                            nameRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                        }
 
                         workbook.SaveAs(saveFileDialog.FileName);
                         var success = new SuccessWindow("Xuất danh sách lương thành công!", null, saveFileDialog.FileName, true);

@@ -10,7 +10,7 @@
       Title="Tổng thu nhập năm"
       FontFamily="{DynamicResource MaterialDesignFont}">
 
-    <Grid Background="#F5F5F5" Margin="10">
+    <Grid Background="#F5F5F5" Margin="10 5 10 10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="280"/> <!-- Left Sidebar -->
             <ColumnDefinition Width="*"/> <!-- Main Content -->
@@ -58,13 +58,13 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="5 8">
-                                <materialDesign:PackIcon Kind="AccountCircle" Width="24" Height="24" Foreground="Gray" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                                <materialDesign:PackIcon Kind="AccountCircle" Width="24" Height="24" Foreground="#78909C" VerticalAlignment="Center" Margin="0 0 10 0"/>
                                 <StackPanel VerticalAlignment="Center" Margin="5 0 0 0">
-                                    <TextBlock Text="{Binding FullName, FallbackValue='Tên nhân viên'}" FontSize="15" FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding FullName, FallbackValue='Tên nhân viên'}" FontSize="14" FontWeight="SemiBold" Foreground="#263238"/>
                                     <StackPanel Orientation="Horizontal" Margin="0 4 0 0">
-                                        <TextBlock Text="{Binding StaffId, FallbackValue='Mã CB'}" Foreground="Gray" FontSize="13"/>
-                                        <TextBlock Text=" - " Foreground="Gray" FontSize="13"/>
-                                        <TextBlock Text="{Binding IdentityCardNumber, FallbackValue='CCCD'}" Foreground="Gray" FontSize="13"/>
+                                        <TextBlock Text="{Binding StaffId, FallbackValue='Mã CB'}" Foreground="#78909C" FontSize="12.5"/>
+                                        <TextBlock Text=" - " Foreground="#78909C" FontSize="12.5"/>
+                                        <TextBlock Text="{Binding IdentityCardNumber, FallbackValue='CCCD'}" Foreground="#78909C" FontSize="12.5"/>
                                     </StackPanel>
                                 </StackPanel>
                             </StackPanel>
@@ -195,17 +195,20 @@
                     <!-- DataGrid -->
                     <Border Grid.Row="2" CornerRadius="8" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
                     <DataGrid x:Name="dgMonthlyIncome" BorderThickness="0" Background="White"
-                              AutoGenerateColumns="False" AlternatingRowBackground="#FAFAFA"
-                              MinRowHeight="60"
+                              AutoGenerateColumns="False" AlternationCount="0" AlternatingRowBackground="{x:Null}"
+                              MinRowHeight="56"
                               FrozenColumnCount="1"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
                               BeginningEdit="DgMonthlyIncome_BeginningEdit"
-                              CellEditEnding="DgMonthlyIncome_CellEditEnding">
+                              CellEditEnding="DgMonthlyIncome_CellEditEnding"
+                              PreparingCellForEdit="DgMonthlyIncome_PreparingCellForEdit">
 
                         <DataGrid.RowStyle>
                             <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                                 <Setter Property="Background" Value="White"/>
+                                <Setter Property="Foreground" Value="#263238"/>
+                                <Setter Property="FontSize" Value="14"/>
                                 <Setter Property="BorderThickness" Value="0 0 0 1"/>
                                 <Setter Property="BorderBrush" Value="#F1F5F9"/>
                                 <Setter Property="Cursor" Value="Hand"/>
@@ -216,6 +219,7 @@
                                     </Trigger>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Background" Value="#E3F2FD"/>
+                                        <Setter Property="Foreground" Value="#1F2937"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -224,19 +228,22 @@
                         <DataGrid.CellStyle>
                             <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                                 <Setter Property="Padding" Value="4"/>
+                                <Setter Property="FontSize" Value="13.5"/>
                                 <Setter Property="BorderThickness" Value="0"/>
                                 <Setter Property="Background" Value="Transparent"/>
                                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                                 <Style.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
                                         <Setter Property="Background" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                                        <Setter Property="Foreground" Value="#1F2937"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.CellStyle>
                         
                         <DataGrid.Resources>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
                             <Style TargetType="DataGridColumnHeadersPresenter">
                                 <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                             </Style>
@@ -258,7 +265,7 @@
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                        <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridCell}, Path=Foreground}"/>
+                                        <Setter Property="Foreground" Value="#1F2937"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -271,7 +278,6 @@
                                 <Setter Property="MaxWidth" Value="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=DataGridCell}, Converter={StaticResource MathSubtractConverter}, ConverterParameter=15}"/>
                                 <Setter Property="FontSize" Value="11"/>
                                 <Setter Property="TextAlignment" Value="Right"/>
-                                <Setter Property="TextAlignment" Value="Right"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IncomeType}" Value="Thu nhập khác">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -283,7 +289,7 @@
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=DataGridRow}}" Value="True">
-                                        <Setter Property="Foreground" Value="#E2E8F0"/>
+                                        <Setter Property="Foreground" Value="#64748B"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>

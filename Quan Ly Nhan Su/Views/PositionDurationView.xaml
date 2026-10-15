@@ -24,7 +24,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="10 5 10 10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -32,13 +32,13 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Orientation="Horizontal" Margin="0 0 0 20">
+        <StackPanel Orientation="Horizontal" Margin="0 0 0 15">
             <materialDesign:PackIcon Kind="Timer" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
             <TextBlock Text="THỜI GIAN GIỮ VỊ TRÍ CÔNG TÁC" FontFamily="{StaticResource AppHeadingFont}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Filter Toolbar -->
-        <materialDesign:Card Grid.Row="1" Margin="0 0 0 20" Padding="16 16 16 6" UniformCornerRadius="8">
+        <materialDesign:Card Grid.Row="1" Margin="0 0 0 10" Padding="16 16 16 6" UniformCornerRadius="8">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Search Box -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 10">
@@ -132,12 +132,14 @@
                           VerticalGridLinesBrush="Transparent"
                           HorizontalGridLinesBrush="#EEEEEE"
                           GridLinesVisibility="Horizontal" 
-                          AlternationCount="2" AlternatingRowBackground="#FAFAFA"
-                          MinRowHeight="50" VerticalContentAlignment="Center"
+                          AlternationCount="0" AlternatingRowBackground="{x:Null}"
+                          MinRowHeight="56" VerticalContentAlignment="Center"
                           SelectionMode="Single"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           FrozenColumnCount="2">
                     <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
                         <Style TargetType="DataGridColumnHeadersPresenter">
                             <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                         </Style>
@@ -164,7 +166,7 @@
                         </Style>
                         <Style TargetType="DataGridCell">
                             <Setter Property="TextBlock.TextAlignment" Value="Center"/>
-                            <Setter Property="FontSize" Value="15"/>
+                            <Setter Property="FontSize" Value="13.5"/>
                             <Setter Property="Padding" Value="4"/>
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
@@ -187,6 +189,8 @@
 
                         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                             <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="#263238"/>
+                            <Setter Property="FontSize" Value="14"/>
                             <Setter Property="BorderThickness" Value="0 0 0 1"/>
                             <Setter Property="BorderBrush" Value="#F1F5F9"/>
                             <Setter Property="Cursor" Value="Hand"/>
@@ -205,14 +209,16 @@
                             <Setter Property="HorizontalAlignment" Value="Center"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
                             <Setter Property="TextWrapping" Value="Wrap"/>
-                            <Setter Property="FontSize" Value="15"/>
+                            <Setter Property="FontSize" Value="13.5"/>
+                            <Setter Property="Foreground" Value="#374151"/>
                         </Style>
                         <Style x:Key="LeftAlignedColumn" TargetType="TextBlock">
                             <Setter Property="HorizontalAlignment" Value="Left"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
                             <Setter Property="TextWrapping" Value="Wrap"/>
                             <Setter Property="Margin" Value="10 0"/>
-                            <Setter Property="FontSize" Value="15"/>
+                            <Setter Property="FontSize" Value="13.5"/>
+                            <Setter Property="Foreground" Value="#374151"/>
                         </Style>
                         <Style x:Key="WrappedHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                             <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
@@ -231,9 +237,15 @@
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="STT"
-                                            Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}"
-                                            Width="60"/>
+                        <DataGridTemplateColumn Header="STT" Width="60">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Header}" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" 
+                                               FontWeight="SemiBold" FontSize="14" Foreground="#546E7A"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
                         <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*" MinWidth="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
@@ -261,7 +273,7 @@
                                                 </Ellipse.Style>
                                             </Ellipse>
                                         </Grid>
-                                        <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="Medium" TextWrapping="Wrap" FontSize="15"/>
+                                        <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="14" Foreground="#263238"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -270,8 +282,8 @@
                         <DataGridTemplateColumn Header="BỘ PHẬN" Width="2.5*" MinWidth="220" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdDept" Background="#E8EAF6" CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,4">
-                                        <TextBlock Text="{Binding Department}" FontSize="14" FontWeight="SemiBold" Foreground="#3949AB" TextWrapping="Wrap"/>
+                                    <Border x:Name="brdDept" Background="#E3F2FD" CornerRadius="5" Padding="8,3" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,4">
+                                        <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold" Foreground="#1565C0" TextWrapping="Wrap"/>
                                     </Border>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding Department}" Value="{x:Null}">
@@ -288,8 +300,8 @@
                         <DataGridTemplateColumn Header="THỜI GIAN CÔNG TÁC&#x0a;THEO QĐ GẦN NHẤT" Width="1.5*" MinWidth="160" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdDecisionDate" Background="#F5F5F5" CornerRadius="8" Padding="6,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding PositionDecisionDate, Converter={StaticResource DateFormatterConverter}}" FontSize="15" Foreground="#616161"/>
+                                    <Border x:Name="brdDecisionDate" Background="#F5F5F5" CornerRadius="6" Padding="6,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding PositionDecisionDate, Converter={StaticResource DateFormatterConverter}}" FontSize="13.5" Foreground="#616161"/>
                                     </Border>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding PositionDecisionDate}" Value="{x:Null}">
@@ -303,8 +315,8 @@
                         <DataGridTemplateColumn Header="NĂM GIỮ VỊ TRÍ&#x0a;CÔNG TÁC" Width="1.5*" MinWidth="170" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdDuration" Background="#E1F5FE" CornerRadius="8" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock FontWeight="Bold" Foreground="#0288D1" FontSize="15">
+                                    <Border x:Name="brdDuration" Background="#E1F5FE" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock FontWeight="Bold" Foreground="#0288D1" FontSize="13.5">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
                                                     <Binding Path="PositionDecisionDate"/>
@@ -325,8 +337,8 @@
                         <DataGridTemplateColumn Header="TỔNG THỜI GIAN CÔNG TÁC&#x0a;TRONG NGÀNH THUẾ" Width="1.8*" MinWidth="170" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdTaxDuration" Background="#E8F5E9" CornerRadius="8" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock FontWeight="Bold" Foreground="#2E7D32" FontSize="15">
+                                    <Border x:Name="brdTaxDuration" Background="#E8F5E9" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock FontWeight="Bold" Foreground="#2E7D32" FontSize="13.5">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
                                                     <Binding Path="TaxAuthorityStartDate"/>
@@ -347,8 +359,8 @@
                         <DataGridTemplateColumn Header="THỜI GIAN CÒN LẠI&#x0a;ĐẾN KHI NGHỈ HƯU" Width="1.8*" MinWidth="170" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border x:Name="brdRetireDuration" Background="#FFEBEE" CornerRadius="8" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock FontWeight="Bold" Foreground="#C62828" FontSize="15">
+                                    <Border x:Name="brdRetireDuration" Background="#FFEBEE" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock FontWeight="Bold" Foreground="#C62828" FontSize="13.5">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
                                                     <Binding ElementName="dpCalculationDate" Path="SelectedDate"/>

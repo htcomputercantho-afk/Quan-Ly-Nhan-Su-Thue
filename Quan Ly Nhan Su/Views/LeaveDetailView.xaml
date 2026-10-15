@@ -17,14 +17,14 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Background="#F5F5F5" Margin="0">
+    <Grid Background="#F5F5F5" Margin="10 5 10 10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header & Search -->
                 <RowDefinition Height="*"/>    <!-- DataGrid Container -->
             </Grid.RowDefinitions>
 
             <!-- Top Header & Controls -->
-            <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="20" Margin="0 0 0 15" Effect="{DynamicResource MaterialDesignShadowDepth1}">
+            <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16 12" Margin="0 0 0 10" Effect="{DynamicResource MaterialDesignShadowDepth1}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -57,7 +57,7 @@
                     </Button>
 
                     <!-- Modern Search Bar & Filters -->
-                    <WrapPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Margin="0 15 0 0" VerticalAlignment="Center">
+                    <WrapPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Margin="0 10 0 0" VerticalAlignment="Center">
                         <!-- Search Bar -->
                         <Border Background="White" BorderThickness="1.5" 
                                 CornerRadius="4" Padding="10 0" VerticalAlignment="Center"
@@ -146,17 +146,19 @@
                 <DataGrid x:Name="dgLeaveSummary" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
                           IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
                           BorderThickness="0" Background="White"
-                          RowHeight="NaN" MinRowHeight="50" ColumnHeaderHeight="75"
+                          RowHeight="NaN" MinRowHeight="56" ColumnHeaderHeight="55"
                           GridLinesVisibility="None" 
                           SpellCheck.IsEnabled="False"
-                          AlternatingRowBackground="#F8FAFD" RowBackground="White"
+                          AlternationCount="0" AlternatingRowBackground="{x:Null}" RowBackground="White"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          FontSize="13"
+                          FontSize="13.5"
                           SizeChanged="dgLeaveSummary_SizeChanged"
                           FrozenColumnCount="2">
 
                     <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
                         <Style TargetType="DataGridColumnHeadersPresenter">
                             <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                         </Style>
@@ -167,8 +169,8 @@
                         <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                             <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            <Setter Property="Padding" Value="10,8"/>
-                            <Setter Property="MinHeight" Value="75"/>
+                            <Setter Property="Padding" Value="6,8"/>
+                            <Setter Property="MinHeight" Value="55"/>
                             <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                             <Setter Property="Foreground" Value="White"/>
                             <Setter Property="FontWeight" Value="Bold"/>
@@ -180,8 +182,8 @@
                                     <DataTemplate>
                                         <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" 
                                                    FontFamily="{StaticResource AppHeadingFont}"
-                                                   Foreground="White" FontWeight="Bold" FontSize="13.5"
-                                                   LineHeight="20"/>
+                                                   Foreground="White" FontWeight="Bold" FontSize="13"
+                                                   LineHeight="18"/>
                                     </DataTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -192,6 +194,8 @@
                     <DataGrid.RowStyle>
                         <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
                             <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="#263238"/>
+                            <Setter Property="FontSize" Value="14"/>
                             <Setter Property="BorderThickness" Value="0 0 0 1"/>
                             <Setter Property="BorderBrush" Value="#F1F5F9"/>
                             <Setter Property="Cursor" Value="Hand"/>
@@ -203,6 +207,7 @@
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="#E3F2FD"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -215,11 +220,12 @@
                             <Setter Property="BorderBrush" Value="Transparent"/>
                             <Setter Property="Padding" Value="8,6"/>
                             <Setter Property="VerticalAlignment" Value="Center"/>
+                            <Setter Property="FontSize" Value="13.5"/>
                             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                             <Style.Triggers>
                                 <Trigger Property="IsSelected" Value="True">
                                     <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=Foreground}"/>
+                                    <Setter Property="Foreground" Value="#1F2937"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -234,7 +240,7 @@
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Foreground" Value="#616161"/>
+                                    <Setter Property="Foreground" Value="#546E7A"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -245,11 +251,11 @@
                         <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,10">
-                                        <Grid Width="50" Height="50" Margin="0,0,15,0">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,6">
+                                        <Grid Width="36" Height="36" Margin="0,0,12,0">
                                             <!-- Fallback Icon Layer -->
                                             <Ellipse Fill="#E3F2FD" Stroke="#BBDEFB" StrokeThickness="1"/>
-                                            <materialDesign:PackIcon Kind="AccountCircle" Width="36" Height="36" 
+                                            <materialDesign:PackIcon Kind="AccountCircle" Width="26" Height="26" 
                                                                      Foreground="#1976D2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             
                                             <!-- Actual Avatar Image Layer -->
@@ -262,8 +268,8 @@
                                             </Ellipse>
                                         </Grid>
                                         <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
-                                                   FontWeight="Bold" FontSize="15" Foreground="#212121"
-                                                   TextWrapping="Wrap" MaxWidth="180"/>
+                                                   FontWeight="SemiBold" FontSize="14" Foreground="#263238"
+                                                   TextWrapping="Wrap" MaxWidth="220"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -275,8 +281,8 @@
                                 <Style TargetType="TextBlock">
                                     <Setter Property="HorizontalAlignment" Value="Center"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Foreground" Value="#424242"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="Foreground" Value="#374151"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
@@ -285,8 +291,8 @@
                         <DataGridTemplateColumn Header="PHÉP TIÊU CHUẨN" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#E8F5E9" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="Bold" FontSize="16" 
+                                    <Border Background="#E8F5E9" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding TotalTarget}" FontWeight="SemiBold" FontSize="13.5" 
                                                    Foreground="#2E7D32" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -297,8 +303,8 @@
                         <DataGridTemplateColumn x:Name="colOldYear" Header="PHÉP NĂM CŨ" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#F3E5F5" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="Bold" FontSize="16" 
+                                    <Border Background="#F3E5F5" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding TakenFromOldYear}" FontWeight="SemiBold" FontSize="13.5" 
                                                    Foreground="#7B1FA2" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -309,8 +315,8 @@
                         <DataGridTemplateColumn x:Name="colCurrentYear" Header="PHÉP NĂM NAY" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#E1F5FE" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="Bold" FontSize="18" 
+                                    <Border Background="#E1F5FE" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding TakenFromCurrentYear}" FontWeight="SemiBold" FontSize="13.5" 
                                                    Foreground="#0288D1" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -321,8 +327,8 @@
                         <DataGridTemplateColumn Header="TỔNG ĐÃ NGHỈ" Width="130">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#FFF3E0" CornerRadius="8" Padding="10,6" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding ActualTaken}" FontWeight="Bold" FontSize="18" 
+                                    <Border Background="#FFF3E0" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding ActualTaken}" FontWeight="SemiBold" FontSize="13.5" 
                                                    Foreground="#E65100" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>
@@ -333,12 +339,12 @@
                         <DataGridTemplateColumn Header="NỘI DUNG CHI TIẾT" Width="400">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <ItemsControl ItemsSource="{Binding DetailLines}" Margin="15,10">
+                                    <ItemsControl ItemsSource="{Binding DetailLines}" Margin="12,8">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock TextWrapping="Wrap" LineHeight="24" FontSize="14" Foreground="#424242" SpellCheck.IsEnabled="False">
+                                                <TextBlock TextWrapping="Wrap" LineHeight="20" FontSize="13.5" Foreground="#374151" SpellCheck.IsEnabled="False">
                                                     <Run Text="{Binding MainContent, Mode=OneWay}"/>
-                                                    <Run Text="{Binding Suffix, Mode=OneWay}" FontWeight="Bold" Foreground="#D32F2F"/>
+                                                    <Run Text="{Binding Suffix, Mode=OneWay}" FontWeight="SemiBold" Foreground="#D32F2F"/>
                                                 </TextBlock>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -351,8 +357,8 @@
                         <DataGridTemplateColumn Header="PHÉP CÒN LẠI" Width="170">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#E8F5E9" CornerRadius="10" Padding="12,8" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
-                                        <TextBlock Text="{Binding Remaining}" FontWeight="Bold" FontSize="18" 
+                                    <Border Background="#E8F5E9" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4">
+                                        <TextBlock Text="{Binding Remaining}" FontWeight="Bold" FontSize="14" 
                                                    Foreground="#1B5E20" HorizontalAlignment="Center"/>
                                     </Border>
                                 </DataTemplate>

@@ -274,9 +274,10 @@ namespace TaxPersonnelManagement.Views
                     
                     int month = 0;
                     var headerStr = e.Column.Header?.ToString() ?? "";
-                    if (headerStr.StartsWith("Tháng "))
+                    var match = Regex.Match(headerStr, @"\d+");
+                    if (match.Success && int.TryParse(match.Value, out int m))
                     {
-                        int.TryParse(headerStr.Substring(6), out month);
+                        month = m;
                     }
 
                     if (month >= 1 && month <= 12)
@@ -296,6 +297,42 @@ namespace TaxPersonnelManagement.Views
                     }
                 }
             }
+        }
+
+        private void DgMonthlyIncome_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
+        {
+            if (e.EditingElement is FrameworkElement container)
+            {
+                var textBox = FindVisualChild<TextBox>(container);
+                if (textBox != null && textBox.Visibility == Visibility.Visible)
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        textBox.Focus();
+                        textBox.SelectAll();
+                    }), System.Windows.Threading.DispatcherPriority.Input);
+                }
+            }
+        }
+
+        private T? FindVisualChild<T>(DependencyObject? obj) where T : DependencyObject
+        {
+            if (obj == null) return null;
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject? child = System.Windows.Media.VisualTreeHelper.GetChild(obj, i);
+                if (child is T t)
+                {
+                    return t;
+                }
+                else if (child != null)
+                {
+                    T? childOfChild = FindVisualChild<T>(child);
+                    if (childOfChild != null)
+                        return childOfChild;
+                }
+            }
+            return null;
         }
 
         private void UpdateTotals()
@@ -466,19 +503,42 @@ namespace TaxPersonnelManagement.Views
                 textBox.TextChanged -= AmountTextBox_TextChanged;
                 try
                 {
-                    string clean = Regex.Replace(textBox.Text, @"[^0-9]", "");
+                    int oldCaret = textBox.SelectionStart;
+                    string oldText = textBox.Text ?? "";
+
+                    int digitsBeforeCaret = 0;
+                    for (int i = 0; i < Math.Min(oldCaret, oldText.Length); i++)
+                    {
+                        if (char.IsDigit(oldText[i]))
+                            digitsBeforeCaret++;
+                    }
+
+                    string clean = Regex.Replace(oldText, @"[^0-9]", "");
                     if (decimal.TryParse(clean, out decimal parsed))
                     {
-                        string formatted = parsed.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
-                        
-                        int oldSelectionStart = textBox.SelectionStart;
-                        int oldLength = textBox.Text.Length;
+                        var viCulture = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+                        string formatted = parsed.ToString("N0", viCulture);
 
                         textBox.Text = formatted;
 
-                        int newLength = formatted.Length;
-                        int newSelectionStart = oldSelectionStart + (newLength - oldLength);
-                        textBox.SelectionStart = Math.Max(0, Math.Min(newSelectionStart, newLength));
+                        int newCaret = 0;
+                        int counted = 0;
+                        for (int i = 0; i < formatted.Length; i++)
+                        {
+                            if (char.IsDigit(formatted[i]))
+                            {
+                                counted++;
+                            }
+                            if (counted == digitsBeforeCaret)
+                            {
+                                newCaret = i + 1;
+                                break;
+                            }
+                        }
+                        if (digitsBeforeCaret == 0) newCaret = 0;
+                        else if (counted < digitsBeforeCaret) newCaret = formatted.Length;
+
+                        textBox.SelectionStart = Math.Max(0, Math.Min(newCaret, formatted.Length));
                     }
                     else
                     {
@@ -542,7 +602,9 @@ namespace TaxPersonnelManagement.Views
                                 "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
                             };
 
-                            var personnelList = db.Personnel.AsEnumerable()
+                            var personnelList = db.Personnel.AsNoTracking()
+                                                  .Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")
+                                                  .AsEnumerable()
                                                   .OrderBy(p =>
                                                   {
                                                       string dept = (p.Department ?? "").Trim();
@@ -578,9 +640,9 @@ namespace TaxPersonnelManagement.Views
 
                                 // Header row
                                 worksheet.Cell(1, 1).Value = "BÁO CÁO TỔNG HỢP THU NHẬP NĂM " + selectedYear;
-                                worksheet.Range(1, 1, 1, 6).Merge().Style.Font.SetBold().Font.SetFontSize(16).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                                worksheet.Range(1, 1, 1, 7).Merge().Style.Font.SetBold().Font.SetFontSize(16).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-                                var headers = new[] { "Họ và tên", "CCCD", "Lương (VNĐ)", "Làm thêm giờ (VNĐ)", "Thu nhập khác (VNĐ)", "Tổng cộng (VNĐ)" };
+                                var headers = new[] { "STT", "Họ và tên", "CCCD", "Lương (VNĐ)", "Làm thêm giờ (VNĐ)", "Thu nhập khác (VNĐ)", "Tổng cộng (VNĐ)" };
                                 for (int i = 0; i < headers.Length; i++)
                                 {
                                     var cell = worksheet.Cell(3, i + 1);
@@ -593,6 +655,7 @@ namespace TaxPersonnelManagement.Views
                                 }
 
                                 int row = 4;
+                                int stt = 1;
                                 foreach (var person in personnelList)
                                 {
                                     var personRecords = allRecords.Where(r => r.PersonnelId == person.Id).ToList();
@@ -601,34 +664,41 @@ namespace TaxPersonnelManagement.Views
                                     decimal other = personRecords.Where(r => r.IncomeType == "Thu nhập khác").Sum(r => r.Amount);
                                     decimal total = salary + overtime + other;
 
-                                    worksheet.Cell(row, 1).Value = person.FullName;
-                                    worksheet.Cell(row, 2).Value = "'" + person.IdentityCardNumber; // Force string to avoid scientific notation
-                                    worksheet.Cell(row, 3).Value = salary;
-                                    worksheet.Cell(row, 4).Value = overtime;
-                                    worksheet.Cell(row, 5).Value = other;
-                                    worksheet.Cell(row, 6).Value = total;
+                                    worksheet.Cell(row, 1).Value = stt++;
+                                    worksheet.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                    worksheet.Cell(row, 2).Value = person.FullName;
+                                    worksheet.Cell(row, 3).Value = "'" + person.IdentityCardNumber; // Force string to avoid scientific notation
+                                    worksheet.Cell(row, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                    worksheet.Cell(row, 4).Value = salary;
+                                    worksheet.Cell(row, 5).Value = overtime;
+                                    worksheet.Cell(row, 6).Value = other;
+                                    worksheet.Cell(row, 7).Value = total;
 
                                     // Formatting numbers
-                                    worksheet.Range(row, 3, row, 6).Style.NumberFormat.Format = "#,##0";
-                                    worksheet.Range(row, 1, row, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                    worksheet.Range(row, 4, row, 7).Style.NumberFormat.Format = "#,##0";
+                                    worksheet.Range(row, 1, row, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                    worksheet.Range(row, 1, row, 7).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
                                     row++;
                                 }
 
                                 // Footer: Grand Total
                                 worksheet.Cell(row, 1).Value = "TỔNG CỘNG";
-                                worksheet.Range(row, 1, row, 2).Merge().Style.Font.Bold = true;
-                                worksheet.Cell(row, 3).FormulaA1 = $"=SUM(C4:C{row - 1})";
+                                worksheet.Range(row, 1, row, 3).Merge().Style.Font.Bold = true;
+                                worksheet.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                 worksheet.Cell(row, 4).FormulaA1 = $"=SUM(D4:D{row - 1})";
                                 worksheet.Cell(row, 5).FormulaA1 = $"=SUM(E4:E{row - 1})";
                                 worksheet.Cell(row, 6).FormulaA1 = $"=SUM(F4:F{row - 1})";
-                                worksheet.Range(row, 1, row, 6).Style.Font.Bold = true;
-                                worksheet.Range(row, 3, row, 6).Style.NumberFormat.Format = "#,##0";
-                                worksheet.Range(row, 1, row, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                worksheet.Cell(row, 7).FormulaA1 = $"=SUM(G4:G{row - 1})";
+                                worksheet.Range(row, 1, row, 7).Style.Font.Bold = true;
+                                worksheet.Range(row, 4, row, 7).Style.NumberFormat.Format = "#,##0";
+                                worksheet.Range(row, 1, row, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                worksheet.Range(row, 1, row, 7).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
                                 // Auto-fit columns
                                 worksheet.Columns().AdjustToContents();
-                                worksheet.Column(2).Width = 20; // Fix CCCD column width
+                                worksheet.Column(1).Width = 8; // STT
+                                worksheet.Column(3).Width = 20; // Fix CCCD column width
 
                                 // HÀM HỖ TRỢ TẠO SHEET CHI TIẾT
                                 void CreateDetailSheet(string sheetName, string incomeType, bool includeNote)
@@ -636,10 +706,10 @@ namespace TaxPersonnelManagement.Views
                                     var ws = workbook.Worksheets.Add(sheetName);
                                     ws.Cell(1, 1).Value = $"CHI TIẾT {sheetName.ToUpper()} NĂM " + selectedYear;
                                     
-                                    int numCols = includeNote ? 16 : 15; // 1:Name, 2:CCCD, 3..14:Months, 15:Total, 16:Note
+                                    int numCols = includeNote ? 17 : 16; // 1:STT, 2:Name, 3:CCCD, 4..15:Months, 16:Total, 17:Note
                                     ws.Range(1, 1, 1, numCols).Merge().Style.Font.SetBold().Font.SetFontSize(16).Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
 
-                                    var hds = new List<string> { "Họ và tên", "CCCD" };
+                                    var hds = new List<string> { "STT", "Họ và tên", "CCCD" };
                                     for (int m = 1; m <= 12; m++) hds.Add($"Tháng {m}");
                                     hds.Add("Tổng cộng");
                                     if (includeNote) hds.Add("Ghi chú");
@@ -656,12 +726,16 @@ namespace TaxPersonnelManagement.Views
                                     }
 
                                     int r = 4;
+                                    int sttDetail = 1;
                                     foreach (var person in personnelList)
                                     {
                                         var pRecords = allRecords.Where(rec => rec.PersonnelId == person.Id && rec.IncomeType == incomeType).ToList();
                                         
-                                        ws.Cell(r, 1).Value = person.FullName;
-                                        ws.Cell(r, 2).Value = "'" + person.IdentityCardNumber;
+                                        ws.Cell(r, 1).Value = sttDetail++;
+                                        ws.Cell(r, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                                        ws.Cell(r, 2).Value = person.FullName;
+                                        ws.Cell(r, 3).Value = "'" + person.IdentityCardNumber;
+                                        ws.Cell(r, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                         
                                         decimal total = 0;
                                         List<string> notes = new List<string>();
@@ -670,7 +744,7 @@ namespace TaxPersonnelManagement.Views
                                         {
                                             var mRecords = pRecords.Where(rec => rec.Month == m).ToList();
                                             decimal mAmount = mRecords.Sum(rec => rec.Amount);
-                                            ws.Cell(r, 2 + m).Value = mAmount;
+                                            ws.Cell(r, 3 + m).Value = mAmount;
                                             total += mAmount;
 
                                             if (includeNote)
@@ -685,38 +759,42 @@ namespace TaxPersonnelManagement.Views
                                             }
                                         }
 
-                                        ws.Cell(r, 15).Value = total;
+                                        ws.Cell(r, 16).Value = total;
                                         if (includeNote && notes.Any())
                                         {
-                                            ws.Cell(r, 16).Value = string.Join("\n", notes);
+                                            ws.Cell(r, 17).Value = string.Join("\n", notes);
                                         }
 
                                         // Formatting
-                                        ws.Range(r, 3, r, 15).Style.NumberFormat.Format = "#,##0";
+                                        ws.Range(r, 4, r, 16).Style.NumberFormat.Format = "#,##0";
                                         ws.Range(r, 1, r, numCols).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                        ws.Range(r, 1, r, numCols).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
                                         r++;
                                     }
 
                                     // Footer: Grand Total
                                     ws.Cell(r, 1).Value = "TỔNG CỘNG";
-                                    ws.Range(r, 1, r, 2).Merge().Style.Font.Bold = true;
+                                    ws.Range(r, 1, r, 3).Merge().Style.Font.Bold = true;
+                                    ws.Cell(r, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                                     
-                                    for (int c = 3; c <= 15; c++)
+                                    for (int c = 4; c <= 16; c++)
                                     {
                                         string colLetter = ((char)('A' + c - 1)).ToString();
                                         ws.Cell(r, c).FormulaA1 = $"=SUM({colLetter}4:{colLetter}{r - 1})";
                                     }
                                     
                                     ws.Range(r, 1, r, numCols).Style.Font.Bold = true;
-                                    ws.Range(r, 3, r, 15).Style.NumberFormat.Format = "#,##0";
+                                    ws.Range(r, 4, r, 16).Style.NumberFormat.Format = "#,##0";
                                     ws.Range(r, 1, r, numCols).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                                    ws.Range(r, 1, r, numCols).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
                                     ws.Columns().AdjustToContents();
-                                    ws.Column(2).Width = 20;
+                                    ws.Column(1).Width = 8; // STT
+                                    ws.Column(3).Width = 20; // CCCD
                                     if (includeNote)
                                     {
-                                        ws.Column(16).Width = 45;
-                                        ws.Column(16).Style.Alignment.WrapText = true;
+                                        ws.Column(17).Width = 45;
+                                        ws.Column(17).Style.Alignment.WrapText = true;
                                     }
                                 }
 
@@ -812,6 +890,7 @@ namespace TaxPersonnelManagement.Views
         public static string StandardizeOtherIncomeNote(string note)
         {
             if (string.IsNullOrWhiteSpace(note)) return "";
+            var viCulture = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
             var lines = note.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var standardizedLines = new List<string>();
             foreach (var line in lines)
@@ -823,7 +902,7 @@ namespace TaxPersonnelManagement.Views
                     string cleanAmt = Regex.Replace(line, @"[^0-9]", "");
                     if (decimal.TryParse(cleanAmt, out decimal amount) && amount > 0)
                     {
-                        standardizedLines.Add($"{amount:N0} đ");
+                        standardizedLines.Add($"{amount.ToString("N0", viCulture)} đ");
                     }
                 }
                 else
@@ -833,7 +912,14 @@ namespace TaxPersonnelManagement.Views
                     string cleanAmt = Regex.Replace(amtStr, @"[^0-9]", "");
                     if (decimal.TryParse(cleanAmt, out decimal amount) && amount > 0)
                     {
-                        standardizedLines.Add($"{amount:N0} đ - {reasonStr}");
+                        if (!string.IsNullOrWhiteSpace(reasonStr))
+                        {
+                            standardizedLines.Add($"{amount.ToString("N0", viCulture)} đ - {reasonStr}");
+                        }
+                        else
+                        {
+                            standardizedLines.Add($"{amount.ToString("N0", viCulture)} đ");
+                        }
                     }
                 }
             }

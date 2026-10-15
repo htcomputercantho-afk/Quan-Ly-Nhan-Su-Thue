@@ -51,7 +51,9 @@
                                     <!-- Amount input -->
                                     <Border Grid.Column="0" CornerRadius="8" Background="White" BorderThickness="1" BorderBrush="#E2E8F0">
                                         <Grid>
-                                            <TextBox Text="{Binding DisplayAmount, UpdateSourceTrigger=PropertyChanged}" 
+                                            <TextBox x:Name="txtAmount"
+                                                     Text="{Binding DisplayAmount, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" 
+                                                     TextChanged="AmountTextBox_TextChanged"
                                                      materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                                      BorderThickness="0" 
                                                      VerticalAlignment="Center"
@@ -66,10 +68,10 @@
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding DisplayAmount}" Value="">
+                                                            <DataTrigger Binding="{Binding Text, ElementName=txtAmount}" Value="">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
-                                                            <DataTrigger Binding="{Binding DisplayAmount}" Value="{x:Null}">
+                                                            <DataTrigger Binding="{Binding Text, ElementName=txtAmount}" Value="{x:Null}">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
@@ -82,7 +84,8 @@
                                     <!-- Reason input -->
                                     <Border Grid.Column="2" CornerRadius="8" Background="White" BorderThickness="1" BorderBrush="#E2E8F0">
                                         <Grid>
-                                            <TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" 
+                                            <TextBox x:Name="txtReason"
+                                                     Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" 
                                                      materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                                      BorderThickness="0" 
                                                      VerticalAlignment="Center"
@@ -95,10 +98,10 @@
                                                     <Style TargetType="TextBlock">
                                                         <Setter Property="Visibility" Value="Collapsed"/>
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Reason}" Value="">
+                                                            <DataTrigger Binding="{Binding Text, ElementName=txtReason}" Value="">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Reason}" Value="{x:Null}">
+                                                            <DataTrigger Binding="{Binding Text, ElementName=txtReason}" Value="{x:Null}">
                                                                 <Setter Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>

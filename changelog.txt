@@ -1,3 +1,20 @@
+## v1.6.4.3 — 2026-10-16
+- [Sửa lỗi & Tối ưu Xuất Excel Tổng thu nhập năm (Phần 3B)]:
+    + Bổ sung cột Số thứ tự (`STT`) căn giữa tại cột đầu tiên cho cả Sheet báo cáo tổng hợp và toàn bộ các Sheet chi tiết (Lương, Làm thêm giờ, Thu nhập khác).
+    + Khắc phục triệt để lỗi xuất hiện cán bộ đã luân chuyển hoặc đã thôi việc trong file Excel: Đồng bộ điều kiện lọc nhân sự với màn hình hiển thị (`Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")`), loại bỏ hoàn toàn người đã luân chuyển, thôi việc hoặc nghỉ hưu khỏi file báo cáo.
+    + Tự động căn chỉnh độ rộng cột tối ưu, căn giữa cột CCCD, định dạng số tiền chuẩn (`#,##0`) và cập nhật chuẩn xác công thức hàm SUM cho dòng Tổng cộng ở footer.
+- [Nâng cấp Chức năng Xuất Excel Theo dõi Nâng lương (Phần 3A)]:
+    + Phân chia cấu trúc dữ liệu xuất Excel thành 2 phần rõ rệt khi người dùng chọn lọc theo kỳ (Quý I-IV, 6 tháng đầu/cuối năm, hoặc từng tháng):
+        * Phần A: Nâng bậc lương thường xuyên (áp dụng cho công chức chưa kịch khung).
+        * Phần B: Nâng phụ cấp thâm niên vượt khung (áp dụng cho công chức đã kịch khung bậc lương và đang hưởng phụ cấp vượt khung >= 5%).
+    + Tự động đánh lại số thứ tự từ 1 cho từng phần; tự động ẩn phần không có dữ liệu để tránh xuất bảng trống.
+    + Giữ nguyên 100% cấu trúc, bố cục và thứ tự cột mẫu Excel chuẩn khi chọn bộ lọc "Tất cả" hoặc "Cả năm".
+- [Sửa lỗi Nhập Liệu Tiền Tệ Màn hình Thu nhập năm (Phần 2)]:
+    + Khắc phục triệt để lỗi không nhập được số tiền tại các trường "Làm thêm giờ", "Thu nhập khác" và các ô nhập tiền ở màn hình Tổng thu nhập năm (`AnnualIncomeView`) và hộp thoại `EditMonthlyIncomeDialog`.
+    + Tự động bóc tách và định dạng số tiền chuẩn Việt Nam (`vi-VN`), hỗ trợ dấu phân cách hàng nghìn linh hoạt, tự động tính tổng và đồng bộ dữ liệu vào cơ sở dữ liệu.
+- [Đồng bộ Giao diện & Typography Toàn hệ thống (Phần 1)]:
+    + Đồng bộ typography, màu sắc, font chữ và chiều cao dòng trên tất cả các màn hình (Danh sách nhân sự, Đánh giá xếp loại, Thời gian giữ vị trí, Phân công nhiệm vụ, Quản lý luân chuyển, Thi đua khen thưởng...).
+
 ## v1.6.4.2 — 2026-10-14
 - [Sửa lỗi Giao diện & Hiển thị Chọn dòng (Row Selection)]:
     + Khắc phục triệt để lỗi khi click chọn một dòng trong bảng Đào tạo bồi dưỡng (`TrainingListView`), chữ tên lớp và nút "Chi tiết" bị biến thành màu trắng tàng hình trên nền chọn xanh nhạt (`#E3F2FD`).
