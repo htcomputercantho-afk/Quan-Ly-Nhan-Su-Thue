@@ -109,6 +109,7 @@ namespace TaxPersonnelManagement.Views
                 if (lt.Contains("thai sản")) return new SolidColorBrush(Color.FromRgb(253, 242, 248));
                 if (lt.Contains("ốm")) return new SolidColorBrush(Color.FromRgb(255, 247, 237));
                 if (lt.Contains("không lương") || lt.Contains("khong luong")) return new SolidColorBrush(Color.FromRgb(245, 243, 255));
+                if (lt.Contains("dưỡng sức") || lt.Contains("duong suc")) return new SolidColorBrush(Color.FromRgb(240, 253, 250));
                 return new SolidColorBrush(Color.FromRgb(240, 253, 244));
             }
         }
@@ -121,6 +122,7 @@ namespace TaxPersonnelManagement.Views
                 if (lt.Contains("thai sản")) return new SolidColorBrush(Color.FromRgb(190, 24, 93));
                 if (lt.Contains("ốm")) return new SolidColorBrush(Color.FromRgb(194, 65, 12));
                 if (lt.Contains("không lương") || lt.Contains("khong luong")) return new SolidColorBrush(Color.FromRgb(109, 40, 217));
+                if (lt.Contains("dưỡng sức") || lt.Contains("duong suc")) return new SolidColorBrush(Color.FromRgb(15, 118, 110));
                 return new SolidColorBrush(Color.FromRgb(21, 128, 61));
             }
         }

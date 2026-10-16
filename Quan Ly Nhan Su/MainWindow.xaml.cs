@@ -195,7 +195,7 @@ namespace TaxPersonnelManagement
                             continue;
                         }
 
-                        // Đợt nghỉ chưa có ngày kết thúc (thai sản, ốm dài ngày, không lương)
+                        // Đợt nghỉ chưa có ngày kết thúc (thai sản, ốm dài ngày, không lương, dưỡng sức)
                         var openLeave = p.LeaveHistories
                             .Where(l =>
                                 !l.EndDate.HasValue &&
@@ -203,7 +203,8 @@ namespace TaxPersonnelManagement
                                 (l.LeaveType.Contains("Thai sản") ||
                                  l.LeaveType.Contains("Nghỉ ốm") ||
                                  l.LeaveType.Contains("Nghỉ thai sản") ||
-                                 l.LeaveType.Contains("Không lương")))
+                                 l.LeaveType.Contains("Không lương") ||
+                                 l.LeaveType.Contains("Dưỡng sức")))
                             .OrderByDescending(l => l.StartDate)
                             .FirstOrDefault();
 

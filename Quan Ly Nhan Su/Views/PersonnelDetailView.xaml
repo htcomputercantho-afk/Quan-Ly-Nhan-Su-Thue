@@ -1174,6 +1174,7 @@
                                                 <ComboBoxItem Content="Nghỉ ốm"/>
                                                 <ComboBoxItem Content="Không lương"/>
                                                 <ComboBoxItem Content="Thai sản"/>
+                                                <ComboBoxItem Content="Dưỡng sức"/>
                                             </ComboBox>
                                         </StackPanel>
                                         <StackPanel Grid.Column="2">

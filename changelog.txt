@@ -1,3 +1,11 @@
+## v1.6.4.4 — 2026-10-16
+- [Tính năng mới] Bổ sung loại nghỉ “Dưỡng sức” vào Module Quản lý Nhân sự:
+    + Cập nhật danh sách loại nghỉ phép tại màn hình "Thông tin nghỉ phép" (Tab 5 - Chi tiết cán bộ): Bổ sung lựa chọn "Dưỡng sức" ngay sau "Thai sản", chuẩn hóa giao diện theo thiết kế hệ thống.
+    + Đồng bộ lưu trữ và hiển thị: Lưu trực tiếp giá trị loại nghỉ "Dưỡng sức" vào bảng `LeaveHistories` trong CSDL SQLite và hiển thị chuẩn xác tại Bảng lịch sử các đợt nghỉ chi tiết (`dgLeaveHistory`).
+    + Hỗ trợ xem lại và chỉnh sửa đợt nghỉ: Khi chọn một dòng nghỉ dưỡng sức trong bảng lịch sử, hệ thống tự động nhận diện và khôi phục đúng loại nghỉ "Dưỡng sức" cùng ngày bắt đầu, ngày kết thúc và ghi chú trên form nhập liệu.
+    + Đồng bộ màn hình cảnh báo hết hạn nghỉ (`LeaveReturnAlertWindow`): Bổ sung màu sắc nhãn phân biệt riêng (tone màu xanh ngọc Teal `#ECFDF5` / `#0F766E`) cho đợt nghỉ dưỡng sức khi công chức sắp hết thời gian nghỉ hoặc đi làm lại.
+    + Tương thích toàn diện quy tắc nghiệp vụ: Đảm bảo loại nghỉ mới không ảnh hưởng đến số ngày phép năm còn lại, không làm thay đổi các quy tắc tính toán của Phép năm, Nghỉ ốm, Không lương và Thai sản.
+
 ## v1.6.4.3 — 2026-10-16
 - [Sửa lỗi & Tối ưu Xuất Excel Tổng thu nhập năm (Phần 3B)]:
     + Bổ sung cột Số thứ tự (`STT`) căn giữa tại cột đầu tiên cho cả Sheet báo cáo tổng hợp và toàn bộ các Sheet chi tiết (Lương, Làm thêm giờ, Thu nhập khác).
