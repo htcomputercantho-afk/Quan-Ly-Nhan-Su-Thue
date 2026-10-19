@@ -778,25 +778,89 @@
                                     </StackPanel>
                                 </Border>
                                 <Separator Background="#EEEEEE"/>
-                                <Grid Margin="15">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Ngày vào Đảng:" Foreground="#78909C" FontSize="15"/>
-                                        <TextBlock Text="{Binding PartyEntryDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                <StackPanel Margin="15">
+                                    <Grid Margin="0 0 0 12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Ngày vào Đảng:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding PartyEntryDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Ngày chính thức:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding PartyOfficialDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Số năm tuổi Đảng:" Foreground="#78909C" FontSize="15"/>
+                                            <TextBlock Text="{Binding CalculatedPartyAge, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Tại chi bộ -->
+                                    <StackPanel Margin="0 0 0 12">
+                                        <TextBlock Text="Tại chi bộ:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PartyCell, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Ngày chính thức:" Foreground="#78909C" FontSize="15"/>
-                                        <TextBlock Text="{Binding PartyOfficialDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+
+                                    <!-- Người giới thiệu thứ 1 -->
+                                    <TextBlock Text="Người giới thiệu thứ 1:" FontWeight="Bold" Foreground="#37474F" FontSize="15" Margin="0 5 0 6"/>
+                                    <Grid Margin="0 0 0 12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="2*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Họ và tên:" Foreground="#78909C" FontSize="14"/>
+                                            <TextBlock Text="{Binding PartyIntroducer1Name, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="SemiBold" Foreground="Black" FontSize="15" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Chức vụ:" Foreground="#78909C" FontSize="14"/>
+                                            <TextBlock Text="{Binding PartyIntroducer1Position, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="SemiBold" Foreground="Black" FontSize="15" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Đơn vị công tác:" Foreground="#78909C" FontSize="14"/>
+                                            <TextBlock Text="{Binding PartyIntroducer1Workplace, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="SemiBold" Foreground="Black" FontSize="15" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Người giới thiệu thứ 2 -->
+                                    <TextBlock Text="Người giới thiệu thứ 2:" FontWeight="Bold" Foreground="#37474F" FontSize="15" Margin="0 5 0 6"/>
+                                    <Grid Margin="0 0 0 12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="2*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Họ và tên:" Foreground="#78909C" FontSize="14"/>
+                                            <TextBlock Text="{Binding PartyIntroducer2Name, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="SemiBold" Foreground="Black" FontSize="15" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Chức vụ:" Foreground="#78909C" FontSize="14"/>
+                                            <TextBlock Text="{Binding PartyIntroducer2Position, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="SemiBold" Foreground="Black" FontSize="15" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="Đơn vị công tác:" Foreground="#78909C" FontSize="14"/>
+                                            <TextBlock Text="{Binding PartyIntroducer2Workplace, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="SemiBold" Foreground="Black" FontSize="15" Margin="0 2 0 0"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Tổ chức giới thiệu -->
+                                    <StackPanel Margin="0 0 0 12">
+                                        <TextBlock Text="Tổ chức giới thiệu:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PartyIntroducingOrganization, Converter={StaticResource EmptyStringToDashConverter}}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0"/>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="2">
-                                        <TextBlock Text="Số năm tuổi Đảng:" Foreground="#78909C" FontSize="15"/>
-                                        <TextBlock Text="{Binding CalculatedPartyAge, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="17" Margin="0 4 0 0"/>
+
+                                    <!-- Ngày cấp có thẩm quyền ra quyết định kết nạp -->
+                                    <StackPanel Margin="0 0 0 5">
+                                        <TextBlock Text="Ngày cấp có thẩm quyền ra quyết định kết nạp:" Foreground="#78909C" FontSize="15"/>
+                                        <TextBlock Text="{Binding PartyDecisionDate, Converter={StaticResource DateFormatterConverter}, TargetNullValue='---'}" FontWeight="Bold" Foreground="Black" FontSize="16" Margin="0 4 0 0"/>
                                     </StackPanel>
-                                </Grid>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                         

@@ -281,6 +281,11 @@ namespace TaxPersonnelManagement.Views
                                                                       l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtLeaveCount.Text = leave.ToString();
 
+                int convalescence = list.Count(p => p.LeaveHistories != null &&
+                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Dưỡng sức" || l.LeaveType.Contains("dưỡng sức", StringComparison.OrdinalIgnoreCase)) &&
+                                                                              l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
+                txtConvalescenceCount.Text = convalescence.ToString();
+
                 var displayList = list.AsEnumerable();
                 if (_currentCardFilter == "Maternity")
                 {
@@ -298,6 +303,12 @@ namespace TaxPersonnelManagement.Views
                 {
                     displayList = displayList.Where(p => p.LeaveHistories != null &&
                                                     p.LeaveHistories.Any(l => l.LeaveType == "Phép năm" &&
+                                                                              l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
+                }
+                else if (_currentCardFilter == "Convalescence")
+                {
+                    displayList = displayList.Where(p => p.LeaveHistories != null &&
+                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Dưỡng sức" || l.LeaveType.Contains("dưỡng sức", StringComparison.OrdinalIgnoreCase)) &&
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
 
@@ -427,6 +438,7 @@ namespace TaxPersonnelManagement.Views
             cardMaternity.Opacity = _currentCardFilter == "Maternity" ? 1.0 : 0.6;
             cardSick.Opacity = _currentCardFilter == "Sick" ? 1.0 : 0.6;
             cardLeave.Opacity = _currentCardFilter == "Leave" ? 1.0 : 0.6;
+            cardConvalescence.Opacity = _currentCardFilter == "Convalescence" ? 1.0 : 0.6;
         }
 
         private void cardTotal_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -453,6 +465,13 @@ namespace TaxPersonnelManagement.Views
         private void cardLeave_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _currentCardFilter = "Leave";
+            UpdateCardVisuals();
+            LoadData(txtSearch.Text);
+        }
+
+        private void cardConvalescence_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _currentCardFilter = "Convalescence";
             UpdateCardVisuals();
             LoadData(txtSearch.Text);
         }
@@ -566,6 +585,7 @@ namespace TaxPersonnelManagement.Views
                     "Maternity" => $"DanhSach_NghiThaiSan_{DateTime.Now:yyyyMMdd}",
                     "Sick" => $"DanhSach_NghiOm_{DateTime.Now:yyyyMMdd}",
                     "Leave" => $"DanhSach_NghiPhep_{DateTime.Now:yyyyMMdd}",
+                    "Convalescence" => $"DanhSach_NghiDuongSuc_{DateTime.Now:yyyyMMdd}",
                     _ => $"DanhSach_NhanSu_Full_{DateTime.Now:yyyyMMdd}"
                 };
                 dlg.DefaultExt = ".xlsx";

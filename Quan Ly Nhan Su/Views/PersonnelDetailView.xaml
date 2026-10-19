@@ -1018,22 +1018,17 @@
             <TabItem Header="4. THÔNG TIN ĐẢNG VIÊN" Style="{DynamicResource ModernTabItem}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Border Background="White" Margin="10" Padding="15" CornerRadius="8" Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
+                        <StackPanel>
                             <!-- Header -->
-                            <Border Grid.Row="0" Margin="0 0 0 15" BorderBrush="#EEEEEE" BorderThickness="0 0 0 2" Padding="0 0 0 10">
+                            <Border Margin="0 0 0 15" BorderBrush="#EEEEEE" BorderThickness="0 0 0 2" Padding="0 0 0 10">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <materialDesign:PackIcon Kind="Flag" Width="24" Height="24" Foreground="#D32F2F" VerticalAlignment="Center" Margin="0 0 10 0"/>
                                     <TextBlock Text="THÔNG TIN ĐẢNG VIÊN" FontFamily="{StaticResource AppHeadingFont}" FontSize="16" FontWeight="Bold" Foreground="#37474F" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
 
-                            <!-- Content -->
-                            <Grid Grid.Row="1">
+                            <!-- Row 1: Ngày vào Đảng, Ngày chính thức, Số năm tuổi Đảng -->
+                            <Grid Margin="0 0 0 15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="20"/>
@@ -1070,7 +1065,86 @@
                                              Background="#F5F5F5"/>
                                 </StackPanel>
                             </Grid>
-                        </Grid>
+
+                            <!-- Row 2: Tại chi bộ (kéo dài hẳn 1 dòng) -->
+                            <StackPanel Margin="0 0 0 18">
+                                <TextBlock Text="Tại chi bộ" Style="{StaticResource ModernLabel}"/>
+                                <TextBox x:Name="txtPartyCell" Style="{StaticResource ModernTextBox}"/>
+                            </StackPanel>
+
+                            <!-- Group 1: Người giới thiệu thứ 1 -->
+                            <TextBlock Text="Người giới thiệu thứ 1" 
+                                       FontWeight="Bold" FontSize="14" Foreground="#37474F" 
+                                       Margin="0 5 0 8"/>
+                            <Grid Margin="0 0 0 18">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Họ và tên" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyIntroducer1Name" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Chức vụ" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyIntroducer1Position" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="Đơn vị công tác" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyIntroducer1Workplace" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Group 2: Người giới thiệu thứ 2 -->
+                            <TextBlock Text="Người giới thiệu thứ 2" 
+                                       FontWeight="Bold" FontSize="14" Foreground="#37474F" 
+                                       Margin="0 5 0 8"/>
+                            <Grid Margin="0 0 0 18">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Họ và tên" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyIntroducer2Name" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Chức vụ" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyIntroducer2Position" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="Đơn vị công tác" Style="{StaticResource ModernLabel}"/>
+                                    <TextBox x:Name="txtPartyIntroducer2Workplace" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Row 5: Tổ chức giới thiệu -->
+                            <StackPanel Margin="0 0 0 18">
+                                <TextBlock Text="Tổ chức giới thiệu" Style="{StaticResource ModernLabel}"/>
+                                <TextBox x:Name="txtPartyIntroducingOrganization" Style="{StaticResource ModernTextBox}"/>
+                            </StackPanel>
+
+                            <!-- Row 6: Ngày cấp có thẩm quyền ra quyết định kết nạp -->
+                            <StackPanel Margin="0 0 0 10">
+                                <TextBlock Text="Ngày cấp có thẩm quyền ra quyết định kết nạp" Style="{StaticResource ModernLabel}"/>
+                                <DatePicker x:Name="dpPartyDecisionDate" 
+                                            Style="{StaticResource ModernDatePicker}" 
+                                            helpers:DatePickerHelper.EnableSmartDateEntry="True"
+                                            materialDesign:TextFieldAssist.HasClearButton="True"/>
+                            </StackPanel>
+                        </StackPanel>
                     </Border>
                 </ScrollViewer>
             </TabItem>
@@ -1132,6 +1206,10 @@
                                             SelectedDateChanged="OnLeaveCalculationDateChanged"
                                             helpers:DatePickerHelper.EnableSmartDateEntry="True"
                                             materialDesign:TextFieldAssist.HasClearButton="True"/>
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Grid.Column="2">
+                                <TextBlock Text="Dưỡng sức (Tổng số ngày)" Style="{StaticResource ModernLabel}"/>
+                                <TextBox x:Name="txtConvalescenceLeaveTaken" Text="0" IsReadOnly="True" Background="#FAFAFA" Style="{StaticResource ModernTextBox}"/>
                             </StackPanel>
                         </Grid>
 

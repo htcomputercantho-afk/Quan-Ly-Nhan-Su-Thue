@@ -1,3 +1,23 @@
+## v1.6.4.5 — 2026-10-19
+- [Tính năng mới] Bổ sung đầy đủ các trường Thông tin Đảng viên (Tab 4 - Thông tin Đảng viên):
+    + Bổ sung trường "Tại chi bộ": Ô nhập văn bản kéo dài toàn bộ chiều rộng 1 dòng.
+    + Bổ sung khối "Người giới thiệu thứ 1" gồm 3 trường: "Họ và tên", "Chức vụ", "Đơn vị công tác" với bố cục và tỉ lệ chuẩn thiết kế.
+    + Bổ sung khối "Người giới thiệu thứ 2" gồm 3 trường: "Họ và tên", "Chức vụ", "Đơn vị công tác".
+    + Bổ sung trường "Tổ chức giới thiệu": Ô nhập văn bản kéo dài toàn bộ chiều rộng 1 dòng.
+    + Bổ sung trường "Ngày cấp có thẩm quyền ra quyết định kết nạp": Điều khiển chọn ngày (`DatePicker`) kéo dài toàn bộ 1 dòng, tích hợp nút chọn lịch và xóa nhanh.
+    + Đồng bộ lưu trữ và nạp dữ liệu: Tự động lưu và hiển thị chuẩn xác khi thêm mới hoặc cập nhật hồ sơ cán bộ.
+    + Đồng bộ xem chi tiết hồ sơ: Hiển thị đầy đủ tất cả các trường thông tin Đảng viên mới tại cửa sổ xem chi tiết hồ sơ cán bộ (`PersonnelProfileDialog`).
+    + Tự động cập nhật CSDL (Migration): Tự động bổ sung các cột mới vào bảng `Personnel` trong CSDL SQLite mà không làm ảnh hưởng đến dữ liệu cũ.
+- [Nâng cấp & Kiểm soát Nhập liệu] Chặn tuyệt đối nhập chữ và ký tự lạ vào các ô Ngày tháng (`DatePickerHelper`):
+    + Khắc phục triệt để lỗi người dùng có thể gõ chữ cái (`a-z`, `A-Z`) hoặc chuỗi ký tự lạ vào các ô chọn ngày tháng.
+    + Chặn phím ngay khi gõ (`PreviewTextInput`): Chỉ chấp nhận ký tự số (`0-9`) và dấu gạch chéo (`/`), mọi ký tự khác bị chặn ngay lập tức.
+    + Chặn phím khoảng trắng (`Space`) và chặn dán (`Paste`) chuỗi ký tự chứa chữ vào ô ngày tháng.
+    + Tự động kiểm tra và làm sạch (`LostFocus` & `DateValidationError`): Khôi phục về ngày hợp lệ gần nhất hoặc xóa trắng ô khi nhập dở dang hoặc sai định dạng.
+    + Áp dụng thống nhất cho toàn bộ các ô `DatePicker` trên toàn hệ thống phần mềm.
+- [Thống kê & Quản lý Nghỉ phép] Hoàn thiện Thẻ KPI & Thống kê Nghỉ Dưỡng sức:
+    + Bổ sung thẻ KPI "NGHỈ DƯỠNG SỨC" trên màn hình Danh sách nhân sự với màu sắc nhận diện riêng, hỗ trợ click lọc danh sách và xuất Excel riêng biệt.
+    + Bổ sung ô thống kê tổng số ngày nghỉ "Dưỡng sức" tại màn hình Thông tin nghỉ phép (Tab 5).
+
 ## v1.6.4.4 — 2026-10-16
 - [Tính năng mới] Bổ sung loại nghỉ “Dưỡng sức” vào Module Quản lý Nhân sự:
     + Cập nhật danh sách loại nghỉ phép tại màn hình "Thông tin nghỉ phép" (Tab 5 - Chi tiết cán bộ): Bổ sung lựa chọn "Dưỡng sức" ngay sau "Thai sản", chuẩn hóa giao diện theo thiết kế hệ thống.

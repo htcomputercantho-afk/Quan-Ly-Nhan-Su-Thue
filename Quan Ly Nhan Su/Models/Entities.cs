@@ -114,6 +114,15 @@ namespace TaxPersonnelManagement.Models
         // Tab 4: Party Info
         public DateTime? PartyEntryDate { get; set; } // Ngày vào Đảng
         public DateTime? PartyOfficialDate { get; set; } // Ngày chính thức
+        public string? PartyCell { get; set; } // Tại chi bộ
+        public string? PartyIntroducer1Name { get; set; } // Người giới thiệu 1 - Họ và tên
+        public string? PartyIntroducer1Position { get; set; } // Người giới thiệu 1 - Chức vụ
+        public string? PartyIntroducer1Workplace { get; set; } // Người giới thiệu 1 - Đơn vị công tác
+        public string? PartyIntroducer2Name { get; set; } // Người giới thiệu 2 - Họ và tên
+        public string? PartyIntroducer2Position { get; set; } // Người giới thiệu 2 - Chức vụ
+        public string? PartyIntroducer2Workplace { get; set; } // Người giới thiệu 2 - Đơn vị công tác
+        public string? PartyIntroducingOrganization { get; set; } // Tổ chức giới thiệu
+        public DateTime? PartyDecisionDate { get; set; } // Ngày cấp có thẩm quyền ra quyết định kết nạp
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public string CalculatedPartyAge

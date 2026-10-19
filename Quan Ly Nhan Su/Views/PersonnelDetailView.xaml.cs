@@ -95,6 +95,15 @@ namespace TaxPersonnelManagement.Views
                 dpPartyEntryDate.SelectedDate = _personnel.PartyEntryDate;
                 dpPartyOfficialDate.SelectedDate = _personnel.PartyOfficialDate;
                 CalculatePartyAge();
+                txtPartyCell.Text = _personnel.PartyCell ?? "";
+                txtPartyIntroducer1Name.Text = _personnel.PartyIntroducer1Name ?? "";
+                txtPartyIntroducer1Position.Text = _personnel.PartyIntroducer1Position ?? "";
+                txtPartyIntroducer1Workplace.Text = _personnel.PartyIntroducer1Workplace ?? "";
+                txtPartyIntroducer2Name.Text = _personnel.PartyIntroducer2Name ?? "";
+                txtPartyIntroducer2Position.Text = _personnel.PartyIntroducer2Position ?? "";
+                txtPartyIntroducer2Workplace.Text = _personnel.PartyIntroducer2Workplace ?? "";
+                txtPartyIntroducingOrganization.Text = _personnel.PartyIntroducingOrganization ?? "";
+                dpPartyDecisionDate.SelectedDate = _personnel.PartyDecisionDate;
 
                 // Tab 6: Thông tin lương
                 cboSalaryStep.SelectedValue = _personnel.CurrentSalaryStep; // Use SelectedValue
@@ -910,6 +919,15 @@ namespace TaxPersonnelManagement.Views
                         // Tab 4: Thông tin Đảng viên
                         PartyEntryDate = dpPartyEntryDate.SelectedDate,
                         PartyOfficialDate = dpPartyOfficialDate.SelectedDate,
+                        PartyCell = txtPartyCell.Text?.Trim(),
+                        PartyIntroducer1Name = txtPartyIntroducer1Name.Text?.Trim(),
+                        PartyIntroducer1Position = txtPartyIntroducer1Position.Text?.Trim(),
+                        PartyIntroducer1Workplace = txtPartyIntroducer1Workplace.Text?.Trim(),
+                        PartyIntroducer2Name = txtPartyIntroducer2Name.Text?.Trim(),
+                        PartyIntroducer2Position = txtPartyIntroducer2Position.Text?.Trim(),
+                        PartyIntroducer2Workplace = txtPartyIntroducer2Workplace.Text?.Trim(),
+                        PartyIntroducingOrganization = txtPartyIntroducingOrganization.Text?.Trim(),
+                        PartyDecisionDate = dpPartyDecisionDate.SelectedDate,
 
                         // Tab 6: Lương
                         CurrentSalaryStep = cboSalaryStep.SelectedValue?.ToString(),
@@ -1052,6 +1070,15 @@ namespace TaxPersonnelManagement.Views
                         // Tab 4: Thông tin Đảng viên
                         existingP.PartyEntryDate = dpPartyEntryDate.SelectedDate;
                         existingP.PartyOfficialDate = dpPartyOfficialDate.SelectedDate;
+                        existingP.PartyCell = txtPartyCell.Text?.Trim();
+                        existingP.PartyIntroducer1Name = txtPartyIntroducer1Name.Text?.Trim();
+                        existingP.PartyIntroducer1Position = txtPartyIntroducer1Position.Text?.Trim();
+                        existingP.PartyIntroducer1Workplace = txtPartyIntroducer1Workplace.Text?.Trim();
+                        existingP.PartyIntroducer2Name = txtPartyIntroducer2Name.Text?.Trim();
+                        existingP.PartyIntroducer2Position = txtPartyIntroducer2Position.Text?.Trim();
+                        existingP.PartyIntroducer2Workplace = txtPartyIntroducer2Workplace.Text?.Trim();
+                        existingP.PartyIntroducingOrganization = txtPartyIntroducingOrganization.Text?.Trim();
+                        existingP.PartyDecisionDate = dpPartyDecisionDate.SelectedDate;
 
                         // Tab 6: Lương
                         existingP.CurrentSalaryStep = cboSalaryStep.Text;
@@ -1388,6 +1415,15 @@ namespace TaxPersonnelManagement.Views
                 dpPartyEntryDate.SelectedDate = null;
                 dpPartyOfficialDate.SelectedDate = null;
                 txtPartyAge.Clear();
+                txtPartyCell.Clear();
+                txtPartyIntroducer1Name.Clear();
+                txtPartyIntroducer1Position.Clear();
+                txtPartyIntroducer1Workplace.Clear();
+                txtPartyIntroducer2Name.Clear();
+                txtPartyIntroducer2Position.Clear();
+                txtPartyIntroducer2Workplace.Clear();
+                txtPartyIntroducingOrganization.Clear();
+                dpPartyDecisionDate.SelectedDate = null;
 
                 // Tab 6: Thông tin lương
                 cboSalaryStep.ItemsSource = null;
@@ -1423,6 +1459,7 @@ namespace TaxPersonnelManagement.Views
                 txtSickLeaveTaken.Text = "0";
                 txtUnpaidLeaveTaken.Text = "0";
                 txtMaternityLeaveTaken.Text = "0";
+                txtConvalescenceLeaveTaken.Text = "0";
                 dpLeaveCalculationDate.SelectedDate = null;
 
                 dpLeaveStartDate.SelectedDate = null;
@@ -2704,6 +2741,7 @@ namespace TaxPersonnelManagement.Views
             double annualTakenCurrentYear = 0;
             double annualTakenOldYear = 0;
             double sickTaken = 0;
+            double convalescenceTaken = 0;
 
             // Maternity Logic
             string maternityDisplay = "0";
@@ -2757,6 +2795,7 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
                     else if (item.LeaveType == "Nghỉ ốm") sickTaken += item.DurationDays;
+                    else if (item.LeaveType == "Dưỡng sức") convalescenceTaken += item.DurationDays;
                 }
             }
 
@@ -2780,6 +2819,7 @@ namespace TaxPersonnelManagement.Views
             txtSickLeaveTaken.Text = sickTaken.ToString();
             txtUnpaidLeaveTaken.Text = totalUnpaidTakenAllYears.ToString();
             txtMaternityLeaveTaken.Text = maternityDisplay;
+            txtConvalescenceLeaveTaken.Text = convalescenceTaken.ToString();
 
             CalculateExpectedSalaryDate();
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace TaxPersonnelManagement.Helpers
@@ -54,9 +55,13 @@ namespace TaxPersonnelManagement.Helpers
                 if ((bool)e.NewValue)
                 {
                     dp.DateValidationError += DatePicker_DateValidationError;
+                    dp.PreviewTextInput += DatePicker_PreviewTextInput;
+                    dp.PreviewKeyDown += DatePicker_PreviewKeyDown;
                     dp.PreviewKeyUp += DatePicker_PreviewKeyUp;
                     dp.SelectedDateChanged += DatePicker_SelectedDateChanged;
                     dp.Loaded += DatePicker_Loaded;
+                    dp.LostFocus += DatePicker_LostFocus;
+                    DataObject.AddPastingHandler(dp, DatePicker_Pasting);
                     if (dp.IsLoaded)
                     {
                         FormatDatePickerText(dp);
@@ -65,9 +70,55 @@ namespace TaxPersonnelManagement.Helpers
                 else
                 {
                     dp.DateValidationError -= DatePicker_DateValidationError;
+                    dp.PreviewTextInput -= DatePicker_PreviewTextInput;
+                    dp.PreviewKeyDown -= DatePicker_PreviewKeyDown;
                     dp.PreviewKeyUp -= DatePicker_PreviewKeyUp;
                     dp.SelectedDateChanged -= DatePicker_SelectedDateChanged;
                     dp.Loaded -= DatePicker_Loaded;
+                    dp.LostFocus -= DatePicker_LostFocus;
+                    DataObject.RemovePastingHandler(dp, DatePicker_Pasting);
+                }
+            }
+        }
+
+        private static void DatePicker_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Block any non-digit character (allow only 0-9 and / or -)
+            foreach (char c in e.Text)
+            {
+                if (!char.IsDigit(c) && c != '/' && c != '-')
+                {
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
+
+        private static void DatePicker_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // Disallow space bar
+            if (e.Key == Key.Space)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private static void DatePicker_Pasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(DataFormats.UnicodeText))
+            {
+                string text = (string)e.DataObject.GetData(DataFormats.UnicodeText);
+                if (!string.IsNullOrEmpty(text) && text.Any(c => !char.IsDigit(c) && c != '/' && c != '-'))
+                {
+                    e.CancelCommand();
+                }
+            }
+            else if (e.DataObject.GetDataPresent(DataFormats.Text))
+            {
+                string text = (string)e.DataObject.GetData(DataFormats.Text);
+                if (!string.IsNullOrEmpty(text) && text.Any(c => !char.IsDigit(c) && c != '/' && c != '-'))
+                {
+                    e.CancelCommand();
                 }
             }
         }
@@ -120,6 +171,62 @@ namespace TaxPersonnelManagement.Helpers
             }
         }
 
+        public static bool TryParseSmartDate(string input, out DateTime dt)
+        {
+            dt = default;
+            if (string.IsNullOrWhiteSpace(input)) return false;
+
+            // Remove common separators to extract digits
+            string digits = new string(input.Where(char.IsDigit).ToArray());
+            bool success = false;
+
+            // Try common numeric-only formats
+            if (digits.Length == 8)
+            {
+                success = DateTime.TryParseExact(digits, "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+            }
+            else if (digits.Length == 7)
+            {
+                success = DateTime.TryParseExact(digits, "ddMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                if (!success)
+                {
+                    success = DateTime.TryParseExact(digits, "dMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+            }
+            else if (digits.Length == 6)
+            {
+                success = DateTime.TryParseExact(digits, "ddMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                if (!success)
+                {
+                    success = DateTime.TryParseExact(digits, "dMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+            }
+            else if (digits.Length == 5)
+            {
+                success = DateTime.TryParseExact(digits, "dMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                if (!success)
+                {
+                    success = DateTime.TryParseExact(digits, "ddMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+            }
+            else if (digits.Length == 4)
+            {
+                // Assume ddMM of current year
+                success = DateTime.TryParseExact(digits + DateTime.Now.Year.ToString(), "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                if (!success)
+                {
+                    success = DateTime.TryParseExact(digits, "dMyy", null, System.Globalization.DateTimeStyles.None, out dt);
+                }
+            }
+            else
+            {
+                // Try standard parsing as fallback
+                success = DateTime.TryParse(input, out dt);
+            }
+
+            return success;
+        }
+
         private static void DatePicker_DateValidationError(object? sender, DatePickerDateValidationErrorEventArgs e)
         {
             if (sender is DatePicker dp)
@@ -127,61 +234,7 @@ namespace TaxPersonnelManagement.Helpers
                 string input = e.Text;
                 if (string.IsNullOrEmpty(input)) return;
 
-                // Remove common separators to extract digits
-                string digits = new string(input.Where(char.IsDigit).ToArray());
-
-                DateTime dt;
-                bool success = false;
-
-                // Try common numeric-only formats
-                if (digits.Length == 8)
-                {
-                    success = DateTime.TryParseExact(digits, "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                }
-                else if (digits.Length == 7)
-                {
-                    // Try ddMyyyy (e.g., 12/3/2026 -> 1232026) first, then dMMyyyy (e.g., 5/12/2026 -> 5122026)
-                    success = DateTime.TryParseExact(digits, "ddMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    if (!success)
-                    {
-                        success = DateTime.TryParseExact(digits, "dMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    }
-                }
-                else if (digits.Length == 6)
-                {
-                    success = DateTime.TryParseExact(digits, "ddMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    if (!success)
-                    {
-                        // Also try dMyyyy (e.g., 1/2/2026 -> 122026)
-                        success = DateTime.TryParseExact(digits, "dMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    }
-                }
-                else if (digits.Length == 5)
-                {
-                    // Try dMMyy (e.g., 5/12/26 -> 51226) first, then ddMyy (e.g., 12/3/26 -> 12326)
-                    success = DateTime.TryParseExact(digits, "dMMyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    if (!success)
-                    {
-                        success = DateTime.TryParseExact(digits, "ddMyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    }
-                }
-                else if (digits.Length == 4)
-                {
-                    // Assume ddMM of current year
-                    success = DateTime.TryParseExact(digits + DateTime.Now.Year.ToString(), "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    if (!success)
-                    {
-                        // Also try dMyy (e.g., 1/2/26 -> 1226)
-                        success = DateTime.TryParseExact(digits, "dMyy", null, System.Globalization.DateTimeStyles.None, out dt);
-                    }
-                }
-                else
-                {
-                    // Try standard parsing as fallback
-                    success = DateTime.TryParse(input, out dt);
-                }
-
-                if (success)
+                if (TryParseSmartDate(input, out DateTime dt))
                 {
                     dp.SelectedDate = dt;
                     e.ThrowException = false;
@@ -195,6 +248,43 @@ namespace TaxPersonnelManagement.Helpers
                             textBox.Text = FormatDateForDisplay(dt);
                         }
                     }));
+                }
+                else
+                {
+                    e.ThrowException = false;
+                    dp.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                    {
+                        var textBox = FindVisualChildren<DatePickerTextBox>(dp).FirstOrDefault();
+                        if (textBox != null)
+                        {
+                            textBox.Text = dp.SelectedDate.HasValue ? FormatDateForDisplay(dp.SelectedDate.Value) : "";
+                        }
+                    }));
+                }
+            }
+        }
+
+        private static void DatePicker_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is DatePicker dp)
+            {
+                var textBox = FindVisualChildren<DatePickerTextBox>(dp).FirstOrDefault();
+                if (textBox != null && !string.IsNullOrWhiteSpace(textBox.Text))
+                {
+                    string text = textBox.Text.Trim();
+                    if (TryParseSmartDate(text, out DateTime dt))
+                    {
+                        if (dp.SelectedDate != dt)
+                        {
+                            dp.SelectedDate = dt;
+                        }
+                        textBox.Text = FormatDateForDisplay(dt);
+                    }
+                    else
+                    {
+                        // Incomplete or non-date text -> revert to current valid SelectedDate or empty
+                        textBox.Text = dp.SelectedDate.HasValue ? FormatDateForDisplay(dp.SelectedDate.Value) : "";
+                    }
                 }
             }
         }

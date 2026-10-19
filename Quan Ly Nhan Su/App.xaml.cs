@@ -209,6 +209,15 @@ namespace TaxPersonnelManagement
                     // Manual Migration for Tab 4 Fields (Party Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyEntryDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyOfficialDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyCell TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducer1Name TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducer1Position TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducer1Workplace TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducer2Name TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducer2Position TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducer2Workplace TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyIntroducingOrganization TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyDecisionDate TEXT"); } catch { }
 
                     // Manual Migration for Tab 5 Fields (Leave Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN TotalAnnualLeaveDays INTEGER DEFAULT 12"); } catch { }
@@ -670,7 +679,16 @@ namespace TaxPersonnelManagement
                                         DetailedWorkHistory TEXT,
                                         RetirementDate TEXT,
                                         PartyEntryDate TEXT,
-                                        PartyOfficialDate TEXT
+                                        PartyOfficialDate TEXT,
+                                        PartyCell TEXT,
+                                        PartyIntroducer1Name TEXT,
+                                        PartyIntroducer1Position TEXT,
+                                        PartyIntroducer1Workplace TEXT,
+                                        PartyIntroducer2Name TEXT,
+                                        PartyIntroducer2Position TEXT,
+                                        PartyIntroducer2Workplace TEXT,
+                                        PartyIntroducingOrganization TEXT,
+                                        PartyDecisionDate TEXT
                                     )");
 
                                 // 3. Copy Data
@@ -685,7 +703,10 @@ namespace TaxPersonnelManagement
                                         ExpectedSalaryIncreaseDate, SalaryHistoryLog, EmulationTitles, RewardForms,
                                         DisciplineType, DisciplineDecisionNumber, DisciplineDecisionDate, DisciplineReason,
                                         PositionDecisionDate, PositionCalculationDate, PositionYear, DetailedWorkHistory,
-                                        RetirementDate, PartyEntryDate, PartyOfficialDate
+                                        RetirementDate, PartyEntryDate, PartyOfficialDate,
+                                        PartyCell, PartyIntroducer1Name, PartyIntroducer1Position, PartyIntroducer1Workplace,
+                                        PartyIntroducer2Name, PartyIntroducer2Position, PartyIntroducer2Workplace,
+                                        PartyIntroducingOrganization, PartyDecisionDate
                                     )
                                     SELECT 
                                         Id, StaffId, FullName, DateOfBirth, Gender, PhoneNumber, IdentityCardNumber, IdentityCardPlace,
@@ -697,7 +718,10 @@ namespace TaxPersonnelManagement
                                         ExpectedSalaryIncreaseDate, SalaryHistoryLog, EmulationTitles, RewardForms,
                                         DisciplineType, DisciplineDecisionNumber, DisciplineDecisionDate, DisciplineReason,
                                         PositionDecisionDate, PositionCalculationDate, PositionYear, DetailedWorkHistory,
-                                        RetirementDate, PartyEntryDate, PartyOfficialDate
+                                        RetirementDate, PartyEntryDate, PartyOfficialDate,
+                                        PartyCell, PartyIntroducer1Name, PartyIntroducer1Position, PartyIntroducer1Workplace,
+                                        PartyIntroducer2Name, PartyIntroducer2Position, PartyIntroducer2Workplace,
+                                        PartyIntroducingOrganization, PartyDecisionDate
                                     FROM Personnel_Old");
 
                                 // 4. Xóa bảng tạm cũ
