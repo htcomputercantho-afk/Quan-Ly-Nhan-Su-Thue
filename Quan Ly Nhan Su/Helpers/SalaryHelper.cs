@@ -52,6 +52,37 @@ namespace TaxPersonnelManagement.Helpers
         }
 
         /// <summary>
+        /// Kiểm tra xem mã ngạch có chu kỳ nâng bậc lương thường xuyên là 2 năm (24 tháng) hay không.
+        /// Theo quy định hiện hành (Nghị định 204/2004/NĐ-CP, Thông tư 08/2013/TT-BNV, Thông tư 02/2021/TT-BNV),
+        /// các ngạch nhân viên, thừa hành, phục vụ, bảo vệ, lái xe (01.010, 01.009, 01.011, 06.039-1, 01.005..01.008)
+        /// có thời gian giữ bậc để xét nâng bậc lương là 2 năm (24 tháng).
+        /// </summary>
+        public static bool IsTwoYearSalaryIncreaseRank(string? rankCode)
+        {
+            if (string.IsNullOrWhiteSpace(rankCode)) return false;
+
+            string rc = rankCode.Trim();
+            string cleanRc = rc.Replace(" ", "").Replace(".", "");
+
+            return string.Equals(rc, "01.010", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01010", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "01.009", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01009", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "01.011", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01011", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "06.039-1", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "06039-1", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "01.008", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01008", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "01.007", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01007", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "01.006", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01006", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(rc, "01.005", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(cleanRc, "01005", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Tính toán chi tiết mốc thời gian nâng bậc lương tiếp theo, chu kỳ nâng ngạch, các yếu tố lùi thời hạn
         /// (kỷ luật, nghỉ ốm vượt 180 ngày theo TT 03/2021, nghỉ không lương theo TT 03/2021).
         /// </summary>
@@ -97,11 +128,9 @@ namespace TaxPersonnelManagement.Helpers
             }
             else
             {
-                // Ngạch 06.039-1, 01.011, 01.009 thì 2 năm nâng 1 lần
+                // Ngạch nhóm nhân viên, lái xe, bảo vệ, văn thư (01.010, 01.009, 01.011, 06.039-1,...): 2 năm nâng 1 lần
                 string rc = (rankCodeOverride ?? p?.RankCode ?? "").Trim();
-                if (string.Equals(rc, "06.039-1", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(rc, "01.011", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(rc, "01.009", StringComparison.OrdinalIgnoreCase))
+                if (IsTwoYearSalaryIncreaseRank(rc))
                 {
                     periodYears = 2;
                 }

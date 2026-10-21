@@ -1,3 +1,23 @@
+## v1.6.4.6 — 2026-10-21
+- [Nâng cấp Giao diện & Bộ lọc Tổng quan] Bổ sung Thẻ KPI Nghỉ Không Lương & Icon Bộ Lọc:
+    + Bổ sung thẻ KPI thứ 6 "NGHỈ KHÔNG LƯƠNG" trên màn hình Tổng quan / Danh sách nhân sự với thiết kế gradient Slate Blue-Grey (`#455A64` - `#607D8B`) nổi bật, icon `CashOff` và hiển thị số lượng cán bộ đang nghỉ không lương theo thời gian thực.
+    + Tích hợp tương tác lọc theo thẻ: Bấm vào thẻ "NGHỈ KHÔNG LƯƠNG" để lọc danh sách cán bộ đang nghỉ không lương, tự động sắp xếp cán bộ sắp hết hạn nghỉ lên đầu.
+    + Tự động định danh tên file xuất Excel chuẩn `DanhSach_NghiKhongLuong_YYYYMMDD.xlsx` khi đang áp dụng bộ lọc Nghỉ không lương.
+    + Đồng bộ toàn diện chế độ hiển thị Compact Mode (thu gọn font chữ, ẩn icon khi màn hình nhỏ) đảm bảo không bị tràn giao diện.
+    + Thêm icon nhận diện trực quan cho 2 ô chọn bộ lọc phía trên: Icon `Domain` cho bộ lọc Bộ phận và icon `AccountClockOutline` cho bộ lọc Trạng thái công tác.
+- [Báo cáo Thống kê Nhân sự] Chuẩn hóa Bảng Thống kê & Bổ sung Chức danh:
+    + Bổ sung cột Số thứ tự (`STT`) căn giữa ở vị trí đầu tiên của bảng thống kê và file xuất Excel.
+    + Bổ sung 2 cột chức vụ: "Trưởng Thuế cơ sở" và "Phó Trưởng Thuế cơ sở", bố trí vị trí đứng trước cột "Tổ trưởng".
+    + Bổ sung cột "HĐLĐ" (Hợp đồng lao động) bố trí ngay sau cột "Công chức".
+    + Cập nhật thuật toán tính toán thống kê, tự động tính tổng hàng, tổng cột và dòng Tổng cộng ở chân bảng.
+    + Đồng bộ xuất Excel báo cáo thống kê nhân sự với đầy đủ các cột mới, định dạng khung viền và tiêu đề chuẩn hóa.
+- [Quản lý Phân công Nhiệm vụ] Tinh gọn Danh sách Bộ phận:
+    + Loại bỏ mục "LĐHĐ / HĐLĐ" khỏi danh sách lựa chọn bộ phận trong phân công nhiệm vụ, phù hợp với nghiệp vụ quản lý công chức.
+- [Quá trình Công tác] Tối ưu hóa Nhập liệu Tháng/Năm & Chuẩn hóa Thông báo:
+    + Tích hợp bộ chọn Tháng/Năm trực quan với giao diện popup chọn nhanh tháng (1-12) và điều chỉnh năm linh hoạt cho các trường "Từ tháng/năm" và "Đến tháng/năm".
+    + Kiểm soát chặt chẽ nhập liệu: Tự động chèn ký tự phân cách `/`, chặn nhập ký tự lạ, xác thực tháng hợp lệ (01-12) và năm hợp lệ.
+    + Chuẩn hóa toàn bộ các giao diện thông báo xác nhận, cảnh báo lỗi và xác nhận xóa của Quá trình công tác theo phong cách Material Design.
+
 ## v1.6.4.5 — 2026-10-19
 - [Tính năng mới] Bổ sung đầy đủ các trường Thông tin Đảng viên (Tab 4 - Thông tin Đảng viên):
     + Bổ sung trường "Tại chi bộ": Ô nhập văn bản kéo dài toàn bộ chiều rộng 1 dòng.

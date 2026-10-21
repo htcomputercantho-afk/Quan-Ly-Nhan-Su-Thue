@@ -22,6 +22,7 @@ namespace TaxPersonnelManagement.Views
         private List<Position> _allPositions = new List<Position>();
         private SalaryRecord? _editingSalaryRecord;
         private EvaluationRecord? _editingEvaluationRecord;
+        private readonly System.Collections.ObjectModel.ObservableCollection<WorkHistoryRecord> _workHistories = new();
 
         /// <summary>
         /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
@@ -84,6 +85,7 @@ namespace TaxPersonnelManagement.Views
                 dpPositionCalculationDate.SelectedDate = DateTime.Now;
                 txtPositionYear.Text = _personnel.PositionYear;
                 txtDetailedWorkHistory.Text = _personnel.DetailedWorkHistory;
+                LoadWorkHistoriesForPersonnel();
 
                 CalculateWorkDuration();
 
@@ -159,6 +161,7 @@ namespace TaxPersonnelManagement.Views
             else
             {
                 txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
+                LoadWorkHistoriesForPersonnel();
             }
 
             if (_personnel != null)
@@ -911,7 +914,7 @@ namespace TaxPersonnelManagement.Views
                         PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
                         PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate,
                         PositionYear = txtPositionYear.Text,
-                        DetailedWorkHistory = txtDetailedWorkHistory.Text,
+                        DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories),
 
                         // Tab 3: Thông tin nghỉ hưu
                         RetirementDate = dpRetirementDate.SelectedDate,
@@ -973,6 +976,20 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
 
+                    // Copy Work History Records if any
+                    foreach (var wh in _workHistories)
+                    {
+                        newP.WorkHistoryRecords.Add(new WorkHistoryRecord
+                        {
+                            FromDate = wh.FromDate,
+                            ToDate = wh.ToDate,
+                            Position = wh.Position,
+                            DepartmentOrUnit = wh.DepartmentOrUnit,
+                            Note = wh.Note,
+                            OrderIndex = wh.OrderIndex
+                        });
+                    }
+
                     // Copy Evaluation Records if any
                     if (_personnel != null && _personnel.EvaluationRecords != null)
                     {
@@ -1015,8 +1032,7 @@ namespace TaxPersonnelManagement.Views
                 else
                 {
                     // Cập nhật
-                    // Cập nhật
-                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").Include("PersonnelDegrees").FirstOrDefault(p => p.Id == _personnel.Id);
+                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").Include("PersonnelDegrees").Include("WorkHistoryRecords").FirstOrDefault(p => p.Id == _personnel.Id);
                     if (existingP != null)
                     {
                         existingP.StaffId = txtStaffId.Text;
@@ -1062,7 +1078,7 @@ namespace TaxPersonnelManagement.Views
                         existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
                         existingP.PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate;
                         existingP.PositionYear = txtPositionYear.Text;
-                        existingP.DetailedWorkHistory = txtDetailedWorkHistory.Text;
+                        existingP.DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories);
 
                         // Tab 3: Thông tin nghỉ hưu
                         existingP.RetirementDate = dpRetirementDate.SelectedDate;
@@ -1186,6 +1202,37 @@ namespace TaxPersonnelManagement.Views
                                     dbItem.Reason = item.Reason;
                                     dbItem.LeaveYear = item.LeaveYear;
                                 }
+                            }
+                        }
+
+                        // Sync Work History Records
+                        if (existingP.WorkHistoryRecords == null) existingP.WorkHistoryRecords = new List<WorkHistoryRecord>();
+                        var currentWhIds = _workHistories.Select(w => w.Id).Where(id => id != 0).ToList();
+                        var whToDelete = existingP.WorkHistoryRecords.Where(w => !currentWhIds.Contains(w.Id)).ToList();
+                        foreach (var item in whToDelete)
+                        {
+                            context.WorkHistoryRecords.Remove(item);
+                        }
+
+                        var whToAdd = _workHistories.Where(w => w.Id == 0).ToList();
+                        foreach (var item in whToAdd)
+                        {
+                            item.PersonnelId = existingP.Id;
+                            context.WorkHistoryRecords.Add(item);
+                        }
+
+                        var whToUpdate = _workHistories.Where(w => w.Id != 0).ToList();
+                        foreach (var item in whToUpdate)
+                        {
+                            var dbWh = existingP.WorkHistoryRecords.FirstOrDefault(x => x.Id == item.Id);
+                            if (dbWh != null)
+                            {
+                                dbWh.FromDate = item.FromDate;
+                                dbWh.ToDate = item.ToDate;
+                                dbWh.Position = item.Position;
+                                dbWh.DepartmentOrUnit = item.DepartmentOrUnit;
+                                dbWh.Note = item.Note;
+                                dbWh.OrderIndex = item.OrderIndex;
                             }
                         }
 
@@ -1402,6 +1449,8 @@ namespace TaxPersonnelManagement.Views
                 dpPositionCalculationDate.SelectedDate = DateTime.Now;
                 txtPositionYear.Clear();
                 txtDetailedWorkHistory.Clear();
+                _workHistories.Clear();
+                ApplyWorkHistoryFilterAndSort();
                 txtYearsWorked.Clear();
                 txtYearsWorked.Clear();
                 txtMonthsWorked.Clear();
@@ -3448,6 +3497,372 @@ namespace TaxPersonnelManagement.Views
         private void btnManageAllDegrees_Click(object sender, RoutedEventArgs e)
         {
             OpenDegreesDialog("All");
+        }
+        #endregion
+
+        #region Work History Timeline Management (Như hình 2)
+        private void LoadWorkHistoriesForPersonnel()
+        {
+            _workHistories.Clear();
+
+            if (_personnel != null && _personnel.Id > 0)
+            {
+                using (var context = new AppDbContext())
+                {
+                    var list = context.WorkHistoryRecords
+                                      .Where(w => w.PersonnelId == _personnel.Id)
+                                      .OrderBy(w => w.OrderIndex)
+                                      .ToList();
+
+                    if (list.Count > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            _workHistories.Add(item);
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(_personnel.DetailedWorkHistory))
+                    {
+                        // Tự động phân tích các dòng văn bản cũ sang danh sách có cấu trúc
+                        var parsed = ParseWorkHistoryTextToRecords(_personnel.DetailedWorkHistory);
+                        foreach (var item in parsed)
+                        {
+                            _workHistories.Add(item);
+                        }
+                    }
+                }
+            }
+            else if (_personnel != null && !string.IsNullOrWhiteSpace(_personnel.DetailedWorkHistory))
+            {
+                var parsed = ParseWorkHistoryTextToRecords(_personnel.DetailedWorkHistory);
+                foreach (var item in parsed)
+                {
+                    _workHistories.Add(item);
+                }
+            }
+
+            ApplyWorkHistoryFilterAndSort();
+        }
+
+        private void ApplyWorkHistoryFilterAndSort()
+        {
+            if (dgWorkHistory == null) return;
+
+            string query = txtSearchWorkHistory?.Text?.Trim().ToLower() ?? "";
+            var list = _workHistories.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(query))
+            {
+                list = list.Where(w =>
+                    (w.Position != null && w.Position.ToLower().Contains(query)) ||
+                    (w.DepartmentOrUnit != null && w.DepartmentOrUnit.ToLower().Contains(query)) ||
+                    (w.FromDate != null && w.FromDate.ToLower().Contains(query)) ||
+                    (w.ToDate != null && w.ToDate.ToLower().Contains(query)));
+            }
+
+            // Sắp xếp
+            if (cboSortWorkHistory != null && cboSortWorkHistory.SelectedIndex == 1)
+            {
+                // Mới nhất trước: đảo ngược thứ tự
+                list = list.Reverse();
+            }
+
+            var result = list.ToList();
+            dgWorkHistory.ItemsSource = result;
+
+            if (txtWorkHistoryCount != null)
+            {
+                txtWorkHistoryCount.Text = $"{result.Count} giai đoạn";
+            }
+
+            if (lblEmptyWorkHistory != null)
+            {
+                lblEmptyWorkHistory.Visibility = result.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public static string GenerateDetailedWorkHistoryText(IEnumerable<WorkHistoryRecord> items)
+        {
+            if (items == null) return "";
+            var sb = new System.Text.StringBuilder();
+
+            foreach (var r in items.OrderBy(i => i.OrderIndex))
+            {
+                string from = string.IsNullOrWhiteSpace(r.FromDate) ? "" : r.FromDate.Trim();
+                string to = string.IsNullOrWhiteSpace(r.ToDate) ? "nay" : r.ToDate.Trim();
+                if (to.StartsWith("↓")) to = to.TrimStart('↓', ' ');
+
+                string timePart = "";
+                if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+                {
+                    if (to.Equals("Hiện nay", StringComparison.OrdinalIgnoreCase) ||
+                        to.Equals("Đến nay", StringComparison.OrdinalIgnoreCase) ||
+                        to.Equals("nay", StringComparison.OrdinalIgnoreCase))
+                    {
+                        timePart = $"Từ {from} đến nay";
+                    }
+                    else
+                    {
+                        timePart = $"Từ {from} đến {to}";
+                    }
+                }
+                else if (!string.IsNullOrEmpty(from))
+                {
+                    timePart = $"Từ {from}";
+                }
+
+                string unitPart = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? $", {r.DepartmentOrUnit.Trim()}" : "";
+                string posPart = r.Position?.Trim() ?? "";
+
+                if (!string.IsNullOrEmpty(timePart))
+                {
+                    sb.AppendLine($"- {timePart}: {posPart}{unitPart}.");
+                }
+                else if (!string.IsNullOrEmpty(posPart))
+                {
+                    sb.AppendLine($"- {posPart}{unitPart}.");
+                }
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public static List<WorkHistoryRecord> ParseWorkHistoryTextToRecords(string text)
+        {
+            var result = new List<WorkHistoryRecord>();
+            if (string.IsNullOrWhiteSpace(text)) return result;
+
+            var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var pattern = new System.Text.RegularExpressions.Regex(
+                @"^(?:[-*•]\s*)?(?:Từ\s+)?(?:tháng\s+)?(?<from>\d{1,2}/\d{4}|\d{4})\s*(?:đến|–|-)\s*(?:tháng\s+)?(?<to>\d{1,2}/\d{4}|\d{4}|nay|hiện nay)[\s:]+(?<rest>.*)$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            int idx = 0;
+            foreach (var rawLine in lines)
+            {
+                string line = rawLine.Trim();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var match = pattern.Match(line);
+                if (match.Success)
+                {
+                    string from = match.Groups["from"].Value.Trim();
+                    string to = match.Groups["to"].Value.Trim();
+                    if (to.Equals("nay", StringComparison.OrdinalIgnoreCase)) to = "Hiện nay";
+
+                    string rest = match.Groups["rest"].Value.Trim().TrimEnd('.');
+                    string pos = rest;
+                    string unit = "";
+
+                    int commaIdx = rest.IndexOf(',');
+                    if (commaIdx >= 0)
+                    {
+                        pos = rest.Substring(0, commaIdx).Trim();
+                        unit = rest.Substring(commaIdx + 1).Trim();
+                    }
+                    else
+                    {
+                        string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội " };
+                        foreach (var m in markers)
+                        {
+                            int mIdx = rest.IndexOf(m, StringComparison.OrdinalIgnoreCase);
+                            if (mIdx > 0)
+                            {
+                                pos = rest.Substring(0, mIdx).Trim();
+                                unit = rest.Substring(mIdx).Trim();
+                                break;
+                            }
+                        }
+                    }
+
+                    result.Add(new WorkHistoryRecord
+                    {
+                        FromDate = from,
+                        ToDate = to,
+                        Position = pos,
+                        DepartmentOrUnit = unit,
+                        OrderIndex = idx++
+                    });
+                }
+                else
+                {
+                    int colonIdx = line.IndexOf(':');
+                    if (colonIdx > 0)
+                    {
+                        string timePart = line.Substring(0, colonIdx).Trim().TrimStart('-', '*', '•', ' ').Trim();
+                        string restPart = line.Substring(colonIdx + 1).Trim().TrimEnd('.');
+                        string pos = restPart;
+                        string unit = "";
+                        int cIdx = restPart.IndexOf(',');
+                        if (cIdx >= 0)
+                        {
+                            pos = restPart.Substring(0, cIdx).Trim();
+                            unit = restPart.Substring(cIdx + 1).Trim();
+                        }
+                        result.Add(new WorkHistoryRecord
+                        {
+                            FromDate = timePart,
+                            ToDate = "",
+                            Position = pos,
+                            DepartmentOrUnit = unit,
+                            OrderIndex = idx++
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private void WorkHistoryMode_Changed(object sender, RoutedEventArgs e)
+        {
+            if (pnlWorkHistoryListMode == null || pnlWorkHistorySummaryMode == null || btnAddWorkHistory == null) return;
+
+            if (rbWorkHistoryList?.IsChecked == true)
+            {
+                pnlWorkHistoryListMode.Visibility = Visibility.Visible;
+                pnlWorkHistorySummaryMode.Visibility = Visibility.Collapsed;
+                btnAddWorkHistory.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                pnlWorkHistoryListMode.Visibility = Visibility.Collapsed;
+                pnlWorkHistorySummaryMode.Visibility = Visibility.Visible;
+                btnAddWorkHistory.Visibility = Visibility.Collapsed;
+
+                txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+            }
+        }
+
+        private void txtSearchWorkHistory_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyWorkHistoryFilterAndSort();
+        }
+
+        private void cboSortWorkHistory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyWorkHistoryFilterAndSort();
+        }
+
+        private void btnAddWorkHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new WorkHistoryDialog
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                dlg.WorkHistory.OrderIndex = _workHistories.Count;
+                _workHistories.Add(dlg.WorkHistory);
+                txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+                ApplyWorkHistoryFilterAndSort();
+            }
+        }
+
+        private void btnEditWorkHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is WorkHistoryRecord item)
+            {
+                var dlg = new WorkHistoryDialog(item)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dlg.ShowDialog() == true)
+                {
+                    txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+                    ApplyWorkHistoryFilterAndSort();
+                }
+            }
+        }
+
+        private void btnDeleteWorkHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is WorkHistoryRecord item)
+            {
+                var confirm = new ConfirmWindow(
+                    $"Bạn có chắc chắn muốn xóa giai đoạn công tác:\n\"{item.Position}\" ({item.FromDate} - {item.ToDate})?",
+                    "Xác nhận xóa")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (confirm.ShowDialog() == true)
+                {
+                    _workHistories.Remove(item);
+                    for (int i = 0; i < _workHistories.Count; i++)
+                    {
+                        _workHistories[i].OrderIndex = i;
+                    }
+                    txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+                    ApplyWorkHistoryFilterAndSort();
+                }
+            }
+        }
+
+        private void btnCopyWorkHistorySummary_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(txtDetailedWorkHistory.Text))
+            {
+                Clipboard.SetText(txtDetailedWorkHistory.Text);
+                var success = new SuccessWindow("Sao chép thành công!", "Nội dung quá trình công tác đã được lưu vào bộ nhớ tạm.")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                success.ShowDialog();
+            }
+        }
+
+        private void btnSyncFromSummaryToPeriods_Click(object sender, RoutedEventArgs e)
+        {
+            string text = txtDetailedWorkHistory.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                var warn = new WarningWindow("Ô văn bản tổng hợp đang trống!", "Chưa có nội dung")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                warn.ShowDialog();
+                return;
+            }
+
+            var parsed = ParseWorkHistoryTextToRecords(text);
+            if (parsed.Count == 0)
+            {
+                var warn = new WarningWindow(
+                    "Không tìm thấy các dòng giai đoạn phù hợp trong văn bản.\n(Gợi ý: Mỗi dòng bắt đầu bằng dấu gạch ngang '-', ví dụ: '- Từ 11/1994 đến 09/1997: Kiểm thu viên thuế, Chi cục Thuế huyện Hoành Bồ.')",
+                    "Không tìm thấy dữ liệu")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                warn.ShowDialog();
+                return;
+            }
+
+            var confirm = new ConfirmWindow(
+                $"Tìm thấy {parsed.Count} giai đoạn công tác từ văn bản.\nBạn có muốn thay thế danh sách các giai đoạn hiện tại bằng {parsed.Count} giai đoạn này không?",
+                "Xác nhận chuyển đổi")
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (confirm.ShowDialog() == true)
+            {
+                _workHistories.Clear();
+                foreach (var p in parsed)
+                {
+                    _workHistories.Add(p);
+                }
+                ApplyWorkHistoryFilterAndSort();
+                rbWorkHistoryList.IsChecked = true;
+
+                var success = new SuccessWindow("Chuyển đổi thành công!", $"Đã cập nhật {parsed.Count} giai đoạn công tác vào danh sách.")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                success.ShowDialog();
+            }
         }
         #endregion
     }

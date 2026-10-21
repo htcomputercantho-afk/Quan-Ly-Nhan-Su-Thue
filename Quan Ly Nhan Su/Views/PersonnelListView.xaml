@@ -129,48 +129,54 @@
                 <WrapPanel x:Name="wpKPIRow" Margin="0 0 0 10">
                     <!-- Filter Section -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0 0 20 15">
-                        <ComboBox x:Name="cbDepartmentFilter" 
-                                  MinWidth="200" MaxWidth="300"
-                                  Height="40" Margin="0 0 15 0"
-                                  materialDesign:HintAssist.Hint="Lọc theo bộ phận"
-                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                  Background="White"
-                                  VerticalContentAlignment="Center"
-                                  Padding="10 0"
-                                  FontSize="14"
-                                  Foreground="#455A64"
-                                  SelectionChanged="cbDepartmentFilter_SelectionChanged">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                    <Setter Property="Padding" Value="10"/>
-                                    <Setter Property="MinHeight" Value="35"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                        </ComboBox>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 15 0">
+                            <materialDesign:PackIcon Kind="Domain" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                            <ComboBox x:Name="cbDepartmentFilter" 
+                                      MinWidth="200" MaxWidth="300"
+                                      Height="40"
+                                      materialDesign:HintAssist.Hint="Lọc theo bộ phận"
+                                      Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                      Background="White"
+                                      VerticalContentAlignment="Center"
+                                      Padding="10 0"
+                                      FontSize="14"
+                                      Foreground="#455A64"
+                                      SelectionChanged="cbDepartmentFilter_SelectionChanged">
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                        <Setter Property="Padding" Value="10"/>
+                                        <Setter Property="MinHeight" Value="35"/>
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                            </ComboBox>
+                        </StackPanel>
 
-                        <ComboBox x:Name="cbStatusFilter" 
-                                  MinWidth="180" MaxWidth="250"
-                                  Height="40"
-                                  materialDesign:HintAssist.Hint="Trạng thái công tác"
-                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                  Background="White"
-                                  VerticalContentAlignment="Center"
-                                  Padding="10 0"
-                                  FontSize="14"
-                                  Foreground="#455A64"
-                                  SelectionChanged="cbStatusFilter_SelectionChanged">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                    <Setter Property="Padding" Value="10"/>
-                                    <Setter Property="MinHeight" Value="35"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                            <ComboBoxItem Content="Tất cả trạng thái"/>
-                            <ComboBoxItem Content="Đang công tác" IsSelected="True"/>
-                            <ComboBoxItem Content="Luân chuyển / Điều động"/>
-                            <ComboBoxItem Content="Nghỉ việc"/>
-                            <ComboBoxItem Content="Nghỉ hưu"/>
-                        </ComboBox>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AccountClockOutline" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                            <ComboBox x:Name="cbStatusFilter" 
+                                      MinWidth="180" MaxWidth="250"
+                                      Height="40"
+                                      materialDesign:HintAssist.Hint="Trạng thái công tác"
+                                      Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                      Background="White"
+                                      VerticalContentAlignment="Center"
+                                      Padding="10 0"
+                                      FontSize="14"
+                                      Foreground="#455A64"
+                                      SelectionChanged="cbStatusFilter_SelectionChanged">
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                        <Setter Property="Padding" Value="10"/>
+                                        <Setter Property="MinHeight" Value="35"/>
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                                <ComboBoxItem Content="Tất cả trạng thái"/>
+                                <ComboBoxItem Content="Đang công tác" IsSelected="True"/>
+                                <ComboBoxItem Content="Luân chuyển / Điều động"/>
+                                <ComboBoxItem Content="Nghỉ việc"/>
+                                <ComboBoxItem Content="Nghỉ hưu"/>
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- KPIs Section -->
@@ -296,6 +302,33 @@
                                     <materialDesign:PackIcon x:Name="iconConvalescence" Kind="HeartPulse" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
                                     <TextBlock x:Name="lblConvalescence" Text="NGHỈ DƯỠNG SỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
                                     <TextBlock x:Name="txtConvalescenceCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+                            <materialDesign:Card.Style>
+                                <Style TargetType="materialDesign:Card">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
+                                            <Setter Property="Height" Value="65"/>
+                                            <Setter Property="Width" Value="200"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </materialDesign:Card.Style>
+                        </materialDesign:Card>
+
+                        <!-- Card 6: Unpaid Leave / Nghỉ không lương -->
+                        <materialDesign:Card x:Name="cardUnpaidLeave" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardUnpaidLeave_Click">
+                            <Grid>
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#455A64" Offset="0.0"/>
+                                        <GradientStop Color="#607D8B" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <materialDesign:PackIcon x:Name="iconUnpaidLeave" Kind="CashOff" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+                                    <TextBlock x:Name="lblUnpaidLeave" Text="NGHỈ KHÔNG LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
+                                    <TextBlock x:Name="txtUnpaidLeaveCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
                             <materialDesign:Card.Style>

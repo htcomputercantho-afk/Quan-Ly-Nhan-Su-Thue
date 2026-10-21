@@ -98,6 +98,7 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         private void ApplyCompactMode()
         {
+            if (wpKPIRow == null || cardTotal == null || cardMaternity == null || cardSick == null || cardLeave == null || cardConvalescence == null || cardUnpaidLeave == null) return;
             bool c = IsCompact;
 
             // ── Margin top section ──────────────────────────────
@@ -112,24 +113,38 @@ namespace TaxPersonnelManagement.Views
             // ── KPI Cards: height + width ───────────────────────
             double cardH = c ? 54 : 100;
             double cardW = c ? 160 : 260;
-            cardTotal.Height = cardH; cardTotal.Width = cardW;
-            cardMaternity.Height = cardH; cardMaternity.Width = cardW;
-            cardSick.Height = cardH; cardSick.Width = cardW;
-            cardLeave.Height = cardH; cardLeave.Width = cardW;
+            double cardMinW = c ? 140 : 220;
+
+            cardTotal.Height = cardH; cardTotal.Width = cardW; cardTotal.MinWidth = cardMinW;
+            cardMaternity.Height = cardH; cardMaternity.Width = cardW; cardMaternity.MinWidth = cardMinW;
+            cardSick.Height = cardH; cardSick.Width = cardW; cardSick.MinWidth = cardMinW;
+            cardLeave.Height = cardH; cardLeave.Width = cardW; cardLeave.MinWidth = cardMinW;
+            cardConvalescence.Height = cardH; cardConvalescence.Width = cardW; cardConvalescence.MinWidth = cardMinW;
+            cardUnpaidLeave.Height = cardH; cardUnpaidLeave.Width = cardW; cardUnpaidLeave.MinWidth = cardMinW;
 
             // ── Ẩn/hiện icon bên trong card ────────────────────
-            iconTotal.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
-            iconMaternity.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
-            iconSick.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
-            iconLeave.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconTotal != null) iconTotal.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconMaternity != null) iconMaternity.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconSick != null) iconSick.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconLeave != null) iconLeave.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconConvalescence != null) iconConvalescence.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
+            if (iconUnpaidLeave != null) iconUnpaidLeave.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
 
             // ── Thu nhỏ font chữ số và label ───────────────────
             double numFont = c ? 18 : 26;
             double lblFont = c ? 10 : 13;
-            txtTotalCount.FontSize = numFont; lblTotal.FontSize = lblFont;
-            txtMaternityCount.FontSize = numFont; lblMaternity.FontSize = lblFont;
-            txtSickCount.FontSize = numFont; lblSick.FontSize = lblFont;
-            txtLeaveCount.FontSize = numFont; lblLeave.FontSize = lblFont;
+            if (txtTotalCount != null) txtTotalCount.FontSize = numFont;
+            if (lblTotal != null) lblTotal.FontSize = lblFont;
+            if (txtMaternityCount != null) txtMaternityCount.FontSize = numFont;
+            if (lblMaternity != null) lblMaternity.FontSize = lblFont;
+            if (txtSickCount != null) txtSickCount.FontSize = numFont;
+            if (lblSick != null) lblSick.FontSize = lblFont;
+            if (txtLeaveCount != null) txtLeaveCount.FontSize = numFont;
+            if (lblLeave != null) lblLeave.FontSize = lblFont;
+            if (txtConvalescenceCount != null) txtConvalescenceCount.FontSize = numFont;
+            if (lblConvalescence != null) lblConvalescence.FontSize = lblFont;
+            if (txtUnpaidLeaveCount != null) txtUnpaidLeaveCount.FontSize = numFont;
+            if (lblUnpaidLeave != null) lblUnpaidLeave.FontSize = lblFont;
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
@@ -286,6 +301,13 @@ namespace TaxPersonnelManagement.Views
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 txtConvalescenceCount.Text = convalescence.ToString();
 
+                int unpaid = list.Count(p => p.LeaveHistories != null &&
+                                             p.LeaveHistories.Any(l => (l.LeaveType == "Không lương" ||
+                                                                       l.LeaveType == "Nghỉ không lương" ||
+                                                                       l.LeaveType.Contains("không lương", StringComparison.OrdinalIgnoreCase)) &&
+                                                                       l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
+                txtUnpaidLeaveCount.Text = unpaid.ToString();
+
                 var displayList = list.AsEnumerable();
                 if (_currentCardFilter == "Maternity")
                 {
@@ -309,6 +331,14 @@ namespace TaxPersonnelManagement.Views
                 {
                     displayList = displayList.Where(p => p.LeaveHistories != null &&
                                                     p.LeaveHistories.Any(l => (l.LeaveType == "Dưỡng sức" || l.LeaveType.Contains("dưỡng sức", StringComparison.OrdinalIgnoreCase)) &&
+                                                                              l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
+                }
+                else if (_currentCardFilter == "UnpaidLeave")
+                {
+                    displayList = displayList.Where(p => p.LeaveHistories != null &&
+                                                    p.LeaveHistories.Any(l => (l.LeaveType == "Không lương" ||
+                                                                              l.LeaveType == "Nghỉ không lương" ||
+                                                                              l.LeaveType.Contains("không lương", StringComparison.OrdinalIgnoreCase)) &&
                                                                               l.StartDate <= now && (l.EndDate == null || l.EndDate >= now)));
                 }
 
@@ -439,6 +469,7 @@ namespace TaxPersonnelManagement.Views
             cardSick.Opacity = _currentCardFilter == "Sick" ? 1.0 : 0.6;
             cardLeave.Opacity = _currentCardFilter == "Leave" ? 1.0 : 0.6;
             cardConvalescence.Opacity = _currentCardFilter == "Convalescence" ? 1.0 : 0.6;
+            cardUnpaidLeave.Opacity = _currentCardFilter == "UnpaidLeave" ? 1.0 : 0.6;
         }
 
         private void cardTotal_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -474,6 +505,13 @@ namespace TaxPersonnelManagement.Views
             _currentCardFilter = "Convalescence";
             UpdateCardVisuals();
             LoadData(txtSearch.Text);
+        }
+
+        private void cardUnpaidLeave_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _currentCardFilter = "UnpaidLeave";
+            UpdateCardVisuals();
+            LoadData(txtSearch?.Text ?? "");
         }
 
         private void txtSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -586,6 +624,7 @@ namespace TaxPersonnelManagement.Views
                     "Sick" => $"DanhSach_NghiOm_{DateTime.Now:yyyyMMdd}",
                     "Leave" => $"DanhSach_NghiPhep_{DateTime.Now:yyyyMMdd}",
                     "Convalescence" => $"DanhSach_NghiDuongSuc_{DateTime.Now:yyyyMMdd}",
+                    "UnpaidLeave" => $"DanhSach_NghiKhongLuong_{DateTime.Now:yyyyMMdd}",
                     _ => $"DanhSach_NhanSu_Full_{DateTime.Now:yyyyMMdd}"
                 };
                 dlg.DefaultExt = ".xlsx";

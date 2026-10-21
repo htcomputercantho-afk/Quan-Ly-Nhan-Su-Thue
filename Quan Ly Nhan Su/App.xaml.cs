@@ -147,6 +147,44 @@ namespace TaxPersonnelManagement
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN DepartmentName TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Positions ADD COLUMN GroupType TEXT"); } catch { }
 
+                    // Đảm bảo các chức danh lãnh đạo & các tổ cơ bản có trong bảng Positions
+                    try
+                    {
+                        var existingPositions = context.Positions.Where(p => p.DepartmentName != "__ĐẢNG__").ToList();
+                        
+                        // Sửa Phó tổ trưởng nếu đang bị gán nhầm vào Ban lãnh đạo
+                        var wrongViceTeamLeaders = existingPositions.Where(p => p.Name.Equals("Phó tổ trưởng", StringComparison.OrdinalIgnoreCase) && p.GroupType == "Ban lãnh đạo").ToList();
+                        foreach (var p in wrongViceTeamLeaders)
+                        {
+                            p.GroupType = "Các Tổ";
+                        }
+
+                        // Danh sách chức vụ mặc định theo nhóm chuẩn của ngành thuế
+                        var defaultPositions = new (string Name, string GroupType)[]
+                        {
+                            ("Chi cục trưởng", "Ban lãnh đạo"),
+                            ("Phó Chi cục trưởng", "Ban lãnh đạo"),
+                            ("Tổ trưởng", "Các Tổ"),
+                            ("Phó Tổ trưởng", "Các Tổ"),
+                            ("Công chức", "Các Tổ"),
+                            ("Kiểm tra viên chính", "Các Tổ"),
+                            ("Kiểm tra viên", "Các Tổ"),
+                            ("Chuyên viên", "Các Tổ"),
+                            ("Nhân viên", "Các Tổ")
+                        };
+
+                        foreach (var def in defaultPositions)
+                        {
+                            if (!existingPositions.Any(p => p.Name.Equals(def.Name, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                context.Positions.Add(new Position { Name = def.Name, GroupType = def.GroupType });
+                            }
+                        }
+
+                        context.SaveChanges();
+                    }
+                    catch { }
+
                     // Cập nhật cấu trúc bảng Chức danh quy hoạch (PlanningPositions)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS PlanningPositions (
@@ -490,6 +528,21 @@ namespace TaxPersonnelManagement
                             UploadedBy TEXT
                         );");
                     try { context.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_DutyAssignmentRecords_Dept_Year ON DutyAssignmentRecords (Department, Year);"); } catch { }
+
+                    // Manual Migration for WorkHistoryRecords (Quá trình công tác chi tiết theo giai đoạn)
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS WorkHistoryRecords (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            PersonnelId INTEGER NOT NULL,
+                            FromDate TEXT,
+                            ToDate TEXT,
+                            Position TEXT NOT NULL,
+                            DepartmentOrUnit TEXT,
+                            Note TEXT,
+                            OrderIndex INTEGER DEFAULT 0,
+                            FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
+                        );");
+                    try { context.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_WorkHistoryRecords_PersonnelId ON WorkHistoryRecords (PersonnelId);"); } catch { }
 
                     // Khởi tạo các nhiệm kỳ quy hoạch mặc định nếu bảng trống
                     if (!context.PlanningTerms.Any())

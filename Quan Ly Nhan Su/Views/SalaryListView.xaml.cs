@@ -22,6 +22,17 @@ namespace TaxPersonnelManagement.Views
         {
             InitializeComponent();
             ApplyAuthorization();
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                    SalaryHelper.SyncAllPersonnelSalaryIncreases(context);
+                }
+            }
+            catch (Exception ex)
+            {
+                App.DebugLog("SalaryListView sync on init error: " + ex.Message);
+            }
             LoadFilterOptions();
             LoadData();
         }

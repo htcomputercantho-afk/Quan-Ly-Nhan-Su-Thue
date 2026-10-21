@@ -101,7 +101,8 @@ namespace TaxPersonnelManagement.Models
             }
         }
 
-        public string? DetailedWorkHistory { get; set; } // Quá trình công tác chi tiết
+        public string? DetailedWorkHistory { get; set; } // Quá trình công tác chi tiết (dạng văn bản tổng hợp)
+        public virtual ICollection<WorkHistoryRecord> WorkHistoryRecords { get; set; } = new List<WorkHistoryRecord>(); // Danh sách các giai đoạn công tác chi tiết
 
         // Tab 3: Retirement Info
         public DateTime? RetirementDate { get; set; } // Ngày về hưu
@@ -761,6 +762,51 @@ namespace TaxPersonnelManagement.Models
         public DateTime UploadedAt { get; set; } = DateTime.Now;
 
         public string? UploadedBy { get; set; }
+    }
+
+    /// <summary>
+    /// Giai đoạn quá trình công tác chi tiết của Cán bộ (Từ ngày - Đến ngày - Chức vụ - Đơn vị công tác).
+    /// </summary>
+    public class WorkHistoryRecord : System.ComponentModel.INotifyPropertyChanged
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+
+        public string? FromDate { get; set; }        // e.g. "11/1994" hoặc "1994"
+        public string? ToDate { get; set; }          // e.g. "09/1997" hoặc "Hiện nay"
+        public string Position { get; set; } = string.Empty; // Chức vụ
+        public string? DepartmentOrUnit { get; set; } // Đơn vị công tác
+        public string? Note { get; set; }            // Ghi chú
+        public int OrderIndex { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string FromDateDisplay => string.IsNullOrWhiteSpace(FromDate) ? "---" : FromDate.Trim();
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string ToDateDisplay
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(ToDate)) return "↓ Hiện nay";
+                string t = ToDate.Trim();
+                if (t.StartsWith("↓")) return t;
+                return $"↓ {t}";
+            }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string PositionDisplay => string.IsNullOrWhiteSpace(Position) ? "(Chưa nhập chức vụ)" : Position.Trim();
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string UnitDisplay => string.IsNullOrWhiteSpace(DepartmentOrUnit) ? "" : DepartmentOrUnit.Trim();
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        public void NotifyChanged()
+        {
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(string.Empty));
+        }
     }
 }
 

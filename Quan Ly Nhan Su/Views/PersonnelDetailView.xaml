@@ -942,16 +942,308 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <!-- Row 2: Detailed History -->
-                                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
-                                        <TextBlock Text="Quá trình công tác chi tiết" Style="{StaticResource ModernLabel}"/>
-                                        <TextBlock Text="(Ngày tháng năm từ ngày này đến....)" Foreground="Gray" FontStyle="Italic" FontSize="11" Margin="0 -3 0 5"/>
-                                        <TextBox x:Name="txtDetailedWorkHistory" 
-                                                 TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                                                 VerticalContentAlignment="Top"
-                                                 Style="{StaticResource ModernTextBox}" Height="150"
-                                                 Padding="5"/>
-                                    </StackPanel>
+                                    <!-- Row 2: Detailed History (Giao diện Timeline / Danh sách chuyên nghiệp như hình 2) -->
+                                    <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" 
+                                            Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0 5 0 0">
+                                        <StackPanel>
+                                            <!-- Top bar: 2 Tabs (Dữ liệu công tác / Xem tổng hợp) & Nút "+ Thêm giai đoạn" -->
+                                            <Grid Margin="0 0 0 14">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <!-- Mode Tabs Pill Toggle -->
+                                                <Border Grid.Column="0" Background="#F1F5F9" CornerRadius="8" Padding="3">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <RadioButton x:Name="rbWorkHistoryList" Content="Dữ liệu công tác" 
+                                                                     GroupName="WorkHistoryMode" IsChecked="True"
+                                                                     Checked="WorkHistoryMode_Changed"
+                                                                     Padding="14 6" FontWeight="SemiBold" FontSize="13"
+                                                                     Cursor="Hand">
+                                                            <RadioButton.Style>
+                                                                <Style TargetType="RadioButton">
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="RadioButton">
+                                                                                <Border x:Name="bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsChecked" Value="True">
+                                                                                        <Setter TargetName="bd" Property="Background" Value="White"/>
+                                                                                        <Setter TargetName="bd" Property="Effect">
+                                                                                            <Setter.Value>
+                                                                                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.1" Color="#000"/>
+                                                                                            </Setter.Value>
+                                                                                        </Setter>
+                                                                                        <Setter Property="Foreground" Value="#0F172A"/>
+                                                                                    </Trigger>
+                                                                                    <Trigger Property="IsChecked" Value="False">
+                                                                                        <Setter Property="Foreground" Value="#64748B"/>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Style>
+                                                            </RadioButton.Style>
+                                                        </RadioButton>
+
+                                                        <RadioButton x:Name="rbWorkHistorySummary" Content="Xem tổng hợp" 
+                                                                     GroupName="WorkHistoryMode"
+                                                                     Checked="WorkHistoryMode_Changed"
+                                                                     Padding="14 6" FontWeight="SemiBold" FontSize="13"
+                                                                     Cursor="Hand">
+                                                            <RadioButton.Style>
+                                                                <Style TargetType="RadioButton">
+                                                                    <Setter Property="Template">
+                                                                        <Setter.Value>
+                                                                            <ControlTemplate TargetType="RadioButton">
+                                                                                <Border x:Name="bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                                </Border>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsChecked" Value="True">
+                                                                                        <Setter TargetName="bd" Property="Background" Value="White"/>
+                                                                                        <Setter TargetName="bd" Property="Effect">
+                                                                                            <Setter.Value>
+                                                                                                <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.1" Color="#000"/>
+                                                                                            </Setter.Value>
+                                                                                        </Setter>
+                                                                                        <Setter Property="Foreground" Value="#0F172A"/>
+                                                                                    </Trigger>
+                                                                                    <Trigger Property="IsChecked" Value="False">
+                                                                                        <Setter Property="Foreground" Value="#64748B"/>
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </Style>
+                                                            </RadioButton.Style>
+                                                        </RadioButton>
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <!-- Nút + Thêm giai đoạn (Phong cách nút đen bo tròn như hình 2) -->
+                                                <Button x:Name="btnAddWorkHistory" Grid.Column="2" 
+                                                        Height="36" Padding="16 0"
+                                                        Click="btnAddWorkHistory_Click"
+                                                        Cursor="Hand" ToolTip="Thêm một giai đoạn công tác mới">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="bdr" Background="#18181B" CornerRadius="18" Padding="16 0">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="bdr" Property="Background" Value="#334155"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter TargetName="bdr" Property="Background" Value="#0F172A"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <materialDesign:PackIcon Kind="Plus" Width="18" Height="18" Foreground="White" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                                                        <TextBlock Text="Thêm giai đoạn" FontWeight="SemiBold" FontSize="13" Foreground="White" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+
+                                            <!-- View 1: Dữ liệu công tác (Dạng bảng danh sách các giai đoạn) -->
+                                            <StackPanel x:Name="pnlWorkHistoryListMode">
+                                                <!-- Filter & Sort Bar -->
+                                                <Grid Margin="0 0 0 10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="280"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="160"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Search box -->
+                                                    <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Height="36">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <materialDesign:PackIcon Kind="Magnify" Width="18" Height="18" Foreground="#94A3B8" VerticalAlignment="Center" Margin="8 0 4 0"/>
+                                                            <TextBox x:Name="txtSearchWorkHistory" Grid.Column="1"
+                                                                     materialDesign:HintAssist.Hint="Tìm chức vụ, đơn vị..."
+                                                                     materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                                                     BorderThickness="0" Background="Transparent"
+                                                                     VerticalContentAlignment="Center" FontSize="13" Foreground="#1E293B"
+                                                                     TextChanged="txtSearchWorkHistory_TextChanged"/>
+                                                        </Grid>
+                                                    </Border>
+
+                                                    <!-- Sort ComboBox -->
+                                                    <ComboBox x:Name="cboSortWorkHistory" Grid.Column="2" Height="36"
+                                                              Style="{StaticResource ModernComboBox}"
+                                                              Background="#F8FAFC" BorderBrush="#E2E8F0"
+                                                              Padding="8 0" FontSize="13" VerticalContentAlignment="Center"
+                                                              SelectionChanged="cboSortWorkHistory_SelectionChanged">
+                                                        <ComboBoxItem Content="Cũ nhất trước" IsSelected="True"/>
+                                                        <ComboBoxItem Content="Mới nhất trước"/>
+                                                    </ComboBox>
+                                                </Grid>
+
+                                                <!-- Table of Work History Periods -->
+                                                <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Background="White" ClipToBounds="True">
+                                                    <DataGrid x:Name="dgWorkHistory" AutoGenerateColumns="False" CanUserAddRows="False"
+                                                              IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
+                                                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9"
+                                                              VerticalGridLinesBrush="Transparent" BorderThickness="0" Background="Transparent"
+                                                              MinRowHeight="54" VerticalContentAlignment="Center">
+                                                        <DataGrid.ColumnHeaderStyle>
+                                                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                                                <Setter Property="Background" Value="#F8FAFC"/>
+                                                                <Setter Property="Foreground" Value="#64748B"/>
+                                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                <Setter Property="FontSize" Value="12"/>
+                                                                <Setter Property="Padding" Value="14 10"/>
+                                                                <Setter Property="BorderThickness" Value="0 0 0 1"/>
+                                                                <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                                            </Style>
+                                                        </DataGrid.ColumnHeaderStyle>
+                                                        <DataGrid.Columns>
+                                                            <!-- Thời gian -->
+                                                            <DataGridTemplateColumn Header="Thời gian" Width="140">
+                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                    <DataTemplate>
+                                                                        <StackPanel Margin="14 8" VerticalAlignment="Center">
+                                                                            <TextBlock Text="{Binding FromDateDisplay}" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
+                                                                            <TextBlock Text="{Binding ToDateDisplay}" FontSize="12" Foreground="#64748B" Margin="0 3 0 0"/>
+                                                                        </StackPanel>
+                                                                    </DataTemplate>
+                                                                </DataGridTemplateColumn.CellTemplate>
+                                                            </DataGridTemplateColumn>
+
+                                                            <!-- Chức vụ và đơn vị công tác -->
+                                                            <DataGridTemplateColumn Header="Chức vụ và đơn vị công tác" Width="*">
+                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                    <DataTemplate>
+                                                                        <StackPanel Margin="14 8" VerticalAlignment="Center">
+                                                                            <TextBlock Text="{Binding PositionDisplay}" FontWeight="Bold" FontSize="13.5" Foreground="#0F172A" TextWrapping="Wrap"/>
+                                                                            <TextBlock Text="{Binding UnitDisplay}" FontSize="12.5" Foreground="#64748B" TextWrapping="Wrap" Margin="0 3 0 0"/>
+                                                                        </StackPanel>
+                                                                    </DataTemplate>
+                                                                </DataGridTemplateColumn.CellTemplate>
+                                                            </DataGridTemplateColumn>
+
+                                                            <!-- Thao tác -->
+                                                            <DataGridTemplateColumn Header="Thao tác" Width="100">
+                                                                <DataGridTemplateColumn.CellTemplate>
+                                                                    <DataTemplate>
+                                                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                            <!-- Edit button -->
+                                                                            <Button Width="28" Height="28" Padding="0"
+                                                                                    Click="btnEditWorkHistory_Click"
+                                                                                    Tag="{Binding}" Cursor="Hand" ToolTip="Chỉnh sửa giai đoạn">
+                                                                                <Button.Template>
+                                                                                    <ControlTemplate TargetType="Button">
+                                                                                        <Border x:Name="bdr" Background="Transparent" CornerRadius="14">
+                                                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                                        </Border>
+                                                                                        <ControlTemplate.Triggers>
+                                                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                                                <Setter TargetName="bdr" Property="Background" Value="#EFF6FF"/>
+                                                                                            </Trigger>
+                                                                                        </ControlTemplate.Triggers>
+                                                                                    </ControlTemplate>
+                                                                                </Button.Template>
+                                                                                <materialDesign:PackIcon Kind="PencilOutline" Width="18" Height="18" Foreground="#2563EB"/>
+                                                                            </Button>
+                                                                            <!-- Delete button -->
+                                                                            <Button Width="28" Height="28" Padding="0" Margin="4 0 0 0"
+                                                                                    Click="btnDeleteWorkHistory_Click"
+                                                                                    Tag="{Binding}" Cursor="Hand" ToolTip="Xóa giai đoạn">
+                                                                                <Button.Template>
+                                                                                    <ControlTemplate TargetType="Button">
+                                                                                        <Border x:Name="bdr" Background="Transparent" CornerRadius="14">
+                                                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                                        </Border>
+                                                                                        <ControlTemplate.Triggers>
+                                                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                                                <Setter TargetName="bdr" Property="Background" Value="#FEF2F2"/>
+                                                                                            </Trigger>
+                                                                                        </ControlTemplate.Triggers>
+                                                                                    </ControlTemplate>
+                                                                                </Button.Template>
+                                                                                <materialDesign:PackIcon Kind="DeleteOutline" Width="18" Height="18" Foreground="#EF4444"/>
+                                                                            </Button>
+                                                                        </StackPanel>
+                                                                    </DataTemplate>
+                                                                </DataGridTemplateColumn.CellTemplate>
+                                                            </DataGridTemplateColumn>
+                                                        </DataGrid.Columns>
+                                                    </DataGrid>
+                                                </Border>
+
+                                                <!-- Bottom summary count & empty state -->
+                                                <Grid Margin="0 8 0 0">
+                                                    <TextBlock x:Name="txtWorkHistoryCount" Text="0 giai đoạn" FontSize="12" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                    <TextBlock x:Name="lblEmptyWorkHistory" Text="Chưa có giai đoạn công tác nào. Bấm '+ Thêm giai đoạn' để tạo mới." 
+                                                               FontSize="12" FontStyle="Italic" Foreground="#94A3B8" HorizontalAlignment="Center" Visibility="Collapsed"/>
+                                                </Grid>
+                                            </StackPanel>
+
+                                            <!-- View 2: Xem tổng hợp (Dạng văn bản đầy đủ) -->
+                                            <StackPanel x:Name="pnlWorkHistorySummaryMode" Visibility="Collapsed">
+                                                <TextBlock Text="Nội dung tổng hợp quá trình công tác (tự động đồng bộ từ danh sách các giai đoạn):" 
+                                                           Foreground="#64748B" FontSize="12" Margin="0 0 0 6"/>
+                                                <TextBox x:Name="txtDetailedWorkHistory" 
+                                                         TextWrapping="Wrap" VerticalAlignment="Stretch" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                                         VerticalContentAlignment="Top"
+                                                         Style="{StaticResource ModernTextBox}" Height="180"
+                                                         Padding="8" Background="#F8FAFC" FontSize="13"/>
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 8 0 0">
+                                                    <Button x:Name="btnCopyWorkHistorySummary"
+                                                            Height="32" Padding="14 0" Margin="0 0 8 0"
+                                                            Click="btnCopyWorkHistorySummary_Click" Cursor="Hand">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border x:Name="bdr" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="14 0">
+                                                                    <TextBlock Text="Sao chép nội dung" FontSize="12.5" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="bdr" Property="Background" Value="#F8FAFC"/>
+                                                                        <Setter TargetName="bdr" Property="BorderBrush" Value="#94A3B8"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                    </Button>
+                                                    <Button x:Name="btnSyncFromSummaryToPeriods"
+                                                            Height="32" Padding="12 0"
+                                                            Click="btnSyncFromSummaryToPeriods_Click" 
+                                                            ToolTip="Đọc các dòng gạch đầu dòng trong văn bản để tự động tạo lại danh sách các giai đoạn công tác"
+                                                            Cursor="Hand">
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border x:Name="bdr" Background="Transparent" CornerRadius="6" Padding="12 0">
+                                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                                        <materialDesign:PackIcon Kind="Sync" Width="16" Height="16" Foreground="#0284C7" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                                                                        <TextBlock Text="Chuyển văn bản thành các giai đoạn" FontSize="12.5" FontWeight="SemiBold" Foreground="#0284C7" VerticalAlignment="Center"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter TargetName="bdr" Property="Background" Value="#F0F9FF"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                    </Button>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
                                 </Grid>
                             </StackPanel>
                         </Border>

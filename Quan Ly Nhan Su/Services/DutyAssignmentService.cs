@@ -40,7 +40,26 @@ namespace TaxPersonnelManagement.Services
     /// </summary>
     public static class DutyAssignmentService
     {
-        /// <summary>Danh sách Tổ / bộ phận (danh mục + các tên đã từng có file), sắp xếp theo quy ước chung.</summary>
+        /// <summary>Kiểm tra xem tên bộ phận có thuộc nhóm Hợp đồng lao động (LĐHĐ) cần loại khỏi quản lý phân công nhiệm vụ hay không.</summary>
+        public static bool IsContractDepartment(string? name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            string s = name.Trim();
+            return s.Equals("Hợp đồng lao động", StringComparison.OrdinalIgnoreCase) ||
+                   s.Equals("Lao động hợp đồng", StringComparison.OrdinalIgnoreCase) ||
+                   s.Equals("LĐHĐ", StringComparison.OrdinalIgnoreCase) ||
+                   s.Equals("HĐLĐ", StringComparison.OrdinalIgnoreCase) ||
+                   s.Contains("Hợp đồng", StringComparison.OrdinalIgnoreCase) ||
+                   s.Contains("Lao động hợp đồng", StringComparison.OrdinalIgnoreCase) ||
+                   s.Contains("HĐ 68", StringComparison.OrdinalIgnoreCase) ||
+                   s.Contains("HĐ 111", StringComparison.OrdinalIgnoreCase) ||
+                   s.Contains("HĐ68", StringComparison.OrdinalIgnoreCase) ||
+                   s.Contains("HĐ111", StringComparison.OrdinalIgnoreCase) ||
+                   s.StartsWith("HĐLĐ", StringComparison.OrdinalIgnoreCase) ||
+                   s.StartsWith("LĐHĐ", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>Danh sách Tổ / bộ phận (danh mục + các tên đã từng có file), sắp xếp theo quy ước chung (đã loại bỏ nhóm HĐLĐ/LĐHĐ).</summary>
         public static List<string> GetDepartments()
         {
             using var db = new AppDbContext();
@@ -49,7 +68,7 @@ namespace TaxPersonnelManagement.Services
 
             return names
                 .Concat(fromRecords)
-                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Where(n => !string.IsNullOrWhiteSpace(n) && !IsContractDepartment(n))
                 .Select(n => n.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(n => DepartmentSorter.GetSortKey(n).Order)
@@ -85,6 +104,7 @@ namespace TaxPersonnelManagement.Services
                     UploadedBy = r.UploadedBy
                 })
                 .AsEnumerable()
+                .Where(r => !IsContractDepartment(r.Department))
                 .OrderByDescending(r => r.EffectiveDate)
                 .ThenByDescending(r => r.Year * 100 + r.Month)
                 .ThenByDescending(r => r.Id)

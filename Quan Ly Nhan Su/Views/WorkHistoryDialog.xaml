@@ -1,0 +1,656 @@
+<Window x:Class="TaxPersonnelManagement.Views.WorkHistoryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="Giai đoạn công tác" 
+        SizeToContent="Height" Width="620"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" 
+        WindowStyle="None" Background="Transparent" AllowsTransparency="True"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+
+    <Window.Resources>
+        <!-- Reusable Style for Editable ComboBox matching Modern Fluent Design -->
+        <Style x:Key="ModernEditableComboBox" TargetType="ComboBox">
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Padding" Value="12 0 4 0"/>
+            <Setter Property="MaxDropDownHeight" Value="240"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="8" SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="34"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Editable TextBox for ComboBox -->
+                                    <TextBox x:Name="PART_EditableTextBox"
+                                             Grid.Column="0"
+                                             Style="{x:Null}"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Padding="{TemplateBinding Padding}"
+                                             VerticalContentAlignment="Center"
+                                             HorizontalAlignment="Stretch"
+                                             FontSize="{TemplateBinding FontSize}"
+                                             FontFamily="{TemplateBinding FontFamily}"
+                                             Foreground="{TemplateBinding Foreground}"
+                                             IsReadOnly="{TemplateBinding IsReadOnly}"
+                                             FocusVisualStyle="{x:Null}"
+                                             Focusable="True"/>
+
+                                    <!-- Watermark / Placeholder when empty -->
+                                    <TextBlock x:Name="PART_Placeholder" Grid.Column="0" 
+                                               Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Foreground="#94A3B8" IsHitTestVisible="False" Margin="14 0 0 0" 
+                                               VerticalAlignment="Center" FontSize="13" Visibility="Collapsed"/>
+                                    
+                                    <!-- Dropdown Toggle Button with Chevron -->
+                                    <ToggleButton x:Name="toggleButton" Grid.Column="1" Focusable="False"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press" Background="Transparent" BorderThickness="0" Cursor="Hand">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border Background="Transparent" Padding="0">
+                                                    <materialDesign:PackIcon x:Name="chevronIcon" Kind="ChevronDown" Width="20" Height="20" 
+                                                                             Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="chevronIcon" Property="Foreground" Value="#0284C7"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Dropdown Popup -->
+                            <Popup x:Name="PART_Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" 
+                                   Focusable="False" PopupAnimation="Fade" HorizontalOffset="0" VerticalOffset="4">
+                                <Grid x:Name="DropDown" SnapsToDevicePixels="True" 
+                                      MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" 
+                                      MaxHeight="{TemplateBinding MaxDropDownHeight}" Margin="0,0,0,10">
+                                    <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="#E2E8F0" 
+                                            CornerRadius="8" Padding="4">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="16" Direction="-90" ShadowDepth="4" Opacity="0.12" Color="#000"/>
+                                        </Border.Effect>
+                                        <ScrollViewer MaxHeight="220" SnapsToDevicePixels="True" VerticalScrollBarVisibility="Auto">
+                                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="PART_Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0284C7"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0284C7"/>
+                                <Setter TargetName="border" Property="BorderThickness" Value="1.5"/>
+                                <Setter TargetName="PART_Placeholder" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0284C7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dropdown item style with hover and selected highlights -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="12 9"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="itemBorder" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}" Margin="1">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="itemBorder" Property="Background" Value="#F1F5F9"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="itemBorder" Property="Background" Value="#E0F2FE"/>
+                                <Setter Property="Foreground" Value="#0369A1"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Button style for Month Picker -->
+        <Style x:Key="MonthPickerButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bdr" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bdr" Property="Background" Value="#E0F2FE"/>
+                                <Setter TargetName="bdr" Property="BorderBrush" Value="#0284C7"/>
+                                <Setter Property="Foreground" Value="#0284C7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Dialog Card Wrapper -->
+    <Border Background="White" CornerRadius="16" BorderThickness="1" BorderBrush="#E2E8F0" Margin="12">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28" Direction="-90" ShadowDepth="8" Opacity="0.18" Color="#0F172A"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Form Fields -->
+                <RowDefinition Height="Auto"/> <!-- Footer Actions -->
+            </Grid.RowDefinitions>
+
+            <!-- 1. Header -->
+            <Border Grid.Row="0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 0 0 1" CornerRadius="15 15 0 0" Padding="22 16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Icon badge -->
+                    <Border Grid.Column="0" Width="44" Height="44" CornerRadius="12" Background="#EFF6FF" VerticalAlignment="Center" Margin="0 0 14 0">
+                        <materialDesign:PackIcon Kind="BriefcaseClockOutline" Width="24" Height="24" Foreground="#0284C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    
+                    <!-- Title & Subtitle -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtTitle" Text="THÊM GIAI ĐOẠN CÔNG TÁC" 
+                                   FontFamily="{StaticResource AppHeadingFont}" FontSize="16" FontWeight="Bold" Foreground="#0F172A"/>
+                        <TextBlock Text="Cập nhật mốc thời gian, chức vụ đảm nhiệm và đơn vị công tác" 
+                                   FontSize="12" Foreground="#64748B" Margin="0 3 0 0"/>
+                    </StackPanel>
+                    
+                    <!-- Close button -->
+                    <Button Grid.Column="2" Click="btnClose_Click" Width="32" Height="32" Cursor="Hand" ToolTip="Đóng">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bdr" Background="Transparent" CornerRadius="16">
+                                    <materialDesign:PackIcon x:Name="icn" Kind="Close" Width="18" Height="18" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                        <Setter TargetName="icn" Property="Foreground" Value="#EF4444"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- 2. Form Body -->
+            <StackPanel Grid.Row="1" Margin="24 20 24 16">
+                <!-- Row 1: Thời gian công tác -->
+                <Grid Margin="0 0 0 16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Từ tháng/năm -->
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                            <TextBlock Text="Từ tháng/năm" FontWeight="SemiBold" FontSize="13" Foreground="#334155"/>
+                            <TextBlock Text=" (*)" FontWeight="Bold" FontSize="13" Foreground="#EF4444"/>
+                        </StackPanel>
+                        <Border x:Name="bdrFromDate" CornerRadius="8" Background="White" BorderThickness="1" BorderBrush="#CBD5E1" Height="42">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="38"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtFromDate" Grid.Column="0"
+                                         materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                         materialDesign:HintAssist.Hint="MM/yyyy (ví dụ: 11/1994)"
+                                         BorderThickness="0" Background="Transparent"
+                                         VerticalContentAlignment="Center" Padding="12 0 4 0"
+                                         FontSize="13.5" Foreground="#0F172A" MaxLength="7"
+                                         PreviewTextInput="DateTextBox_PreviewTextInput"
+                                         PreviewKeyDown="DateTextBox_PreviewKeyDown"
+                                         TextChanged="DateTextBox_TextChanged"
+                                         LostFocus="DateTextBox_LostFocus"/>
+                                <Button x:Name="btnPickFromDate" Grid.Column="1" Click="btnPickFromDate_Click"
+                                        Width="32" Height="32" Margin="0 0 3 0" Background="Transparent" BorderThickness="0" 
+                                        Cursor="Hand" ToolTip="Bấm để chọn tháng và năm">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bdr" Background="Transparent" CornerRadius="6">
+                                                <materialDesign:PackIcon x:Name="icon" Kind="CalendarMonthOutline" Width="20" Height="20" 
+                                                                         Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bdr" Property="Background" Value="#E0F2FE"/>
+                                                    <Setter TargetName="icon" Property="Foreground" Value="#0284C7"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Popup chọn Tháng & Năm (Từ ngày) -->
+                        <Popup x:Name="popFromDate" PlacementTarget="{Binding ElementName=bdrFromDate}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4">
+                            <Border Background="White" CornerRadius="12" BorderThickness="1" BorderBrush="#E2E8F0" Padding="12" Width="270">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="20" Direction="-90" ShadowDepth="4" Opacity="0.15" Color="#0F172A"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <!-- Header chọn Năm -->
+                                    <Grid Margin="0 0 0 8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button x:Name="btnFromPrev5" Click="btnFromPrev5_Click" Width="26" Height="26" ToolTip="Lùi 5 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                        <Button x:Name="btnFromPrev1" Grid.Column="1" Click="btnFromPrev1_Click" Width="26" Height="26" Margin="3 0 0 0" ToolTip="Lùi 1 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+
+                                        <ComboBox x:Name="cboFromYear" Grid.Column="2" Height="28" Margin="4 0"
+                                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                  FontWeight="Bold" FontSize="13" Foreground="#0F172A"
+                                                  SelectionChanged="cboFromYear_SelectionChanged"/>
+
+                                        <Button x:Name="btnFromNext1" Grid.Column="3" Click="btnFromNext1_Click" Width="26" Height="26" Margin="0 0 3 0" ToolTip="Tiến 1 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronRight" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                        <Button x:Name="btnFromNext5" Grid.Column="4" Click="btnFromNext5_Click" Width="26" Height="26" ToolTip="Tiến 5 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Grid 12 Tháng -->
+                                    <UniformGrid x:Name="gridFromMonths" Columns="3" Rows="4" Margin="0 0 0 8">
+                                        <Button Tag="1" Click="FromMonthButton_Click" Content="Tháng 01" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="2" Click="FromMonthButton_Click" Content="Tháng 02" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="3" Click="FromMonthButton_Click" Content="Tháng 03" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="4" Click="FromMonthButton_Click" Content="Tháng 04" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="5" Click="FromMonthButton_Click" Content="Tháng 05" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="6" Click="FromMonthButton_Click" Content="Tháng 06" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="7" Click="FromMonthButton_Click" Content="Tháng 07" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="8" Click="FromMonthButton_Click" Content="Tháng 08" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="9" Click="FromMonthButton_Click" Content="Tháng 09" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="10" Click="FromMonthButton_Click" Content="Tháng 10" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="11" Click="FromMonthButton_Click" Content="Tháng 11" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="12" Click="FromMonthButton_Click" Content="Tháng 12" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                    </UniformGrid>
+
+                                    <!-- Footer: Phím tắt Tháng này & Xóa -->
+                                    <Border BorderBrush="#E2E8F0" BorderThickness="0 1 0 0" Padding="0 6 0 0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Click="btnFromCurrentMonth_Click" Content="Tháng hiện tại" Height="28" 
+                                                    Background="#EFF6FF" BorderBrush="#BAE6FD" BorderThickness="1" 
+                                                    Foreground="#0284C7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                            <Button Grid.Column="1" Click="btnFromClear_Click" Content="Xóa" Height="28" Margin="6 0 0 0" Padding="12 0"
+                                                    Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" 
+                                                    Foreground="#64748B" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </StackPanel>
+
+                    <!-- Đến tháng/năm -->
+                    <StackPanel Grid.Column="2">
+                        <Grid Margin="0 0 0 6">
+                            <TextBlock Text="Đến tháng/năm" FontWeight="SemiBold" FontSize="13" Foreground="#334155" VerticalAlignment="Center"/>
+                            <CheckBox x:Name="chkPresent" Content="Đang giữ chức (Đến nay)" 
+                                      HorizontalAlignment="Right" FontSize="11.5" FontWeight="SemiBold" Foreground="#0284C7"
+                                      Checked="chkPresent_CheckedChanged" Unchecked="chkPresent_CheckedChanged"
+                                      VerticalAlignment="Center" Cursor="Hand" Margin="0 -2 0 0"/>
+                        </Grid>
+                        <Border x:Name="bdrToDate" CornerRadius="8" Background="White" BorderThickness="1" BorderBrush="#CBD5E1" Height="42">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="38"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtToDate" Grid.Column="0"
+                                         materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                         materialDesign:HintAssist.Hint="MM/yyyy (ví dụ: 09/1997)"
+                                         BorderThickness="0" Background="Transparent"
+                                         VerticalContentAlignment="Center" Padding="12 0 4 0"
+                                         FontSize="13.5" Foreground="#0F172A" MaxLength="7"
+                                         PreviewTextInput="DateTextBox_PreviewTextInput"
+                                         PreviewKeyDown="DateTextBox_PreviewKeyDown"
+                                         TextChanged="DateTextBox_TextChanged"
+                                         LostFocus="DateTextBox_LostFocus"/>
+                                <Button x:Name="btnPickToDate" Grid.Column="1" Click="btnPickToDate_Click"
+                                        Width="32" Height="32" Margin="0 0 3 0" Background="Transparent" BorderThickness="0" 
+                                        Cursor="Hand" ToolTip="Bấm để chọn tháng và năm">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="bdr" Background="Transparent" CornerRadius="6">
+                                                <materialDesign:PackIcon x:Name="iconToDate" Kind="CalendarMonthOutline" Width="20" Height="20" 
+                                                                         Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bdr" Property="Background" Value="#E0F2FE"/>
+                                                    <Setter TargetName="iconToDate" Property="Foreground" Value="#0284C7"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter TargetName="iconToDate" Property="Foreground" Value="#CBD5E1"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Popup chọn Tháng & Năm (Đến ngày) -->
+                        <Popup x:Name="popToDate" PlacementTarget="{Binding ElementName=bdrToDate}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade" VerticalOffset="4">
+                            <Border Background="White" CornerRadius="12" BorderThickness="1" BorderBrush="#E2E8F0" Padding="12" Width="270">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="20" Direction="-90" ShadowDepth="4" Opacity="0.15" Color="#0F172A"/>
+                                </Border.Effect>
+                                <StackPanel>
+                                    <!-- Header chọn Năm -->
+                                    <Grid Margin="0 0 0 8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button x:Name="btnToPrev5" Click="btnToPrev5_Click" Width="26" Height="26" ToolTip="Lùi 5 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronDoubleLeft" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                        <Button x:Name="btnToPrev1" Grid.Column="1" Click="btnToPrev1_Click" Width="26" Height="26" Margin="3 0 0 0" ToolTip="Lùi 1 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronLeft" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+
+                                        <ComboBox x:Name="cboToYear" Grid.Column="2" Height="28" Margin="4 0"
+                                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                  FontWeight="Bold" FontSize="13" Foreground="#0F172A"
+                                                  SelectionChanged="cboToYear_SelectionChanged"/>
+
+                                        <Button x:Name="btnToNext1" Grid.Column="3" Click="btnToNext1_Click" Width="26" Height="26" Margin="0 0 3 0" ToolTip="Tiến 1 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronRight" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                        <Button x:Name="btnToNext5" Grid.Column="4" Click="btnToNext5_Click" Width="26" Height="26" ToolTip="Tiến 5 năm" Cursor="Hand" Background="#F1F5F9" BorderThickness="0">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                        <materialDesign:PackIcon Kind="ChevronDoubleRight" Width="16" Height="16" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </Grid>
+
+                                    <!-- Grid 12 Tháng -->
+                                    <UniformGrid x:Name="gridToMonths" Columns="3" Rows="4" Margin="0 0 0 8">
+                                        <Button Tag="1" Click="ToMonthButton_Click" Content="Tháng 01" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="2" Click="ToMonthButton_Click" Content="Tháng 02" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="3" Click="ToMonthButton_Click" Content="Tháng 03" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="4" Click="ToMonthButton_Click" Content="Tháng 04" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="5" Click="ToMonthButton_Click" Content="Tháng 05" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="6" Click="ToMonthButton_Click" Content="Tháng 06" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="7" Click="ToMonthButton_Click" Content="Tháng 07" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="8" Click="ToMonthButton_Click" Content="Tháng 08" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="9" Click="ToMonthButton_Click" Content="Tháng 09" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="10" Click="ToMonthButton_Click" Content="Tháng 10" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="11" Click="ToMonthButton_Click" Content="Tháng 11" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                        <Button Tag="12" Click="ToMonthButton_Click" Content="Tháng 12" Style="{StaticResource MonthPickerButtonStyle}"/>
+                                    </UniformGrid>
+
+                                    <!-- Footer: Phím tắt Tháng này & Xóa -->
+                                    <Border BorderBrush="#E2E8F0" BorderThickness="0 1 0 0" Padding="0 6 0 0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Click="btnToCurrentMonth_Click" Content="Tháng hiện tại" Height="28" 
+                                                    Background="#EFF6FF" BorderBrush="#BAE6FD" BorderThickness="1" 
+                                                    Foreground="#0284C7" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                            <Button Grid.Column="1" Click="btnToClear_Click" Content="Xóa" Height="28" Margin="6 0 0 0" Padding="12 0"
+                                                    Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" 
+                                                    Foreground="#64748B" FontSize="11.5" FontWeight="SemiBold" Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Row 2: Bộ phận công tác -->
+                <StackPanel Margin="0 0 0 16">
+                    <TextBlock Text="Bộ phận công tác" FontWeight="SemiBold" FontSize="13" Foreground="#334155" Margin="0 0 0 6"/>
+                    <ComboBox x:Name="cboDepartmentOrUnit" IsEditable="True" Height="42"
+                              Style="{StaticResource ModernEditableComboBox}"
+                              Tag="Chọn bộ phận có sẵn hoặc nhập tên đơn vị..."
+                              SelectionChanged="cboDepartmentOrUnit_SelectionChanged"
+                              LostFocus="cboDepartmentOrUnit_LostFocus"/>
+                    <TextBlock Text="* Danh mục phòng ban, tổ thuế của cơ quan hoặc tự nhập đơn vị công tác" 
+                               FontSize="11.5" Foreground="#94A3B8" FontStyle="Italic" Margin="2 5 0 0"/>
+                </StackPanel>
+
+                <!-- Row 3: Chức vụ, chức danh (*) -->
+                <StackPanel Margin="0 0 0 16">
+                    <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                        <TextBlock Text="Chức vụ, chức danh" FontWeight="SemiBold" FontSize="13" Foreground="#334155"/>
+                        <TextBlock Text=" (*)" FontWeight="Bold" FontSize="13" Foreground="#EF4444"/>
+                    </StackPanel>
+                    <ComboBox x:Name="cboPosition" IsEditable="True" Height="42"
+                              Style="{StaticResource ModernEditableComboBox}"
+                              Tag="Chọn chức vụ có sẵn hoặc nhập chức danh..."/>
+                    <TextBlock Text="* Danh mục chức vụ của cơ quan hoặc tự nhập chức vụ công tác" 
+                               FontSize="11.5" Foreground="#94A3B8" FontStyle="Italic" Margin="2 5 0 0"/>
+                </StackPanel>
+
+                <!-- Row 4: Ghi chú thêm -->
+                <StackPanel Margin="0 0 0 4">
+                    <TextBlock Text="Ghi chú thêm (nếu có)" FontWeight="SemiBold" FontSize="13" Foreground="#334155" Margin="0 0 0 6"/>
+                    <Border CornerRadius="8" Background="White" BorderThickness="1" BorderBrush="#CBD5E1" Height="68">
+                        <TextBox x:Name="txtNote" 
+                                 materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                 materialDesign:HintAssist.Hint="Thông tin quyết định bổ nhiệm, số quyết định hoặc thông tin bổ sung..."
+                                 BorderThickness="0" Background="Transparent"
+                                 VerticalContentAlignment="Top" Padding="12 8" AcceptsReturn="True"
+                                 FontSize="13" Foreground="#0F172A" TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- 3. Footer Actions -->
+            <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="0 1 0 0" CornerRadius="0 0 15 15" Padding="24 14">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <!-- Nút Hủy bỏ -->
+                        <Button Content="Hủy bỏ" Height="38" Padding="20 0" Margin="0 0 12 0"
+                                Click="btnCancel_Click" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bdr" Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <TextBlock Text="Hủy bỏ" FontWeight="SemiBold" FontSize="13" Foreground="#475569" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bdr" Property="Background" Value="#F1F5F9"/>
+                                            <Setter TargetName="bdr" Property="BorderBrush" Value="#94A3B8"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        
+                        <!-- Nút Lưu giai đoạn -->
+                        <Button x:Name="btnSave" Content="Lưu giai đoạn"
+                                Height="38" Padding="22 0"
+                                Click="btnSave_Click" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bdr" Background="#0284C7" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.18" Color="#0284C7"/>
+                                        </Border.Effect>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="CheckBold" Width="16" Height="16" Foreground="White" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                                            <ContentPresenter VerticalAlignment="Center" TextBlock.FontWeight="SemiBold" TextBlock.FontSize="13.5" TextBlock.Foreground="White"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bdr" Property="Background" Value="#0369A1"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="bdr" Property="Background" Value="#075985"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
