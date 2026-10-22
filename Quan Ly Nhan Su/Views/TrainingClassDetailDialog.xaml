@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Chi tiết lớp học / Hội nghị" Height="640" Width="840"
+        Title="Chi tiết lớp học / Hội nghị" Height="650" Width="980"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         FontFamily="{DynamicResource MaterialDesignFont}"
@@ -270,7 +270,7 @@
                         <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="50"/>
 
                         <!-- HỌ VÀ TÊN -->
-                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="2*" MinWidth="180">
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="1.8*" MinWidth="180">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10 3 0 3">
@@ -303,21 +303,22 @@
                         </DataGridTemplateColumn>
 
                         <!-- NGÀY SINH -->
-                        <DataGridTextColumn Header="NGÀY THÁNG NĂM SINH" Binding="{Binding DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="1.5*" MinWidth="140"/>
+                        <DataGridTextColumn Header="NGÀY THÁNG NĂM SINH" Binding="{Binding DateOfBirth, Converter={StaticResource DateFormatterConverter}}" Width="145"/>
 
                         <!-- BỘ PHẬN CÔNG TÁC -->
-                        <DataGridTemplateColumn Header="BỘ PHẬN CÔNG TÁC" Width="2*" MinWidth="180">
+                        <DataGridTemplateColumn Header="BỘ PHẬN CÔNG TÁC" Width="3*" MinWidth="280">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#E8EAF6" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold" Foreground="#3949AB"/>
+                                    <Border Background="#E8EAF6" CornerRadius="6" Padding="10 4" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="6 3">
+                                        <TextBlock Text="{Binding Department}" FontSize="13" FontWeight="SemiBold" Foreground="#3949AB"
+                                                   TextWrapping="Wrap" TextAlignment="Center" ToolTip="{Binding Department}"/>
                                     </Border>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
                         <!-- HÀNH ĐỘNG -->
-                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="110">
+                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="85">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Click="btnRemoveParticipant_Click" Tag="{Binding Id}"

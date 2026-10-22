@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Chọn cán bộ công chức" Height="630" Width="850"
+        Title="Chọn cán bộ công chức" Height="640" Width="950"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         FontFamily="{DynamicResource MaterialDesignFont}"
@@ -367,7 +367,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- SỐ CCCD (Cột 3) -->
-                        <DataGridTextColumn Header="SỐ CCCD" Binding="{Binding IdentityCardNumber}" Width="1.4*" MinWidth="130" IsReadOnly="True">
+                        <DataGridTextColumn Header="SỐ CCCD" Binding="{Binding IdentityCardNumber}" Width="140" IsReadOnly="True">
                             <DataGridTextColumn.HeaderStyle>
                                 <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                     <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -383,7 +383,7 @@
                         </DataGridTextColumn>
 
                         <!-- BỘ PHẬN CÔNG TÁC (Cột 4) -->
-                        <DataGridTemplateColumn Header="BỘ PHẬN CÔNG TÁC" Width="2.5*" MinWidth="220" IsReadOnly="True">
+                        <DataGridTemplateColumn Header="BỘ PHẬN CÔNG TÁC" Width="3*" MinWidth="260" IsReadOnly="True">
                             <DataGridTemplateColumn.HeaderStyle>
                                 <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                     <Setter Property="HorizontalContentAlignment" Value="Left"/>

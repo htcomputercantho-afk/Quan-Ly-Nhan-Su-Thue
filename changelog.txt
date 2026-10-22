@@ -17,6 +17,11 @@
     + Tích hợp bộ chọn Tháng/Năm trực quan với giao diện popup chọn nhanh tháng (1-12) và điều chỉnh năm linh hoạt cho các trường "Từ tháng/năm" và "Đến tháng/năm".
     + Kiểm soát chặt chẽ nhập liệu: Tự động chèn ký tự phân cách `/`, chặn nhập ký tự lạ, xác thực tháng hợp lệ (01-12) và năm hợp lệ.
     + Chuẩn hóa toàn bộ các giao diện thông báo xác nhận, cảnh báo lỗi và xác nhận xóa của Quá trình công tác theo phong cách Material Design.
+- [Sửa lỗi Hiển thị Chi tiết Lớp học & Chọn cán bộ]:
+    + Khắc phục triệt để lỗi bị mất chữ / cắt cụt chữ đối với các bộ phận có tên dài (như "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1/2..."):
+    + Mở rộng chiều rộng hộp thoại "Chi tiết lớp học / Hội nghị" từ 840px lên 980px và hộp thoại "Chọn cán bộ" lên 950px.
+    + Tối ưu lại phân bổ độ rộng các cột trong bảng: Cột "BỘ PHẬN CÔNG TÁC" được tăng độ rộng lên `Width="3*" MinWidth="280"` (chiếm hơn 400px hiển thị), cố định gọn gàng cột Ngày sinh (`145px`) và cột Hành động (`85px`).
+    + Kích hoạt chế độ tự động xuống dòng (`TextWrapping="Wrap"`) và bổ sung ToolTip hiển thị đầy đủ tên bộ phận, đảm bảo hiển thị trọn vẹn 100% nội dung chữ.
 
 ## v1.6.4.5 — 2026-10-19
 - [Tính năng mới] Bổ sung đầy đủ các trường Thông tin Đảng viên (Tab 4 - Thông tin Đảng viên):
