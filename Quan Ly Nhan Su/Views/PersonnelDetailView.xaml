@@ -942,7 +942,7 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <!-- Row 2: Detailed History (Giao diện Timeline / Danh sách chuyên nghiệp như hình 2) -->
+                                    <!-- Row 2: Detailed History (Giao diện Timeline / Danh sách các giai đoạn công tác) -->
                                     <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" 
                                             Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="16" Margin="0 5 0 0">
                                         <StackPanel>
@@ -1027,22 +1027,22 @@
                                                     </StackPanel>
                                                 </Border>
 
-                                                <!-- Nút + Thêm giai đoạn (Phong cách nút đen bo tròn như hình 2) -->
+                                                <!-- Nút + Thêm giai đoạn (Đồng bộ phong cách xanh chủ đạo) -->
                                                 <Button x:Name="btnAddWorkHistory" Grid.Column="2" 
-                                                        Height="36" Padding="16 0"
+                                                        Height="36" Padding="14 0"
                                                         Click="btnAddWorkHistory_Click"
                                                         Cursor="Hand" ToolTip="Thêm một giai đoạn công tác mới">
                                                     <Button.Template>
                                                         <ControlTemplate TargetType="Button">
-                                                            <Border x:Name="bdr" Background="#18181B" CornerRadius="18" Padding="16 0">
+                                                            <Border x:Name="bdr" Background="#0284C7" CornerRadius="6" Padding="14 0">
                                                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Border>
                                                             <ControlTemplate.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="bdr" Property="Background" Value="#334155"/>
+                                                                    <Setter TargetName="bdr" Property="Background" Value="#0369A1"/>
                                                                 </Trigger>
                                                                 <Trigger Property="IsPressed" Value="True">
-                                                                    <Setter TargetName="bdr" Property="Background" Value="#0F172A"/>
+                                                                    <Setter TargetName="bdr" Property="Background" Value="#075985"/>
                                                                 </Trigger>
                                                             </ControlTemplate.Triggers>
                                                         </ControlTemplate>
@@ -1102,22 +1102,36 @@
                                                         <DataGrid.ColumnHeaderStyle>
                                                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                                                 <Setter Property="Background" Value="#F8FAFC"/>
-                                                                <Setter Property="Foreground" Value="#64748B"/>
+                                                                <Setter Property="Foreground" Value="#334155"/>
                                                                 <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                <Setter Property="FontSize" Value="12"/>
-                                                                <Setter Property="Padding" Value="14 10"/>
+                                                                <Setter Property="FontSize" Value="13"/>
+                                                                <Setter Property="Padding" Value="0"/>
                                                                 <Setter Property="BorderThickness" Value="0 0 0 1"/>
                                                                 <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                                                                <Setter Property="ContentTemplate">
+                                                                    <Setter.Value>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" 
+                                                                                       Foreground="#334155" FontWeight="SemiBold" FontSize="13" 
+                                                                                       VerticalAlignment="Center" Margin="14 10"/>
+                                                                        </DataTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
                                                             </Style>
                                                         </DataGrid.ColumnHeaderStyle>
                                                         <DataGrid.Columns>
                                                             <!-- Thời gian -->
-                                                            <DataGridTemplateColumn Header="Thời gian" Width="140">
+                                                            <DataGridTemplateColumn Header="Thời gian" Width="160">
                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                     <DataTemplate>
                                                                         <StackPanel Margin="14 8" VerticalAlignment="Center">
-                                                                            <TextBlock Text="{Binding FromDateDisplay}" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
-                                                                            <TextBlock Text="{Binding ToDateDisplay}" FontSize="12" Foreground="#64748B" Margin="0 3 0 0"/>
+                                                                            <TextBlock FontSize="12.5" Foreground="#1E293B">
+                                                                                <Run Text="Từ: " Foreground="#64748B"/><Run Text="{Binding FromDateDisplay, Mode=OneWay}" FontWeight="Bold"/>
+                                                                            </TextBlock>
+                                                                            <TextBlock FontSize="12.5" Foreground="#1E293B" Margin="0 3 0 0">
+                                                                                <Run Text="Đến: " Foreground="#64748B"/><Run Text="{Binding ToDateCleanDisplay, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                                            </TextBlock>
                                                                         </StackPanel>
                                                                     </DataTemplate>
                                                                 </DataGridTemplateColumn.CellTemplate>
@@ -1128,15 +1142,51 @@
                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                     <DataTemplate>
                                                                         <StackPanel Margin="14 8" VerticalAlignment="Center">
-                                                                            <TextBlock Text="{Binding PositionDisplay}" FontWeight="Bold" FontSize="13.5" Foreground="#0F172A" TextWrapping="Wrap"/>
+                                                                            <WrapPanel Orientation="Horizontal">
+                                                                                <TextBlock Text="{Binding PositionDisplay}" FontWeight="Bold" FontSize="13.5" Foreground="#0F172A" TextWrapping="Wrap"/>
+                                                                                <Border Visibility="{Binding PartyBadgeVisibility}" Background="#FEF2F2" BorderBrush="#FECACA" BorderThickness="1" 
+                                                                                        CornerRadius="4" Padding="6 2" Margin="8 0 0 0" VerticalAlignment="Center">
+                                                                                    <StackPanel Orientation="Horizontal">
+                                                                                        <materialDesign:PackIcon Kind="Star" Width="12" Height="12" Foreground="#DC2626" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                                                                        <TextBlock Text="{Binding PartyPositionDisplay}" FontSize="11" FontWeight="SemiBold" Foreground="#DC2626"/>
+                                                                                    </StackPanel>
+                                                                                </Border>
+                                                                            </WrapPanel>
                                                                             <TextBlock Text="{Binding UnitDisplay}" FontSize="12.5" Foreground="#64748B" TextWrapping="Wrap" Margin="0 3 0 0"/>
+                                                                            <!-- Ghi chú / Quyết định nếu có -->
+                                                                            <Border Visibility="{Binding NoteVisibility}" Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1" 
+                                                                                    CornerRadius="4" Padding="8 3" Margin="0 5 0 0" HorizontalAlignment="Left">
+                                                                                <StackPanel Orientation="Horizontal">
+                                                                                    <materialDesign:PackIcon Kind="InformationOutline" Width="13" Height="13" Foreground="#0284C7" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                                                                                    <TextBlock Text="{Binding NoteDisplay}" FontSize="11.5" Foreground="#475569" FontStyle="Italic" TextWrapping="Wrap"/>
+                                                                                </StackPanel>
+                                                                            </Border>
                                                                         </StackPanel>
                                                                     </DataTemplate>
                                                                 </DataGridTemplateColumn.CellTemplate>
                                                             </DataGridTemplateColumn>
 
                                                             <!-- Thao tác -->
-                                                            <DataGridTemplateColumn Header="Thao tác" Width="100">
+                                                            <DataGridTemplateColumn Header="Thao tác" Width="95">
+                                                                <DataGridTemplateColumn.HeaderStyle>
+                                                                    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                                                        <Setter Property="Background" Value="#F8FAFC"/>
+                                                                        <Setter Property="BorderThickness" Value="0 0 0 1"/>
+                                                                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                                                                        <Setter Property="Padding" Value="0"/>
+                                                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                                                        <Setter Property="ContentTemplate">
+                                                                            <Setter.Value>
+                                                                                <DataTemplate>
+                                                                                    <TextBlock Text="{Binding}" FontFamily="{StaticResource AppHeadingFont}" 
+                                                                                               Foreground="#334155" FontWeight="SemiBold" FontSize="13" 
+                                                                                               HorizontalAlignment="Center" TextAlignment="Center"
+                                                                                               VerticalAlignment="Center" Margin="6 10"/>
+                                                                                </DataTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </DataGridTemplateColumn.HeaderStyle>
                                                                 <DataGridTemplateColumn.CellTemplate>
                                                                     <DataTemplate>
                                                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">

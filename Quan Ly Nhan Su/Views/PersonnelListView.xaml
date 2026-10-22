@@ -125,225 +125,176 @@
         <!-- Top Section (Card bao phần header + KPIs + toolbar) -->
         <materialDesign:Card Grid.Row="0" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10">
             <StackPanel x:Name="spTopContent" Margin="15 18 15 10">
-                <!-- Dashboard / KPIs -->
-                <WrapPanel x:Name="wpKPIRow" Margin="0 0 0 10">
-                    <!-- Filter Section -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0 0 20 15">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 15 0">
-                            <materialDesign:PackIcon Kind="Domain" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <ComboBox x:Name="cbDepartmentFilter" 
-                                      MinWidth="200" MaxWidth="300"
-                                      Height="40"
-                                      materialDesign:HintAssist.Hint="Lọc theo bộ phận"
-                                      Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                      Background="White"
-                                      VerticalContentAlignment="Center"
-                                      Padding="10 0"
-                                      FontSize="14"
-                                      Foreground="#455A64"
-                                      SelectionChanged="cbDepartmentFilter_SelectionChanged">
-                                <ComboBox.ItemContainerStyle>
-                                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                        <Setter Property="Padding" Value="10"/>
-                                        <Setter Property="MinHeight" Value="35"/>
-                                    </Style>
-                                </ComboBox.ItemContainerStyle>
-                            </ComboBox>
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="AccountClockOutline" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <ComboBox x:Name="cbStatusFilter" 
-                                      MinWidth="180" MaxWidth="250"
-                                      Height="40"
-                                      materialDesign:HintAssist.Hint="Trạng thái công tác"
-                                      Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                      Background="White"
-                                      VerticalContentAlignment="Center"
-                                      Padding="10 0"
-                                      FontSize="14"
-                                      Foreground="#455A64"
-                                      SelectionChanged="cbStatusFilter_SelectionChanged">
-                                <ComboBox.ItemContainerStyle>
-                                    <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                        <Setter Property="Padding" Value="10"/>
-                                        <Setter Property="MinHeight" Value="35"/>
-                                    </Style>
-                                </ComboBox.ItemContainerStyle>
-                                <ComboBoxItem Content="Tất cả trạng thái"/>
-                                <ComboBoxItem Content="Đang công tác" IsSelected="True"/>
-                                <ComboBoxItem Content="Luân chuyển / Điều động"/>
-                                <ComboBoxItem Content="Nghỉ việc"/>
-                                <ComboBoxItem Content="Nghỉ hưu"/>
-                            </ComboBox>
-                        </StackPanel>
+                <!-- Filter Section -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 12">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 15 0">
+                        <materialDesign:PackIcon Kind="Domain" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <ComboBox x:Name="cbDepartmentFilter" 
+                                  MinWidth="200" MaxWidth="300"
+                                  Height="40"
+                                  materialDesign:HintAssist.Hint="Lọc theo bộ phận"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White"
+                                  VerticalContentAlignment="Center"
+                                  Padding="10 0"
+                                  FontSize="14"
+                                  Foreground="#455A64"
+                                  SelectionChanged="cbDepartmentFilter_SelectionChanged">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                    <Setter Property="Padding" Value="10"/>
+                                    <Setter Property="MinHeight" Value="35"/>
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
                     </StackPanel>
 
-                    <!-- KPIs Section -->
-                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                        <!-- Card 1: Total -->
-                        <materialDesign:Card x:Name="cardTotal" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#0078D4" Offset="0.0"/>
-                                        <GradientStop Color="#00B7C3" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon x:Name="iconTotal" Kind="AccountGroup" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblTotal" Text="TỔNG NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtTotalCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                            <materialDesign:Card.Style>
-                                <Style TargetType="materialDesign:Card">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                            <Setter Property="Height" Value="65"/>
-                                            <Setter Property="Width" Value="200"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AccountClockOutline" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <ComboBox x:Name="cbStatusFilter" 
+                                  MinWidth="180" MaxWidth="250"
+                                  Height="40"
+                                  materialDesign:HintAssist.Hint="Trạng thái công tác"
+                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
+                                  Background="White"
+                                  VerticalContentAlignment="Center"
+                                  Padding="10 0"
+                                  FontSize="14"
+                                  Foreground="#455A64"
+                                  SelectionChanged="cbStatusFilter_SelectionChanged">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                    <Setter Property="Padding" Value="10"/>
+                                    <Setter Property="MinHeight" Value="35"/>
                                 </Style>
-                            </materialDesign:Card.Style>
-                        </materialDesign:Card>
+                            </ComboBox.ItemContainerStyle>
+                            <ComboBoxItem Content="Tất cả trạng thái"/>
+                            <ComboBoxItem Content="Đang công tác" IsSelected="True"/>
+                            <ComboBoxItem Content="Luân chuyển / Điều động"/>
+                            <ComboBoxItem Content="Nghỉ việc"/>
+                            <ComboBoxItem Content="Nghỉ hưu"/>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
 
-                        <!-- Card 2: Maternity -->
-                        <materialDesign:Card x:Name="cardMaternity" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardMaternity_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#FF8C00" Offset="0.0"/>
-                                        <GradientStop Color="#FFC107" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon x:Name="iconMaternity" Kind="BabyCarriage" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblMaternity" Text="NGHỈ THAI SẢN" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                            <materialDesign:Card.Style>
-                                <Style TargetType="materialDesign:Card">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                            <Setter Property="Height" Value="65"/>
-                                            <Setter Property="Width" Value="200"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </materialDesign:Card.Style>
-                        </materialDesign:Card>
+                <!-- KPIs Section (6 Cards căn đều trên cùng 1 hàng) -->
+                <Grid x:Name="wpKPIRow" Margin="0 0 0 10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                        <!-- Card 3: Sick -->
-                        <materialDesign:Card x:Name="cardSick" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSick_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#D32F2F" Offset="0.0"/>
-                                        <GradientStop Color="#EF5350" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon x:Name="iconSick" Kind="MedicalBag" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblSick" Text="NGHỈ ỐM" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtSickCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                            <materialDesign:Card.Style>
-                                <Style TargetType="materialDesign:Card">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                            <Setter Property="Height" Value="65"/>
-                                            <Setter Property="Width" Value="200"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </materialDesign:Card.Style>
-                        </materialDesign:Card>
+                    <!-- Card 1: Total -->
+                    <materialDesign:Card Grid.Column="0" x:Name="cardTotal" Height="95" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardTotal_Click">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#0078D4" Offset="0.0"/>
+                                    <GradientStop Color="#00B7C3" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconTotal" Kind="AccountGroup" Width="26" Height="26" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 4"/>
+                                <TextBlock x:Name="lblTotal" Text="TỔNG NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtTotalCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
 
-                        <!-- Card 4: Leave -->
-                        <materialDesign:Card x:Name="cardLeave" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardLeave_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#2E7D32" Offset="0.0"/>
-                                        <GradientStop Color="#4CAF50" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon x:Name="iconLeave" Kind="CalendarClock" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblLeave" Text="NGHỈ PHÉP" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtLeaveCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                            <materialDesign:Card.Style>
-                                <Style TargetType="materialDesign:Card">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                            <Setter Property="Height" Value="65"/>
-                                            <Setter Property="Width" Value="200"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </materialDesign:Card.Style>
-                        </materialDesign:Card>
+                    <!-- Card 2: Maternity -->
+                    <materialDesign:Card Grid.Column="2" x:Name="cardMaternity" Height="95" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardMaternity_Click">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF8C00" Offset="0.0"/>
+                                    <GradientStop Color="#FFC107" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconMaternity" Kind="BabyCarriage" Width="26" Height="26" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 4"/>
+                                <TextBlock x:Name="lblMaternity" Text="NGHỈ THAI SẢN" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtMaternityCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
 
-                        <!-- Card 5: Convalescence / Dưỡng sức -->
-                        <materialDesign:Card x:Name="cardConvalescence" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardConvalescence_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#7B1FA2" Offset="0.0"/>
-                                        <GradientStop Color="#AB47BC" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon x:Name="iconConvalescence" Kind="HeartPulse" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblConvalescence" Text="NGHỈ DƯỠNG SỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtConvalescenceCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                            <materialDesign:Card.Style>
-                                <Style TargetType="materialDesign:Card">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                            <Setter Property="Height" Value="65"/>
-                                            <Setter Property="Width" Value="200"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </materialDesign:Card.Style>
-                        </materialDesign:Card>
+                    <!-- Card 3: Sick -->
+                    <materialDesign:Card Grid.Column="4" x:Name="cardSick" Height="95" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardSick_Click">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#D32F2F" Offset="0.0"/>
+                                    <GradientStop Color="#EF5350" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconSick" Kind="MedicalBag" Width="26" Height="26" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 4"/>
+                                <TextBlock x:Name="lblSick" Text="NGHỈ ỐM" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtSickCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
 
-                        <!-- Card 6: Unpaid Leave / Nghỉ không lương -->
-                        <materialDesign:Card x:Name="cardUnpaidLeave" MinWidth="220" MaxWidth="300" Width="260" Height="100" Margin="0 0 15 15" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardUnpaidLeave_Click">
-                            <Grid>
-                                <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Color="#455A64" Offset="0.0"/>
-                                        <GradientStop Color="#607D8B" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Grid.Background>
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <materialDesign:PackIcon x:Name="iconUnpaidLeave" Kind="CashOff" Width="30" Height="30" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                                    <TextBlock x:Name="lblUnpaidLeave" Text="NGHỈ KHÔNG LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9"/>
-                                    <TextBlock x:Name="txtUnpaidLeaveCount" Text="0" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Grid>
-                            <materialDesign:Card.Style>
-                                <Style TargetType="materialDesign:Card">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsCompact, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True">
-                                            <Setter Property="Height" Value="65"/>
-                                            <Setter Property="Width" Value="200"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </materialDesign:Card.Style>
-                        </materialDesign:Card>
-                    </WrapPanel>
-                </WrapPanel>
+                    <!-- Card 4: Leave -->
+                    <materialDesign:Card Grid.Column="6" x:Name="cardLeave" Height="95" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardLeave_Click">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#2E7D32" Offset="0.0"/>
+                                    <GradientStop Color="#4CAF50" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconLeave" Kind="CalendarClock" Width="26" Height="26" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 4"/>
+                                <TextBlock x:Name="lblLeave" Text="NGHỈ PHÉP" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtLeaveCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Card 5: Convalescence / Dưỡng sức -->
+                    <materialDesign:Card Grid.Column="8" x:Name="cardConvalescence" Height="95" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardConvalescence_Click">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#7B1FA2" Offset="0.0"/>
+                                    <GradientStop Color="#AB47BC" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconConvalescence" Kind="HeartPulse" Width="26" Height="26" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 4"/>
+                                <TextBlock x:Name="lblConvalescence" Text="NGHỈ DƯỠNG SỨC" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtConvalescenceCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- Card 6: Unpaid Leave / Nghỉ không lương -->
+                    <materialDesign:Card Grid.Column="10" x:Name="cardUnpaidLeave" Height="95" UniformCornerRadius="12" materialDesign:ElevationAssist.Elevation="Dp3" Cursor="Hand" MouseLeftButtonUp="cardUnpaidLeave_Click">
+                        <Grid>
+                            <Grid.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#455A64" Offset="0.0"/>
+                                    <GradientStop Color="#607D8B" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Grid.Background>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon x:Name="iconUnpaidLeave" Kind="CashOff" Width="26" Height="26" Foreground="White" HorizontalAlignment="Center" Margin="0 0 0 4"/>
+                                <TextBlock x:Name="lblUnpaidLeave" Text="NGHỈ KHÔNG LƯƠNG" FontFamily="{StaticResource AppHeadingFont}" FontSize="12" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" Opacity="0.9" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="txtUnpaidLeaveCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
 
                 <!-- Actions Bar & Title -->
                 <WrapPanel x:Name="wpToolbarRow" Orientation="Horizontal" Margin="0 10 0 10">

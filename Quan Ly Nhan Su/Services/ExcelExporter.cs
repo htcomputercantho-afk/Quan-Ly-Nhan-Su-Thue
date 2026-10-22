@@ -113,9 +113,22 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 19).Value = CalcWorkingYears(p, now);
                     worksheet.Cell(row, 20).Value = p.PositionDecisionDate.HasValue ? DatePickerHelper.FormatDateForDisplay(p.PositionDecisionDate.Value) : "";
 
-                    // 1. Chuyên môn (Hiển thị nhiều dòng trong cùng 1 ô nếu có nhiều bằng)
-                    var cmList = allDegrees.Where(d => d.DegreeType == "Chuyên môn")
-                                           .OrderByDescending(d => d.IsPrimary)
+                    int ParseGradYear(PersonnelDegree deg)
+                    {
+                        if (!string.IsNullOrWhiteSpace(deg.GraduationYear))
+                        {
+                            var m = System.Text.RegularExpressions.Regex.Match(deg.GraduationYear, @"\b(19\d\d|20\d\d)\b");
+                            if (m.Success && int.TryParse(m.Value, out int yr)) return yr;
+                        }
+                        if (deg.IssueDate.HasValue && deg.IssueDate.Value.Year >= 1900) return deg.IssueDate.Value.Year;
+                        return 0;
+                    }
+
+                    // 1. Chuyên môn (Hiển thị nhiều dòng trong cùng 1 ô nếu có nhiều bằng - sắp xếp từ gần nhất đến xa nhất)
+                    var cmList = allDegrees.Where(d => d.DegreeType != null && d.DegreeType.Trim().Equals("Chuyên môn", StringComparison.OrdinalIgnoreCase))
+                                           .OrderByDescending(d => ParseGradYear(d))
+                                           .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                                           .ThenByDescending(d => d.IsPrimary)
                                            .ThenBy(d => d.Id)
                                            .ToList();
                     string trinhDoCM = cmList.Any()
@@ -134,36 +147,44 @@ namespace TaxPersonnelManagement.Services
                     worksheet.Cell(row, 22).Value = chuyenNganh;
                     worksheet.Cell(row, 23).Value = truongDaoTao;
 
-                    // 2. Lý luận chính trị (Nhiều dòng nếu có nhiều bằng)
-                    var polList = allDegrees.Where(d => d.DegreeType == "Lý luận chính trị")
-                                            .OrderByDescending(d => d.IsPrimary)
+                    // 2. Lý luận chính trị (Nhiều dòng nếu có nhiều bằng - sắp xếp từ gần nhất đến xa nhất)
+                    var polList = allDegrees.Where(d => d.DegreeType != null && d.DegreeType.Trim().Equals("Lý luận chính trị", StringComparison.OrdinalIgnoreCase))
+                                            .OrderByDescending(d => ParseGradYear(d))
+                                            .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                                            .ThenByDescending(d => d.IsPrimary)
                                             .ThenBy(d => d.Id)
                                             .ToList();
                     worksheet.Cell(row, 24).Value = polList.Any()
                         ? string.Join("\n", polList.Select(d => d.DegreeName))
                         : (p.PoliticalTheoryLevel ?? "");
 
-                    // 3. Quản lý Nhà nước (Nhiều dòng nếu có nhiều bằng)
-                    var stateList = allDegrees.Where(d => d.DegreeType == "Quản lý Nhà nước")
-                                              .OrderByDescending(d => d.IsPrimary)
+                    // 3. Quản lý Nhà nước (Nhiều dòng nếu có nhiều bằng - sắp xếp từ gần nhất đến xa nhất)
+                    var stateList = allDegrees.Where(d => d.DegreeType != null && d.DegreeType.Trim().Equals("Quản lý Nhà nước", StringComparison.OrdinalIgnoreCase))
+                                              .OrderByDescending(d => ParseGradYear(d))
+                                              .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                                              .ThenByDescending(d => d.IsPrimary)
                                               .ThenBy(d => d.Id)
                                               .ToList();
                     worksheet.Cell(row, 25).Value = stateList.Any()
                         ? string.Join("\n", stateList.Select(d => d.DegreeName))
                         : (p.StateManagementLevel ?? "");
 
-                    // 4. Ngoại ngữ (Nhiều dòng nếu có nhiều bằng, ví dụ: A, B, C...)
-                    var langList = allDegrees.Where(d => d.DegreeType == "Ngoại ngữ")
-                                             .OrderByDescending(d => d.IsPrimary)
+                    // 4. Ngoại ngữ (Nhiều dòng nếu có nhiều bằng, ví dụ: A, B, C... - sắp xếp từ gần nhất đến xa nhất)
+                    var langList = allDegrees.Where(d => d.DegreeType != null && d.DegreeType.Trim().Equals("Ngoại ngữ", StringComparison.OrdinalIgnoreCase))
+                                             .OrderByDescending(d => ParseGradYear(d))
+                                             .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                                             .ThenByDescending(d => d.IsPrimary)
                                              .ThenBy(d => d.Id)
                                              .ToList();
                     worksheet.Cell(row, 26).Value = langList.Any()
                         ? string.Join("\n", langList.Select(d => d.DegreeName))
                         : (p.LanguageSkillLevel ?? "");
 
-                    // 5. Tin học (Nhiều dòng nếu có nhiều bằng, ví dụ: A, B, C...)
-                    var itList = allDegrees.Where(d => d.DegreeType == "Tin học")
-                                           .OrderByDescending(d => d.IsPrimary)
+                    // 5. Tin học (Nhiều dòng nếu có nhiều bằng, ví dụ: A, B, C... - sắp xếp từ gần nhất đến xa nhất)
+                    var itList = allDegrees.Where(d => d.DegreeType != null && d.DegreeType.Trim().Equals("Tin học", StringComparison.OrdinalIgnoreCase))
+                                           .OrderByDescending(d => ParseGradYear(d))
+                                           .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                                           .ThenByDescending(d => d.IsPrimary)
                                            .ThenBy(d => d.Id)
                                            .ToList();
                     worksheet.Cell(row, 27).Value = itList.Any()

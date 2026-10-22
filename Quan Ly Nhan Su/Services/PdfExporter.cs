@@ -151,6 +151,48 @@ namespace TaxPersonnelManagement.Services
             });
         }
 
+        private static int ParseGraduationYear(string? yearStr, DateTime? issueDate = null)
+        {
+            if (!string.IsNullOrWhiteSpace(yearStr))
+            {
+                string s = yearStr.Trim();
+                if (int.TryParse(s, out int exactYear) && exactYear >= 1900 && exactYear <= 2100)
+                {
+                    return exactYear;
+                }
+
+                var match = System.Text.RegularExpressions.Regex.Match(s, @"\b(19\d\d|20\d\d)\b");
+                if (match.Success && int.TryParse(match.Value, out int regexYear))
+                {
+                    return regexYear;
+                }
+            }
+
+            if (issueDate.HasValue && issueDate.Value.Year >= 1900 && issueDate.Value.Year <= 2100)
+            {
+                return issueDate.Value.Year;
+            }
+
+            return 0;
+        }
+
+        private static string SortCommaSeparatedFallback(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "---";
+            if (!text.Contains(",")) return text.Trim();
+
+            var parts = text.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => x.Trim())
+                            .Where(x => !string.IsNullOrEmpty(x))
+                            .OrderByDescending(x =>
+                            {
+                                var m = System.Text.RegularExpressions.Regex.Match(x, @"\b(19\d\d|20\d\d)\b");
+                                return m.Success && int.TryParse(m.Value, out int yr) ? yr : 0;
+                            });
+
+            return string.Join(", ", parts);
+        }
+
         static void ComposeEducation(ColumnDescriptor column, Personnel p)
         {
             var degs = p.PersonnelDegrees != null && p.PersonnelDegrees.Any()
@@ -167,34 +209,40 @@ namespace TaxPersonnelManagement.Services
                 catch { }
             }
 
+            // Sắp xếp văn bằng theo năm cấp / tốt nghiệp từ gần nhất đến xa nhất (giảm dần theo năm)
+            List<PersonnelDegree> GetSortedDegrees(string type)
+            {
+                if (degs == null) return new List<PersonnelDegree>();
+                return degs.Where(d => d.DegreeType != null && d.DegreeType.Trim().Equals(type, StringComparison.OrdinalIgnoreCase))
+                           .OrderByDescending(d => ParseGraduationYear(d.GraduationYear, d.IssueDate))
+                           .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                           .ThenByDescending(d => d.IsPrimary)
+                           .ThenBy(d => d.Id)
+                           .ToList();
+            }
+
             string GetDegString(string type, string? fallback)
             {
-                if (degs != null)
+                var list = GetSortedDegrees(type);
+                if (list.Any())
                 {
-                    var list = degs.Where(d => d.DegreeType == type).OrderByDescending(d => d.IsPrimary).ThenBy(d => d.Id).ToList();
-                    if (list.Any())
-                    {
-                        return string.Join(", ", list.Select(d => !string.IsNullOrWhiteSpace(d.GraduationYear) ? $"{d.DegreeName} ({d.GraduationYear})" : d.DegreeName));
-                    }
+                    return string.Join(", ", list.Select(d => !string.IsNullOrWhiteSpace(d.GraduationYear) ? $"{d.DegreeName} ({d.GraduationYear})" : d.DegreeName));
                 }
-                return fallback ?? "---";
+                return SortCommaSeparatedFallback(fallback);
             }
 
             string GetMajorInstString()
             {
-                if (degs != null)
+                var list = GetSortedDegrees("Chuyên môn");
+                if (list.Any())
                 {
-                    var list = degs.Where(d => d.DegreeType == "Chuyên môn").OrderByDescending(d => d.IsPrimary).ThenBy(d => d.Id).ToList();
-                    if (list.Any())
+                    var parts = list.Select(d =>
                     {
-                        var parts = list.Select(d =>
-                        {
-                            var s = d.Major ?? "";
-                            if (!string.IsNullOrWhiteSpace(d.Institution)) s += string.IsNullOrWhiteSpace(s) ? d.Institution : $" ({d.Institution})";
-                            return s;
-                        }).Where(x => !string.IsNullOrWhiteSpace(x));
-                        if (parts.Any()) return string.Join(", ", parts);
-                    }
+                        var s = d.Major ?? "";
+                        if (!string.IsNullOrWhiteSpace(d.Institution)) s += string.IsNullOrWhiteSpace(s) ? d.Institution : $" ({d.Institution})";
+                        return s;
+                    }).Where(x => !string.IsNullOrWhiteSpace(x));
+                    if (parts.Any()) return string.Join(", ", parts);
                 }
                 var def = $"{p.Major} - {p.University}".Trim(' ', '-');
                 return string.IsNullOrWhiteSpace(def) ? "---" : def;
@@ -218,7 +266,15 @@ namespace TaxPersonnelManagement.Services
 
             if (degs != null)
             {
-                var others = degs.Where(d => d.DegreeType == "Chứng chỉ khác" || (!new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Contains(d.DegreeType))).ToList();
+                var others = degs.Where(d => d.DegreeType != null &&
+                    (d.DegreeType.Trim().Equals("Chứng chỉ khác", StringComparison.OrdinalIgnoreCase) ||
+                     !new[] { "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị" }.Any(known => known.Equals(d.DegreeType.Trim(), StringComparison.OrdinalIgnoreCase))))
+                    .OrderByDescending(d => ParseGraduationYear(d.GraduationYear, d.IssueDate))
+                    .ThenByDescending(d => d.IssueDate ?? DateTime.MinValue)
+                    .ThenByDescending(d => d.IsPrimary)
+                    .ThenBy(d => d.Id)
+                    .ToList();
+
                 if (others.Any())
                 {
                     string otherStr = string.Join(", ", others.Select(d =>

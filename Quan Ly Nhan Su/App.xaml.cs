@@ -537,12 +537,54 @@ namespace TaxPersonnelManagement
                             FromDate TEXT,
                             ToDate TEXT,
                             Position TEXT NOT NULL,
+                            Department TEXT,
+                            OrganizationUnit TEXT,
                             DepartmentOrUnit TEXT,
                             Note TEXT,
                             OrderIndex INTEGER DEFAULT 0,
                             FOREIGN KEY (PersonnelId) REFERENCES Personnel(Id) ON DELETE CASCADE
                         );");
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE WorkHistoryRecords ADD COLUMN Department TEXT;"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE WorkHistoryRecords ADD COLUMN OrganizationUnit TEXT;"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE WorkHistoryRecords ADD COLUMN IsPartyConcurrent INTEGER DEFAULT 0;"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE WorkHistoryRecords ADD COLUMN PartyPosition TEXT;"); } catch { }
                     try { context.Database.ExecuteSqlRaw("CREATE INDEX IF NOT EXISTS IX_WorkHistoryRecords_PersonnelId ON WorkHistoryRecords (PersonnelId);"); } catch { }
+
+                    // Tự động phân tách Department và OrganizationUnit từ DepartmentOrUnit cho dữ liệu cũ nếu chưa có
+                    try
+                    {
+                        var unmigratedWh = context.WorkHistoryRecords
+                            .Where(w => string.IsNullOrEmpty(w.Department) && !string.IsNullOrEmpty(w.DepartmentOrUnit))
+                            .ToList();
+                        if (unmigratedWh.Any())
+                        {
+                            foreach (var w in unmigratedWh)
+                            {
+                                string text = w.DepartmentOrUnit!.Trim();
+                                int cIdx = text.IndexOf(',');
+                                if (cIdx >= 0)
+                                {
+                                    w.Department = text.Substring(0, cIdx).Trim();
+                                    w.OrganizationUnit = text.Substring(cIdx + 1).Trim();
+                                }
+                                else
+                                {
+                                    w.Department = text;
+                                }
+                            }
+                            context.SaveChanges();
+                        }
+                    }
+                    catch { }
+
+                    // Manual Migration for WorkHistorySuggestions (Danh mục gợi ý quá trình công tác độc lập)
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS WorkHistorySuggestions (
+                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            Category TEXT NOT NULL,
+                            Name TEXT NOT NULL
+                        );");
+                    try { context.Database.ExecuteSqlRaw("CREATE UNIQUE INDEX IF NOT EXISTS IX_WorkHistorySuggestions_Cat_Name ON WorkHistorySuggestions (Category, Name);"); } catch { }
 
                     // Khởi tạo các nhiệm kỳ quy hoạch mặc định nếu bảng trống
                     if (!context.PlanningTerms.Any())

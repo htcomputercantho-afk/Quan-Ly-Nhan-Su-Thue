@@ -10,6 +10,7 @@ using TaxPersonnelManagement.Data;
 using Microsoft.EntityFrameworkCore;
 using ClosedXML.Excel;
 using Microsoft.Win32;
+using System.Windows.Input;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -89,6 +90,42 @@ namespace TaxPersonnelManagement.Views
         {
             if (!_isInitialized) return;
             LoadStatistics();
+        }
+
+        // Chuyển tiếp sự kiện cuộn chuột lên ScrollViewer cha khi con trỏ nằm trên bảng
+        private void InnerScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                // Giữ phím Shift + lăn chuột để cuộn ngang bảng
+                if (sender is ScrollViewer sv)
+                {
+                    if (e.Delta > 0) sv.LineLeft();
+                    else sv.LineRight();
+                    e.Handled = true;
+                }
+                return;
+            }
+
+            // Chuyển tiếp sự kiện cuộn dọc lên ScrollViewer chính của trang
+            if (!e.Handled)
+            {
+                e.Handled = true;
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                {
+                    RoutedEvent = UIElement.MouseWheelEvent,
+                    Source = sender
+                };
+                var parent = ((FrameworkElement)sender).Parent as UIElement;
+                if (parent != null)
+                {
+                    parent.RaiseEvent(eventArg);
+                }
+                else if (mainScrollViewer != null)
+                {
+                    mainScrollViewer.ScrollToVerticalOffset(mainScrollViewer.VerticalOffset - (e.Delta / 3.0));
+                }
+            }
         }
 
 

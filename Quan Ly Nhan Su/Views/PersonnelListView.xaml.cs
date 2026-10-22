@@ -61,7 +61,7 @@ namespace TaxPersonnelManagement.Views
                 // Responsive: kiểm tra ngay khi load và mỗi khi resize
                 this.Loaded += (s, e) =>
                 {
-                    IsCompact = this.ActualWidth < 1400;
+                    IsCompact = this.ActualWidth < 1200;
                     ApplyCompactMode();
                     if (TargetPersonnelId.HasValue)
                     {
@@ -71,7 +71,7 @@ namespace TaxPersonnelManagement.Views
                         }), System.Windows.Threading.DispatcherPriority.Loaded);
                     }
                 };
-                this.SizeChanged += (s, e) => { IsCompact = e.NewSize.Width < 1400; ApplyCompactMode(); };
+                this.SizeChanged += (s, e) => { IsCompact = e.NewSize.Width < 1200; ApplyCompactMode(); };
                 _isInitializing = false;
             }
             catch (Exception ex)
@@ -110,17 +110,40 @@ namespace TaxPersonnelManagement.Views
             // ── Subtitle: Thu nhỏ thay vì ẩn hoàn toàn nếu user muốn thấy "Tiêu đề"
             txtSubtitle.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
 
-            // ── KPI Cards: height + width ───────────────────────
-            double cardH = c ? 54 : 100;
-            double cardW = c ? 160 : 260;
-            double cardMinW = c ? 140 : 220;
+            // ── KPI Cards: height + auto width ──────────────────
+            double cardH = c ? 56 : 95;
 
-            cardTotal.Height = cardH; cardTotal.Width = cardW; cardTotal.MinWidth = cardMinW;
-            cardMaternity.Height = cardH; cardMaternity.Width = cardW; cardMaternity.MinWidth = cardMinW;
-            cardSick.Height = cardH; cardSick.Width = cardW; cardSick.MinWidth = cardMinW;
-            cardLeave.Height = cardH; cardLeave.Width = cardW; cardLeave.MinWidth = cardMinW;
-            cardConvalescence.Height = cardH; cardConvalescence.Width = cardW; cardConvalescence.MinWidth = cardMinW;
-            cardUnpaidLeave.Height = cardH; cardUnpaidLeave.Width = cardW; cardUnpaidLeave.MinWidth = cardMinW;
+            cardTotal.Height = cardH;
+            cardMaternity.Height = cardH;
+            cardSick.Height = cardH;
+            cardLeave.Height = cardH;
+            cardConvalescence.Height = cardH;
+            cardUnpaidLeave.Height = cardH;
+
+            // Xóa fixed Width / MinWidth để Grid tự co giãn đều 6 thẻ trên cùng 1 hàng
+            cardTotal.ClearValue(FrameworkElement.WidthProperty);
+            cardTotal.ClearValue(FrameworkElement.MinWidthProperty);
+            cardTotal.ClearValue(FrameworkElement.MaxWidthProperty);
+
+            cardMaternity.ClearValue(FrameworkElement.WidthProperty);
+            cardMaternity.ClearValue(FrameworkElement.MinWidthProperty);
+            cardMaternity.ClearValue(FrameworkElement.MaxWidthProperty);
+
+            cardSick.ClearValue(FrameworkElement.WidthProperty);
+            cardSick.ClearValue(FrameworkElement.MinWidthProperty);
+            cardSick.ClearValue(FrameworkElement.MaxWidthProperty);
+
+            cardLeave.ClearValue(FrameworkElement.WidthProperty);
+            cardLeave.ClearValue(FrameworkElement.MinWidthProperty);
+            cardLeave.ClearValue(FrameworkElement.MaxWidthProperty);
+
+            cardConvalescence.ClearValue(FrameworkElement.WidthProperty);
+            cardConvalescence.ClearValue(FrameworkElement.MinWidthProperty);
+            cardConvalescence.ClearValue(FrameworkElement.MaxWidthProperty);
+
+            cardUnpaidLeave.ClearValue(FrameworkElement.WidthProperty);
+            cardUnpaidLeave.ClearValue(FrameworkElement.MinWidthProperty);
+            cardUnpaidLeave.ClearValue(FrameworkElement.MaxWidthProperty);
 
             // ── Ẩn/hiện icon bên trong card ────────────────────
             if (iconTotal != null) iconTotal.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
@@ -131,8 +154,8 @@ namespace TaxPersonnelManagement.Views
             if (iconUnpaidLeave != null) iconUnpaidLeave.Visibility = c ? Visibility.Collapsed : Visibility.Visible;
 
             // ── Thu nhỏ font chữ số và label ───────────────────
-            double numFont = c ? 18 : 26;
-            double lblFont = c ? 10 : 13;
+            double numFont = c ? 18 : 24;
+            double lblFont = c ? 10 : 12;
             if (txtTotalCount != null) txtTotalCount.FontSize = numFont;
             if (lblTotal != null) lblTotal.FontSize = lblFont;
             if (txtMaternityCount != null) txtMaternityCount.FontSize = numFont;

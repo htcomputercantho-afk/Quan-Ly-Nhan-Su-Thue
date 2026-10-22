@@ -984,7 +984,11 @@ namespace TaxPersonnelManagement.Views
                             FromDate = wh.FromDate,
                             ToDate = wh.ToDate,
                             Position = wh.Position,
+                            Department = wh.Department,
+                            OrganizationUnit = wh.OrganizationUnit,
                             DepartmentOrUnit = wh.DepartmentOrUnit,
+                            IsPartyConcurrent = wh.IsPartyConcurrent,
+                            PartyPosition = wh.PartyPosition,
                             Note = wh.Note,
                             OrderIndex = wh.OrderIndex
                         });
@@ -1230,7 +1234,11 @@ namespace TaxPersonnelManagement.Views
                                 dbWh.FromDate = item.FromDate;
                                 dbWh.ToDate = item.ToDate;
                                 dbWh.Position = item.Position;
+                                dbWh.Department = item.Department;
+                                dbWh.OrganizationUnit = item.OrganizationUnit;
                                 dbWh.DepartmentOrUnit = item.DepartmentOrUnit;
+                                dbWh.IsPartyConcurrent = item.IsPartyConcurrent;
+                                dbWh.PartyPosition = item.PartyPosition;
                                 dbWh.Note = item.Note;
                                 dbWh.OrderIndex = item.OrderIndex;
                             }
@@ -3555,7 +3563,10 @@ namespace TaxPersonnelManagement.Views
             {
                 list = list.Where(w =>
                     (w.Position != null && w.Position.ToLower().Contains(query)) ||
+                    (w.Department != null && w.Department.ToLower().Contains(query)) ||
+                    (w.OrganizationUnit != null && w.OrganizationUnit.ToLower().Contains(query)) ||
                     (w.DepartmentOrUnit != null && w.DepartmentOrUnit.ToLower().Contains(query)) ||
+                    (w.PartyPosition != null && w.PartyPosition.ToLower().Contains(query)) ||
                     (w.FromDate != null && w.FromDate.ToLower().Contains(query)) ||
                     (w.ToDate != null && w.ToDate.ToLower().Contains(query)));
             }
@@ -3589,6 +3600,8 @@ namespace TaxPersonnelManagement.Views
             foreach (var r in items.OrderBy(i => i.OrderIndex))
             {
                 string from = string.IsNullOrWhiteSpace(r.FromDate) ? "" : r.FromDate.Trim();
+                if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
+
                 string to = string.IsNullOrWhiteSpace(r.ToDate) ? "nay" : r.ToDate.Trim();
                 if (to.StartsWith("↓")) to = to.TrimStart('↓', ' ');
 
@@ -3613,14 +3626,16 @@ namespace TaxPersonnelManagement.Views
 
                 string unitPart = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? $", {r.DepartmentOrUnit.Trim()}" : "";
                 string posPart = r.Position?.Trim() ?? "";
+                string partyPart = r.IsPartyConcurrent ? (!string.IsNullOrWhiteSpace(r.PartyPosition) ? $" (Kiêm: {r.PartyPosition.Trim()})" : " (Kiêm nhiệm chức vụ Đảng)") : "";
+                string notePart = !string.IsNullOrWhiteSpace(r.Note) ? $" ({r.Note.Trim()})" : "";
 
                 if (!string.IsNullOrEmpty(timePart))
                 {
-                    sb.AppendLine($"- {timePart}: {posPart}{unitPart}.");
+                    sb.AppendLine($"- {timePart}: {posPart}{partyPart}{unitPart}{notePart}.");
                 }
                 else if (!string.IsNullOrEmpty(posPart))
                 {
-                    sb.AppendLine($"- {posPart}{unitPart}.");
+                    sb.AppendLine($"- {posPart}{partyPart}{unitPart}{notePart}.");
                 }
             }
 
@@ -3634,7 +3649,7 @@ namespace TaxPersonnelManagement.Views
 
             var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var pattern = new System.Text.RegularExpressions.Regex(
-                @"^(?:[-*•]\s*)?(?:Từ\s+)?(?:tháng\s+)?(?<from>\d{1,2}/\d{4}|\d{4})\s*(?:đến|–|-)\s*(?:tháng\s+)?(?<to>\d{1,2}/\d{4}|\d{4}|nay|hiện nay)[\s:]+(?<rest>.*)$",
+                @"^(?:[-*•]\s*)?(?:Từ\s+)?(?:tháng\s+|ngày\s+)?(?<from>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4})\s*(?:đến|–|-|tới)\s*(?:tháng\s+|ngày\s+)?(?<to>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4}|nay|hiện nay|đến nay)[\s:–-]+(?<rest>.*)$",
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
             int idx = 0;
@@ -3648,9 +3663,18 @@ namespace TaxPersonnelManagement.Views
                 {
                     string from = match.Groups["from"].Value.Trim();
                     string to = match.Groups["to"].Value.Trim();
-                    if (to.Equals("nay", StringComparison.OrdinalIgnoreCase)) to = "Hiện nay";
+                    if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase)) 
+                        to = "Hiện nay";
 
                     string rest = match.Groups["rest"].Value.Trim().TrimEnd('.');
+                    string note = "";
+                    var noteMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
+                    if (noteMatch.Success)
+                    {
+                        note = noteMatch.Groups["note"].Value.Trim();
+                        rest = rest.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
+                    }
+
                     string pos = rest;
                     string unit = "";
 
@@ -3662,7 +3686,7 @@ namespace TaxPersonnelManagement.Views
                     }
                     else
                     {
-                        string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội " };
+                        string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
                         foreach (var m in markers)
                         {
                             int mIdx = rest.IndexOf(m, StringComparison.OrdinalIgnoreCase);
@@ -3675,12 +3699,36 @@ namespace TaxPersonnelManagement.Views
                         }
                     }
 
+                    bool isParty = false;
+                    string partyPos = "";
+                    var partyMatch = System.Text.RegularExpressions.Regex.Match(pos, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (partyMatch.Success)
+                    {
+                        isParty = true;
+                        partyPos = partyMatch.Groups["party"].Value.Trim();
+                        pos = pos.Substring(0, partyMatch.Index).Trim();
+                    }
+
+                    string whDept = unit;
+                    string whOrg = "";
+                    int uComma = unit.IndexOf(',');
+                    if (uComma >= 0)
+                    {
+                        whDept = unit.Substring(0, uComma).Trim();
+                        whOrg = unit.Substring(uComma + 1).Trim();
+                    }
+
                     result.Add(new WorkHistoryRecord
                     {
                         FromDate = from,
                         ToDate = to,
                         Position = pos,
+                        Department = whDept,
+                        OrganizationUnit = whOrg,
                         DepartmentOrUnit = unit,
+                        IsPartyConcurrent = isParty,
+                        PartyPosition = partyPos,
+                        Note = note,
                         OrderIndex = idx++
                     });
                 }
@@ -3691,6 +3739,15 @@ namespace TaxPersonnelManagement.Views
                     {
                         string timePart = line.Substring(0, colonIdx).Trim().TrimStart('-', '*', '•', ' ').Trim();
                         string restPart = line.Substring(colonIdx + 1).Trim().TrimEnd('.');
+
+                        string note = "";
+                        var noteMatch = System.Text.RegularExpressions.Regex.Match(restPart, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
+                        if (noteMatch.Success)
+                        {
+                            note = noteMatch.Groups["note"].Value.Trim();
+                            restPart = restPart.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
+                        }
+
                         string pos = restPart;
                         string unit = "";
                         int cIdx = restPart.IndexOf(',');
@@ -3699,12 +3756,86 @@ namespace TaxPersonnelManagement.Views
                             pos = restPart.Substring(0, cIdx).Trim();
                             unit = restPart.Substring(cIdx + 1).Trim();
                         }
+                        else
+                        {
+                            string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
+                            foreach (var m in markers)
+                            {
+                                int mIdx = restPart.IndexOf(m, StringComparison.OrdinalIgnoreCase);
+                                if (mIdx > 0)
+                                {
+                                    pos = restPart.Substring(0, mIdx).Trim();
+                                    unit = restPart.Substring(mIdx).Trim();
+                                    break;
+                                }
+                            }
+                        }
+
+                        bool isParty2 = false;
+                        string partyPos2 = "";
+                        var partyMatch2 = System.Text.RegularExpressions.Regex.Match(pos, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        if (partyMatch2.Success)
+                        {
+                            isParty2 = true;
+                            partyPos2 = partyMatch2.Groups["party"].Value.Trim();
+                            pos = pos.Substring(0, partyMatch2.Index).Trim();
+                        }
+
+                        string from = timePart;
+                        string to = "Hiện nay";
+
+                        var tm = System.Text.RegularExpressions.Regex.Match(
+                            timePart,
+                            @"^(?:Từ\s+)?(?:tháng\s+|ngày\s+)?(?<from>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4})(?:\s*(?:đến|–|-|tới)\s*(?:tháng\s+|ngày\s+)?(?<to>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4}|nay|hiện nay|đến nay))?",
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                        if (tm.Success)
+                        {
+                            from = tm.Groups["from"].Value.Trim();
+                            if (tm.Groups["to"].Success && !string.IsNullOrWhiteSpace(tm.Groups["to"].Value))
+                            {
+                                to = tm.Groups["to"].Value.Trim();
+                                if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                                    to = "Hiện nay";
+                            }
+                            else
+                            {
+                                to = "Hiện nay";
+                            }
+                        }
+                        else
+                        {
+                            if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
+                            int denIndex = from.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
+                            if (denIndex > 0)
+                            {
+                                to = from.Substring(denIndex + 5).Trim();
+                                from = from.Substring(0, denIndex).Trim();
+                                if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                                    to = "Hiện nay";
+                            }
+                        }
+
+                        string whDept2 = unit;
+                        string whOrg2 = "";
+                        int uComma2 = unit.IndexOf(',');
+                        if (uComma2 >= 0)
+                        {
+                            whDept2 = unit.Substring(0, uComma2).Trim();
+                            whOrg2 = unit.Substring(uComma2 + 1).Trim();
+                        }
+
                         result.Add(new WorkHistoryRecord
                         {
-                            FromDate = timePart,
-                            ToDate = "",
+                            FromDate = from,
+                            ToDate = to,
                             Position = pos,
+                            Department = whDept2,
+                            OrganizationUnit = whOrg2,
                             DepartmentOrUnit = unit,
+                            IsPartyConcurrent = isParty2,
+                            PartyPosition = partyPos2,
+                            Note = note,
                             OrderIndex = idx++
                         });
                     }

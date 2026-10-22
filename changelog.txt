@@ -1,3 +1,19 @@
+## v1.6.4.7 — 2026-10-23
+- [Quá trình Công tác] Bổ sung Mục "Đơn vị" & Tích chọn "Kiêm nhiệm chức vụ Đảng":
+    + Mục "Đơn vị": Chuyển đổi thành ComboBox linh hoạt kết hợp gợi ý sẵn có và cho phép gõ tay tự do nội dung tùy biến (giải quyết trường hợp khai lý lịch ở các đơn vị cũ không đồng nhất tên gọi).
+    + Bổ sung trường `Unit` vào CSDL SQLite cho bảng `WorkHistories` với cơ chế tự động migration dữ liệu an toàn.
+    + Bổ sung mục tích chọn "Kiêm nhiệm chức vụ Đảng" (`IsConcurrentPartyRole`) tại form nhập quá trình công tác, hỗ trợ lưu trữ và hiển thị phân biệt rõ ràng các nhiệm vụ kiêm nhiệm trong công tác Đảng.
+- [Giao diện Danh sách Nhân sự] Căn chỉnh 6 Thẻ KPI trên cùng 1 hàng:
+    + Tái cấu trúc bố cục 6 thẻ KPI (Tổng số, Nam, Nữ, Đảng viên, Nghỉ dưỡng sức, Nghỉ không lương) thành hàng ngang 6 cột cân đối (`Grid 6 Columns`).
+    + Tối ưu hóa padding, kích thước icon và font chữ; tích hợp chế độ co giãn thích ứng giúp hiển thị gọn gàng, trực quan và không bị nhảy dòng trên mọi kích thước màn hình.
+- [Xuất Báo cáo PDF & Excel] Sắp xếp Trình độ Chuyên môn / Đào tạo theo Thời gian:
+    + Chuẩn hóa thuật toán sắp xếp tất cả các văn bằng, trình độ đào tạo (`Degrees`) theo thứ tự từ gần nhất đến xa nhất (năm tốt nghiệp giảm dần).
+    + Khắc phục triệt để tình trạng trình độ hiển thị lộn xộn trong file sơ yếu lý lịch PDF và file Excel.
+- [Báo cáo Thống kê Nhân sự] Sửa lỗi Hiển thị Màn hình nhỏ & Khắc phục Kẹt Cuộn chuột:
+    + Khắc phục lỗi vỡ bảng và xuất hiện khoảng trống trắng khổng lồ khi thu nhỏ cửa sổ: Thiết lập `MinWidth="200"` cho cột Bộ phận, chuyển sang `TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"` kèm ToolTip.
+    + Bọc bảng "Thống kê ngạch công chức" (`MinWidth="750"`) và "Thống kê lãnh đạo theo bộ phận" (`MinWidth="900"`) trong `ScrollViewer` cuộn ngang tự động.
+    + Sửa lỗi kẹt cuộn chuột ở giữa trang: Chuyển tiếp sự kiện `PreviewMouseWheel` lên `ScrollViewer` chính của trang, giúp cuộn dọc toàn trang liên tục, mượt mà khi rê chuột qua bảng và hỗ trợ giữ phím `Shift` + lăn chuột để cuộn ngang bảng nhanh chóng.
+
 ## v1.6.4.6 — 2026-10-21
 - [Nâng cấp Giao diện & Bộ lọc Tổng quan] Bổ sung Thẻ KPI Nghỉ Không Lương & Icon Bộ Lọc:
     + Bổ sung thẻ KPI thứ 6 "NGHỈ KHÔNG LƯƠNG" trên màn hình Tổng quan / Danh sách nhân sự với thiết kế gradient Slate Blue-Grey (`#455A64` - `#607D8B`) nổi bật, icon `CashOff` và hiển thị số lượng cán bộ đang nghỉ không lương theo thời gian thực.

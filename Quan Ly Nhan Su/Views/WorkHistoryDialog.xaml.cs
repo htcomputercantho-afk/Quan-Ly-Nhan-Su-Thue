@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,26 +31,33 @@ namespace TaxPersonnelManagement.Views
                 WorkHistory = recordToEdit;
                 txtFromDate.Text = recordToEdit.FromDate ?? "";
 
-                string dept = (recordToEdit.DepartmentOrUnit ?? "").Trim();
-                var deptMatch = _allDepartments.FirstOrDefault(d => d.Equals(dept, StringComparison.OrdinalIgnoreCase));
-                if (deptMatch != null)
-                {
-                    cboDepartmentOrUnit.SelectedItem = deptMatch;
-                }
-                cboDepartmentOrUnit.Text = dept;
+                // Phân tách Bộ phận và Cơ quan/Đơn vị công tác
+                string dept = (recordToEdit.Department ?? "").Trim();
+                string org = (recordToEdit.OrganizationUnit ?? "").Trim();
 
-                UpdatePositionsForSelectedDepartment();
-
-                string pos = (recordToEdit.Position ?? "").Trim();
-                if (cboPosition.ItemsSource is IEnumerable<string> currentPosList)
+                if (string.IsNullOrEmpty(dept) && string.IsNullOrEmpty(org) && !string.IsNullOrWhiteSpace(recordToEdit.DepartmentOrUnit))
                 {
-                    var posMatch = currentPosList.FirstOrDefault(p => p.Equals(pos, StringComparison.OrdinalIgnoreCase));
-                    if (posMatch != null)
+                    string full = recordToEdit.DepartmentOrUnit.Trim();
+                    int comma = full.IndexOf(',');
+                    if (comma >= 0)
                     {
-                        cboPosition.SelectedItem = posMatch;
+                        dept = full.Substring(0, comma).Trim();
+                        org = full.Substring(comma + 1).Trim();
+                    }
+                    else
+                    {
+                        dept = full;
                     }
                 }
-                cboPosition.Text = pos;
+
+                cboDepartment.Text = dept;
+                cboOrganizationUnit.Text = org;
+                cboPosition.Text = (recordToEdit.Position ?? "").Trim();
+
+                // Kiêm nhiệm chức vụ Đảng
+                chkPartyConcurrent.IsChecked = recordToEdit.IsPartyConcurrent;
+                pnlPartyPosition.Visibility = recordToEdit.IsPartyConcurrent ? Visibility.Visible : Visibility.Collapsed;
+                cboPartyPosition.Text = (recordToEdit.PartyPosition ?? "").Trim();
 
                 txtNote.Text = recordToEdit.Note ?? "";
 
@@ -73,12 +81,16 @@ namespace TaxPersonnelManagement.Views
                 txtTitle.Text = "THÊM GIAI ĐOẠN CÔNG TÁC";
                 btnSave.Content = "Lưu giai đoạn";
                 WorkHistory = new WorkHistoryRecord();
+                chkPartyConcurrent.IsChecked = false;
+                pnlPartyPosition.Visibility = Visibility.Collapsed;
                 UpdatePresentState(false);
             }
         }
 
-        private List<string> _allDepartments = new List<string>();
-        private List<string> _allPositions = new List<string>();
+        private ObservableCollection<string> _departmentSuggestions = new ObservableCollection<string>();
+        private ObservableCollection<string> _orgSuggestions = new ObservableCollection<string>();
+        private ObservableCollection<string> _positionSuggestions = new ObservableCollection<string>();
+        private ObservableCollection<string> _partyPositionSuggestions = new ObservableCollection<string>();
 
         private void LoadSuggestions()
         {
@@ -86,69 +98,192 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    // 1. NẠP DANH MỤC BỘ PHẬN CÔNG TÁC THỰC TẾ TRONG APP
-                    // Lấy chính xác danh mục Phòng ban được quản lý trong app (Departments)
-                    var dbDepts = context.Departments
-                        .Where(d => !string.IsNullOrEmpty(d.Name))
-                        .Select(d => d.Name.Trim())
+                    // 1. NẠP GỢI Ý BỘ PHẬN (ĐỘC LẬP)
+                    var dbDeptSuggestions = context.WorkHistorySuggestions
+                        .Where(s => s.Category == "Department" && !string.IsNullOrEmpty(s.Name))
+                        .Select(s => s.Name.Trim())
+                        .Distinct()
                         .ToList();
 
-                    _allDepartments = dbDepts
-                        .Where(x => !string.IsNullOrWhiteSpace(x))
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .OrderBy(x => DepartmentSorter.GetSortKey(x).Order)
-                        .ThenBy(x => DepartmentSorter.GetSortKey(x).Number)
-                        .ThenBy(x => x)
-                        .ToList();
-
-                    cboDepartmentOrUnit.ItemsSource = _allDepartments;
-
-                    // 2. NẠP DANH MỤC CHỨC VỤ THỰC TẾ TRONG APP
-                    // - Lấy từ bảng Positions (loại trừ nhóm chức vụ đảng và quy hoạch)
-                    var dbPositions = context.Positions
-                        .Where(p => !string.IsNullOrEmpty(p.Name) && p.DepartmentName != "__ĐẢNG__" && p.DepartmentName != "__QUY_HOẠCH__")
-                        .Select(p => p.Name.Trim())
-                        .ToList();
-
-                    // - Kết hợp với các chức vụ thực tế đang có trong hồ sơ Personnel
-                    var persPositions = context.Personnel
-                        .Where(p => !string.IsNullOrEmpty(p.Position))
-                        .Select(p => p.Position!.Trim())
-                        .ToList();
-
-                    var posOrder = new List<string> {
-                        "Chi cục trưởng",
-                        "Quyền Chi cục trưởng",
-                        "Phó Chi cục trưởng",
-                        "Tổ trưởng",
-                        "Phó Tổ trưởng",
-                        "Phó tổ trưởng",
-                        "Kiểm tra viên chính",
-                        "Kiểm tra viên",
-                        "Chuyên viên chính",
-                        "Chuyên viên",
-                        "Công chức",
-                        "Nhân viên",
-                        "Trưởng phòng",
-                        "Phó Trưởng phòng",
-                        "Phó trưởng phòng",
-                        "Đội trưởng",
-                        "Phó Đội trưởng",
-                        "Đội phó"
-                    };
-
-                    _allPositions = dbPositions.Concat(persPositions)
-                        .Where(p => !string.IsNullOrWhiteSpace(p))
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .OrderBy(x =>
+                    if (!dbDeptSuggestions.Any())
+                    {
+                        var seedDepts = new List<string>
                         {
-                            int idx = posOrder.FindIndex(p => p.Equals(x, StringComparison.OrdinalIgnoreCase));
-                            return idx == -1 ? 999 : idx;
-                        })
-                        .ThenBy(x => x)
+                            "Ban Lãnh đạo",
+                            "Tổ Hành chính, tổng hợp",
+                            "Tổ Kê khai và Kế toán thuế",
+                            "Tổ Quản lý nợ và Cưỡng chế nợ thuế",
+                            "Tổ Kiểm tra thuế",
+                            "Tổ Nghiệp vụ dự toán pháp chế",
+                            "Đội Hành chính - Nhân sự - Tài vụ - Quản trị - Ấn chỉ",
+                            "Đội Kiểm tra thuế",
+                            "Đội Tuyên truyền - Hỗ trợ người nộp thuế",
+                            "Đội Kê khai - Kế toán thuế và Tin học",
+                            "Đội Quản lý nợ và Cưỡng chế nợ thuế",
+                            "Đội Quản lý thuế liên xã, phường",
+                            "Phòng Quản lý nợ và Cưỡng chế nợ thuế",
+                            "Phòng Tuyên truyền - Hỗ trợ NNT",
+                            "Phòng Kê khai và Kế toán thuế",
+                            "Phòng Kiểm tra nội bộ",
+                            "Phòng Thanh tra - Kiểm tra thuế"
+                        };
+
+                        foreach (var d in seedDepts)
+                        {
+                            context.WorkHistorySuggestions.Add(new WorkHistorySuggestion { Category = "Department", Name = d });
+                        }
+                        context.SaveChanges();
+                        dbDeptSuggestions = seedDepts;
+                    }
+
+                    _departmentSuggestions = new ObservableCollection<string>(
+                        dbDeptSuggestions
+                            .Where(x => !string.IsNullOrWhiteSpace(x))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .OrderBy(x => x)
+                    );
+                    cboDepartment.ItemsSource = _departmentSuggestions;
+
+                    // 2. NẠP GỢI Ý CƠ QUAN / ĐƠN VỊ CÔNG TÁC (ĐỘC LẬP)
+                    var dbOrgSuggestions = context.WorkHistorySuggestions
+                        .Where(s => s.Category == "OrganizationUnit" && !string.IsNullOrEmpty(s.Name))
+                        .Select(s => s.Name.Trim())
+                        .Distinct()
                         .ToList();
 
-                    UpdatePositionsForSelectedDepartment();
+                    if (!dbOrgSuggestions.Any())
+                    {
+                        var seedOrgs = new List<string>
+                        {
+                            "Thuế cơ sở 1 thành phố Quảng Ninh",
+                            "Thuế cơ sở 2 thành phố Cẩm Phả",
+                            "Chi cục Thuế TP Hạ Long",
+                            "Chi cục Thuế huyện Hoành Bồ",
+                            "Chi cục Thuế TP Cẩm Phả",
+                            "Chi cục Thuế thị xã Quảng Yên",
+                            "Chi cục Thuế khu vực Uông Bí - Quảng Yên",
+                            "Chi cục Thuế khu vực Tiên Yên - Ba Chẽ - Bình Liêu",
+                            "Cục Thuế tỉnh Quảng Ninh",
+                            "Tổng cục Thuế",
+                            "UBND thành phố Hạ Long",
+                            "UBND tỉnh Quảng Ninh"
+                        };
+
+                        foreach (var o in seedOrgs)
+                        {
+                            context.WorkHistorySuggestions.Add(new WorkHistorySuggestion { Category = "OrganizationUnit", Name = o });
+                        }
+                        context.SaveChanges();
+                        dbOrgSuggestions = seedOrgs;
+                    }
+
+                    _orgSuggestions = new ObservableCollection<string>(
+                        dbOrgSuggestions
+                            .Where(x => !string.IsNullOrWhiteSpace(x))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .OrderBy(x => x)
+                    );
+                    cboOrganizationUnit.ItemsSource = _orgSuggestions;
+
+                    // 3. NẠP GỢI Ý CHỨC VỤ (ĐỘC LẬP, KHÔNG BỊ ÉP THEO BỘ PHẬN)
+                    var dbPosSuggestions = context.WorkHistorySuggestions
+                        .Where(s => s.Category == "Position" && !string.IsNullOrEmpty(s.Name))
+                        .Select(s => s.Name.Trim())
+                        .Distinct()
+                        .ToList();
+
+                    if (!dbPosSuggestions.Any())
+                    {
+                        var seedPositions = new List<string>
+                        {
+                            "Kiểm thu viên thuế",
+                            "Đội trưởng",
+                            "Phó Đội trưởng",
+                            "Tổ trưởng",
+                            "Phó Tổ trưởng",
+                            "Chi cục trưởng",
+                            "Phó Chi cục trưởng",
+                            "Trưởng phòng",
+                            "Phó Trưởng phòng",
+                            "Trưởng Thuế cơ sở",
+                            "Phó Trưởng Thuế cơ sở",
+                            "Cục trưởng",
+                            "Phó Cục trưởng",
+                            "Công chức",
+                            "Kiểm tra viên chính",
+                            "Kiểm tra viên",
+                            "Chuyên viên chính",
+                            "Chuyên viên",
+                            "Cán bộ",
+                            "Nhân viên"
+                        };
+
+                        var dbPos = context.Positions
+                            .Where(p => !string.IsNullOrEmpty(p.Name) && p.DepartmentName != "__ĐẢNG__" && p.DepartmentName != "__QUY_HOẠCH__")
+                            .Select(p => p.Name.Trim())
+                            .ToList();
+
+                        var allSeedPos = seedPositions.Concat(dbPos)
+                            .Where(x => !string.IsNullOrWhiteSpace(x))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToList();
+
+                        foreach (var p in allSeedPos)
+                        {
+                            context.WorkHistorySuggestions.Add(new WorkHistorySuggestion { Category = "Position", Name = p });
+                        }
+                        context.SaveChanges();
+                        dbPosSuggestions = allSeedPos;
+                    }
+
+                    _positionSuggestions = new ObservableCollection<string>(
+                        dbPosSuggestions
+                            .Where(x => !string.IsNullOrWhiteSpace(x))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .OrderBy(x => x)
+                    );
+                    cboPosition.ItemsSource = _positionSuggestions;
+
+                    // 4. NẠP GỢI Ý CHỨC VỤ ĐẢNG (ĐỘC LẬP)
+                    var dbPartySuggestions = context.WorkHistorySuggestions
+                        .Where(s => s.Category == "PartyPosition" && !string.IsNullOrEmpty(s.Name))
+                        .Select(s => s.Name.Trim())
+                        .Distinct()
+                        .ToList();
+
+                    if (!dbPartySuggestions.Any())
+                    {
+                        var seedPartyPos = new List<string>
+                        {
+                            "Bí thư Chi bộ",
+                            "Phó Bí thư Chi bộ",
+                            "Chi ủy viên",
+                            "Bí thư Đảng bộ",
+                            "Phó Bí thư Đảng bộ",
+                            "Đảng ủy viên",
+                            "Bí thư Đảng ủy",
+                            "Phó Bí thư Đảng ủy",
+                            "Ủy viên Ban thường vụ Đảng ủy",
+                            "Ủy viên Ban chấp hành Đảng ủy",
+                            "Tổ trưởng Tổ Đảng",
+                            "Đảng viên"
+                        };
+
+                        foreach (var pp in seedPartyPos)
+                        {
+                            context.WorkHistorySuggestions.Add(new WorkHistorySuggestion { Category = "PartyPosition", Name = pp });
+                        }
+                        context.SaveChanges();
+                        dbPartySuggestions = seedPartyPos;
+                    }
+
+                    _partyPositionSuggestions = new ObservableCollection<string>(
+                        dbPartySuggestions
+                            .Where(x => !string.IsNullOrWhiteSpace(x))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .OrderBy(x => x)
+                    );
+                    cboPartyPosition.ItemsSource = _partyPositionSuggestions;
                 }
             }
             catch (Exception ex)
@@ -157,48 +292,121 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private void cboDepartmentOrUnit_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void btnDeleteDepartmentSuggestion_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            UpdatePositionsForSelectedDepartment();
+            e.Handled = true;
+            if (sender is FrameworkElement fe && fe.Tag is string name && !string.IsNullOrWhiteSpace(name))
+            {
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var items = db.WorkHistorySuggestions.Where(s => s.Category == "Department" && s.Name == name).ToList();
+                        if (items.Any())
+                        {
+                            db.WorkHistorySuggestions.RemoveRange(items);
+                            db.SaveChanges();
+                        }
+                    }
+                    _departmentSuggestions.Remove(name);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[WorkHistoryDialog] Delete department suggestion error: {ex.Message}");
+                }
+            }
         }
 
-        private void cboDepartmentOrUnit_LostFocus(object sender, RoutedEventArgs e)
+        private void btnDeleteOrgSuggestion_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            UpdatePositionsForSelectedDepartment();
+            e.Handled = true;
+            if (sender is FrameworkElement fe && fe.Tag is string name && !string.IsNullOrWhiteSpace(name))
+            {
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var items = db.WorkHistorySuggestions.Where(s => s.Category == "OrganizationUnit" && s.Name == name).ToList();
+                        if (items.Any())
+                        {
+                            db.WorkHistorySuggestions.RemoveRange(items);
+                            db.SaveChanges();
+                        }
+                    }
+                    _orgSuggestions.Remove(name);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[WorkHistoryDialog] Delete org suggestion error: {ex.Message}");
+                }
+            }
         }
 
-        private void UpdatePositionsForSelectedDepartment()
+        private void btnDeletePositionSuggestion_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (cboPosition == null || _allPositions == null) return;
-
-            string selectedDept = (cboDepartmentOrUnit.SelectedItem?.ToString() ?? cboDepartmentOrUnit.Text ?? "").Trim();
-            string currentPosText = cboPosition.Text;
-
-            var leadershipNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-                "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
-                "Cục trưởng", "Phó Cục trưởng", "Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở"
-            };
-
-            if (string.IsNullOrEmpty(selectedDept))
+            e.Handled = true;
+            if (sender is FrameworkElement fe && fe.Tag is string name && !string.IsNullOrWhiteSpace(name))
             {
-                cboPosition.ItemsSource = _allPositions;
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var items = db.WorkHistorySuggestions.Where(s => s.Category == "Position" && s.Name == name).ToList();
+                        if (items.Any())
+                        {
+                            db.WorkHistorySuggestions.RemoveRange(items);
+                            db.SaveChanges();
+                        }
+                    }
+                    _positionSuggestions.Remove(name);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[WorkHistoryDialog] Delete position suggestion error: {ex.Message}");
+                }
             }
-            else if (selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase) ||
-                     selectedDept.Equals("Ban Lãnh đạo", StringComparison.OrdinalIgnoreCase))
-            {
-                var leaders = _allPositions.Where(p => leadershipNames.Contains(p)).ToList();
-                cboPosition.ItemsSource = leaders.Any() ? leaders : _allPositions;
-            }
-            else
-            {
-                var units = _allPositions.Where(p => !leadershipNames.Contains(p)).ToList();
-                var leaders = _allPositions.Where(p => leadershipNames.Contains(p)).ToList();
-                cboPosition.ItemsSource = units.Concat(leaders).ToList();
-            }
+        }
 
-            if (!string.IsNullOrEmpty(currentPosText))
+        private void btnDeletePartyPositionSuggestion_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is FrameworkElement fe && fe.Tag is string name && !string.IsNullOrWhiteSpace(name))
             {
-                cboPosition.Text = currentPosText;
+                try
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var items = db.WorkHistorySuggestions.Where(s => s.Category == "PartyPosition" && s.Name == name).ToList();
+                        if (items.Any())
+                        {
+                            db.WorkHistorySuggestions.RemoveRange(items);
+                            db.SaveChanges();
+                        }
+                    }
+                    _partyPositionSuggestions.Remove(name);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[WorkHistoryDialog] Delete party position suggestion error: {ex.Message}");
+                }
+            }
+        }
+
+        private void btnDeleteSuggestion_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void chkPartyConcurrent_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            bool isParty = chkPartyConcurrent.IsChecked == true;
+            if (pnlPartyPosition != null)
+            {
+                pnlPartyPosition.Visibility = isParty ? Visibility.Visible : Visibility.Collapsed;
+            }
+            if (!isParty && cboPartyPosition != null)
+            {
+                cboPartyPosition.Text = "";
             }
         }
 
@@ -797,15 +1005,74 @@ namespace TaxPersonnelManagement.Views
                 }
             }
 
+            string dept = cboDepartment.Text?.Trim() ?? "";
+            string org = cboOrganizationUnit.Text?.Trim() ?? "";
+
             WorkHistory.FromDate = fromDate;
             WorkHistory.ToDate = toDate;
             WorkHistory.Position = position;
-            WorkHistory.DepartmentOrUnit = cboDepartmentOrUnit.Text?.Trim();
+            WorkHistory.Department = dept;
+            WorkHistory.OrganizationUnit = org;
+            WorkHistory.IsPartyConcurrent = chkPartyConcurrent.IsChecked == true;
+            WorkHistory.PartyPosition = chkPartyConcurrent.IsChecked == true ? (cboPartyPosition.Text?.Trim() ?? "") : null;
+
+            if (!string.IsNullOrWhiteSpace(dept) && !string.IsNullOrWhiteSpace(org))
+            {
+                WorkHistory.DepartmentOrUnit = $"{dept}, {org}";
+            }
+            else if (!string.IsNullOrWhiteSpace(dept))
+            {
+                WorkHistory.DepartmentOrUnit = dept;
+            }
+            else if (!string.IsNullOrWhiteSpace(org))
+            {
+                WorkHistory.DepartmentOrUnit = org;
+            }
+            else
+            {
+                WorkHistory.DepartmentOrUnit = "";
+            }
+
             WorkHistory.Note = txtNote.Text?.Trim();
             WorkHistory.NotifyChanged();
 
+            SaveSuggestionIfNew("Department", dept);
+            SaveSuggestionIfNew("OrganizationUnit", org);
+            SaveSuggestionIfNew("Position", position);
+            if (WorkHistory.IsPartyConcurrent && !string.IsNullOrWhiteSpace(WorkHistory.PartyPosition))
+            {
+                SaveSuggestionIfNew("PartyPosition", WorkHistory.PartyPosition);
+            }
+
             DialogResult = true;
             Close();
+        }
+
+        private void SaveSuggestionIfNew(string category, string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return;
+            string trimmed = value.Trim();
+
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    bool exists = db.WorkHistorySuggestions.Any(s => s.Category == category && s.Name == trimmed);
+                    if (!exists)
+                    {
+                        db.WorkHistorySuggestions.Add(new WorkHistorySuggestion
+                        {
+                            Category = category,
+                            Name = trimmed
+                        });
+                        db.SaveChanges();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[WorkHistoryDialog] SaveSuggestionIfNew error: {ex.Message}");
+            }
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)

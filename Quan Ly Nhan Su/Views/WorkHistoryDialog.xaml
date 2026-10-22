@@ -121,11 +121,12 @@
             <Setter Property="Padding" Value="12 9"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBoxItem">
                         <Border x:Name="itemBorder" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}" Margin="1">
-                            <ContentPresenter/>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -561,15 +562,85 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Row 2: Bộ phận công tác -->
+                <!-- Row 2: Bộ phận (Tổ / Đội / Phòng ban) -->
                 <StackPanel Margin="0 0 0 16">
-                    <TextBlock Text="Bộ phận công tác" FontWeight="SemiBold" FontSize="13" Foreground="#334155" Margin="0 0 0 6"/>
-                    <ComboBox x:Name="cboDepartmentOrUnit" IsEditable="True" Height="42"
+                    <TextBlock Text="Bộ phận (Tổ / Đội / Phòng ban)" FontWeight="SemiBold" FontSize="13" Foreground="#334155" Margin="0 0 0 6"/>
+                    <ComboBox x:Name="cboDepartment" IsEditable="True" Height="42"
                               Style="{StaticResource ModernEditableComboBox}"
-                              Tag="Chọn bộ phận có sẵn hoặc nhập tên đơn vị..."
-                              SelectionChanged="cboDepartmentOrUnit_SelectionChanged"
-                              LostFocus="cboDepartmentOrUnit_LostFocus"/>
-                    <TextBlock Text="* Danh mục phòng ban, tổ thuế của cơ quan hoặc tự nhập đơn vị công tác" 
+                              Tag="Nhập hoặc chọn bộ phận công tác...">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0" HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="13" Foreground="#0F172A" Margin="2 0 8 0" TextTrimming="CharacterEllipsis"/>
+                                    <Button Grid.Column="1" Tag="{Binding}"
+                                            PreviewMouseLeftButtonDown="btnDeleteDepartmentSuggestion_PreviewMouseLeftButtonDown"
+                                            PreviewMouseLeftButtonUp="btnDeleteSuggestion_PreviewMouseLeftButtonUp"
+                                            Width="24" Height="24" Margin="2 0 0 0" Padding="0" Cursor="Hand" ToolTip="Xóa gợi ý này"
+                                            Background="Transparent" BorderThickness="0" Focusable="False">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bdr" Background="Transparent" CornerRadius="4" Width="22" Height="22">
+                                                    <materialDesign:PackIcon x:Name="icn" Kind="Close" Width="13" Height="13" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                                        <Setter TargetName="icn" Property="Foreground" Value="#EF4444"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="* Danh mục gợi ý riêng cho quá trình công tác (tự do gõ tay hoặc xóa gợi ý bằng nút ×)" 
+                               FontSize="11.5" Foreground="#94A3B8" FontStyle="Italic" Margin="2 5 0 0"/>
+                </StackPanel>
+
+                <!-- Row 3: Cơ quan / Đơn vị công tác -->
+                <StackPanel Margin="0 0 0 16">
+                    <TextBlock Text="Cơ quan / Đơn vị công tác" FontWeight="SemiBold" FontSize="13" Foreground="#334155" Margin="0 0 0 6"/>
+                    <ComboBox x:Name="cboOrganizationUnit" IsEditable="True" Height="42"
+                              Style="{StaticResource ModernEditableComboBox}"
+                              Tag="Nhập hoặc chọn cơ quan, đơn vị (VD: Thuế cơ sở 1 TP Quảng Ninh, Chi cục Thuế...)">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0" HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="13" Foreground="#0F172A" Margin="2 0 8 0" TextTrimming="CharacterEllipsis"/>
+                                    <Button Grid.Column="1" Tag="{Binding}"
+                                            PreviewMouseLeftButtonDown="btnDeleteOrgSuggestion_PreviewMouseLeftButtonDown"
+                                            PreviewMouseLeftButtonUp="btnDeleteSuggestion_PreviewMouseLeftButtonUp"
+                                            Width="24" Height="24" Margin="2 0 0 0" Padding="0" Cursor="Hand" ToolTip="Xóa gợi ý này"
+                                            Background="Transparent" BorderThickness="0" Focusable="False">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bdr" Background="Transparent" CornerRadius="4" Width="22" Height="22">
+                                                    <materialDesign:PackIcon x:Name="icn" Kind="Close" Width="13" Height="13" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                                        <Setter TargetName="icn" Property="Foreground" Value="#EF4444"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="* Nơi công tác trong giai đoạn này (hoàn toàn độc lập, không làm thay đổi thông tin hiện tại)" 
                                FontSize="11.5" Foreground="#94A3B8" FontStyle="Italic" Margin="2 5 0 0"/>
                 </StackPanel>
 
@@ -581,10 +652,89 @@
                     </StackPanel>
                     <ComboBox x:Name="cboPosition" IsEditable="True" Height="42"
                               Style="{StaticResource ModernEditableComboBox}"
-                              Tag="Chọn chức vụ có sẵn hoặc nhập chức danh..."/>
-                    <TextBlock Text="* Danh mục chức vụ của cơ quan hoặc tự nhập chức vụ công tác" 
+                              Tag="Nhập hoặc chọn chức vụ công tác...">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0" HorizontalAlignment="Stretch">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="13" Foreground="#0F172A" Margin="2 0 8 0" TextTrimming="CharacterEllipsis"/>
+                                    <Button Grid.Column="1" Tag="{Binding}"
+                                            PreviewMouseLeftButtonDown="btnDeletePositionSuggestion_PreviewMouseLeftButtonDown"
+                                            PreviewMouseLeftButtonUp="btnDeleteSuggestion_PreviewMouseLeftButtonUp"
+                                            Width="24" Height="24" Margin="2 0 0 0" Padding="0" Cursor="Hand" ToolTip="Xóa gợi ý này"
+                                            Background="Transparent" BorderThickness="0" Focusable="False">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bdr" Background="Transparent" CornerRadius="4" Width="22" Height="22">
+                                                    <materialDesign:PackIcon x:Name="icn" Kind="Close" Width="13" Height="13" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                                        <Setter TargetName="icn" Property="Foreground" Value="#EF4444"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Text="* Danh mục gợi ý chức vụ (tự do gõ tay hoặc xóa gợi ý bằng nút ×)" 
                                FontSize="11.5" Foreground="#94A3B8" FontStyle="Italic" Margin="2 5 0 0"/>
                 </StackPanel>
+
+                <!-- Row 4: Kiêm nhiệm chức vụ Đảng -->
+                <Border Margin="0 0 0 16" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="14 10">
+                    <StackPanel>
+                        <CheckBox x:Name="chkPartyConcurrent" Content="Kiêm nhiệm chức vụ Đảng trong giai đoạn này"
+                                  FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Cursor="Hand"
+                                  Checked="chkPartyConcurrent_CheckedChanged" Unchecked="chkPartyConcurrent_CheckedChanged"/>
+                        
+                        <!-- Panel nhập chức vụ Đảng, chỉ hiện khi tích chọn -->
+                        <StackPanel x:Name="pnlPartyPosition" Visibility="Collapsed" Margin="0 10 0 0">
+                            <TextBlock Text="Chức vụ Đảng đảm nhiệm" FontWeight="Medium" FontSize="12.5" Foreground="#475569" Margin="0 0 0 6"/>
+                            <ComboBox x:Name="cboPartyPosition" IsEditable="True" Height="40"
+                                      Style="{StaticResource ModernEditableComboBox}"
+                                      Tag="Chọn hoặc gõ chức vụ Đảng (VD: Bí thư Chi bộ, Phó Bí thư Chi bộ...)">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0" HorizontalAlignment="Stretch">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding}" VerticalAlignment="Center" FontSize="13" Foreground="#0F172A" Margin="2 0 8 0" TextTrimming="CharacterEllipsis"/>
+                                            <Button Grid.Column="1" Tag="{Binding}"
+                                                    PreviewMouseLeftButtonDown="btnDeletePartyPositionSuggestion_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseLeftButtonUp="btnDeleteSuggestion_PreviewMouseLeftButtonUp"
+                                                    Width="24" Height="24" Margin="2 0 0 0" Padding="0" Cursor="Hand" ToolTip="Xóa gợi ý này"
+                                                    Background="Transparent" BorderThickness="0" Focusable="False">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="bdr" Background="Transparent" CornerRadius="4" Width="22" Height="22">
+                                                            <materialDesign:PackIcon x:Name="icn" Kind="Close" Width="13" Height="13" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="bdr" Property="Background" Value="#FEE2E2"/>
+                                                                <Setter TargetName="icn" Property="Foreground" Value="#EF4444"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
                 <!-- Row 4: Ghi chú thêm -->
                 <StackPanel Margin="0 0 0 4">

@@ -777,36 +777,165 @@ namespace TaxPersonnelManagement.Models
         public string? FromDate { get; set; }        // e.g. "11/1994" hoặc "1994"
         public string? ToDate { get; set; }          // e.g. "09/1997" hoặc "Hiện nay"
         public string Position { get; set; } = string.Empty; // Chức vụ
-        public string? DepartmentOrUnit { get; set; } // Đơn vị công tác
+        public string? Department { get; set; }      // Bộ phận (Tổ / Đội / Phòng ban)
+        public string? OrganizationUnit { get; set; } // Cơ quan / Đơn vị công tác (Chi cục / Cục / Thuế cơ sở...)
+        public string? DepartmentOrUnit { get; set; } // Đơn vị công tác tổng hợp
+        public bool IsPartyConcurrent { get; set; }   // Kiêm nhiệm chức vụ Đảng
+        public string? PartyPosition { get; set; }    // Chức vụ Đảng kiêm nhiệm (ví dụ: Bí thư Chi bộ)
         public string? Note { get; set; }            // Ghi chú
         public int OrderIndex { get; set; }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string FromDateDisplay => string.IsNullOrWhiteSpace(FromDate) ? "---" : FromDate.Trim();
+        public string FromDateDisplay
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(FromDate)) return "---";
+                string f = FromDate.Trim();
+                int denIdx = f.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
+                if (denIdx > 0) f = f.Substring(0, denIdx).Trim();
+                if (f.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) f = f.Substring(3).Trim();
+                return string.IsNullOrWhiteSpace(f) ? "---" : f;
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string ToDateCleanDisplay
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(ToDate))
+                {
+                    if (!string.IsNullOrWhiteSpace(FromDate))
+                    {
+                        int denIdx = FromDate.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
+                        if (denIdx > 0)
+                        {
+                            string afterDen = FromDate.Substring(denIdx + 5).Trim();
+                            if (!string.IsNullOrWhiteSpace(afterDen))
+                            {
+                                if (afterDen.Equals("nay", StringComparison.OrdinalIgnoreCase) || afterDen.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                                    return "Hiện nay";
+                                return afterDen;
+                            }
+                        }
+                    }
+                    return "Hiện nay";
+                }
+                string t = ToDate.Trim();
+                if (t.StartsWith("↓")) t = t.TrimStart('↓', ' ');
+                if (t.Equals("nay", StringComparison.OrdinalIgnoreCase) || t.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Hiện nay";
+                }
+                return t;
+            }
+            set { }
+        }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public string ToDateDisplay
         {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(ToDate)) return "↓ Hiện nay";
-                string t = ToDate.Trim();
-                if (t.StartsWith("↓")) return t;
-                return $"↓ {t}";
-            }
+            get => ToDateCleanDisplay;
+            set { }
         }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string PositionDisplay => string.IsNullOrWhiteSpace(Position) ? "(Chưa nhập chức vụ)" : Position.Trim();
+        public string PeriodDisplay
+        {
+            get => $"{FromDateDisplay} – {ToDateCleanDisplay}";
+            set { }
+        }
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string UnitDisplay => string.IsNullOrWhiteSpace(DepartmentOrUnit) ? "" : DepartmentOrUnit.Trim();
+        public string PositionDisplay
+        {
+            get => string.IsNullOrWhiteSpace(Position) ? "(Chưa nhập chức vụ)" : Position.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string PartyPositionDisplay
+        {
+            get
+            {
+                if (!IsPartyConcurrent) return "";
+                return string.IsNullOrWhiteSpace(PartyPosition) ? "Kiêm nhiệm chức vụ Đảng" : $"Kiêm: {PartyPosition.Trim()}";
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public System.Windows.Visibility PartyBadgeVisibility
+        {
+            get => IsPartyConcurrent ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string DepartmentDisplay
+        {
+            get => string.IsNullOrWhiteSpace(Department) ? "" : Department.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string OrganizationUnitDisplay
+        {
+            get => string.IsNullOrWhiteSpace(OrganizationUnit) ? "" : OrganizationUnit.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string UnitDisplay
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(Department) && !string.IsNullOrWhiteSpace(OrganizationUnit))
+                    return $"{Department.Trim()}, {OrganizationUnit.Trim()}";
+                if (!string.IsNullOrWhiteSpace(Department))
+                    return Department.Trim();
+                if (!string.IsNullOrWhiteSpace(OrganizationUnit))
+                    return OrganizationUnit.Trim();
+                return string.IsNullOrWhiteSpace(DepartmentOrUnit) ? "" : DepartmentOrUnit.Trim();
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string NoteDisplay
+        {
+            get => string.IsNullOrWhiteSpace(Note) ? "" : Note.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public System.Windows.Visibility NoteVisibility
+        {
+            get => string.IsNullOrWhiteSpace(Note) ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+            set { }
+        }
 
         public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
         public void NotifyChanged()
         {
             PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(string.Empty));
         }
+    }
+
+    /// <summary>
+    /// Danh mục gợi ý độc lập cho Quá trình công tác (Bộ phận, Cơ quan/Đơn vị công tác).
+    /// Hoàn toàn tách biệt với bảng Departments chính của cơ quan hiện tại.
+    /// </summary>
+    public class WorkHistorySuggestion
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Category { get; set; } = string.Empty; // "Department" hoặc "OrganizationUnit"
+        [Required]
+        public string Name { get; set; } = string.Empty;     // Tên gợi ý
     }
 }
 
