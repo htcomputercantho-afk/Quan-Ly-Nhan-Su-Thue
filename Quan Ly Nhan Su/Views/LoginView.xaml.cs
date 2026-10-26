@@ -113,6 +113,7 @@ namespace TaxPersonnelManagement.Views
                         MainWindow dashboard = new MainWindow(user);
                         App.DebugLog("MainWindow created. Showing...");
                         Application.Current.MainWindow = dashboard; // Prevent shutdown when Login closes
+                        this.Hide(); // Ẩn LoginView ngay lập tức để người dùng thấy MainWindow vào việc
                         dashboard.Show();
                         App.DebugLog("MainWindow shown. Closing LoginView...");
                         this.Close();

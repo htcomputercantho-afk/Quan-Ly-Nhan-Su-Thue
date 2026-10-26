@@ -244,6 +244,12 @@ namespace TaxPersonnelManagement
                     // Manual Migration for Tab 3 Fields (Retirement Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN RetirementDate TEXT"); } catch { }
 
+                    // Manual Migration for Status Decision Info (Luân chuyển, điều động, thôi việc, nghỉ hưu...)
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN StatusDecisionNumber TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN StatusDecisionDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN StatusEffectiveDate TEXT"); } catch { }
+                    try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN StatusDecisionUnit TEXT"); } catch { }
+
                     // Manual Migration for Tab 4 Fields (Party Info)
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyEntryDate TEXT"); } catch { }
                     try { context.Database.ExecuteSqlRaw("ALTER TABLE Personnel ADD COLUMN PartyOfficialDate TEXT"); } catch { }

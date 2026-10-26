@@ -29,7 +29,9 @@ namespace TaxPersonnelManagement.Views
                 btnSave.Content = "Cập nhật";
 
                 WorkHistory = recordToEdit;
+                _isFormattingDate = true;
                 txtFromDate.Text = recordToEdit.FromDate ?? "";
+                _isFormattingDate = false;
 
                 // Phân tách Bộ phận và Cơ quan/Đơn vị công tác
                 string dept = (recordToEdit.Department ?? "").Trim();
@@ -72,7 +74,9 @@ namespace TaxPersonnelManagement.Views
                 else
                 {
                     chkPresent.IsChecked = false;
+                    _isFormattingDate = true;
                     txtToDate.Text = to;
+                    _isFormattingDate = false;
                     UpdatePresentState(false);
                 }
             }
@@ -432,68 +436,11 @@ namespace TaxPersonnelManagement.Views
         {
             if (sender is not TextBox tb) return;
 
-            // Chỉ cho phép nhập chữ số hoặc '/'
+            // Chỉ cho phép nhập chữ số, '/' hoặc '-'
             foreach (char c in e.Text)
             {
-                if (!char.IsDigit(c) && c != '/')
+                if (!char.IsDigit(c) && c != '/' && c != '-')
                 {
-                    e.Handled = true;
-                    return;
-                }
-            }
-
-            // Xử lý khi người dùng tự gõ dấu '/'
-            if (e.Text == "/")
-            {
-                e.Handled = true;
-                string current = tb.Text ?? "";
-                if (current.Length == 1 && char.IsDigit(current[0]))
-                {
-                    tb.Text = $"0{current}/";
-                    tb.CaretIndex = 3;
-                }
-                else if (current.Length == 2 && char.IsDigit(current[0]) && char.IsDigit(current[1]))
-                {
-                    tb.Text = $"{current}/";
-                    tb.CaretIndex = 3;
-                }
-                return;
-            }
-
-            // Giới hạn tối đa 7 ký tự (MM/yyyy)
-            if (tb.SelectionLength == 0 && tb.Text.Length >= 7)
-            {
-                e.Handled = true;
-                return;
-            }
-
-            // Kiểm tra tính hợp lệ của tháng khi gõ ký tự đầu tiên
-            if (tb.SelectionLength == 0 && tb.CaretIndex == 0 && tb.Text.Length == 0)
-            {
-                char c = e.Text[0];
-                if (c >= '2' && c <= '9')
-                {
-                    // Nếu gõ số 2..9, tự động hiểu là tháng 02..09 và tự chèn dấu '/'
-                    e.Handled = true;
-                    tb.Text = $"0{c}/";
-                    tb.CaretIndex = 3;
-                    return;
-                }
-            }
-            else if (tb.SelectionLength == 0 && tb.CaretIndex == 1 && tb.Text.Length == 1)
-            {
-                char first = tb.Text[0];
-                char second = e.Text[0];
-
-                if (first == '0' && second == '0')
-                {
-                    // Không có tháng 00
-                    e.Handled = true;
-                    return;
-                }
-                else if (first == '1' && second > '2')
-                {
-                    // Không có tháng 13..19
                     e.Handled = true;
                     return;
                 }
@@ -509,86 +456,14 @@ namespace TaxPersonnelManagement.Views
                 e.Handled = true;
                 return;
             }
-
-            // Khi bấm Backspace ngay sau dấu '/', xóa cả dấu '/' và chữ số trước đó để tránh bị kẹt
-            if (e.Key == Key.Back)
-            {
-                if (tb.SelectionLength == 0 && tb.CaretIndex == 3 && tb.Text.Length >= 3 && tb.Text[2] == '/')
-                {
-                    e.Handled = true;
-                    _isFormattingDate = true;
-                    tb.Text = tb.Text.Substring(0, 1);
-                    tb.CaretIndex = tb.Text.Length;
-                    _isFormattingDate = false;
-                }
-            }
         }
 
         private void DateTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isFormattingDate) return;
-            if (sender is not TextBox tb) return;
-
-            string raw = tb.Text ?? "";
-            if (string.IsNullOrEmpty(raw)) return;
-            if (raw.Equals("Hiện nay", StringComparison.OrdinalIgnoreCase)) return;
-
-            // Lấy toàn bộ các chữ số được nhập
-            string digits = new string(raw.Where(char.IsDigit).ToArray());
-            if (string.IsNullOrEmpty(digits))
+            if (sender is TextBox tb)
             {
-                _isFormattingDate = true;
-                tb.Text = "";
-                _isFormattingDate = false;
-                return;
-            }
-
-            string formatted = "";
-            int caret = tb.CaretIndex;
-
-            if (digits.Length == 1)
-            {
-                char d = digits[0];
-                if (d >= '2' && d <= '9')
-                {
-                    formatted = $"0{d}/";
-                    caret = 3;
-                }
-                else
-                {
-                    formatted = d.ToString();
-                    caret = 1;
-                }
-            }
-            else if (digits.Length == 2)
-            {
-                int m = int.Parse(digits);
-                if (m == 0) m = 1;
-                if (m > 12) m = 12;
-
-                formatted = $"{m:D2}/";
-                caret = 3;
-            }
-            else
-            {
-                int m = int.Parse(digits.Substring(0, 2));
-                if (m == 0) m = 1;
-                if (m > 12) m = 12;
-
-                string yearPart = digits.Substring(2);
-                if (yearPart.Length > 4) yearPart = yearPart.Substring(0, 4);
-
-                formatted = $"{m:D2}/{yearPart}";
-                caret = Math.Min(caret, formatted.Length);
-                if (caret == 2) caret = 3;
-            }
-
-            if (tb.Text != formatted)
-            {
-                _isFormattingDate = true;
-                tb.Text = formatted;
-                tb.CaretIndex = Math.Min(caret, formatted.Length);
-                _isFormattingDate = false;
+                ResetBorderValidation(tb);
             }
         }
 
@@ -603,7 +478,7 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            if (TryParseAndFormatMonthYear(text, out string valid, out _, out _))
+            if (TryParseDateOrMonthYear(text, out string valid, out _, out _, out _))
             {
                 _isFormattingDate = true;
                 tb.Text = valid;
@@ -612,7 +487,7 @@ namespace TaxPersonnelManagement.Views
             }
             else
             {
-                SetBorderError(tb, "Vui lòng nhập đúng định dạng MM/yyyy (tháng 01-12, năm 4 chữ số, ví dụ: 08/2020)");
+                SetBorderError(tb, "Định dạng thời gian không hợp lệ (ví dụ: 16/01/2024, 08/2020 hoặc 2020)");
             }
         }
 
@@ -636,58 +511,119 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
-        private static bool TryParseAndFormatMonthYear(string? input, out string formatted, out int month, out int year)
+        public static bool TryParseDateOrMonthYear(string? input, out string formatted, out DateTime sortDate, out int month, out int year)
         {
             formatted = "";
+            sortDate = DateTime.MinValue;
             month = 0;
             year = 0;
+
             if (string.IsNullOrWhiteSpace(input)) return false;
 
-            string s = input.Trim();
+            string s = input.Trim().Replace('-', '/');
+
+            // 1. Trường hợp có dấu '/'
             if (s.Contains("/"))
             {
-                var parts = s.Split('/');
-                if (parts.Length == 2 && int.TryParse(parts[0].Trim(), out int m) && int.TryParse(parts[1].Trim(), out int y))
+                var parts = s.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 3)
                 {
-                    if (m >= 1 && m <= 12 && y >= 1900 && y <= 2100)
+                    // Định dạng dd/MM/yyyy (hoặc d/M/yyyy)
+                    if (int.TryParse(parts[0].Trim(), out int d) &&
+                        int.TryParse(parts[1].Trim(), out int m) &&
+                        int.TryParse(parts[2].Trim(), out int y))
                     {
-                        month = m;
-                        year = y;
-                        formatted = $"{m:D2}/{y:D4}";
-                        return true;
+                        if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12)
+                        {
+                            int daysInMonth = DateTime.DaysInMonth(y, m);
+                            if (d >= 1 && d <= daysInMonth)
+                            {
+                                month = m;
+                                year = y;
+                                formatted = $"{d:D2}/{m:D2}/{y:D4}";
+                                sortDate = new DateTime(y, m, d);
+                                return true;
+                            }
+                        }
                     }
                 }
+                else if (parts.Length == 2)
+                {
+                    // Định dạng MM/yyyy (hoặc M/yyyy)
+                    if (int.TryParse(parts[0].Trim(), out int m) &&
+                        int.TryParse(parts[1].Trim(), out int y))
+                    {
+                        if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12)
+                        {
+                            month = m;
+                            year = y;
+                            formatted = $"{m:D2}/{y:D4}";
+                            sortDate = new DateTime(y, m, 1);
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
 
+            // 2. Trường hợp chuỗi chỉ gồm các chữ số
             string digits = new string(s.Where(char.IsDigit).ToArray());
-            if (digits.Length == 6)
+            if (digits.Length == 8)
             {
-                if (int.TryParse(digits.Substring(0, 2), out int m) && int.TryParse(digits.Substring(2, 4), out int y))
+                // ddMMyyyy (ví dụ: 16012024)
+                if (int.TryParse(digits.Substring(0, 2), out int d) &&
+                    int.TryParse(digits.Substring(2, 2), out int m) &&
+                    int.TryParse(digits.Substring(4, 4), out int y))
                 {
-                    if (m >= 1 && m <= 12 && y >= 1900 && y <= 2100)
+                    if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12)
+                    {
+                        int daysInMonth = DateTime.DaysInMonth(y, m);
+                        if (d >= 1 && d <= daysInMonth)
+                        {
+                            month = m;
+                            year = y;
+                            formatted = $"{d:D2}/{m:D2}/{y:D4}";
+                            sortDate = new DateTime(y, m, d);
+                            return true;
+                        }
+                    }
+                }
+            }
+            else if (digits.Length == 6)
+            {
+                // MMyyyy (ví dụ: 082020)
+                if (int.TryParse(digits.Substring(0, 2), out int m) &&
+                    int.TryParse(digits.Substring(2, 4), out int y))
+                {
+                    if (y >= 1900 && y <= 2100 && m >= 1 && m <= 12)
                     {
                         month = m;
                         year = y;
                         formatted = $"{m:D2}/{y:D4}";
+                        sortDate = new DateTime(y, m, 1);
                         return true;
                     }
                 }
             }
-            else if (digits.Length == 5)
+            else if (digits.Length == 4)
             {
-                if (int.TryParse(digits.Substring(0, 1), out int m) && int.TryParse(digits.Substring(1, 4), out int y))
+                // yyyy (ví dụ: 2024)
+                if (int.TryParse(digits, out int y) && y >= 1900 && y <= 2100)
                 {
-                    if (m >= 1 && m <= 12 && y >= 1900 && y <= 2100)
-                    {
-                        month = m;
-                        year = y;
-                        formatted = $"{m:D2}/{y:D4}";
-                        return true;
-                    }
+                    month = 1;
+                    year = y;
+                    formatted = $"{y:D4}";
+                    sortDate = new DateTime(y, 1, 1);
+                    return true;
                 }
             }
 
             return false;
+        }
+
+        private static bool TryParseAndFormatMonthYear(string? input, out string formatted, out int month, out int year)
+        {
+            return TryParseDateOrMonthYear(input, out formatted, out _, out month, out year);
         }
 
         #endregion
@@ -964,9 +900,9 @@ namespace TaxPersonnelManagement.Views
                 return;
             }
 
-            if (!TryParseAndFormatMonthYear(fromDateRaw, out string fromDate, out int fromM, out int fromY))
+            if (!TryParseDateOrMonthYear(fromDateRaw, out string fromDate, out DateTime fromSortDate, out _, out _))
             {
-                var warn = new WarningWindow("Thời gian bắt đầu công tác không hợp lệ!\nVui lòng nhập đúng tháng (01-12) và năm gồm 4 chữ số (ví dụ: 08/2015).", "Lỗi nhập liệu") { Owner = this };
+                var warn = new WarningWindow("Thời gian bắt đầu công tác không hợp lệ!\nVui lòng nhập đúng định dạng ngày/tháng/năm (ví dụ: 16/01/2024), tháng/năm (ví dụ: 08/2015) hoặc năm (ví dụ: 2020).", "Lỗi nhập liệu") { Owner = this };
                 warn.ShowDialog();
                 SetBorderError(txtFromDate, "Thời gian không hợp lệ");
                 txtFromDate.Focus();
@@ -984,9 +920,9 @@ namespace TaxPersonnelManagement.Views
             string toDate = "Hiện nay";
             if (chkPresent.IsChecked != true && !string.IsNullOrWhiteSpace(toDateRaw))
             {
-                if (!TryParseAndFormatMonthYear(toDateRaw, out string validTo, out int toM, out int toY))
+                if (!TryParseDateOrMonthYear(toDateRaw, out string validTo, out DateTime toSortDate, out _, out _))
                 {
-                    var warn = new WarningWindow("Thời gian kết thúc công tác không hợp lệ!\nVui lòng nhập đúng tháng (01-12) và năm gồm 4 chữ số (ví dụ: 09/2021) hoặc tích chọn 'Đang giữ chức (Đến nay)'.", "Lỗi nhập liệu") { Owner = this };
+                    var warn = new WarningWindow("Thời gian kết thúc công tác không hợp lệ!\nVui lòng nhập đúng định dạng ngày/tháng/năm (ví dụ: 28/02/2025), tháng/năm (ví dụ: 09/2021) hoặc tích chọn 'Đang giữ chức (Đến nay)'.", "Lỗi nhập liệu") { Owner = this };
                     warn.ShowDialog();
                     SetBorderError(txtToDate, "Thời gian không hợp lệ");
                     txtToDate.Focus();
@@ -994,12 +930,12 @@ namespace TaxPersonnelManagement.Views
                 }
                 toDate = validTo;
 
-                // Kiểm tra logic: Đến tháng/năm không được nhỏ hơn Từ tháng/năm
-                if (toY < fromY || (toY == fromY && toM < fromM))
+                // Kiểm tra logic: Đến ngày không được trước Từ ngày
+                if (toSortDate < fromSortDate)
                 {
-                    var warn = new WarningWindow($"Thời gian 'Đến tháng/năm' ({toDate}) không thể trước 'Từ tháng/năm' ({fromDate})!", "Mốc thời gian không hợp lệ") { Owner = this };
+                    var warn = new WarningWindow($"Thời gian kết thúc ({toDate}) không thể trước thời gian bắt đầu ({fromDate})!", "Mốc thời gian không hợp lệ") { Owner = this };
                     warn.ShowDialog();
-                    SetBorderError(txtToDate, "Đến tháng/năm phải sau hoặc bằng Từ tháng/năm");
+                    SetBorderError(txtToDate, "Thời gian kết thúc phải sau hoặc bằng thời gian bắt đầu");
                     txtToDate.Focus();
                     return;
                 }

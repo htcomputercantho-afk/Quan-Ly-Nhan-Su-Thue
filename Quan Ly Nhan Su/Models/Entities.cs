@@ -64,6 +64,10 @@ namespace TaxPersonnelManagement.Models
         public DateTime? TaxAuthorityStartDate { get; set; } // Thời gian công tác tại Cơ quan Thuế
         public DateTime? StartDate { get; set; } // Ngày bắt đầu (General)
         public string? Status { get; set; } // Trạng thái (Đang công tác, Nghỉ việc...)
+        public string? StatusDecisionNumber { get; set; } // Số quyết định trạng thái (luân chuyển/điều động/nghỉ việc/nghỉ hưu...)
+        public DateTime? StatusDecisionDate { get; set; } // Ngày ra quyết định trạng thái
+        public DateTime? StatusEffectiveDate { get; set; } // Ngày thực hiện trạng thái
+        public string? StatusDecisionUnit { get; set; } // Đơn vị ra quyết định trạng thái
 
         // Tab 2: Position History Info
         public DateTime? PositionDecisionDate { get; set; } // Thời gian công tác tính theo QĐ gần nhất

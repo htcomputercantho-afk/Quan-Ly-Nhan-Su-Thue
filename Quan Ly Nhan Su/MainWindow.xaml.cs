@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
@@ -28,6 +29,7 @@ namespace TaxPersonnelManagement
         {
             App.DebugLog("MainWindow Constructor Entry");
             InitializeComponent();
+            UpdateWindowStateUI();
             _currentUser = user;
             App.CurrentUser = user; // Lưu thông tin người dùng vào biến toàn cục của Ứng dụng
             txtWelcome.Text = _currentUser.FullName; // Hiển thị tên người dùng trên thanh tiêu đề
@@ -49,14 +51,18 @@ namespace TaxPersonnelManagement
                 if (this.ActualWidth < 1400)
                     CollapseSidebar();
 
-                // Kiểm tra và hiển thị cảnh báo công chức sắp đi làm lại
-                CheckLeaveReturnAlerts();
+                // Đợi MainWindow hiển thị và vẽ hoàn tất trên màn hình rồi mới mở các popup cảnh báo / đồng bộ
+                Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                {
+                    // Kiểm tra và hiển thị cảnh báo công chức sắp đi làm lại
+                    CheckLeaveReturnAlerts();
 
-                // Kiểm tra và hiển thị cảnh báo đến hạn (nâng lương / nghỉ hưu / bổ nhiệm)
-                CheckDeadlineAlerts();
+                    // Kiểm tra và hiển thị cảnh báo đến hạn (nâng lương / nghỉ hưu / bổ nhiệm)
+                    CheckDeadlineAlerts();
 
-                // Tự động kiểm tra bản cập nhật CSDL trên Google Drive khi mở app
-                _ = CheckGoogleDriveStartupSyncAsync();
+                    // Tự động kiểm tra bản cập nhật CSDL trên Google Drive khi mở app
+                    _ = CheckGoogleDriveStartupSyncAsync();
+                }));
             };
         }
 
@@ -471,6 +477,7 @@ namespace TaxPersonnelManagement
         public MainWindow()
         {
             InitializeComponent();
+            UpdateWindowStateUI();
         }
 
         /// <summary>
@@ -787,6 +794,60 @@ namespace TaxPersonnelManagement
             else if (e.NewSize.Width >= 1400 && !_isSidebarExpanded)
                 ExpandSidebar();
         }
+
+        #region Window Caption & Title Bar Controls
+
+        private void btnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            SystemCommands.MinimizeWindow(this);
+        }
+
+        private void btnMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                SystemCommands.RestoreWindow(this);
+            }
+            else
+            {
+                SystemCommands.MaximizeWindow(this);
+            }
+        }
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            SystemCommands.CloseWindow(this);
+        }
+
+        private void MainWindow_StateChanged(object? sender, EventArgs e)
+        {
+            UpdateWindowStateUI();
+        }
+
+        private void UpdateWindowStateUI()
+        {
+            if (this.WindowState == WindowState.Maximized)
+            {
+                // Bù trừ 7px viền mở rộng của Windows khi cửa sổ Maximized để tránh tràn màn hình
+                RootWindowGrid.Margin = new Thickness(7);
+                if (pathMaximize != null)
+                {
+                    pathMaximize.Data = Geometry.Parse("M 2.5,2.5 V 0.5 H 9.5 V 7.5 H 7.5 M 0.5,2.5 H 7.5 V 9.5 H 0.5 Z");
+                    btnMaximize.ToolTip = "Khôi phục kích thước";
+                }
+            }
+            else
+            {
+                RootWindowGrid.Margin = new Thickness(0);
+                if (pathMaximize != null)
+                {
+                    pathMaximize.Data = Geometry.Parse("M 0.5,0.5 H 9.5 V 9.5 H 0.5 Z");
+                    btnMaximize.ToolTip = "Phóng to";
+                }
+            }
+        }
+
+        #endregion
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {

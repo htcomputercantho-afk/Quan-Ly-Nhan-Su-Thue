@@ -16,17 +16,153 @@
         TextOptions.TextRenderingMode="ClearType"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
-        SizeChanged="MainWindow_SizeChanged">
+        SizeChanged="MainWindow_SizeChanged"
+        StateChanged="MainWindow_StateChanged"
+        WindowStyle="SingleBorderWindow"
+        Background="{DynamicResource PrimaryColor}">
+
+    <!-- Configure WindowChrome for Custom Title Bar (Microsoft Word style) -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="36"
+                      ResizeBorderThickness="6"
+                      GlassFrameThickness="0"
+                      CornerRadius="0"
+                      UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Style for Title Bar Control Buttons (Minimize, Maximize, Close) -->
+        <Style x:Key="TitleBarButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2EFFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#4DFFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Style for Close Button (Red on Hover) -->
+        <Style x:Key="TitleBarCloseButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E81123"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#C42B1C"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     
-    <Grid>
-        <Grid>
+    <Grid x:Name="RootWindowGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36"/> <!-- Custom Title Bar Row -->
+            <RowDefinition Height="*"/>  <!-- Main Application Body -->
+        </Grid.RowDefinitions>
+
+        <!-- ============================================== -->
+        <!--   CUSTOM TITLE BAR (Microsoft Word Style)      -->
+        <!-- ============================================== -->
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryColor}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- App Icon & Brand Title -->
+                    <ColumnDefinition Width="*"/>    <!-- Draggable Caption Area -->
+                    <ColumnDefinition Width="Auto"/> <!-- User Welcome Badge & Caption Controls -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Logo & Window Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12 0 0 0">
+                    <Image Source="/logo.png" Width="20" Height="20" VerticalAlignment="Center" Margin="0 0 10 0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13.5" Foreground="White" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Center: Draggable area (empty space inherits window drag and double-click to maximize) -->
+
+                <!-- Right: User Welcome Info + Window Controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch">
+                    <!-- User Welcome Badge (HitTestVisible so it can be hovered / clicked) -->
+                    <Border Background="#1AFFFFFF" CornerRadius="13" Padding="10 3" Margin="0 0 12 0" VerticalAlignment="Center" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AccountCircle" Width="18" Height="18" Foreground="White" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Xin chào, " VerticalAlignment="Center" Foreground="#E0E8F5" FontSize="12.5"/>
+                            <TextBlock x:Name="txtWelcome" Text="User" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="White" FontSize="12.5"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Divider -->
+                    <Rectangle Width="1" Height="16" Fill="#40FFFFFF" VerticalAlignment="Center" Margin="0 0 4 0"/>
+
+                    <!-- Minimize, Maximize/Restore, Close Buttons -->
+                    <StackPanel Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
+                        <!-- Minimize Button -->
+                        <Button x:Name="btnMinimize" Style="{StaticResource TitleBarButtonStyle}" Click="btnMinimize_Click" ToolTip="Thu nhỏ">
+                            <Path Data="M 0,5 L 10,5" Stroke="White" StrokeThickness="1.2" SnapsToDevicePixels="True" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
+
+                        <!-- Maximize / Restore Button -->
+                        <Button x:Name="btnMaximize" Style="{StaticResource TitleBarButtonStyle}" Click="btnMaximize_Click" ToolTip="Phóng to">
+                            <Path x:Name="pathMaximize" Data="M 0.5,0.5 H 9.5 V 9.5 H 0.5 Z" Stroke="White" StrokeThickness="1.2" SnapsToDevicePixels="True" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
+
+                        <!-- Close Button -->
+                        <Button x:Name="btnClose" Style="{StaticResource TitleBarCloseButtonStyle}" Click="btnClose_Click" ToolTip="Đóng">
+                            <Path Data="M 0,0 L 10,10 M 0,10 L 10,0" Stroke="White" StrokeThickness="1.2" SnapsToDevicePixels="True" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============================================== -->
+        <!--   MAIN APPLICATION BODY (Row 1)                -->
+        <!-- ============================================== -->
+        <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="colSidebar" Width="250"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
         <!-- Sidebar (Deep Blue Brand Color) -->
-        <Border Grid.Column="0" Grid.RowSpan="2" Background="{DynamicResource PrimaryColor}">
+        <Border Grid.Column="0" Background="{DynamicResource PrimaryColor}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -188,32 +324,9 @@
             </Grid>
         </Border>
 
-        <!-- Main Content -->
+        <!-- Main Content Area (Maximizes vertical data display) -->
         <Grid Grid.Column="1" Background="#F5F5F5">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="60"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <!-- Header -->
-            <Border Grid.Row="0" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                <Grid Margin="10 0">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="15 0 0 0" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Account Details (Right side of Header) -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <TextBlock Text="Xin chào, " VerticalAlignment="Center" Foreground="Gray"/>
-                        <TextBlock x:Name="txtWelcome" Text="User" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="5 0 0 0"/>
-                        <materialDesign:PackIcon Kind="AccountCircle" Width="30" Height="30" Foreground="{DynamicResource PrimaryHueMidBrush}" Margin="10 0 0 0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <Grid Grid.Row="1" Margin="12 10">
-                <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
-            </Grid>
+            <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Margin="12 10"/>
         </Grid>
         </Grid>
     </Grid>

@@ -67,6 +67,10 @@ namespace TaxPersonnelManagement.Views
                 txtRankName.Text = _personnel.RankName;
                 dpStartDate.SelectedDate = _personnel.TaxAuthorityStartDate;
                 SetComboBoxByContent(cboStatus, _personnel.Status ?? "Đang công tác");
+                txtStatusDecisionNumber.Text = _personnel.StatusDecisionNumber ?? "";
+                dpStatusDecisionDate.SelectedDate = _personnel.StatusDecisionDate;
+                dpStatusEffectiveDate.SelectedDate = _personnel.StatusEffectiveDate;
+                txtStatusDecisionUnit.Text = _personnel.StatusDecisionUnit ?? "";
 
 
                 // Trình độ học vấn & Chuyên môn
@@ -201,6 +205,12 @@ namespace TaxPersonnelManagement.Views
             LoadLeaveYears();
             LoadEvaluationYears();
             ApplyAuthorization();
+
+            if (_personnel == null)
+            {
+                SetComboBoxByContent(cboStatus, "Đang công tác");
+            }
+            UpdateStatusDecisionFieldsState();
 
             _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
             CalculateExpectedSalaryDate();
@@ -562,6 +572,38 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        private void cboStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateStatusDecisionFieldsState();
+        }
+
+        /// <summary>
+        /// Cập nhật trạng thái hiển thị của 4 ô thông tin quyết định (Số QĐ, Ngày ra QĐ, Ngày thực hiện, Đơn vị ra QĐ).
+        /// Ngoại trừ 'Đang công tác', các trạng thái còn lại sẽ sáng lên để nhập; nếu là 'Đang công tác' thì làm mờ và vô hiệu hóa.
+        /// </summary>
+        private void UpdateStatusDecisionFieldsState()
+        {
+            if (gridStatusDecision == null || cboStatus == null) return;
+
+            string status = "";
+            if (cboStatus.SelectedItem is ComboBoxItem item && item.Content != null)
+            {
+                status = item.Content.ToString() ?? "";
+            }
+            else if (cboStatus.SelectedItem is string str)
+            {
+                status = str;
+            }
+            else
+            {
+                status = cboStatus.Text ?? "";
+            }
+
+            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+            gridStatusDecision.IsEnabled = !isWorking;
+            gridStatusDecision.Opacity = isWorking ? 0.45 : 1.0;
+        }
 
         private void LoadSalaryDelayReasons()
         {
@@ -900,6 +942,10 @@ namespace TaxPersonnelManagement.Views
                         TaxAuthorityStartDate = dpStartDate.SelectedDate,
                         StartDate = dpStartDate.SelectedDate,
                         Status = cboStatus.Text,
+                        StatusDecisionNumber = txtStatusDecisionNumber.Text?.Trim(),
+                        StatusDecisionDate = dpStatusDecisionDate.SelectedDate,
+                        StatusEffectiveDate = dpStatusEffectiveDate.SelectedDate,
+                        StatusDecisionUnit = txtStatusDecisionUnit.Text?.Trim(),
 
                         EducationLevel = cboEducationLevel.Text,
                         Major = txtMajor.Text,
@@ -1064,6 +1110,10 @@ namespace TaxPersonnelManagement.Views
                         existingP.RankName = txtRankName.Text;
                         existingP.TaxAuthorityStartDate = dpStartDate.SelectedDate;
                         existingP.Status = cboStatus.Text;
+                        existingP.StatusDecisionNumber = txtStatusDecisionNumber.Text?.Trim();
+                        existingP.StatusDecisionDate = dpStatusDecisionDate.SelectedDate;
+                        existingP.StatusEffectiveDate = dpStatusEffectiveDate.SelectedDate;
+                        existingP.StatusDecisionUnit = txtStatusDecisionUnit.Text?.Trim();
 
                         existingP.EducationLevel = cboEducationLevel.Text;
                         existingP.Major = txtMajor.Text;
@@ -1440,6 +1490,12 @@ namespace TaxPersonnelManagement.Views
                 cboRankCode.Text = "";
                 txtRankName.Clear();
                 dpStartDate.SelectedDate = null;
+                SetComboBoxByContent(cboStatus, "Đang công tác");
+                txtStatusDecisionNumber.Clear();
+                dpStatusDecisionDate.SelectedDate = null;
+                dpStatusEffectiveDate.SelectedDate = null;
+                txtStatusDecisionUnit.Clear();
+                UpdateStatusDecisionFieldsState();
 
                 cboEducationLevel.SelectedItem = null;
                 cboEducationLevel.Text = "";

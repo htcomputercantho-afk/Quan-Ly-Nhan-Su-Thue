@@ -555,6 +555,7 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
                                         <!-- Dept & Position -->
@@ -668,7 +669,7 @@
 
                                         <!-- Date & Status -->
                                         <!-- Date -->
-                                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0 0 0 15">
                                             <TextBlock Text="Thời gian công tác tại Cơ quan Thuế" Style="{StaticResource ModernLabel}"/>
                                                 <DatePicker x:Name="dpStartDate" 
                                                             Style="{StaticResource ModernDatePicker}"
@@ -677,15 +678,57 @@
                                         </StackPanel>
                                         
                                         <!-- Status -->
-                                        <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="15 0 0 0">
+                                        <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="3" Margin="15 0 0 15">
                                             <TextBlock Text="Trạng thái công tác" Style="{StaticResource ModernLabel}"/>
-                                            <ComboBox x:Name="cboStatus" Style="{StaticResource ModernComboBox}">
+                                            <ComboBox x:Name="cboStatus" Style="{StaticResource ModernComboBox}"
+                                                      SelectionChanged="cboStatus_SelectionChanged">
                                                 <ComboBoxItem Content="Đang công tác"/>
                                                 <ComboBoxItem Content="Luân chuyển / Điều động"/>
                                                 <ComboBoxItem Content="Nghỉ việc"/>
                                                 <ComboBoxItem Content="Nghỉ hưu"/>
                                             </ComboBox>
                                         </StackPanel>
+
+                                        <!-- Row 3: 4 ô quyết định trạng thái (Số QĐ, Ngày ra QĐ, Ngày thực hiện, Đơn vị ra QĐ) -->
+                                        <Grid x:Name="gridStatusDecision" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="1.2*"/>
+                                                <ColumnDefinition Width="15"/>
+                                                <ColumnDefinition Width="1*"/>
+                                                <ColumnDefinition Width="15"/>
+                                                <ColumnDefinition Width="1*"/>
+                                                <ColumnDefinition Width="15"/>
+                                                <ColumnDefinition Width="1.5*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- 1. Số QĐ -->
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Số QĐ" Style="{StaticResource ModernLabel}"/>
+                                                <TextBox x:Name="txtStatusDecisionNumber" Style="{StaticResource ModernTextBox}"
+                                                         materialDesign:HintAssist.Hint="Số quyết định"/>
+                                            </StackPanel>
+
+                                            <!-- 2. Ngày ra QĐ -->
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Ngày ra QĐ" Style="{StaticResource ModernLabel}"/>
+                                                <DatePicker x:Name="dpStatusDecisionDate" Style="{StaticResource ModernDatePicker}"
+                                                            helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                            </StackPanel>
+
+                                            <!-- 3. Ngày thực hiện -->
+                                            <StackPanel Grid.Column="4">
+                                                <TextBlock Text="Ngày thực hiện" Style="{StaticResource ModernLabel}"/>
+                                                <DatePicker x:Name="dpStatusEffectiveDate" Style="{StaticResource ModernDatePicker}"
+                                                            helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
+                                            </StackPanel>
+
+                                            <!-- 4. Đơn vị ra QĐ -->
+                                            <StackPanel Grid.Column="6">
+                                                <TextBlock Text="Đơn vị ra QĐ" Style="{StaticResource ModernLabel}"/>
+                                                <TextBox x:Name="txtStatusDecisionUnit" Style="{StaticResource ModernTextBox}"
+                                                         materialDesign:HintAssist.Hint="Đơn vị ban hành QĐ"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </Grid>
                                 </StackPanel>
                             </Border>

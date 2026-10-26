@@ -1,3 +1,22 @@
+## v1.6.4.8 — 2026-10-26
+- [Tối ưu Giao diện Màn hình Chính] Tích hợp Thanh Tiêu đề Cửa sổ Phong cách Microsoft Word:
+    + Tích hợp thanh tiêu đề hiện đại vào khung cửa sổ (`WindowChrome`, cao 36px) phủ màu thương hiệu xanh `#0078D4`, liền mạch với menu điều hướng bên trái.
+    + Đưa thông tin tài khoản `Xin chào, [Tên]` và Avatar lên thanh tiêu đề cửa sổ cạnh bộ nút điều khiển thu nhỏ/phóng to/đóng (`_ □ ✕`), theo chuẩn bố cục Microsoft Word/Office.
+    + Xóa bỏ hoàn toàn thanh Header màu trắng 60px bị thừa lặp lại chữ "QUẢN LÝ NHÂN SỰ", giúp tăng thêm 60px chiều cao hiển thị dữ liệu cho các màn hình nhỏ.
+    + Tối ưu các nút điều khiển với hiệu ứng hover Windows mượt mà, tự động chuyển đổi biểu tượng giữa 1 ô vuông (Maximize) và 2 ô vuông lồng nhau (Restore) khi thay đổi kích thước cửa sổ.
+- [Hồ sơ Nhân sự - Thông tin Công tác] Bổ sung 4 Ô Quyết định Trạng thái Công tác:
+    + Bổ sung 4 ô thông tin quyết định trên cùng 1 hàng gọn gàng: "Số QĐ", "Ngày ra QĐ", "Ngày thực hiện", "Đơn vị ra QĐ" trong card THÔNG TIN CÔNG TÁC.
+    + Cơ chế tự động làm mờ và vô hiệu hóa: Khi ở trạng thái "Đang công tác", cả 4 ô sẽ tự động mờ đi (`Opacity = 0.45`, `IsEnabled = false`) để tránh nhầm lẫn.
+    + Khi chuyển sang bất kỳ trạng thái nào khác (Luân chuyển / Điều động, Nghỉ việc, Nghỉ hưu...), cả 4 ô sẽ tự động sáng rõ và kích hoạt cho phép nhập liệu.
+    + Tự động migration CSDL SQLite an toàn và đồng bộ đầy đủ nạp/lưu dữ liệu hồ sơ cán bộ.
+- [Sửa lỗi Quá trình Công tác] Khắc phục Lỗi Nhảy Ngày Tháng khi Chỉnh sửa:
+    + Sửa triệt để lỗi khi bấm chỉnh sửa bản ghi có ngày dạng `dd/MM/yyyy` (ví dụ: `16/01/2024`) bị nhảy sai thành `12/0120`.
+    + Mở rộng độ dài ô nhập lên 10 ký tự, hỗ trợ tự động nhận diện và phân tích linh hoạt các định dạng ngày `dd/MM/yyyy`, `MM/yyyy`, `yyyy`.
+    + So sánh ngày chính xác theo kiểu `DateTime` thay vì so sánh chuỗi, ngăn ngừa lỗi cảnh báo "Ngày kết thúc phải lớn hơn ngày bắt đầu".
+- [Sửa lỗi Luồng Đăng nhập] Khắc phục Popup Cảnh báo Đè lên Màn hình Đăng nhập:
+    + Ẩn ngay lập tức giao diện đăng nhập khi đăng nhập thành công.
+    + Điều phối các popup cảnh báo (công chức sắp đi làm lại, cảnh báo đến hạn, đồng bộ Google Drive) qua Dispatcher Background để màn hình chính hiển thị và vẽ hoàn tất trước khi mở popup.
+
 ## v1.6.4.7 — 2026-10-23
 - [Quá trình Công tác] Bổ sung Mục "Đơn vị" & Tích chọn "Kiêm nhiệm chức vụ Đảng":
     + Mục "Đơn vị": Chuyển đổi thành ComboBox linh hoạt kết hợp gợi ý sẵn có và cho phép gõ tay tự do nội dung tùy biến (giải quyết trường hợp khai lý lịch ở các đơn vị cũ không đồng nhất tên gọi).
