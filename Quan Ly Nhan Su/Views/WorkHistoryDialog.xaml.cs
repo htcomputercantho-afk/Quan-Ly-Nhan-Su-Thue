@@ -40,9 +40,15 @@ namespace TaxPersonnelManagement.Views
                 if (string.IsNullOrEmpty(dept) && string.IsNullOrEmpty(org) && !string.IsNullOrWhiteSpace(recordToEdit.DepartmentOrUnit))
                 {
                     string full = recordToEdit.DepartmentOrUnit.Trim();
-                    int comma = full.IndexOf(',');
-                    if (comma >= 0)
+                    if (full.Contains(" - "))
                     {
+                        int dash = full.IndexOf(" - ");
+                        dept = full.Substring(0, dash).Trim();
+                        org = full.Substring(dash + 3).Trim();
+                    }
+                    else if (full.Contains(","))
+                    {
+                        int comma = full.IndexOf(',');
                         dept = full.Substring(0, comma).Trim();
                         org = full.Substring(comma + 1).Trim();
                     }
@@ -54,12 +60,77 @@ namespace TaxPersonnelManagement.Views
 
                 cboDepartment.Text = dept;
                 cboOrganizationUnit.Text = org;
-                cboPosition.Text = (recordToEdit.Position ?? "").Trim();
+
+                // Chuẩn hóa Chức vụ chuyên môn và Chức vụ Đảng (nếu dữ liệu cũ dính Chức vụ Đảng ở trước hoặc trong ngoặc)
+                string rawPos = (recordToEdit.Position ?? "").Trim();
+                string partyPos = (recordToEdit.PartyPosition ?? "").Trim();
+                bool isParty = recordToEdit.IsPartyConcurrent;
+
+                // Tách nếu có trong ngoặc đơn (Kiêm: ...) hoặc (Chức vụ Đảng)
+                var kiemMatch = System.Text.RegularExpressions.Regex.Match(rawPos,
+                    @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (kiemMatch.Success)
+                {
+                    isParty = true;
+                    if (string.IsNullOrWhiteSpace(partyPos))
+                        partyPos = kiemMatch.Groups["party"].Value.Trim();
+                    rawPos = (rawPos.Substring(0, kiemMatch.Index) + " " + rawPos.Substring(kiemMatch.Index + kiemMatch.Length)).Trim();
+                }
+                else
+                {
+                    var parenMatch = System.Text.RegularExpressions.Regex.Match(rawPos, @"\s*\((?<party>[^)]+)\)\s*");
+                    if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                    {
+                        isParty = true;
+                        if (string.IsNullOrWhiteSpace(partyPos))
+                            partyPos = parenMatch.Groups["party"].Value.Trim();
+                        rawPos = (rawPos.Substring(0, parenMatch.Index) + " " + rawPos.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                    }
+                }
+
+                if (rawPos.Contains(";"))
+                {
+                    var parts = rawPos.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+                    if (parts.Count >= 2 && WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
+                    {
+                        partyPos = parts[0];
+                        rawPos = string.Join("; ", parts.Skip(1));
+                        isParty = true;
+                    }
+                    else if (parts.Count >= 2 && WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
+                    {
+                        partyPos = parts[1];
+                        rawPos = parts[0];
+                        isParty = true;
+                    }
+                }
+                else if (rawPos.Contains(","))
+                {
+                    int cIdx = rawPos.IndexOf(',');
+                    string prefix = rawPos.Substring(0, cIdx).Trim();
+                    string suffix = rawPos.Substring(cIdx + 1).Trim();
+                    if (WorkHistoryRecord.IsPartyRoleText(prefix))
+                    {
+                        partyPos = prefix;
+                        rawPos = suffix;
+                        isParty = true;
+                    }
+                }
+
+                // Loại bỏ chữ "Kiêm: " nếu có trong partyPos
+                if (!string.IsNullOrWhiteSpace(partyPos))
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(partyPos, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (m.Success) partyPos = m.Groups[1].Value.Trim();
+                }
+
+                cboPosition.Text = rawPos;
 
                 // Kiêm nhiệm chức vụ Đảng
-                chkPartyConcurrent.IsChecked = recordToEdit.IsPartyConcurrent;
-                pnlPartyPosition.Visibility = recordToEdit.IsPartyConcurrent ? Visibility.Visible : Visibility.Collapsed;
-                cboPartyPosition.Text = (recordToEdit.PartyPosition ?? "").Trim();
+                chkPartyConcurrent.IsChecked = isParty;
+                pnlPartyPosition.Visibility = isParty ? Visibility.Visible : Visibility.Collapsed;
+                cboPartyPosition.Text = partyPos;
 
                 txtNote.Text = recordToEdit.Note ?? "";
 
@@ -284,6 +355,10 @@ namespace TaxPersonnelManagement.Views
                     _partyPositionSuggestions = new ObservableCollection<string>(
                         dbPartySuggestions
                             .Where(x => !string.IsNullOrWhiteSpace(x))
+                            .Select(x => {
+                                var m = System.Text.RegularExpressions.Regex.Match(x.Trim(), @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                                return m.Success ? m.Groups[1].Value.Trim() : x.Trim();
+                            })
                             .Distinct(StringComparer.OrdinalIgnoreCase)
                             .OrderBy(x => x)
                     );
@@ -950,7 +1025,13 @@ namespace TaxPersonnelManagement.Views
             WorkHistory.Department = dept;
             WorkHistory.OrganizationUnit = org;
             WorkHistory.IsPartyConcurrent = chkPartyConcurrent.IsChecked == true;
-            WorkHistory.PartyPosition = chkPartyConcurrent.IsChecked == true ? (cboPartyPosition.Text?.Trim() ?? "") : null;
+            string cleanSavedParty = chkPartyConcurrent.IsChecked == true ? (cboPartyPosition.Text?.Trim() ?? "") : "";
+            if (!string.IsNullOrWhiteSpace(cleanSavedParty))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(cleanSavedParty, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (m.Success) cleanSavedParty = m.Groups[1].Value.Trim();
+            }
+            WorkHistory.PartyPosition = chkPartyConcurrent.IsChecked == true ? cleanSavedParty : null;
 
             if (!string.IsNullOrWhiteSpace(dept) && !string.IsNullOrWhiteSpace(org))
             {

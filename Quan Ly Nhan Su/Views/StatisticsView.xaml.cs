@@ -128,8 +128,27 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        // Tự động điều chỉnh độ rộng của bảng lãnh đạo bên phải vừa khít màn hình khi ở màn hình lớn
+        private void svLeadership_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateLeadershipScrollContentWidth();
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(UpdateLeadershipScrollContentWidth));
+        }
 
+        private void svLeadership_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateLeadershipScrollContentWidth();
+        }
 
+        private void UpdateLeadershipScrollContentWidth()
+        {
+            if (gridLeadershipScrollContent != null && svLeadership != null && svLeadership.ActualWidth > 0)
+            {
+                // Khi màn hình rộng, bảng tự động giãn 100% lấp đầy khoảng trống bên phải
+                // Khi màn hình nhỏ, giữ nguyên MinWidth 675px để hiện thanh cuộn ngang
+                gridLeadershipScrollContent.Width = Math.Max(675, svLeadership.ActualWidth);
+            }
+        }
         // Lấy danh sách nhân sự theo các bộ lọc hiện tại
         private List<Personnel> GetFilteredPersonnel(AppDbContext db, out int filterYear, out string departmentStr, out string yearStr)
         {
@@ -317,6 +336,8 @@ namespace TaxPersonnelManagement.Views
                     // 8. Thống kê lãnh đạo tổ theo từng bộ phận
                     var teamRows = CalculateTeamLeadershipRows(list);
                     icTeamLeadership.ItemsSource = teamRows;
+                    if (icTeamLeadershipLeft != null) icTeamLeadershipLeft.ItemsSource = teamRows;
+                    UpdateLeadershipScrollContentWidth();
                     if (teamRows.Any())
                     {
                         txtTeamTotalHead.Text = teamRows.Sum(x => x.HeadCount).ToString("#,##0");

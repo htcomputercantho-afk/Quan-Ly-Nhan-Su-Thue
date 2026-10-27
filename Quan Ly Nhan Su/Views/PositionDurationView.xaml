@@ -321,6 +321,7 @@
                                                 <MultiBinding Converter="{StaticResource DurationConverter}">
                                                     <Binding Path="PositionDecisionDate"/>
                                                     <Binding ElementName="dpCalculationDate" Path="SelectedDate"/>
+                                                    <Binding Path="DisplayPositionCalculationDate"/>
                                                 </MultiBinding>
                                             </TextBlock.Text>
                                         </TextBlock>

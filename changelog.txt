@@ -1,3 +1,18 @@
+## v1.6.4.9 — 2026-10-27
+- [Chuẩn hóa Quá trình Công tác] Tối ưu Thứ tự Chức danh Đảng & Chuyên môn:
+    + Định dạng hiển thị chức danh Đảng đứng trước chức danh chuyên môn bằng dấu chấm phẩy `;` (Ví dụ: "Bí thư Đảng ủy; Chi cục trưởng").
+    + Loại bỏ hoàn toàn tiền tố "Kiêm" khi hiển thị quá trình công tác trên giao diện, chi tiết hồ sơ cán bộ và file sơ yếu lý lịch PDF.
+    + Tối ưu hóa bộ phân tích và định dạng quá trình công tác chi tiết, đảm bảo lưu trữ và hiển thị nhất quán khi thêm mới hoặc chỉnh sửa.
+- [Tính toán Thời gian Công tác] Dừng Tính Thâm niên theo Ngày Thực hiện Quyết định:
+    + Cập nhật cơ chế tính thời gian công tác và giữ chức vụ đối với các trường hợp "Luân chuyển / Điều động", "Nghỉ thôi việc", "Nghỉ hưu".
+    + Tự động dừng mốc tính thời gian công tác tại "Ngày thực hiện" ghi trên quyết định (hoặc ngày ra quyết định) thay vì tính đến ngày hiện tại.
+    + Đồng bộ thuật toán hiển thị tại Bảng theo dõi thời gian giữ chức vụ (`PositionDurationView`) và bộ chuyển đổi thời gian (`DurationConverter`).
+- [Báo cáo Thống kê Nhân sự] Cố định Cột khi Cuộn & Tự động Co giãn Toàn màn hình:
+    + Cố định cột "STT" và "BỘ PHẬN" ở bên trái bảng "Thống kê lãnh đạo theo bộ phận", giúp theo dõi rõ ràng tên bộ phận khi cuộn ngang xem các cột chức vụ trên màn hình nhỏ.
+    + Căn giữa tiêu đề cột "BỘ PHẬN", căn trái tên các bộ phận trong danh sách theo đúng quy chuẩn thiết kế.
+    + Tự động co giãn 100% trên màn hình lớn: Chuyển các cột chức danh bên phải sang tỉ lệ sao (`*`) kèm `MinWidth`, tự động lấp đầy toàn bộ thẻ và triệt tiêu hoàn toàn khoảng trống thừa sau cột TỔNG.
+    + Mở rộng chiều rộng cột bộ phận lên 430px, đảm bảo các bộ phận tên dài hiển thị trọn vẹn 100%, không bị cắt ngắn `...`.
+
 ## v1.6.4.8 — 2026-10-26
 - [Tối ưu Giao diện Màn hình Chính] Tích hợp Thanh Tiêu đề Cửa sổ Phong cách Microsoft Word:
     + Tích hợp thanh tiêu đề hiện đại vào khung cửa sổ (`WindowChrome`, cao 36px) phủ màu thương hiệu xanh `#0078D4`, liền mạch với menu điều hướng bên trái.

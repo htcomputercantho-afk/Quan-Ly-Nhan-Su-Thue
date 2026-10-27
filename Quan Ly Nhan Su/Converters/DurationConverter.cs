@@ -8,18 +8,25 @@ namespace TaxPersonnelManagement.Converters
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length < 2) return "";
+            if (values.Length < 1) return "";
 
             DateTime? startDate = values[0] as DateTime?;
-            DateTime? endDate = values[1] as DateTime?;
-
             if (!startDate.HasValue) return "";
-            if (!endDate.HasValue) endDate = DateTime.Now;
 
-            if (endDate < startDate) return "0 năm 0 tháng";
+            DateTime end = DateTime.Now;
+            if (values.Length >= 2 && values[1] is DateTime d1)
+            {
+                end = d1;
+            }
+
+            if (values.Length >= 3 && values[2] is DateTime d2)
+            {
+                if (d2 < end) end = d2;
+            }
+
+            if (end < startDate.Value) return "0 năm 0 tháng";
 
             DateTime start = startDate.Value;
-            DateTime end = endDate.Value;
 
             int years = end.Year - start.Year;
             if (start.Date > end.AddYears(-years)) years--;

@@ -583,6 +583,63 @@ namespace TaxPersonnelManagement
                     }
                     catch { }
 
+                    // Tự động chuẩn hóa Chức vụ chuyên môn đứng trước, Chức vụ Đảng đứng sau cho dữ liệu cũ (bỏ hoàn toàn chữ "Kiêm")
+                    try
+                    {
+                        var unnormalizedWh = context.WorkHistoryRecords
+                            .Where(w => (!string.IsNullOrEmpty(w.Position) && (w.Position.Contains(";") || w.Position.Contains(",") || w.Position.Contains("Kiêm") || w.Position.Contains("kiêm"))) ||
+                                        (!string.IsNullOrEmpty(w.PartyPosition) && (w.PartyPosition.Contains("Kiêm") || w.PartyPosition.Contains("kiêm"))) ||
+                                        (string.IsNullOrEmpty(w.Department) && !string.IsNullOrEmpty(w.DepartmentOrUnit)))
+                            .ToList();
+                        bool changedWh = false;
+                        foreach (var w in unnormalizedWh)
+                        {
+                            Views.PersonnelDetailView.NormalizeWorkHistoryRecord(w);
+                            changedWh = true;
+                        }
+                        if (changedWh)
+                        {
+                            context.SaveChanges();
+                        }
+
+                        // Chuẩn hóa văn bản DetailedWorkHistory cũ nếu có dấu ";" dính Chức vụ Đảng ở trước hoặc có chữ "Kiêm"
+                        var unnormalizedP = context.Personnel
+                            .Where(p => !string.IsNullOrEmpty(p.DetailedWorkHistory) && (p.DetailedWorkHistory.Contains(";") || p.DetailedWorkHistory.Contains("Kiêm") || p.DetailedWorkHistory.Contains("kiêm")))
+                            .ToList();
+                        bool changedP = false;
+                        foreach (var p in unnormalizedP)
+                        {
+                            var parsed = Views.PersonnelDetailView.ParseWorkHistoryTextToRecords(p.DetailedWorkHistory!);
+                            if (parsed.Count > 0)
+                            {
+                                string newDetailed = Views.PersonnelDetailView.GenerateDetailedWorkHistoryText(parsed);
+                                if (newDetailed != p.DetailedWorkHistory)
+                                {
+                                    p.DetailedWorkHistory = newDetailed;
+                                    changedP = true;
+                                }
+                            }
+                        }
+                        if (changedP)
+                        {
+                            context.SaveChanges();
+                        }
+
+                        // Chuẩn hóa PositionCalculationDate dừng theo StatusEffectiveDate cho các trường hợp không phải Đang công tác
+                        var nonWorkingPersonnel = context.Personnel
+                            .Where(p => !string.IsNullOrEmpty(p.Status) && p.Status != "Đang công tác" && p.StatusEffectiveDate != null && p.PositionCalculationDate == null)
+                            .ToList();
+                        if (nonWorkingPersonnel.Count > 0)
+                        {
+                            foreach (var p in nonWorkingPersonnel)
+                            {
+                                p.PositionCalculationDate = p.StatusEffectiveDate;
+                            }
+                            context.SaveChanges();
+                        }
+                    }
+                    catch { }
+
                     // Manual Migration for WorkHistorySuggestions (Danh mục gợi ý quá trình công tác độc lập)
                     context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS WorkHistorySuggestions (

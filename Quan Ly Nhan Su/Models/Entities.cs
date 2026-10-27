@@ -74,7 +74,20 @@ namespace TaxPersonnelManagement.Models
         public DateTime? PositionCalculationDate { get; set; } // Thời điểm tính thời gian công tác
 
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public DateTime DisplayPositionCalculationDate => DateTime.Now;
+        public DateTime DisplayPositionCalculationDate
+        {
+            get
+            {
+                bool isNonWorking = !string.IsNullOrEmpty(Status) && !Status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+                if (isNonWorking && StatusEffectiveDate.HasValue)
+                    return StatusEffectiveDate.Value;
+
+                if (PositionCalculationDate.HasValue)
+                    return PositionCalculationDate.Value;
+
+                return DateTime.Now;
+            }
+        }
 
         public string? PositionYear { get; set; } // Năm giữ vị trí công tác
 
@@ -86,7 +99,7 @@ namespace TaxPersonnelManagement.Models
                 if (!PositionDecisionDate.HasValue) return PositionYear ?? "";
 
                 DateTime startDate = PositionDecisionDate.Value;
-                DateTime endDate = DateTime.Now;
+                DateTime endDate = DisplayPositionCalculationDate;
 
                 if (endDate < startDate) return "0 năm 0 tháng";
 
@@ -852,10 +865,60 @@ namespace TaxPersonnelManagement.Models
             set { }
         }
 
+        public static bool IsPartyRoleText(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            string t = text.Trim().ToLowerInvariant();
+            return t.Contains("bí thư") || t.Contains("chi ủy") || t.Contains("đảng ủy") ||
+                   t.Contains("chi bộ") || t.Contains("đảng bộ") || t.Contains("ban thường vụ") ||
+                   t.Contains("ban chấp hành") || t.Contains("phụ trách chi bộ") ||
+                   t.Contains("tổ đảng") || t.Contains("đảng viên");
+        }
+
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public string PositionDisplay
         {
-            get => string.IsNullOrWhiteSpace(Position) ? "(Chưa nhập chức vụ)" : Position.Trim();
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Position)) return "(Chưa nhập chức vụ)";
+                string p = Position.Trim();
+
+                // Lọc bỏ (Kiêm: ...) hoặc (Chức vụ Đảng) nếu còn dính trong chuỗi Position
+                var kiemMatch = System.Text.RegularExpressions.Regex.Match(p, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*[^)]+\)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (kiemMatch.Success)
+                {
+                    p = (p.Substring(0, kiemMatch.Index) + " " + p.Substring(kiemMatch.Index + kiemMatch.Length)).Trim();
+                }
+                else
+                {
+                    var parenMatch = System.Text.RegularExpressions.Regex.Match(p, @"\s*\((?<party>[^)]+)\)\s*");
+                    if (parenMatch.Success && IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                    {
+                        p = (p.Substring(0, parenMatch.Index) + " " + p.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                    }
+                }
+
+                // Nếu Position dính chức vụ Đảng ở trước: "Bí thư Chi bộ; Tổ trưởng..."
+                if (p.Contains(";"))
+                {
+                    var parts = p.Split(';').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
+                    if (parts.Count >= 2 && IsPartyRoleText(parts[0]) && !IsPartyRoleText(parts[1]))
+                    {
+                        return string.Join("; ", parts.Skip(1));
+                    }
+                }
+                else if (p.Contains(","))
+                {
+                    int cIdx = p.IndexOf(',');
+                    string prefix = p.Substring(0, cIdx).Trim();
+                    string suffix = p.Substring(cIdx + 1).Trim();
+                    if (IsPartyRoleText(prefix))
+                    {
+                        return suffix;
+                    }
+                }
+                return string.IsNullOrWhiteSpace(p) ? "(Chưa nhập chức vụ)" : p;
+            }
             set { }
         }
 
@@ -864,8 +927,42 @@ namespace TaxPersonnelManagement.Models
         {
             get
             {
-                if (!IsPartyConcurrent) return "";
-                return string.IsNullOrWhiteSpace(PartyPosition) ? "Kiêm nhiệm chức vụ Đảng" : $"Kiêm: {PartyPosition.Trim()}";
+                string cleanParty(string val)
+                {
+                    if (string.IsNullOrWhiteSpace(val)) return "";
+                    var m = System.Text.RegularExpressions.Regex.Match(val.Trim(), @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    return m.Success ? m.Groups[1].Value.Trim() : val.Trim();
+                }
+
+                if (IsPartyConcurrent && !string.IsNullOrWhiteSpace(PartyPosition))
+                    return cleanParty(PartyPosition);
+
+                if (!string.IsNullOrWhiteSpace(Position))
+                {
+                    var kiemMatch = System.Text.RegularExpressions.Regex.Match(Position, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (kiemMatch.Success)
+                        return cleanParty(kiemMatch.Groups["party"].Value);
+
+                    var parenMatch = System.Text.RegularExpressions.Regex.Match(Position, @"\s*\((?<party>[^)]+)\)\s*");
+                    if (parenMatch.Success && IsPartyRoleText(parenMatch.Groups["party"].Value))
+                        return cleanParty(parenMatch.Groups["party"].Value);
+
+                    if (Position.Contains(";"))
+                    {
+                        var parts = Position.Split(';').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
+                        if (parts.Count >= 2 && IsPartyRoleText(parts[0]) && !IsPartyRoleText(parts[1]))
+                            return cleanParty(parts[0]);
+                    }
+                    else if (Position.Contains(","))
+                    {
+                        int cIdx = Position.IndexOf(',');
+                        string prefix = Position.Substring(0, cIdx).Trim();
+                        if (IsPartyRoleText(prefix))
+                            return cleanParty(prefix);
+                    }
+                }
+
+                return "";
             }
             set { }
         }
@@ -873,7 +970,12 @@ namespace TaxPersonnelManagement.Models
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public System.Windows.Visibility PartyBadgeVisibility
         {
-            get => IsPartyConcurrent ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            get
+            {
+                return !string.IsNullOrWhiteSpace(PartyPositionDisplay)
+                    ? System.Windows.Visibility.Visible
+                    : System.Windows.Visibility.Collapsed;
+            }
             set { }
         }
 

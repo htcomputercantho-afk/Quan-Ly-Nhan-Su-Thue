@@ -86,7 +86,22 @@ namespace TaxPersonnelManagement.Views
 
                 // Tab 2: Thời gian giữ vị trí công tác
                 dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
-                dpPositionCalculationDate.SelectedDate = DateTime.Now;
+                
+                string currentStatus = _personnel.Status ?? "";
+                bool isNonWorking = !string.IsNullOrEmpty(currentStatus) && !currentStatus.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+                if (isNonWorking && _personnel.StatusEffectiveDate.HasValue)
+                {
+                    dpPositionCalculationDate.SelectedDate = _personnel.StatusEffectiveDate.Value;
+                }
+                else if (_personnel.PositionCalculationDate.HasValue)
+                {
+                    dpPositionCalculationDate.SelectedDate = _personnel.PositionCalculationDate.Value;
+                }
+                else
+                {
+                    dpPositionCalculationDate.SelectedDate = DateTime.Now;
+                }
                 txtPositionYear.Text = _personnel.PositionYear;
                 txtDetailedWorkHistory.Text = _personnel.DetailedWorkHistory;
                 LoadWorkHistoriesForPersonnel();
@@ -575,6 +590,57 @@ namespace TaxPersonnelManagement.Views
         private void cboStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             UpdateStatusDecisionFieldsState();
+            SyncPositionCalculationDateWithStatus();
+        }
+
+        private void dpStatusEffectiveDate_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            SyncPositionCalculationDateWithStatus();
+        }
+
+        private void SyncPositionCalculationDateWithStatus()
+        {
+            if (dpPositionCalculationDate == null || cboStatus == null) return;
+
+            string status = GetCurrentStatus();
+            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+            if (!isWorking)
+            {
+                if (dpStatusEffectiveDate != null && dpStatusEffectiveDate.SelectedDate.HasValue)
+                {
+                    dpPositionCalculationDate.SelectedDate = dpStatusEffectiveDate.SelectedDate.Value;
+                }
+            }
+            else
+            {
+                dpPositionCalculationDate.SelectedDate = DateTime.Now;
+            }
+        }
+
+        private string GetCurrentStatus()
+        {
+            if (cboStatus == null) return "";
+            if (cboStatus.SelectedItem is ComboBoxItem item && item.Content != null)
+                return item.Content.ToString() ?? "";
+            if (cboStatus.SelectedItem is string str)
+                return str;
+            return cboStatus.Text ?? "";
+        }
+
+        private DateTime? GetPositionCalculationDateToSave()
+        {
+            string status = GetCurrentStatus();
+            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+            if (!isWorking)
+            {
+                return dpPositionCalculationDate.SelectedDate ?? dpStatusEffectiveDate.SelectedDate;
+            }
+
+            return (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date)
+                ? null
+                : dpPositionCalculationDate.SelectedDate;
         }
 
         /// <summary>
@@ -585,20 +651,7 @@ namespace TaxPersonnelManagement.Views
         {
             if (gridStatusDecision == null || cboStatus == null) return;
 
-            string status = "";
-            if (cboStatus.SelectedItem is ComboBoxItem item && item.Content != null)
-            {
-                status = item.Content.ToString() ?? "";
-            }
-            else if (cboStatus.SelectedItem is string str)
-            {
-                status = str;
-            }
-            else
-            {
-                status = cboStatus.Text ?? "";
-            }
-
+            string status = GetCurrentStatus();
             bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
 
             gridStatusDecision.IsEnabled = !isWorking;
@@ -958,7 +1011,7 @@ namespace TaxPersonnelManagement.Views
 
                         // Tab 2: Thời gian giữ vị trí công tác
                         PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
-                        PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate,
+                        PositionCalculationDate = GetPositionCalculationDateToSave(),
                         PositionYear = txtPositionYear.Text,
                         DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories),
 
@@ -1130,7 +1183,7 @@ namespace TaxPersonnelManagement.Views
 
                         // Tab 2: Thời gian giữ vị trí công tác
                         existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
-                        existingP.PositionCalculationDate = (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date) ? null : dpPositionCalculationDate.SelectedDate;
+                        existingP.PositionCalculationDate = GetPositionCalculationDateToSave();
                         existingP.PositionYear = txtPositionYear.Text;
                         existingP.DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories);
 
@@ -3582,6 +3635,7 @@ namespace TaxPersonnelManagement.Views
                     {
                         foreach (var item in list)
                         {
+                            NormalizeWorkHistoryRecord(item);
                             _workHistories.Add(item);
                         }
                     }
@@ -3648,6 +3702,263 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+        public static void NormalizeWorkHistoryRecord(WorkHistoryRecord r)
+        {
+            if (r == null) return;
+            string pos = r.Position?.Trim() ?? "";
+
+            // 1. Phân tách nếu Position dính chức vụ Đảng qua dấu chấm phẩy ";"
+            // Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp"
+            if (pos.Contains(";"))
+            {
+                var parts = pos.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+                if (parts.Count >= 2)
+                {
+                    if (WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
+                    {
+                        if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                        {
+                            r.IsPartyConcurrent = true;
+                            r.PartyPosition = parts[0];
+                        }
+                        r.Position = string.Join("; ", parts.Skip(1));
+                    }
+                    else if (WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
+                    {
+                        if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                        {
+                            r.IsPartyConcurrent = true;
+                            r.PartyPosition = parts[1];
+                        }
+                        r.Position = parts[0];
+                    }
+                }
+            }
+            // 2. Phân tách nếu bắt đầu bằng "Phó Bí thư, Đội trưởng..."
+            else if (pos.Contains(","))
+            {
+                int cIdx = pos.IndexOf(',');
+                string prefix = pos.Substring(0, cIdx).Trim();
+                string suffix = pos.Substring(cIdx + 1).Trim();
+                if (WorkHistoryRecord.IsPartyRoleText(prefix))
+                {
+                    if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                    {
+                        r.IsPartyConcurrent = true;
+                        r.PartyPosition = prefix;
+                    }
+                    r.Position = suffix;
+                }
+            }
+
+            // 3. Phân tách (Kiêm: ...) hoặc (Chức vụ Đảng) nếu dính trong Position
+            var partyMatch = System.Text.RegularExpressions.Regex.Match(r.Position ?? "",
+                @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (partyMatch.Success)
+            {
+                if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                {
+                    r.IsPartyConcurrent = true;
+                    r.PartyPosition = partyMatch.Groups["party"].Value.Trim();
+                }
+                r.Position = (r.Position!.Substring(0, partyMatch.Index) + " " + r.Position.Substring(partyMatch.Index + partyMatch.Length)).Trim();
+            }
+            else
+            {
+                var parenMatch = System.Text.RegularExpressions.Regex.Match(r.Position ?? "", @"\s*\((?<party>[^)]+)\)\s*");
+                if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                {
+                    if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                    {
+                        r.IsPartyConcurrent = true;
+                        r.PartyPosition = parenMatch.Groups["party"].Value.Trim();
+                    }
+                    r.Position = (r.Position!.Substring(0, parenMatch.Index) + " " + r.Position.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                }
+            }
+
+            // 3b. Làm sạch chữ "Kiêm: " nếu lỡ dính trong PartyPosition
+            if (!string.IsNullOrWhiteSpace(r.PartyPosition))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(r.PartyPosition, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    r.PartyPosition = m.Groups[1].Value.Trim();
+                }
+            }
+
+            // 4. Chuẩn hóa Department và OrganizationUnit từ DepartmentOrUnit nếu đang trống
+            if (string.IsNullOrEmpty(r.Department) && string.IsNullOrEmpty(r.OrganizationUnit) && !string.IsNullOrWhiteSpace(r.DepartmentOrUnit))
+            {
+                string u = r.DepartmentOrUnit.Trim();
+                if (u.Contains(" - "))
+                {
+                    int dIdx = u.IndexOf(" - ");
+                    r.Department = u.Substring(0, dIdx).Trim();
+                    r.OrganizationUnit = u.Substring(dIdx + 3).Trim();
+                }
+                else if (u.Contains(","))
+                {
+                    int cIdx = u.IndexOf(',');
+                    r.Department = u.Substring(0, cIdx).Trim();
+                    r.OrganizationUnit = u.Substring(cIdx + 1).Trim();
+                }
+                else
+                {
+                    r.Department = u;
+                }
+            }
+        }
+
+        public static void ParsePositionUnitAndParty(
+            string rawRest,
+            out string position,
+            out string unit,
+            out string dept,
+            out string org,
+            out bool isParty,
+            out string partyPosition)
+        {
+            isParty = false;
+            partyPosition = "";
+            position = "";
+            unit = "";
+            dept = "";
+            org = "";
+
+            string rest = rawRest?.Trim().TrimEnd('.') ?? "";
+            if (string.IsNullOrWhiteSpace(rest)) return;
+
+            // 1. Tách (Kiêm: ...) hoặc (Chức vụ Đảng) trong ngoặc đơn nếu có ở bất kỳ vị trí nào
+            var partyMatch = System.Text.RegularExpressions.Regex.Match(rest,
+                @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (partyMatch.Success)
+            {
+                isParty = true;
+                partyPosition = partyMatch.Groups["party"].Value.Trim();
+                rest = (rest.Substring(0, partyMatch.Index) + " " + rest.Substring(partyMatch.Index + partyMatch.Length)).Trim();
+            }
+            else
+            {
+                var parenMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?<party>[^)]+)\)\s*");
+                if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                {
+                    isParty = true;
+                    partyPosition = parenMatch.Groups["party"].Value.Trim();
+                    rest = (rest.Substring(0, parenMatch.Index) + " " + rest.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                }
+            }
+
+            // Làm sạch chữ "Kiêm: " nếu có trong partyPosition
+            if (!string.IsNullOrWhiteSpace(partyPosition))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(partyPosition, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    partyPosition = m.Groups[1].Value.Trim();
+                }
+            }
+
+            // 2. Tách nếu có dấu chấm phẩy ";" phân cách giữa Đảng và Chuyên môn
+            // Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp - Đội Thuế TP Hạ Long"
+            if (rest.Contains(";"))
+            {
+                var parts = rest.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+                if (parts.Count >= 2)
+                {
+                    if (WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
+                    {
+                        isParty = true;
+                        partyPosition = parts[0];
+                        rest = string.Join("; ", parts.Skip(1));
+                    }
+                    else if (WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
+                    {
+                        isParty = true;
+                        partyPosition = parts[1];
+                        rest = parts[0];
+                    }
+                }
+            }
+
+            // 3. Tách nếu bắt đầu bằng Chức vụ Đảng + dấu phẩy: "Phó Bí thư, Đội trưởng..."
+            if (!isParty && rest.Contains(","))
+            {
+                int cIdx = rest.IndexOf(',');
+                string prefix = rest.Substring(0, cIdx).Trim();
+                string suffix = rest.Substring(cIdx + 1).Trim();
+                if (WorkHistoryRecord.IsPartyRoleText(prefix))
+                {
+                    isParty = true;
+                    partyPosition = prefix;
+                    rest = suffix;
+                }
+            }
+
+            // 4. Phân tách Chức vụ chuyên môn và Đơn vị công tác
+            if (rest.Contains(" - "))
+            {
+                int dashIdx = rest.IndexOf(" - ");
+                position = rest.Substring(0, dashIdx).Trim();
+                unit = rest.Substring(dashIdx + 3).Trim();
+            }
+            else if (rest.IndexOf(" tại ", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                int taiIdx = rest.IndexOf(" tại ", StringComparison.OrdinalIgnoreCase);
+                position = rest.Substring(0, taiIdx).Trim();
+                unit = rest.Substring(taiIdx + 5).Trim();
+            }
+            else
+            {
+                string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
+                bool found = false;
+                foreach (var m in markers)
+                {
+                    int mIdx = rest.IndexOf(m, StringComparison.OrdinalIgnoreCase);
+                    if (mIdx > 0)
+                    {
+                        position = rest.Substring(0, mIdx).Trim();
+                        unit = rest.Substring(mIdx).Trim();
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    int commaIdx = rest.IndexOf(',');
+                    if (commaIdx >= 0)
+                    {
+                        position = rest.Substring(0, commaIdx).Trim();
+                        unit = rest.Substring(commaIdx + 1).Trim();
+                    }
+                    else
+                    {
+                        position = rest;
+                        unit = "";
+                    }
+                }
+            }
+
+            // 5. Phân tách unit thành dept và org nếu có
+            dept = unit;
+            org = "";
+            if (unit.Contains(" - "))
+            {
+                int uDash = unit.IndexOf(" - ");
+                dept = unit.Substring(0, uDash).Trim();
+                org = unit.Substring(uDash + 3).Trim();
+            }
+            else if (unit.Contains(","))
+            {
+                int uComma = unit.IndexOf(',');
+                dept = unit.Substring(0, uComma).Trim();
+                org = unit.Substring(uComma + 1).Trim();
+            }
+        }
+
         public static string GenerateDetailedWorkHistoryText(IEnumerable<WorkHistoryRecord> items)
         {
             if (items == null) return "";
@@ -3655,6 +3966,8 @@ namespace TaxPersonnelManagement.Views
 
             foreach (var r in items.OrderBy(i => i.OrderIndex))
             {
+                NormalizeWorkHistoryRecord(r);
+
                 string from = string.IsNullOrWhiteSpace(r.FromDate) ? "" : r.FromDate.Trim();
                 if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
 
@@ -3680,9 +3993,50 @@ namespace TaxPersonnelManagement.Views
                     timePart = $"Từ {from}";
                 }
 
-                string unitPart = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? $", {r.DepartmentOrUnit.Trim()}" : "";
+                // Chuyên môn đứng trước
                 string posPart = r.Position?.Trim() ?? "";
-                string partyPart = r.IsPartyConcurrent ? (!string.IsNullOrWhiteSpace(r.PartyPosition) ? $" (Kiêm: {r.PartyPosition.Trim()})" : " (Kiêm nhiệm chức vụ Đảng)") : "";
+
+                // Chức vụ Đảng đứng sau dạng (Chức vụ Đảng), bỏ hoàn toàn từ "Kiêm"
+                string cleanParty = r.PartyPosition?.Trim() ?? "";
+                if (!string.IsNullOrWhiteSpace(cleanParty))
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(cleanParty, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (m.Success) cleanParty = m.Groups[1].Value.Trim();
+                }
+
+                string partyPart = r.IsPartyConcurrent && !string.IsNullOrWhiteSpace(cleanParty)
+                    ? $" ({cleanParty})"
+                    : "";
+
+                // Đơn vị công tác
+                string rawUnit = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? r.DepartmentOrUnit.Trim() : "";
+                if (string.IsNullOrWhiteSpace(rawUnit))
+                {
+                    if (!string.IsNullOrWhiteSpace(r.Department) && !string.IsNullOrWhiteSpace(r.OrganizationUnit))
+                        rawUnit = $"{r.Department.Trim()} - {r.OrganizationUnit.Trim()}";
+                    else if (!string.IsNullOrWhiteSpace(r.Department))
+                        rawUnit = r.Department.Trim();
+                    else if (!string.IsNullOrWhiteSpace(r.OrganizationUnit))
+                        rawUnit = r.OrganizationUnit.Trim();
+                }
+
+                string unitPart = "";
+                if (!string.IsNullOrWhiteSpace(rawUnit))
+                {
+                    string u = rawUnit.TrimStart('-', ',', ' ').Trim();
+                    if (!string.IsNullOrEmpty(u))
+                    {
+                        if (posPart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            unitPart = "";
+                        }
+                        else
+                        {
+                            unitPart = $" - {u}";
+                        }
+                    }
+                }
+
                 string notePart = !string.IsNullOrWhiteSpace(r.Note) ? $" ({r.Note.Trim()})" : "";
 
                 if (!string.IsNullOrEmpty(timePart))
@@ -3727,52 +4081,15 @@ namespace TaxPersonnelManagement.Views
                     var noteMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
                     if (noteMatch.Success)
                     {
-                        note = noteMatch.Groups["note"].Value.Trim();
-                        rest = rest.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
-                    }
-
-                    string pos = rest;
-                    string unit = "";
-
-                    int commaIdx = rest.IndexOf(',');
-                    if (commaIdx >= 0)
-                    {
-                        pos = rest.Substring(0, commaIdx).Trim();
-                        unit = rest.Substring(commaIdx + 1).Trim();
-                    }
-                    else
-                    {
-                        string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
-                        foreach (var m in markers)
+                        string candidateNote = noteMatch.Groups["note"].Value.Trim();
+                        if (!WorkHistoryRecord.IsPartyRoleText(candidateNote) && !candidateNote.StartsWith("Kiêm", StringComparison.OrdinalIgnoreCase))
                         {
-                            int mIdx = rest.IndexOf(m, StringComparison.OrdinalIgnoreCase);
-                            if (mIdx > 0)
-                            {
-                                pos = rest.Substring(0, mIdx).Trim();
-                                unit = rest.Substring(mIdx).Trim();
-                                break;
-                            }
+                            note = candidateNote;
+                            rest = rest.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
                         }
                     }
 
-                    bool isParty = false;
-                    string partyPos = "";
-                    var partyMatch = System.Text.RegularExpressions.Regex.Match(pos, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                    if (partyMatch.Success)
-                    {
-                        isParty = true;
-                        partyPos = partyMatch.Groups["party"].Value.Trim();
-                        pos = pos.Substring(0, partyMatch.Index).Trim();
-                    }
-
-                    string whDept = unit;
-                    string whOrg = "";
-                    int uComma = unit.IndexOf(',');
-                    if (uComma >= 0)
-                    {
-                        whDept = unit.Substring(0, uComma).Trim();
-                        whOrg = unit.Substring(uComma + 1).Trim();
-                    }
+                    ParsePositionUnitAndParty(rest, out string pos, out string unit, out string whDept, out string whOrg, out bool isParty, out string partyPos);
 
                     result.Add(new WorkHistoryRecord
                     {
@@ -3800,42 +4117,15 @@ namespace TaxPersonnelManagement.Views
                         var noteMatch = System.Text.RegularExpressions.Regex.Match(restPart, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
                         if (noteMatch.Success)
                         {
-                            note = noteMatch.Groups["note"].Value.Trim();
-                            restPart = restPart.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
-                        }
-
-                        string pos = restPart;
-                        string unit = "";
-                        int cIdx = restPart.IndexOf(',');
-                        if (cIdx >= 0)
-                        {
-                            pos = restPart.Substring(0, cIdx).Trim();
-                            unit = restPart.Substring(cIdx + 1).Trim();
-                        }
-                        else
-                        {
-                            string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
-                            foreach (var m in markers)
+                            string candidateNote = noteMatch.Groups["note"].Value.Trim();
+                            if (!WorkHistoryRecord.IsPartyRoleText(candidateNote) && !candidateNote.StartsWith("Kiêm", StringComparison.OrdinalIgnoreCase))
                             {
-                                int mIdx = restPart.IndexOf(m, StringComparison.OrdinalIgnoreCase);
-                                if (mIdx > 0)
-                                {
-                                    pos = restPart.Substring(0, mIdx).Trim();
-                                    unit = restPart.Substring(mIdx).Trim();
-                                    break;
-                                }
+                                note = candidateNote;
+                                restPart = restPart.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
                             }
                         }
 
-                        bool isParty2 = false;
-                        string partyPos2 = "";
-                        var partyMatch2 = System.Text.RegularExpressions.Regex.Match(pos, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                        if (partyMatch2.Success)
-                        {
-                            isParty2 = true;
-                            partyPos2 = partyMatch2.Groups["party"].Value.Trim();
-                            pos = pos.Substring(0, partyMatch2.Index).Trim();
-                        }
+                        ParsePositionUnitAndParty(restPart, out string pos, out string unit, out string whDept2, out string whOrg2, out bool isParty2, out string partyPos2);
 
                         string from = timePart;
                         string to = "Hiện nay";
@@ -3870,15 +4160,6 @@ namespace TaxPersonnelManagement.Views
                                 if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
                                     to = "Hiện nay";
                             }
-                        }
-
-                        string whDept2 = unit;
-                        string whOrg2 = "";
-                        int uComma2 = unit.IndexOf(',');
-                        if (uComma2 >= 0)
-                        {
-                            whDept2 = unit.Substring(0, uComma2).Trim();
-                            whOrg2 = unit.Substring(uComma2 + 1).Trim();
                         }
 
                         result.Add(new WorkHistoryRecord
@@ -4050,6 +4331,76 @@ namespace TaxPersonnelManagement.Views
                 };
                 success.ShowDialog();
             }
+        }
+        #endregion
+
+        #region Mouse Wheel Forwarding
+        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Handled) return;
+
+            // Kiểm tra xem DataGrid này có ScrollViewer nội bộ đang cuộn được không
+            if (sender is DependencyObject dep)
+            {
+                var innerSv = FindVisualChild<ScrollViewer>(dep);
+                if (innerSv != null && innerSv.ScrollableHeight > 0)
+                {
+                    bool atTop = e.Delta > 0 && innerSv.VerticalOffset <= 0;
+                    bool atBottom = e.Delta < 0 && innerSv.VerticalOffset >= innerSv.ScrollableHeight;
+                    if (!atTop && !atBottom)
+                    {
+                        // ScrollViewer nội bộ vẫn cuộn được nội dung bảng -> để DataGrid tự cuộn
+                        return;
+                    }
+                }
+            }
+
+            // Chặn sự kiện tunneling để ScrollViewer nội bộ của DataGrid không nuốt mất sự kiện
+            e.Handled = true;
+
+            // Tạo sự kiện bubbling MouseWheel mới để gửi lên ScrollViewer cha
+            var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = sender
+            };
+
+            var parent = ((FrameworkElement)sender).Parent as UIElement 
+                         ?? VisualTreeHelper.GetParent((DependencyObject)sender) as UIElement;
+            parent?.RaiseEvent(eventArg);
+
+            // Dự phòng: Nếu sự kiện không được xử lý qua bubbling, cuộn trực tiếp ScrollViewer tổ tiên
+            if (!eventArg.Handled)
+            {
+                DependencyObject? curr = VisualTreeHelper.GetParent((DependencyObject)sender);
+                while (curr != null)
+                {
+                    if (curr is ScrollViewer sv)
+                    {
+                        if (e.Delta > 0)
+                            sv.LineUp();
+                        else
+                            sv.LineDown();
+                        break;
+                    }
+                    curr = VisualTreeHelper.GetParent(curr);
+                }
+            }
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject? obj) where T : DependencyObject
+        {
+            if (obj == null) return null;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T t)
+                    return t;
+                T? childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
         }
         #endregion
     }

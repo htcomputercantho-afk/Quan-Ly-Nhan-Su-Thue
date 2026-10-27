@@ -496,7 +496,7 @@ namespace TaxPersonnelManagement.Services
             if (p.PositionDecisionDate.HasValue)
             {
                 DateTime startDate = p.PositionDecisionDate.Value;
-                DateTime endDate = p.PositionCalculationDate ?? DateTime.Now;
+                DateTime endDate = p.DisplayPositionCalculationDate;
 
                 if (endDate >= startDate)
                 {

@@ -385,14 +385,15 @@ namespace TaxPersonnelManagement.Views
 
                                 // Calculate duration
                                 DateTime start = item.PositionDecisionDate.Value;
-                                if (referenceDate >= start)
+                                DateTime targetEnd = item.DisplayPositionCalculationDate < referenceDate ? item.DisplayPositionCalculationDate : referenceDate;
+                                if (targetEnd >= start)
                                 {
-                                    int years = referenceDate.Year - start.Year;
-                                    if (start.Date > referenceDate.AddYears(-years)) years--;
+                                    int years = targetEnd.Year - start.Year;
+                                    if (start.Date > targetEnd.AddYears(-years)) years--;
 
                                     DateTime tmpDate = start.AddYears(years);
                                     int months = 0;
-                                    while (tmpDate.AddMonths(1) <= referenceDate)
+                                    while (tmpDate.AddMonths(1) <= targetEnd)
                                     {
                                         months++;
                                         tmpDate = tmpDate.AddMonths(1);

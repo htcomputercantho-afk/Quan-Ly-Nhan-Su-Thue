@@ -719,6 +719,7 @@
                                             <StackPanel Grid.Column="4">
                                                 <TextBlock Text="Ngày thực hiện" Style="{StaticResource ModernLabel}"/>
                                                 <DatePicker x:Name="dpStatusEffectiveDate" Style="{StaticResource ModernDatePicker}"
+                                                            SelectedDateChanged="dpStatusEffectiveDate_SelectedDateChanged"
                                                             helpers:DatePickerHelper.EnableSmartDateEntry="True"/>
                                             </StackPanel>
 
@@ -1141,7 +1142,8 @@
                                                               IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
                                                               GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F5F9"
                                                               VerticalGridLinesBrush="Transparent" BorderThickness="0" Background="Transparent"
-                                                              MinRowHeight="54" VerticalContentAlignment="Center">
+                                                              MinRowHeight="54" VerticalContentAlignment="Center"
+                                                              PreviewMouseWheel="DataGrid_PreviewMouseWheel">
                                                         <DataGrid.ColumnHeaderStyle>
                                                             <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
                                                                 <Setter Property="Background" Value="#F8FAFC"/>
@@ -1758,7 +1760,8 @@
                                       VerticalGridLinesBrush="Transparent"
                                       MinRowHeight="52"
                                       ColumnHeaderHeight="55"
-                                      ScrollViewer.CanContentScroll="False">
+                                      ScrollViewer.CanContentScroll="False"
+                                      PreviewMouseWheel="DataGrid_PreviewMouseWheel">
                                 <DataGrid.Resources>
                                     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
                                     
@@ -2197,7 +2200,8 @@
                                           AlternatingRowBackground="#FAFAFA"
                                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
                                           VerticalGridLinesBrush="Transparent"
-                                          PreviewMouseLeftButtonUp="dgSalaryHistory_PreviewMouseLeftButtonUp">
+                                          PreviewMouseLeftButtonUp="dgSalaryHistory_PreviewMouseLeftButtonUp"
+                                          PreviewMouseWheel="DataGrid_PreviewMouseWheel">
                                     
                                     <DataGrid.ColumnHeaderStyle>
                                         <Style TargetType="DataGridColumnHeader">
@@ -2544,7 +2548,8 @@
                                       GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EEEEEE"
                                       VerticalGridLinesBrush="Transparent"
                                       MinRowHeight="52" ColumnHeaderHeight="55"
-                                      PreviewMouseLeftButtonUp="dgEvaluationHistory_PreviewMouseLeftButtonUp">
+                                      PreviewMouseLeftButtonUp="dgEvaluationHistory_PreviewMouseLeftButtonUp"
+                                      PreviewMouseWheel="DataGrid_PreviewMouseWheel">
                                 
                                 <DataGrid.Resources>
                                     <!-- Base Cell Style to Center Content Vertically -->
