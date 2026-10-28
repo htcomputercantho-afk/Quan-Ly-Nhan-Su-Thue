@@ -32,7 +32,6 @@ namespace TaxPersonnelManagement.Views
         {
             InitializeComponent();
             dpPositionCalculationDate.SelectedDate = DateTime.Now;
-            if (activeTab > 0) tcPersonnelDetails.SelectedIndex = activeTab;
             try { LoadSalaryDelayReasons(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
             try { LoadDisciplineTypes(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
             _personnel = personnel;
@@ -229,6 +228,14 @@ namespace TaxPersonnelManagement.Views
 
             _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
             CalculateExpectedSalaryDate();
+
+            if (activeTab > 0 && tcPersonnelDetails != null && activeTab < tcPersonnelDetails.Items.Count)
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    tcPersonnelDetails.SelectedIndex = activeTab;
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
         }
 
         /// <summary>
@@ -3993,10 +4000,10 @@ namespace TaxPersonnelManagement.Views
                     timePart = $"Từ {from}";
                 }
 
-                // Chuyên môn đứng trước
+                // Chức vụ chuyên môn
                 string posPart = r.Position?.Trim() ?? "";
 
-                // Chức vụ Đảng đứng sau dạng (Chức vụ Đảng), bỏ hoàn toàn từ "Kiêm"
+                // Chức vụ Đảng: loại bỏ hoàn toàn chữ "Kiêm"
                 string cleanParty = r.PartyPosition?.Trim() ?? "";
                 if (!string.IsNullOrWhiteSpace(cleanParty))
                 {
@@ -4004,9 +4011,37 @@ namespace TaxPersonnelManagement.Views
                     if (m.Success) cleanParty = m.Groups[1].Value.Trim();
                 }
 
-                string partyPart = r.IsPartyConcurrent && !string.IsNullOrWhiteSpace(cleanParty)
-                    ? $" ({cleanParty})"
-                    : "";
+                // Quy tắc hiển thị quá trình công tác:
+                // Bên Đảng hiện TRƯỚC bên chuyên môn bằng dấu "; " (Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp")
+                // Tuyệt đối không để trong ngoặc đơn "()", không để chữ "Kiêm".
+                string rolePart = "";
+                bool hasParty = r.IsPartyConcurrent && !string.IsNullOrWhiteSpace(cleanParty);
+                bool hasPos = !string.IsNullOrWhiteSpace(posPart);
+
+                if (hasParty && hasPos)
+                {
+                    if (posPart.Equals(cleanParty, StringComparison.OrdinalIgnoreCase))
+                    {
+                        rolePart = posPart;
+                    }
+                    else if (posPart.StartsWith(cleanParty + ";", StringComparison.OrdinalIgnoreCase) ||
+                             posPart.StartsWith(cleanParty + ",", StringComparison.OrdinalIgnoreCase))
+                    {
+                        rolePart = posPart;
+                    }
+                    else
+                    {
+                        rolePart = $"{cleanParty}; {posPart}";
+                    }
+                }
+                else if (hasParty)
+                {
+                    rolePart = cleanParty;
+                }
+                else if (hasPos)
+                {
+                    rolePart = posPart;
+                }
 
                 // Đơn vị công tác
                 string rawUnit = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? r.DepartmentOrUnit.Trim() : "";
@@ -4026,7 +4061,8 @@ namespace TaxPersonnelManagement.Views
                     string u = rawUnit.TrimStart('-', ',', ' ').Trim();
                     if (!string.IsNullOrEmpty(u))
                     {
-                        if (posPart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase))
+                        if (posPart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase) ||
+                            rolePart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase))
                         {
                             unitPart = "";
                         }
@@ -4039,13 +4075,14 @@ namespace TaxPersonnelManagement.Views
 
                 string notePart = !string.IsNullOrWhiteSpace(r.Note) ? $" ({r.Note.Trim()})" : "";
 
+                string lineContent = $"{rolePart}{unitPart}{notePart}".Trim().TrimEnd('.');
                 if (!string.IsNullOrEmpty(timePart))
                 {
-                    sb.AppendLine($"- {timePart}: {posPart}{partyPart}{unitPart}{notePart}.");
+                    sb.AppendLine($"- {timePart}: {lineContent}");
                 }
-                else if (!string.IsNullOrEmpty(posPart))
+                else if (!string.IsNullOrEmpty(lineContent))
                 {
-                    sb.AppendLine($"- {posPart}{partyPart}{unitPart}{notePart}.");
+                    sb.AppendLine($"- {lineContent}");
                 }
             }
 

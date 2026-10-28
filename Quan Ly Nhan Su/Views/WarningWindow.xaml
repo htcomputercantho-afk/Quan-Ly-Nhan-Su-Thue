@@ -2,49 +2,115 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        SizeToContent="Height" Width="400"
-        WindowStartupLocation="CenterScreen"
+        SizeToContent="Height" Width="430"
+        WindowStartupLocation="CenterOwner"
         WindowStyle="None"
         AllowsTransparency="True"
         Topmost="True"
-        Background="Transparent">
+        Background="Transparent"
+        ShowInTaskbar="False">
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2"/>
+                    <DoubleAnimation Storyboard.TargetName="CardScale" Storyboard.TargetProperty="ScaleX" From="0.9" To="1.0" Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                    <DoubleAnimation Storyboard.TargetName="CardScale" Storyboard.TargetProperty="ScaleY" From="0.9" To="1.0" Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
     
-    <Border Background="White" CornerRadius="20" Margin="20">
+    <Border Background="White" CornerRadius="20" Margin="20"
+            BorderBrush="#F1F5F9" BorderThickness="1"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="CardScale" ScaleX="1" ScaleY="1"/>
+        </Border.RenderTransform>
         <Border.Effect>
-            <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.2" Color="Black"/>
+            <DropShadowEffect BlurRadius="32" ShadowDepth="6" Opacity="0.18" Color="#0F172A"/>
         </Border.Effect>
-        <Grid Margin="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
 
-            <!-- Top Indicator Bar -->
-            <Border Grid.Row="0" Height="6" Background="#ED8936" CornerRadius="20 20 0 0"/>
+        <Grid>
+            <!-- Close Button (✕) -->
+            <Button Click="Close_Click" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0 14 14 0" Width="32" Height="32" Padding="0"
+                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                    materialDesign:ButtonAssist.CornerRadius="16"
+                    ToolTip="Đóng (Esc)">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="Transparent" CornerRadius="16">
+                                        <materialDesign:PackIcon Kind="Close" Width="18" Height="18" Foreground="#94A3B8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#F1F5F9"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            </Button>
 
-            <StackPanel Grid.Row="1" Margin="30 25 30 10" VerticalAlignment="Center">
-                <Border Width="70" Height="70" CornerRadius="35" Background="#FFF5F0" HorizontalAlignment="Center" Margin="0 0 0 20">
-                    <materialDesign:PackIcon Kind="AlertCircleOutline" Width="40" Height="40" Foreground="#DD6B20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <!-- Main Content Container -->
+            <StackPanel Margin="36 32 36 28" HorizontalAlignment="Stretch">
+                <!-- Dual-Layer Circular Icon Badge -->
+                <Border x:Name="borderIconOuter" Width="72" Height="72" CornerRadius="36" 
+                        Background="#FFFBEB" HorizontalAlignment="Center" Margin="0 0 0 18">
+                    <Border x:Name="borderIconInner" Width="52" Height="52" CornerRadius="26"
+                            Background="#FEF3C7" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <materialDesign:PackIcon x:Name="iconType" Kind="AlertCircleOutline" 
+                                                 Width="30" Height="30" Foreground="#D97706" 
+                                                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Border>
                 
-                <TextBlock x:Name="txtTitle" Text="Cảnh Báo" FontSize="22" FontWeight="Bold" Foreground="#2D3748" HorizontalAlignment="Center" Margin="0 0 0 12"/>
-                <TextBlock x:Name="txtMessage" Text="Nội dung cảnh báo..." FontSize="15" Foreground="#4A5568" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="22"/>
-            </StackPanel>
-            
-            <Border Grid.Row="2" Background="#F7FAFC" CornerRadius="0 0 20 20" Padding="0 20">
-                <Button Content="ĐÃ HIỂU" FontFamily="{StaticResource AppHeadingFont}" Click="Close_Click" 
-                        Width="140" Height="45"
-                        materialDesign:ButtonAssist.CornerRadius="10"
-                        Style="{DynamicResource MaterialDesignRaisedButton}"
-                        Background="#ED8936" BorderBrush="#ED8936" Foreground="White"
-                        FontSize="14" FontWeight="Bold"
-                        HorizontalAlignment="Center">
+                <!-- Title -->
+                <TextBlock x:Name="txtTitle" Text="Thông Báo" 
+                           FontFamily="{StaticResource AppHeadingFont}"
+                           FontSize="20" FontWeight="Bold" 
+                           Foreground="#1E293B" 
+                           HorizontalAlignment="Center" TextAlignment="Center" 
+                           Margin="0 0 0 10"/>
+
+                <!-- Message -->
+                <TextBlock x:Name="txtMessage" Text="Nội dung thông báo..." 
+                           FontFamily="{StaticResource AppRegularFont}"
+                           FontSize="14" Foreground="#475569" 
+                           TextWrapping="Wrap" TextAlignment="Center" 
+                           HorizontalAlignment="Center" LineHeight="22" 
+                           Margin="0 0 0 24"/>
+
+                <!-- Action Button -->
+                <Button x:Name="btnConfirm" Content="ĐÃ HIỂU" Click="Close_Click" 
+                        FontFamily="{StaticResource AppHeadingFont}"
+                        Width="140" Height="42"
+                        materialDesign:ButtonAssist.CornerRadius="21"
+                        Background="#D97706" BorderBrush="#D97706" Foreground="White"
+                        FontSize="13" FontWeight="Bold" Cursor="Hand"
+                        IsDefault="True" IsCancel="True"
+                        HorizontalAlignment="Center"
+                        Style="{DynamicResource MaterialDesignRaisedButton}">
                     <Button.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.1" Color="#ED8936"/>
+                        <DropShadowEffect x:Name="btnShadow" BlurRadius="12" ShadowDepth="3" Opacity="0.25" Color="#D97706"/>
                     </Button.Effect>
                 </Button>
-            </Border>
+            </StackPanel>
         </Grid>
     </Border>
 </Window>

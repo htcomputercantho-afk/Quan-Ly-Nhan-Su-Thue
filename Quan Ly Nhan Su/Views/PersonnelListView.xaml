@@ -126,48 +126,23 @@
         <materialDesign:Card Grid.Row="0" UniformCornerRadius="8" materialDesign:ElevationAssist.Elevation="Dp1" Margin="0 0 0 10">
             <StackPanel x:Name="spTopContent" Margin="15 18 15 10">
                 <!-- Filter Section -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 12">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 15 0">
-                        <materialDesign:PackIcon Kind="Domain" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 16">
+                    <!-- Lọc theo bộ phận -->
+                    <StackPanel Margin="0 0 16 0">
+                        <TextBlock Text="Lọc theo bộ phận" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
                         <ComboBox x:Name="cbDepartmentFilter" 
-                                  MinWidth="200" MaxWidth="300"
-                                  Height="40"
-                                  materialDesign:HintAssist.Hint="Lọc theo bộ phận"
-                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                  Background="White"
-                                  VerticalContentAlignment="Center"
-                                  Padding="10 0"
-                                  FontSize="14"
-                                  Foreground="#455A64"
-                                  SelectionChanged="cbDepartmentFilter_SelectionChanged">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                    <Setter Property="Padding" Value="10"/>
-                                    <Setter Property="MinHeight" Value="35"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
-                        </ComboBox>
+                                  Width="280" MinWidth="260" MaxWidth="350"
+                                  Style="{StaticResource FilterPillComboBox}"
+                                  SelectionChanged="cbDepartmentFilter_SelectionChanged"/>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="AccountClockOutline" Width="22" Height="22" Foreground="#0078D4" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                    <!-- Trạng thái công tác -->
+                    <StackPanel Margin="0 0 16 0">
+                        <TextBlock Text="Trạng thái công tác" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
                         <ComboBox x:Name="cbStatusFilter" 
-                                  MinWidth="180" MaxWidth="250"
-                                  Height="40"
-                                  materialDesign:HintAssist.Hint="Trạng thái công tác"
-                                  Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                                  Background="White"
-                                  VerticalContentAlignment="Center"
-                                  Padding="10 0"
-                                  FontSize="14"
-                                  Foreground="#455A64"
+                                  Width="240" MinWidth="220" MaxWidth="300"
+                                  Style="{StaticResource FilterPillComboBox}"
                                   SelectionChanged="cbStatusFilter_SelectionChanged">
-                            <ComboBox.ItemContainerStyle>
-                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-                                    <Setter Property="Padding" Value="10"/>
-                                    <Setter Property="MinHeight" Value="35"/>
-                                </Style>
-                            </ComboBox.ItemContainerStyle>
                             <ComboBoxItem Content="Tất cả trạng thái"/>
                             <ComboBoxItem Content="Đang công tác" IsSelected="True"/>
                             <ComboBoxItem Content="Luân chuyển / Điều động"/>
@@ -308,19 +283,20 @@
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
                         <!-- Search Box -->
-                        <Border Background="White" CornerRadius="4" BorderBrush="#D1D5DB" BorderThickness="1" Width="280" Height="38" Margin="0 0 12 0">
+                        <Border Background="White" CornerRadius="19" BorderBrush="#CBD5E1" BorderThickness="1.5" Width="280" Height="38" Margin="0 0 12 0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <materialDesign:PackIcon Kind="Magnify" Foreground="#9CA3AF" Width="20" Height="20" VerticalAlignment="Center" Margin="10 0 0 0"/>
+                                <materialDesign:PackIcon Kind="Magnify" Foreground="#64748B" Width="18" Height="18" VerticalAlignment="Center" Margin="12 0 4 0"/>
                                 <TextBox x:Name="txtSearch" Grid.Column="1" 
                                          materialDesign:HintAssist.Hint="Tìm kiếm..." 
+                                         materialDesign:HintAssist.Foreground="#94A3B8"
                                          materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                          BorderThickness="0" Background="Transparent"
-                                         VerticalContentAlignment="Center" Padding="8 0 8 0"
-                                         FontSize="14" Foreground="#374151"
+                                         VerticalContentAlignment="Center" Padding="8 0 12 0"
+                                         FontSize="13.5" Foreground="#1E293B"
                                          TextChanged="txtSearch_TextChanged"/>
                             </Grid>
                         </Border>

@@ -5,8 +5,8 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
       mc:Ignorable="d" 
-      d:DesignHeight="700" d:DesignWidth="1000"
-      Title="Chi tiết phép năm"
+      d:DesignHeight="700" d:DesignWidth="1100"
+      Title="Chi tiết Nghỉ"
       xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
       Language="vi-VN"
       FontFamily="{DynamicResource MaterialDesignFont}">
@@ -14,136 +14,252 @@
     <Page.Resources>
         <ResourceDictionary>
             <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+
+            <!-- Modern Segmented Pill Tab Button -->
+            <Style x:Key="ModernTabPillButton" TargetType="RadioButton">
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="#64748B"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Margin" Value="0 0 8 0"/>
+                <Setter Property="Padding" Value="20 9"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    CornerRadius="20" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#F1F5F9"/>
+                                    <Setter Property="Foreground" Value="#1E293B"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                    <Setter Property="Foreground" Value="#0F172A"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Reusable Header Style for DataGrids -->
+            <Style x:Key="ModernDataGridHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="6,8"/>
+                <Setter Property="MinHeight" Value="55"/>
+                <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="BorderBrush" Value="#1565C0"/>
+                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                <Setter Property="ContentTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" 
+                                       FontFamily="{StaticResource AppHeadingFont}"
+                                       Foreground="White" FontWeight="Bold" FontSize="13"
+                                       LineHeight="18"/>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Reusable Row Style for DataGrids -->
+            <Style x:Key="ModernDataGridRowStyle" TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Foreground" Value="#263238"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="BorderThickness" Value="0 0 0 1"/>
+                <Setter Property="BorderBrush" Value="#F1F5F9"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="0"/>
+                <EventSetter Event="MouseDoubleClick" Handler="DataGrid_MouseDoubleClick"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#F5F9FF"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="#E3F2FD"/>
+                        <Setter Property="Foreground" Value="#1F2937"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Reusable Cell Style -->
+            <Style x:Key="ModernDataGridCellStyle" TargetType="DataGridCell">
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="Padding" Value="8,6"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="13.5"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="#1F2937"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </Page.Resources>
 
     <Grid Background="#F5F5F5" Margin="10 5 10 10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Header & Search -->
-                <RowDefinition Height="*"/>    <!-- DataGrid Container -->
-            </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header & Search & Tabs -->
+            <RowDefinition Height="*"/>    <!-- DataGrid Container -->
+        </Grid.RowDefinitions>
 
-            <!-- Top Header & Controls -->
-            <Border Grid.Row="0" Background="White" CornerRadius="8" Padding="16 12" Margin="0 0 0 10" Effect="{DynamicResource MaterialDesignShadowDepth1}">
-                <Grid>
+        <!-- Top Header, Tabs & Controls -->
+        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="20 16" Margin="0 0 0 12" Effect="{DynamicResource MaterialDesignShadowDepth1}">
+            <StackPanel>
+                <!-- Row 0: 4 Tabs (Tổng hợp, Nghỉ phép, Nghỉ ốm, Không lương) -->
+                <Border Margin="0 0 0 16" BorderBrush="#F1F5F9" BorderThickness="0 0 0 1" Padding="0 0 0 12">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <RadioButton x:Name="rbTabSummary" Content="Tổng hợp" GroupName="LeaveTabs" 
+                                     Style="{StaticResource ModernTabPillButton}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="rbTabAnnual" Content="Nghỉ phép" GroupName="LeaveTabs" 
+                                     Style="{StaticResource ModernTabPillButton}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="rbTabSick" Content="Nghỉ ốm" GroupName="LeaveTabs" 
+                                     Style="{StaticResource ModernTabPillButton}" Checked="Tab_Checked"/>
+                        <RadioButton x:Name="rbTabUnpaid" Content="Không lương" GroupName="LeaveTabs" 
+                                     Style="{StaticResource ModernTabPillButton}" Checked="Tab_Checked"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Row 1: Search Bar (Full-Width Pill) -->
+                <Border Background="White" BorderThickness="1.5" 
+                        CornerRadius="21" Padding="14 0" VerticalAlignment="Center"
+                        Height="42" Margin="0 0 0 16">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="BorderBrush" Value="#94A3B8"/>
+                                    <Setter Property="Background" Value="#FAFAFA"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                    <Setter Property="Background" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <materialDesign:PackIcon Kind="Magnify" Grid.Column="0" Width="20" Height="20" 
+                                                 Foreground="#94A3B8" 
+                                                 VerticalAlignment="Center" Margin="0 0 10 0"/>
+                        
+                        <TextBox x:Name="txtSearch" Grid.Column="1" FontSize="14"
+                                 materialDesign:HintAssist.Hint="Tìm kiếm nhân viên..." 
+                                 materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
+                                 BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
+                                 TextChanged="TxtSearch_TextChanged"
+                                 CaretBrush="{DynamicResource PrimaryHueMidBrush}"/>
+
+                        <Button x:Name="btnClearSearch" Grid.Column="2" Width="24" Height="24" 
+                                Style="{DynamicResource MaterialDesignToolButton}" 
+                                Background="Transparent" BorderThickness="0"
+                                Padding="0" Margin="0" Visibility="Collapsed"
+                                Click="BtnClearSearch_Click">
+                            <materialDesign:PackIcon Kind="CloseCircle" Width="16" Height="16" Foreground="#94A3B8"/>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <!-- Row 2: Modern Filter Dropdowns with Clean Labels -->
+                <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 16">
+                    <!-- Filter Bộ phận -->
+                    <StackPanel Margin="0 0 20 6">
+                        <TextBlock Text="Bộ phận" FontSize="13" FontWeight="SemiBold" Foreground="#475569" Margin="6 0 0 6"/>
+                        <ComboBox x:Name="cbDepartmentFilter" Width="280" Height="40" 
+                                  Style="{StaticResource FilterPillComboBox}"
+                                  SelectionChanged="FilterComboBox_SelectionChanged"/>
+                    </StackPanel>
+
+                    <!-- Filter Tháng -->
+                    <StackPanel Margin="0 0 20 6">
+                        <TextBlock Text="Tháng" FontSize="13" FontWeight="SemiBold" Foreground="#475569" Margin="6 0 0 6"/>
+                        <ComboBox x:Name="cbMonthFilter" Width="180" Height="40" 
+                                  Style="{StaticResource FilterPillComboBox}"
+                                  SelectionChanged="FilterComboBox_SelectionChanged"/>
+                    </StackPanel>
+
+                    <!-- Filter Năm -->
+                    <StackPanel Margin="0 0 20 6">
+                        <TextBlock Text="Năm" FontSize="13" FontWeight="SemiBold" Foreground="#475569" Margin="6 0 0 6"/>
+                        <ComboBox x:Name="cbYearFilter" Width="150" Height="40" 
+                                  Style="{StaticResource FilterPillComboBox}"
+                                  SelectionChanged="FilterComboBox_SelectionChanged"/>
+                    </StackPanel>
+
+                    <!-- Filter Checkbox: Chỉ hiện người có nghỉ -->
+                    <CheckBox x:Name="chkOnlyWithLeaves" Content="Chỉ hiện cán bộ có ngày nghỉ" 
+                              Margin="10 0 0 6" VerticalAlignment="Bottom" Height="40"
+                              FontWeight="SemiBold" Foreground="#475569" FontSize="13.5"
+                              Checked="Filter_Changed" Unchecked="Filter_Changed"/>
+                </WrapPanel>
+
+                <!-- Row 3: Title and Export Excel Button -->
+                <Grid Margin="0 4 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <materialDesign:PackIcon Kind="CalendarClock" Width="28" Height="28" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="CalendarClock" Width="26" Height="26" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 10 0"/>
                         <TextBlock x:Name="txtHeaderTitle" 
-                                   Text="BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ NĂM" 
+                                   Text="BẢNG TỔNG HỢP NGÀY NGHỈ NĂM 2026" 
                                    FontFamily="{StaticResource AppHeadingFont}"
-                                   FontWeight="Bold" FontSize="20" VerticalAlignment="Center" 
+                                   FontWeight="Bold" FontSize="19" VerticalAlignment="Center" 
                                    Foreground="{DynamicResource PrimaryHueMidBrush}"
                                    TextWrapping="Wrap" Margin="0 0 20 0"/>
                     </StackPanel>
 
-                    <Button x:Name="btnExportExcel" Grid.Row="0" Grid.Column="1" Height="36" Click="BtnExportExcel_Click" 
+                    <Button x:Name="btnExportExcel" Grid.Column="1" Height="38" Click="BtnExportExcel_Click" 
                             Style="{DynamicResource MaterialDesignRaisedButton}"
-                            Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="15,0"
-                            materialDesign:ButtonAssist.CornerRadius="18" HorizontalAlignment="Right"
+                            Background="#1976D2" BorderBrush="#1976D2" Foreground="White" Padding="18,0"
+                            materialDesign:ButtonAssist.CornerRadius="19" HorizontalAlignment="Right"
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                            <TextBlock Text="Xuất báo cáo Excel" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="14"/>
                         </StackPanel>
                     </Button>
-
-                    <!-- Modern Search Bar & Filters -->
-                    <WrapPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="1" Margin="0 10 0 0" VerticalAlignment="Center">
-                        <!-- Search Bar -->
-                        <Border Background="White" BorderThickness="1.5" 
-                                CornerRadius="4" Padding="10 0" VerticalAlignment="Center"
-                                Width="230" Height="38" Margin="0 0 15 10">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="BorderBrush" Value="#D0D0D0"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
-                                            <Setter Property="Background" Value="#FAFAFA"/>
-                                        </Trigger>
-                                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
-                                            <Setter Property="BorderThickness" Value="2"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                
-                                <materialDesign:PackIcon Kind="Magnify" Grid.Column="0" Width="18" Height="18" 
-                                                         Foreground="#78909C" 
-                                                         VerticalAlignment="Center" Margin="0 0 8 0"/>
-                                
-                                <TextBox x:Name="txtSearch" Grid.Column="1" FontSize="13.5"
-                                         materialDesign:HintAssist.Hint="Tìm kiếm theo Tên, CCCD..." 
-                                         materialDesign:TextFieldAssist.DecorationVisibility="Collapsed"
-                                         BorderThickness="0" Background="Transparent" VerticalAlignment="Center"
-                                         TextChanged="TxtSearch_TextChanged"
-                                         CaretBrush="{DynamicResource PrimaryHueMidBrush}"/>
-
-                                <Button x:Name="btnClearSearch" Grid.Column="2" Width="24" Height="24" 
-                                        Style="{DynamicResource MaterialDesignToolButton}" 
-                                        Background="Transparent" BorderThickness="0"
-                                        Padding="0" Margin="0" Visibility="Collapsed"
-                                        Click="BtnClearSearch_Click">
-                                    <materialDesign:PackIcon Kind="CloseCircle" Width="14" Height="14" Foreground="#9E9E9E"/>
-                                </Button>
-                            </Grid>
-                        </Border>
-
-                        <!-- Filter Bộ phận -->
-                        <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="Domain" Width="20" Height="20" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <ComboBox x:Name="cbDepartmentFilter" Width="200" Height="38" 
-                                      Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="FilterComboBox_SelectionChanged"/>
-                        </StackPanel>
-
-                        <!-- Filter Tháng -->
-                        <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="CalendarMonth" Width="20" Height="20" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <ComboBox x:Name="cbMonthFilter" Width="170" Height="38" 
-                                      Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="FilterComboBox_SelectionChanged"/>
-                        </StackPanel>
-
-                        <!-- Filter Năm -->
-                        <StackPanel Orientation="Horizontal" Margin="0 0 15 10" VerticalAlignment="Center">
-                            <materialDesign:PackIcon Kind="CalendarRange" Width="20" Height="20" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                            <ComboBox x:Name="cbYearFilter" Width="100" Height="38" 
-                                      Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="FilterComboBox_SelectionChanged"/>
-                        </StackPanel>
-                    </WrapPanel>
                 </Grid>
-            </Border>
+            </StackPanel>
+        </Border>
 
-            <!-- Main DataGrid Container -->
-            <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="0" 
-                    BorderBrush="#E0E0E0" BorderThickness="1"
-                    ClipToBounds="True"
-                    Effect="{DynamicResource MaterialDesignShadowDepth2}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    
-                <DataGrid x:Name="dgLeaveSummary" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
+        <!-- Main DataGrid Container -->
+        <Border Grid.Row="1" Background="White" CornerRadius="10" Padding="0" 
+                BorderBrush="#E0E0E0" BorderThickness="1"
+                ClipToBounds="True"
+                Effect="{DynamicResource MaterialDesignShadowDepth2}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <!-- TAB 1: BẢNG TỔNG HỢP NGÀY NGHỈ (Tổng hợp) -->
+                <DataGrid x:Name="dgGeneralSummary" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
                           IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
                           BorderThickness="0" Background="White"
                           RowHeight="NaN" MinRowHeight="56" ColumnHeaderHeight="55"
@@ -153,9 +269,12 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           FontSize="13.5"
-                          SizeChanged="dgLeaveSummary_SizeChanged"
-                          FrozenColumnCount="2">
-
+                          FrozenColumnCount="2"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridHeaderStyle}"
+                          RowStyle="{StaticResource ModernDataGridRowStyle}"
+                          CellStyle="{StaticResource ModernDataGridCellStyle}"
+                          SizeChanged="dgGeneralSummary_SizeChanged"
+                          Visibility="Visible">
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
@@ -163,73 +282,6 @@
                             <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
                         </Style>
                     </DataGrid.Resources>
-
-                    <!-- Header Style: Nền xanh đậm, chữ trắng -->
-                    <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                            <Setter Property="FontFamily" Value="{StaticResource AppHeadingFont}"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                            <Setter Property="Padding" Value="6,8"/>
-                            <Setter Property="MinHeight" Value="55"/>
-                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
-                            <Setter Property="Foreground" Value="White"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="BorderBrush" Value="#1565C0"/>
-                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                            <Setter Property="ContentTemplate">
-                                <Setter.Value>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" TextAlignment="Center" 
-                                                   FontFamily="{StaticResource AppHeadingFont}"
-                                                   Foreground="White" FontWeight="Bold" FontSize="13"
-                                                   LineHeight="18"/>
-                                    </DataTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>
-
-                    <!-- Row Style: Hover and Selection -->
-                    <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-                            <Setter Property="Background" Value="White"/>
-                            <Setter Property="Foreground" Value="#263238"/>
-                            <Setter Property="FontSize" Value="14"/>
-                            <Setter Property="BorderThickness" Value="0 0 0 1"/>
-                            <Setter Property="BorderBrush" Value="#F1F5F9"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <Setter Property="Margin" Value="0"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#F5F9FF"/>
-                                </Trigger>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="#E3F2FD"/>
-                                    <Setter Property="Foreground" Value="#1F2937"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.RowStyle>
-
-                    <!-- Cell Style -->
-                    <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="BorderBrush" Value="Transparent"/>
-                            <Setter Property="Padding" Value="8,6"/>
-                            <Setter Property="VerticalAlignment" Value="Center"/>
-                            <Setter Property="FontSize" Value="13.5"/>
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsSelected" Value="True">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Foreground" Value="#1F2937"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </DataGrid.CellStyle>
 
                     <DataGrid.Columns>
                         <!-- STT -->
@@ -245,13 +297,152 @@
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
 
-                        <!-- Mã số cán bộ - REMOVED BY USER REQUEST -->
+                        <!-- Họ và tên (Link to Personnel) -->
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="300">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,6"
+                                                Cursor="Hand" MouseDown="PersonnelName_MouseDown">
+                                        <Grid Width="36" Height="36" Margin="0,0,12,0">
+                                            <Ellipse Fill="#E3F2FD" Stroke="#BBDEFB" StrokeThickness="1"/>
+                                            <materialDesign:PackIcon Kind="AccountCircle" Width="26" Height="26" 
+                                                                     Foreground="#1976D2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse Stroke="#E0E0E0" StrokeThickness="1">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" 
+                                                                Stretch="UniformToFill"
+                                                                RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                        </Grid>
+                                        <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
+                                                   FontWeight="SemiBold" FontSize="14" Foreground="#1976D2"
+                                                   TextWrapping="Wrap" MaxWidth="240">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Bộ phận -->
+                        <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Department}" Width="*" MinWidth="260">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="14,6,14,6"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="Foreground" Value="#374151"/>
+                                    <Setter Property="ToolTip" Value="{Binding Department}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Phép -->
+                        <DataGridTemplateColumn Header="PHÉP" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E8F5E9" CornerRadius="12" Padding="14,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding AnnualLeaveDays, StringFormat='{}{0:0.#}'}" FontWeight="Bold" FontSize="14" 
+                                                   Foreground="#2E7D32" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Ốm -->
+                        <DataGridTemplateColumn Header="ỐM" Width="130">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FFEBEE" CornerRadius="12" Padding="14,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SickLeaveDays, StringFormat='{}{0:0.#}'}" FontWeight="Bold" FontSize="14" 
+                                                   Foreground="#D32F2F" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Không lương -->
+                        <DataGridTemplateColumn Header="KHÔNG LƯƠNG" Width="140">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F1F5F9" CornerRadius="12" Padding="14,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding UnpaidLeaveDays, StringFormat='{}{0:0.#}'}" FontWeight="Bold" FontSize="14" 
+                                                   Foreground="#475569" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Tổng -->
+                        <DataGridTemplateColumn Header="TỔNG" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding TotalLeaveDays, StringFormat='{}{0:0.#}'}" 
+                                               FontWeight="Bold" FontSize="15" Foreground="#1E293B" 
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- TAB 2: BẢNG TỔNG HỢP SỐ NGÀY NGHỈ PHÉP THỰC TẾ (Nghỉ phép - Giữ nguyên đủ các cột như cũ) -->
+                <DataGrid x:Name="dgLeaveSummary" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
+                          IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
+                          BorderThickness="0" Background="White"
+                          RowHeight="NaN" MinRowHeight="56" ColumnHeaderHeight="55"
+                          GridLinesVisibility="None" 
+                          SpellCheck.IsEnabled="False"
+                          AlternationCount="0" AlternatingRowBackground="{x:Null}" RowBackground="White"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          FontSize="13.5"
+                          SizeChanged="dgLeaveSummary_SizeChanged"
+                          FrozenColumnCount="2"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridHeaderStyle}"
+                          RowStyle="{StaticResource ModernDataGridRowStyle}"
+                          CellStyle="{StaticResource ModernDataGridCellStyle}"
+                          Visibility="Collapsed">
+
+                    <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <!-- STT -->
+                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="70">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Foreground" Value="#546E7A"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
 
                         <!-- Avatar + Họ và tên -->
                         <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="300">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,6">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,6"
+                                                Cursor="Hand" MouseDown="PersonnelName_MouseDown">
                                         <Grid Width="36" Height="36" Margin="0,0,12,0">
                                             <!-- Fallback Icon Layer -->
                                             <Ellipse Fill="#E3F2FD" Stroke="#BBDEFB" StrokeThickness="1"/>
@@ -268,8 +459,18 @@
                                             </Ellipse>
                                         </Grid>
                                         <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
-                                                   FontWeight="SemiBold" FontSize="14" Foreground="#263238"
-                                                   TextWrapping="Wrap" MaxWidth="220"/>
+                                                   FontWeight="SemiBold" FontSize="14" Foreground="#1976D2"
+                                                   TextWrapping="Wrap" MaxWidth="220">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -367,22 +568,262 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                    <!-- Pagination Footer -->
-                    <Grid Grid.Row="1" Margin="15 8">
-                        <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 nhân viên" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="btnPrevPage" Click="BtnPrevPage_Click" 
-                                    Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">
-                                <materialDesign:PackIcon Kind="ChevronLeft" Foreground="#607D8B"/>
-                            </Button>
-                            <TextBlock x:Name="txtPageInfo" Text="1 / 1" VerticalAlignment="Center" Margin="10 0" FontWeight="Bold" Foreground="#455A64"/>
-                            <Button x:Name="btnNextPage" Click="BtnNextPage_Click" 
-                                    Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30">
-                                <materialDesign:PackIcon Kind="ChevronRight" Foreground="#607D8B"/>
-                            </Button>
-                        </StackPanel>
-                    </Grid>
+                <!-- TAB 3: BẢNG CHI TIẾT NGHỈ ỐM -->
+                <DataGrid x:Name="dgSickLeave" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
+                          IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
+                          BorderThickness="0" Background="White"
+                          RowHeight="NaN" MinRowHeight="56" ColumnHeaderHeight="55"
+                          GridLinesVisibility="None" 
+                          SpellCheck.IsEnabled="False"
+                          AlternationCount="0" AlternatingRowBackground="{x:Null}" RowBackground="White"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          FontSize="13.5"
+                          FrozenColumnCount="2"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridHeaderStyle}"
+                          RowStyle="{StaticResource ModernDataGridRowStyle}"
+                          CellStyle="{StaticResource ModernDataGridCellStyle}"
+                          Visibility="Collapsed">
+                    <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <!-- STT -->
+                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="70">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Foreground" Value="#546E7A"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Họ và tên (Link to Personnel) -->
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="300">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,6"
+                                                Cursor="Hand" MouseDown="PersonnelName_MouseDown">
+                                        <Grid Width="36" Height="36" Margin="0,0,12,0">
+                                            <Ellipse Fill="#E3F2FD" Stroke="#BBDEFB" StrokeThickness="1"/>
+                                            <materialDesign:PackIcon Kind="AccountCircle" Width="26" Height="26" 
+                                                                     Foreground="#1976D2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse Stroke="#E0E0E0" StrokeThickness="1">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" 
+                                                                Stretch="UniformToFill"
+                                                                RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                        </Grid>
+                                        <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
+                                                   FontWeight="SemiBold" FontSize="14" Foreground="#1976D2"
+                                                   TextWrapping="Wrap" MaxWidth="240">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Bộ phận -->
+                        <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Department}" Width="*" MinWidth="260">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="14,6,14,6"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="Foreground" Value="#374151"/>
+                                    <Setter Property="ToolTip" Value="{Binding Department}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Số ngày nghỉ ốm -->
+                        <DataGridTemplateColumn Header="SỐ NGÀY NGHỈ ỐM" Width="180">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FFEBEE" CornerRadius="12" Padding="14,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding SickDays, StringFormat='{}{0:0.#}'}" FontWeight="Bold" FontSize="14" 
+                                                   Foreground="#D32F2F" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Nội dung -->
+                        <DataGridTemplateColumn Header="NỘI DUNG" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ItemsControl ItemsSource="{Binding DetailLines}" Margin="12,8">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock TextWrapping="Wrap" LineHeight="20" FontSize="13.5" Foreground="#374151" SpellCheck.IsEnabled="False">
+                                                    <Run Text="{Binding MainContent, Mode=OneWay}"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- TAB 4: BẢNG CHI TIẾT NGHỈ KHÔNG LƯƠNG -->
+                <DataGrid x:Name="dgUnpaidLeave" Grid.Row="0" AutoGenerateColumns="False" CanUserAddRows="False"
+                          IsReadOnly="True" HeadersVisibility="Column" SelectionMode="Single"
+                          BorderThickness="0" Background="White"
+                          RowHeight="NaN" MinRowHeight="56" ColumnHeaderHeight="55"
+                          GridLinesVisibility="None" 
+                          SpellCheck.IsEnabled="False"
+                          AlternationCount="0" AlternatingRowBackground="{x:Null}" RowBackground="White"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          FontSize="13.5"
+                          FrozenColumnCount="2"
+                          ColumnHeaderStyle="{StaticResource ModernDataGridHeaderStyle}"
+                          RowStyle="{StaticResource ModernDataGridRowStyle}"
+                          CellStyle="{StaticResource ModernDataGridCellStyle}"
+                          Visibility="Collapsed">
+                    <DataGrid.Resources>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#1F2937"/>
+                        <Style TargetType="DataGridColumnHeadersPresenter">
+                            <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                        </Style>
+                    </DataGrid.Resources>
+
+                    <DataGrid.Columns>
+                        <!-- STT -->
+                        <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="70">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="Foreground" Value="#546E7A"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Họ và tên (Link to Personnel) -->
+                        <DataGridTemplateColumn Header="HỌ VÀ TÊN" Width="300">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,6"
+                                                Cursor="Hand" MouseDown="PersonnelName_MouseDown">
+                                        <Grid Width="36" Height="36" Margin="0,0,12,0">
+                                            <Ellipse Fill="#E3F2FD" Stroke="#BBDEFB" StrokeThickness="1"/>
+                                            <materialDesign:PackIcon Kind="AccountCircle" Width="26" Height="26" 
+                                                                     Foreground="#1976D2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Ellipse Stroke="#E0E0E0" StrokeThickness="1">
+                                                <Ellipse.Fill>
+                                                    <ImageBrush ImageSource="{Binding AvatarBase64, Converter={StaticResource Base64ToImageConverter}}" 
+                                                                Stretch="UniformToFill"
+                                                                RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                        </Grid>
+                                        <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" 
+                                                   FontWeight="SemiBold" FontSize="14" Foreground="#1976D2"
+                                                   TextWrapping="Wrap" MaxWidth="240">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="TextDecorations" Value="Underline"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Bộ phận -->
+                        <DataGridTextColumn Header="BỘ PHẬN" Binding="{Binding Department}" Width="*" MinWidth="260">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Setter Property="Margin" Value="14,6,14,6"/>
+                                    <Setter Property="FontSize" Value="13.5"/>
+                                    <Setter Property="Foreground" Value="#374151"/>
+                                    <Setter Property="ToolTip" Value="{Binding Department}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <!-- Số ngày nghỉ không lương -->
+                        <DataGridTemplateColumn Header="SỐ NGÀY NGHỈ KHÔNG LƯƠNG" Width="220">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border Background="#EDE7F6" CornerRadius="12" Padding="14,4" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding UnpaidDays, StringFormat='{}{0:0.#}'}" FontWeight="Bold" FontSize="14" 
+                                                   Foreground="#512DA8" HorizontalAlignment="Center"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Nội dung -->
+                        <DataGridTemplateColumn Header="NỘI DUNG" Width="*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ItemsControl ItemsSource="{Binding DetailLines}" Margin="12,8">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock TextWrapping="Wrap" LineHeight="20" FontSize="13.5" Foreground="#374151" SpellCheck.IsEnabled="False">
+                                                    <Run Text="{Binding MainContent, Mode=OneWay}"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Pagination Footer (Shared for all 4 Tabs) -->
+                <Grid Grid.Row="1" Margin="15 8">
+                    <TextBlock x:Name="txtPagingInfo" Text="Hiển thị 0 nhân viên" VerticalAlignment="Center" Foreground="#78909C" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="btnPrevPage" Click="BtnPrevPage_Click" 
+                                Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30" Margin="0 0 5 0">
+                            <materialDesign:PackIcon Kind="ChevronLeft" Foreground="#607D8B"/>
+                        </Button>
+                        <TextBlock x:Name="txtPageInfo" Text="1 / 1" VerticalAlignment="Center" Margin="10 0" FontWeight="Bold" Foreground="#455A64"/>
+                        <Button x:Name="btnNextPage" Click="BtnNextPage_Click" 
+                                Style="{DynamicResource MaterialDesignIconForegroundButton}" Width="30" Height="30">
+                            <materialDesign:PackIcon Kind="ChevronRight" Foreground="#607D8B"/>
+                        </Button>
+                    </StackPanel>
                 </Grid>
-            </Border>
+            </Grid>
+        </Border>
     </Grid>
 </Page>

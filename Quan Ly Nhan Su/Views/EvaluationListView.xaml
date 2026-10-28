@@ -208,137 +208,95 @@
         </WrapPanel>
 
         <!-- Filter Toolbar Card -->
-        <materialDesign:Card Grid.Row="2" Margin="0 0 0 10" Padding="16" UniformCornerRadius="12" Background="White" BorderBrush="#E2E8F0" BorderThickness="1" Effect="{x:Null}">
-            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0">
-                <!-- Group 1: Filters -->
-                <StackPanel Orientation="Horizontal" Margin="0 0 16 10" VerticalAlignment="Center">
-                    <!-- Search Box -->
-                    <Border Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Width="240" Height="40" Margin="0 0 12 0">
+        <materialDesign:Card Grid.Row="2" Margin="0 0 0 12" Padding="20 14" UniformCornerRadius="12" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Search Box -->
+                <StackPanel Margin="0 0 14 0" VerticalAlignment="Center">
+                    <TextBlock Text="Tìm kiếm" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Width="230" Height="40">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Kind="Magnify" Width="20" Height="20" Foreground="#64748B" VerticalAlignment="Center" Margin="12 0 8 0" Grid.Column="0"/>
+                            <materialDesign:PackIcon Kind="Magnify" Foreground="#64748B" Width="18" Height="18" VerticalAlignment="Center" Margin="12 0 4 0"/>
                             <TextBox x:Name="txtSearch" Grid.Column="1"
-                                     materialDesign:HintAssist.Hint="Tìm kiếm họ tên, CCCD..." 
+                                     materialDesign:HintAssist.Hint="Họ tên, CCCD..." 
                                      materialDesign:HintAssist.Foreground="#94A3B8"
                                      materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                                      BorderThickness="0" Background="Transparent"
-                                     VerticalContentAlignment="Center" Padding="0 0 8 0"
-                                     FontSize="13" Foreground="#0F172A"
+                                     VerticalContentAlignment="Center" Padding="8 0 12 0"
+                                     FontSize="13.5" Foreground="#1E293B"
                                      TextChanged="txtSearch_TextChanged"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- Department Filter -->
-                    <Border Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Width="300" Height="40" Margin="0 0 12 0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Kind="Domain" Width="20" Height="20" Foreground="#64748B" VerticalAlignment="Center" Margin="12 0 4 0"/>
-                            <ComboBox x:Name="cbDepartment" Grid.Column="1"
-                                      materialDesign:HintAssist.Hint="Tất cả bộ phận"
-                                      Style="{DynamicResource MaterialDesignComboBox}"
-                                      materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                      BorderThickness="0" Background="Transparent"
-                                      VerticalAlignment="Center"
-                                      VerticalContentAlignment="Center"
-                                      Padding="6 0 24 0"
-                                      FontSize="13" Foreground="#0F172A"
-                                      SelectionChanged="cbFilter_SelectionChanged">
-                            </ComboBox>
-                        </Grid>
-                    </Border>
-
-                    <!-- Year Filter -->
-                    <Border Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Width="200" Height="40" Margin="0 0 12 0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Kind="CalendarRange" Width="20" Height="20" Foreground="#64748B" VerticalAlignment="Center" Margin="12 0 4 0"/>
-                            <ComboBox x:Name="cbYear" Grid.Column="1"
-                                       materialDesign:HintAssist.Hint="Tất cả các năm"
-                                       Style="{DynamicResource MaterialDesignComboBox}"
-                                       materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                       BorderThickness="0" Background="Transparent"
-                                       VerticalAlignment="Center"
-                                       VerticalContentAlignment="Center"
-                                       Padding="6 0 24 0"
-                                       FontSize="13" Foreground="#0F172A"
-                                       SelectionChanged="cbFilter_SelectionChanged">
-                            </ComboBox>
-                        </Grid>
-                    </Border>
-
-                    <!-- Rating Filter -->
-                    <Border Background="#F8FAFC" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" Width="240" Height="40">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <materialDesign:PackIcon Kind="StarOutline" Width="20" Height="20" Foreground="#64748B" VerticalAlignment="Center" Margin="12 0 4 0"/>
-                            <ComboBox x:Name="cbRating" Grid.Column="1"
-                                       materialDesign:HintAssist.Hint="Tất cả xếp loại"
-                                       Style="{DynamicResource MaterialDesignComboBox}"
-                                       materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                       BorderThickness="0" Background="Transparent"
-                                       VerticalAlignment="Center"
-                                       VerticalContentAlignment="Center"
-                                       Padding="6 0 24 0"
-                                       FontSize="13" Foreground="#0F172A"
-                                       SelectionChanged="cbFilter_SelectionChanged">
-                            </ComboBox>
                         </Grid>
                     </Border>
                 </StackPanel>
 
+                <!-- Department Filter -->
+                <StackPanel Margin="0 0 14 0" VerticalAlignment="Center">
+                    <TextBlock Text="Bộ phận" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <ComboBox x:Name="cbDepartment" Width="280"
+                              Style="{StaticResource FilterPillComboBox}"
+                              SelectionChanged="cbFilter_SelectionChanged"/>
+                </StackPanel>
+
+                <!-- Year Filter -->
+                <StackPanel Margin="0 0 14 0" VerticalAlignment="Center">
+                    <TextBlock Text="Năm" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <ComboBox x:Name="cbYear" Width="190"
+                              Style="{StaticResource FilterPillComboBox}"
+                              SelectionChanged="cbFilter_SelectionChanged"/>
+                </StackPanel>
+
+                <!-- Rating Filter -->
+                <StackPanel Margin="0 0 18 0" VerticalAlignment="Center">
+                    <TextBlock Text="Xếp loại" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <ComboBox x:Name="cbRating" Width="230"
+                              Style="{StaticResource FilterPillComboBox}"
+                              SelectionChanged="cbFilter_SelectionChanged"/>
+                </StackPanel>
+
                 <!-- Group 2: Actions -->
-                <StackPanel Orientation="Horizontal" Margin="0 0 0 10" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0 0 0 0">
                     <!-- Import Button -->
-                    <Button Height="40" Margin="0 0 8 0"
+                    <Button Height="40" Margin="0 0 8 0" Padding="16 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
-                            materialDesign:ButtonAssist.CornerRadius="8"
-                            Background="#2563EB" BorderThickness="0" Foreground="White"
+                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Background="#2563EB" BorderBrush="#2563EB" Foreground="White"
                             ToolTip="Nhập danh sách xếp loại từ file Excel"
-                            Click="btnImport_Click"
+                            Click="btnImport_Click" Cursor="Hand"
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Upload" VerticalAlignment="Center" Margin="0 0 8 0" Width="18" Height="18"/>
-                            <TextBlock Text="Nhập Excel" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Text="Nhập Excel" VerticalAlignment="Center" FontWeight="Bold" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
                     <!-- Bulk Decision Button -->
-                    <Button Height="40" Margin="0 0 8 0"
+                    <Button Height="40" Margin="0 0 8 0" Padding="16 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
-                            materialDesign:ButtonAssist.CornerRadius="8"
-                            Background="#7B1FA2" BorderThickness="0" Foreground="White"
+                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White"
                             ToolTip="Cập nhật quyết định khen thưởng xếp loại hàng loạt cho các nhân sự trong năm"
-                            Click="btnBulkDecision_Click"
+                            Click="btnBulkDecision_Click" Cursor="Hand"
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ClipboardEditOutline" VerticalAlignment="Center" Margin="0 0 8 0" Width="18" Height="18"/>
-                            <TextBlock Text="Quyết định hàng loạt" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Text="Quyết định hàng loạt" VerticalAlignment="Center" FontWeight="Bold" FontSize="13"/>
                         </StackPanel>
                     </Button>
 
                     <!-- Export Button -->
-                    <Button Height="40" Margin="0 0 0 0"
+                    <Button Height="40" Margin="0 0 0 0" Padding="16 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
-                            materialDesign:ButtonAssist.CornerRadius="8"
-                            Background="#107C41" BorderThickness="0" Foreground="White"
+                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Background="#15803D" BorderBrush="#15803D" Foreground="White"
                             ToolTip="Xuất danh sách xếp loại ra file Excel"
-                            Click="btnExport_Click"
+                            Click="btnExport_Click" Cursor="Hand"
                             VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FileExcel" VerticalAlignment="Center" Margin="0 0 8 0" Width="18" Height="18"/>
-                            <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="Bold" FontSize="13"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>

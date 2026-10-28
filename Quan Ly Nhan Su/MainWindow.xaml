@@ -237,10 +237,10 @@
                             </StackPanel>
                         </Button>
         
-                        <Button x:Name="btnLeaveDetail" Click="NavigateLeaveDetail" ToolTip="Chi tiết nghỉ phép">
+                        <Button x:Name="btnLeaveDetail" Click="NavigateLeaveDetail" ToolTip="Chi tiết nghỉ">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="CalendarClock" Width="22" Height="22" VerticalAlignment="Center" Margin="0 0 15 0"/>
-                                <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết phép năm" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="txtLeaveDetail" Text="Chi tiết Nghỉ" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
 

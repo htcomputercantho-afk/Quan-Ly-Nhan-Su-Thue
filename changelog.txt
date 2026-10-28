@@ -1,3 +1,29 @@
+## v1.6.5.0 — 2026-10-29
+- [Nâng cấp Giao diện] Đồng bộ Hệ thống Bộ lọc Viên nhộng (Pill Filter Toolbar System) Toàn diện:
+    + Thiết kế lại thanh công cụ bộ lọc trên thẻ Card nổi bo tròn góc mềm mại (`CornerRadius="12"`), đổ bóng nhẹ sang trọng (`MaterialDesignShadowDepth1`), nền trắng trang nhã.
+    + Bổ sung nhãn tiêu đề nhỏ gọn phía trên từng ô lọc (`Tìm kiếm`, `Bộ phận`, `Năm`, `Nhiệm kỳ`, `Trạng thái`...) với tông màu Slate Grey (`#64748B`), font chữ SemiBold rõ ràng, khoa học.
+    + Chuẩn hóa ô tìm kiếm dạng Pill bo cong 20px (`Height="40"`), viền `#CBD5E1`, tích hợp biểu tượng kính lúp và nút xóa nhanh (`HasClearButton="True"`).
+    + Xây dựng Style ComboBox dùng chung `FilterPillComboBox`: Viền bo cong 20px, cố định mũi tên chevron sát lề phải (`Margin="0,0,14,0"`), hỗ trợ bấm vào bất kỳ vị trí nào trên ô để mở dropdown, khắc phục triệt để lỗi mũi tên đè lên chữ hoặc kẹt bấm.
+    + Hiện đại hóa toàn bộ các màn hình chính trong hệ thống:
+        * Quản lý Đào tạo và Bồi dưỡng (`TrainingListView`).
+        * Quản lý Quy hoạch Nhân sự (`PlanningManagementView` - cả 2 tab Quy hoạch Chuyên môn & Quy hoạch Đảng).
+        * Quản lý Luân chuyển, Điều động (`RotationManagementView` - cả 2 tab Trong kế hoạch & Ngoài kế hoạch).
+        * Danh sách Nhân sự & Tổng quan (`PersonnelListView`).
+        * Quản lý Đánh giá, Xếp loại (`EvaluationListView`).
+        * Theo dõi Thời gian Giữ chức vụ (`PositionDurationView`).
+        * Quản lý Nâng lương & Phụ cấp (`SalaryListView`).
+        * Báo cáo Thống kê Nhân sự (`StatisticsView`).
+    + Đồng bộ toàn bộ các nút thao tác nghiệp vụ (`Thêm mới`, `Xuất Excel`, `Thêm quyết định`...) sang kiểu dáng Pill bo cong 20px, chiều cao chuẩn 40px với màu sắc nhận diện trực quan.
+- [Quản lý Nghỉ phép] Phân nhóm Tab & Khắc phục Cắt cụt Tên Bộ phận:
+    + Tối ưu giao diện Quản lý Nghỉ phép (`LeaveDetailView`) thành 3 tab phân loại nghiệp vụ: "TẤT CẢ NGHỈ PHÉP", "NGHỈ ỐM DÀI NGÀY / DƯỠNG SỨC", "NGHỈ KHÔNG HƯỞNG LƯƠNG".
+    + Sửa triệt để lỗi cắt mất chữ ở đầu đối với các tên bộ phận dài (như "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh..."): Căn lề trái nội dung, kích hoạt tự động xuống dòng (`TextWrapping="Wrap"`), mở rộng độ rộng cột bộ phận linh hoạt `Width="*" MinWidth="260"`.
+- [Sửa lỗi Hiển thị Quá trình Công tác] Chuẩn hóa Chức danh Đảng đứng Trước, Chuyên môn đứng Sau:
+    + Khắc phục triệt để lỗi chức vụ Đảng bị bao bọc trong ngoặc đơn "(...)" và đứng sau chức danh chuyên môn (như: "Phó Chánh Văn phòng (Phó Bí thư Chi bộ Văn phòng)").
+    + Chuẩn hóa hiển thị chính xác theo quy chuẩn: Bên Đảng hiện TRƯỚC bên chuyên môn bằng dấu chấm phẩy `; `, không để trong ngoặc đơn và không chứa từ "Kiêm" (Ví dụ: "Phó Bí thư Chi bộ Văn phòng; Phó Chánh Văn phòng - Cục Thuế...", "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp - Đội Thuế...").
+    + Tự động quét và chuẩn hóa toàn bộ dữ liệu quá trình công tác cũ trong CSDL ngay khi khởi động ứng dụng, đảm bảo đồng bộ hoàn hảo trên Chi tiết hồ sơ cán bộ, Quá trình công tác tổng hợp và file xuất PDF.
+- [Tối ưu Cửa sổ Thông báo & Cảnh báo]:
+    + Thiết kế lại giao diện cửa sổ cảnh báo (`WarningWindow`) với phong cách bo góc hiện đại, nút bấm Pill thân thiện và hiển thị thông tin rõ ràng.
+
 ## v1.6.4.9 — 2026-10-27
 - [Chuẩn hóa Quá trình Công tác] Tối ưu Thứ tự Chức danh Đảng & Chuyên môn:
     + Định dạng hiển thị chức danh Đảng đứng trước chức danh chuyên môn bằng dấu chấm phẩy `;` (Ví dụ: "Bí thư Đảng ủy; Chi cục trưởng").

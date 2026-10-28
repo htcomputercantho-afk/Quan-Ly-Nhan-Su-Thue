@@ -50,38 +50,37 @@
         </StackPanel>
 
         <!-- 2. Filter Toolbar -->
-        <materialDesign:Card Grid.Row="1" Margin="0 0 0 15" Padding="16 12 16 4" UniformCornerRadius="8" Background="White">
+        <materialDesign:Card Grid.Row="1" Margin="0 0 0 15" Padding="20 14" UniformCornerRadius="12" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Department Filter -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
-                    <materialDesign:PackIcon Kind="HomeGroup" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                    <TextBlock Text="Bộ phận:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
-                    <ComboBox x:Name="cbDepartmentFilter" Width="220" Height="36"
-                              Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                              Background="White" Padding="10 6" FontSize="13"
+                <!-- Bộ phận -->
+                <StackPanel Margin="0 0 16 0" VerticalAlignment="Center">
+                    <TextBlock Text="Bộ phận" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <ComboBox x:Name="cbDepartmentFilter" Width="280"
+                              Style="{StaticResource FilterPillComboBox}"
                               SelectionChanged="Filter_Changed"/>
                 </StackPanel>
 
-                <!-- Year Filter -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 20 8">
-                    <materialDesign:PackIcon Kind="CalendarRange" Width="22" Height="22" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                    <TextBlock Text="Năm thống kê:" VerticalAlignment="Center" FontWeight="Bold" Margin="0 0 8 0" Foreground="#555"/>
-                    <ComboBox x:Name="cbYearFilter" Width="140" Height="36"
-                              Style="{DynamicResource MaterialDesignOutlinedComboBox}"
-                              Background="White" Padding="10 6" FontSize="13"
+                <!-- Năm thống kê -->
+                <StackPanel Margin="0 0 20 0" VerticalAlignment="Center">
+                    <TextBlock Text="Năm thống kê" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <ComboBox x:Name="cbYearFilter" Width="150"
+                              Style="{StaticResource FilterPillComboBox}"
                               SelectionChanged="Filter_Changed"/>
                 </StackPanel>
 
                 <!-- Export Excel Button -->
-                <Button x:Name="btnExportExcel" Margin="0 0 0 8" Height="36"
-                        Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White"
-                        Style="{StaticResource MaterialDesignRaisedButton}"
-                        Click="btnExportExcel_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 6 0"/>
-                        <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="13"/>
-                    </StackPanel>
-                </Button>
+                <StackPanel VerticalAlignment="Bottom" Margin="0 0 0 0">
+                    <Button x:Name="btnExportExcel" Height="40" Padding="18 0"
+                            Background="#15803D" BorderBrush="#15803D" Foreground="White"
+                            materialDesign:ButtonAssist.CornerRadius="20"
+                            Style="{StaticResource MaterialDesignRaisedButton}"
+                            Click="btnExportExcel_Click" Cursor="Hand">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                            <TextBlock Text="Xuất Excel" VerticalAlignment="Center" FontWeight="Bold" FontSize="13"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </WrapPanel>
         </materialDesign:Card>
 

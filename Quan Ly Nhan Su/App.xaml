@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:TaxPersonnelManagement"
+             xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
              Startup="Application_Startup">
     <Application.Resources>
         <ResourceDictionary>
@@ -369,6 +370,265 @@
                                 </Trigger>
                                 <Trigger Property="IsKeyboardFocused" Value="True">
                                     <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryColor}"/>
+                                    <Setter TargetName="border" Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern Filter Pill ComboBox Style (Dùng chung cho toàn bộ ứng dụng) -->
+            <Style x:Key="FilterPillComboBox" TargetType="ComboBox">
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Padding" Value="14 0 32 0"/>
+                <Setter Property="BorderThickness" Value="1.5"/>
+                <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="FontSize" Value="13.5"/>
+                <Setter Property="Foreground" Value="#1E293B"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="ComboBoxItem">
+                            <Setter Property="Padding" Value="14,10"/>
+                            <Setter Property="FontSize" Value="13.5"/>
+                            <Setter Property="Foreground" Value="#1E293B"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="SnapsToDevicePixels" Value="True"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ComboBoxItem">
+                                        <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="8" 
+                                                Padding="{TemplateBinding Padding}" Margin="0,2">
+                                            <ContentPresenter VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#F1F5F9"/>
+                                                <Setter Property="Foreground" Value="#0F172A"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="#E0F2FE"/>
+                                                <Setter Property="Foreground" Value="#0284C7"/>
+                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <Border x:Name="MainBorder" Background="{TemplateBinding Background}" 
+                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                        CornerRadius="20">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="38"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- Text Area strictly contained in Column 0 with safe margin and ellipsis -->
+                                        <Grid Grid.Column="0" Margin="16,0,6,0" VerticalAlignment="Center" ClipToBounds="True">
+                                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
+                                                              Content="{TemplateBinding SelectionBoxItem}"
+                                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                              VerticalAlignment="Center"
+                                                              HorizontalAlignment="Left">
+                                                <ContentPresenter.Resources>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                                    </Style>
+                                                </ContentPresenter.Resources>
+                                            </ContentPresenter>
+
+                                            <TextBlock x:Name="Placeholder"
+                                                       Text="{TemplateBinding materialDesign:HintAssist.Hint}"
+                                                       VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                       Foreground="#94A3B8" IsHitTestVisible="False"
+                                                       FontSize="{TemplateBinding FontSize}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       Visibility="Collapsed"/>
+                                        </Grid>
+                                        
+                                        <!-- Full clickable ToggleButton spanning entire ComboBox -->
+                                        <ToggleButton x:Name="toggleButton"
+                                                      Grid.Column="0"
+                                                      Grid.ColumnSpan="2"
+                                                      Focusable="False"
+                                                      ClickMode="Press"
+                                                      HorizontalAlignment="Stretch"
+                                                      VerticalAlignment="Stretch"
+                                                      HorizontalContentAlignment="Stretch"
+                                                      VerticalContentAlignment="Stretch"
+                                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      Background="Transparent"
+                                                      BorderThickness="0"
+                                                      Cursor="Hand">
+                                            <ToggleButton.Style>
+                                                <Style TargetType="ToggleButton">
+                                                    <Setter Property="OverridesDefaultStyle" Value="True"/>
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                                    <Setter Property="VerticalAlignment" Value="Stretch"/>
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="ToggleButton">
+                                                                <Border Background="Transparent" 
+                                                                        HorizontalAlignment="Stretch" 
+                                                                        VerticalAlignment="Stretch">
+                                                                    <materialDesign:PackIcon Kind="ChevronDown" 
+                                                                                             Width="18" Height="18" 
+                                                                                             Foreground="#64748B"
+                                                                                             HorizontalAlignment="Right" 
+                                                                                             VerticalAlignment="Center" 
+                                                                                             Margin="0,0,14,0"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Style>
+                                            </ToggleButton.Style>
+                                        </ToggleButton>
+
+                                        <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" AllowsTransparency="True" 
+                                               Focusable="False" PopupAnimation="Slide" VerticalOffset="4">
+                                            <Grid x:Name="DropDown" SnapsToDevicePixels="True" 
+                                                  MinWidth="{Binding ActualWidth, ElementName=MainBorder}" 
+                                                  MaxHeight="320">
+                                                <Border x:Name="DropDownBorder" Background="White" CornerRadius="12" 
+                                                        BorderThickness="1" BorderBrush="#E2E8F0" Padding="6">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Color="#000000" Opacity="0.12"/>
+                                                    </Border.Effect>
+                                                    <ScrollViewer SnapsToDevicePixels="True" MaxHeight="300">
+                                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                                    </ScrollViewer>
+                                                </Border>
+                                            </Grid>
+                                        </Popup>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="SelectedItem" Value="{x:Null}"/>
+                                        <Condition Property="Text" Value=""/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                                </MultiTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="MainBorder" Property="BorderBrush" Value="#94A3B8"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Setter TargetName="MainBorder" Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                                <Trigger Property="IsDropDownOpen" Value="True">
+                                    <Setter TargetName="MainBorder" Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
+                                    <Setter TargetName="MainBorder" Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Modern Filter Pill DatePicker Style (Dùng chung cho toàn bộ ứng dụng) -->
+            <Style x:Key="FilterPillDatePicker" TargetType="DatePicker">
+                <Setter Property="Language" Value="vi-VN"/>
+                <Setter Property="helpers:DatePickerHelper.FixCalendarLocale" Value="True"/>
+                <Setter Property="helpers:DatePickerHelper.EnableSmartDateEntry" Value="True"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="BorderThickness" Value="1.5"/>
+                <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Padding" Value="14 0 8 0"/>
+                <Setter Property="Foreground" Value="#1E293B"/>
+                <Setter Property="FontSize" Value="13.5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DatePicker">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    CornerRadius="20">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="34"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <DatePickerTextBox x:Name="PART_TextBox" 
+                                                       Grid.Column="0"
+                                                       HorizontalContentAlignment="Stretch"
+                                                       VerticalContentAlignment="Center"
+                                                       Background="Transparent" 
+                                                       BorderThickness="0"
+                                                       Padding="{TemplateBinding Padding}"
+                                                       Foreground="{TemplateBinding Foreground}"
+                                                       FontWeight="{TemplateBinding FontWeight}"
+                                                       FontSize="{TemplateBinding FontSize}"
+                                                       Focusable="True">
+                                        <DatePickerTextBox.Template>
+                                            <ControlTemplate TargetType="{x:Type DatePickerTextBox}">
+                                                <Grid>
+                                                    <ScrollViewer x:Name="PART_ContentHost" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                                    <TextBlock x:Name="Watermark" Text="dd/MM/yyyy" 
+                                                               IsHitTestVisible="False" 
+                                                               Foreground="#94A3B8"
+                                                               VerticalAlignment="Center" 
+                                                               Margin="14 0 0 0"
+                                                               FontSize="13.5"
+                                                               Visibility="Hidden"/>
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter TargetName="Watermark" Property="Visibility" Value="Visible"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </DatePickerTextBox.Template>
+                                    </DatePickerTextBox>
+
+                                    <Button x:Name="PART_Button" 
+                                            Grid.Column="1" 
+                                            Width="32"
+                                            Height="32"
+                                            Padding="0"
+                                            Margin="0 0 6 0"
+                                            Background="Transparent" 
+                                            BorderThickness="0"
+                                            Foreground="#64748B"
+                                            Cursor="Hand"
+                                            Style="{DynamicResource MaterialDesignToolButton}">
+                                        <materialDesign:PackIcon Kind="CalendarMonthOutline" Width="18" Height="18"/>
+                                    </Button>
+
+                                    <Popup x:Name="PART_Popup" 
+                                           AllowsTransparency="True" 
+                                           Placement="Bottom" 
+                                           StaysOpen="False"/>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#94A3B8"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter TargetName="border" Property="BorderBrush" Value="{DynamicResource PrimaryHueMidBrush}"/>
                                     <Setter TargetName="border" Property="BorderThickness" Value="2"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>

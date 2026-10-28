@@ -286,7 +286,9 @@ namespace TaxPersonnelManagement.Views
                 var data = _filteredList;
                 if (data == null || !data.Any())
                 {
-                    MessageBox.Show("Không có dữ liệu để xuất!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    var warning = new WarningWindow("Không có dữ liệu để xuất!", "Thông báo");
+                    if (Window.GetWindow(this) is Window parent) warning.Owner = parent;
+                    warning.ShowDialog();
                     return;
                 }
 
