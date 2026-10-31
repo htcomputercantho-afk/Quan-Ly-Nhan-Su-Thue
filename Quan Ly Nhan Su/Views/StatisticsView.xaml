@@ -53,20 +53,14 @@
         <materialDesign:Card Grid.Row="1" Margin="0 0 0 15" Padding="20 14" UniformCornerRadius="12" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Bộ phận -->
-                <StackPanel Margin="0 0 16 0" VerticalAlignment="Center">
-                    <TextBlock Text="Bộ phận" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
-                    <ComboBox x:Name="cbDepartmentFilter" Width="280"
-                              Style="{StaticResource FilterPillComboBox}"
-                              SelectionChanged="Filter_Changed"/>
-                </StackPanel>
+                <ComboBox x:Name="cbDepartmentFilter" Width="380" Margin="0 0 16 0"
+                          Style="{StaticResource FilterPillComboBox}"
+                          SelectionChanged="Filter_Changed"/>
 
                 <!-- Năm thống kê -->
-                <StackPanel Margin="0 0 20 0" VerticalAlignment="Center">
-                    <TextBlock Text="Năm thống kê" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
-                    <ComboBox x:Name="cbYearFilter" Width="150"
-                              Style="{StaticResource FilterPillComboBox}"
-                              SelectionChanged="Filter_Changed"/>
-                </StackPanel>
+                <ComboBox x:Name="cbYearFilter" Width="150" Margin="0 0 20 0"
+                          Style="{StaticResource FilterPillComboBox}"
+                          SelectionChanged="Filter_Changed"/>
 
                 <!-- Export Excel Button -->
                 <StackPanel VerticalAlignment="Bottom" Margin="0 0 0 0">

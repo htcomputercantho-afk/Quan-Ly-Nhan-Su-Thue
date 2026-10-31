@@ -33,12 +33,13 @@
                                                       VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                       HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                                     <ToggleButton x:Name="toggleButton" Grid.ColumnSpan="2" Focusable="False"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Cursor="Hand" Style="{x:Null}"
                                                   IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   ClickMode="Press" Background="Transparent" BorderThickness="0">
                                         <ToggleButton.Template>
                                             <ControlTemplate TargetType="ToggleButton">
-                                                <Border Background="Transparent">
-                                                    <materialDesign:PackIcon Kind="ChevronDown" Width="20" Height="20" Foreground="#A0AEC0"
+                                                <Border Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                                    <materialDesign:PackIcon Kind="ChevronDown" Width="18" Height="18" Foreground="#A0AEC0"
                                                                              HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 10 0"/>
                                                 </Border>
                                             </ControlTemplate>

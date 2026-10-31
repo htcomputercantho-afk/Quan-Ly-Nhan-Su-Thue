@@ -99,8 +99,10 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var db = new AppDbContext())
                 {
-                    // Load all personnel, order by Department, then by FullName
+                    var participantIds = _participants.Select(p => p.Id).ToHashSet();
+                    // Load all active personnel (excluding non-active and already added participants)
                     var allPersonnel = db.Personnel
+                                         .Where(p => (string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác") && !participantIds.Contains(p.Id))
                                          .OrderBy(p => p.Department)
                                          .ThenBy(p => p.FullName)
                                          .ToList();
@@ -247,6 +249,7 @@ namespace TaxPersonnelManagement.Views
 
                     _isDataChanged = true;
                     LoadParticipants();
+                    LoadPersonnelComboBox();
                     cboAddPersonnel.SelectedIndex = -1;
                     cboAddPersonnel.Text = string.Empty;
                 }
@@ -289,6 +292,7 @@ namespace TaxPersonnelManagement.Views
 
                             _isDataChanged = true;
                             LoadParticipants();
+                            LoadPersonnelComboBox();
                         }
                     }
                     catch (Exception ex)
@@ -321,6 +325,7 @@ namespace TaxPersonnelManagement.Views
 
                                 _isDataChanged = true;
                                 LoadParticipants();
+                                LoadPersonnelComboBox();
                             }
                         }
                     }

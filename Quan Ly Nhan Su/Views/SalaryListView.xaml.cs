@@ -73,7 +73,7 @@ namespace TaxPersonnelManagement.Views
         private void LoadFilterOptions()
         {
             var periods = new List<FilterItem>();
-            periods.Add(new FilterItem { Label = "-- Cả năm --", Value = 0, Type = FilterType.None });
+            periods.Add(new FilterItem { Label = "Cả năm", Value = 0, Type = FilterType.None });
 
             periods.Add(new FilterItem { Label = "Theo Quý", IsHeader = true, Type = FilterType.Header });
             periods.Add(new FilterItem { Label = "Quý I (Tháng 1 - 3)", Value = 1, Type = FilterType.Quarter });
@@ -118,7 +118,7 @@ namespace TaxPersonnelManagement.Views
                     distinctYears.Sort();
 
                     var years = new List<FilterItem>();
-                    years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
+                    years.Add(new FilterItem { Label = "Tất cả các năm", Value = 0 });
                     foreach (var y in distinctYears)
                     {
                         years.Add(new FilterItem { Label = $"Năm {y}", Value = y });

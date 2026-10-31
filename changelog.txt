@@ -1,3 +1,132 @@
+## v1.6.5.3 — 2026-10-31
+- [Tối ưu hóa Source Code & Dọn dẹp File Rác]:
+    + Loại bỏ toàn bộ các file Database rỗng (0 bytes) phát sinh trước đây ở thư mục gốc và thư mục dự án:
+        * `quanlynhansu.db`, `TaxPersonnelDb.db` ở thư mục gốc.
+        * `quanlynhansu.db`, `TaxPersonnel.db` ở thư mục dự án `Quan Ly Nhan Su`.
+        * `TaxPersonnelDb.db`, `personnel.db`, `quanlynhansu.db` ở thư mục `bin\Debug\`.
+        * Bảo toàn nguyên vẹn 100% CSDL hoạt động chính thức `tax_personnel.db` (chứa toàn bộ 54 nhân sự và 25 bảng dữ liệu thực tế).
+    + Dọn dẹp các file log debug phát sinh trong quá trình chạy thử nghiệm (`debug.log` ở root, project và thư mục output).
+    + Rà soát và loại bỏ các file View/Dialog mồ côi (Dead Code - 0 reference) không còn sử dụng:
+        * `InputDialog.xaml` / `InputDialog.xaml.cs`: Hộp thoại thêm nhiệm kỳ cũ (đã được thay thế hoàn toàn bởi `PlanningTermManagementDialog`).
+        * `AddDisciplineTypeDialog.xaml` / `AddDisciplineTypeDialog.xaml.cs`: Hộp thoại thêm hình thức kỷ luật đơn giản cũ (đã được thay thế hoàn toàn bởi `DisciplineConfigDialog` đầy đủ CRUD và lùi thời gian nâng lương).
+    + Kiểm tra toàn bộ 52 View, 11 Converter, 5 Helper, 6 Service và Model: Đảm bảo 100% tệp tin đều được liên kết chuẩn xác, không còn mã rác, biên dịch sạch sẽ tuyệt đối (**0 Warning, 0 Error**).
+
+## v1.6.5.2 — 2026-10-31
+- [Đào tạo bồi dưỡng - Loại bỏ công chức đã luân chuyển / nghỉ việc khỏi danh sách chọn học viên]:
+    + Khắc phục triệt để lỗi công chức đã luân chuyển, điều động, thôi việc, nghỉ hưu vẫn hiển thị trong ô chọn "Thêm học viên":
+        * Tại hộp thoại chi tiết lớp học (`TrainingClassDetailDialog`), hàm `LoadPersonnelComboBox()` trước đây lấy toàn bộ `db.Personnel` mà không kiểm tra trạng thái công tác, khiến các cán bộ không còn công tác vẫn xuất hiện trong danh sách sổ xuống.
+        * Đã bổ sung điều kiện lọc chỉ lấy cán bộ đang công tác (`string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác"`).
+        * Đồng thời loại trừ luôn các cán bộ đã có tên trong lớp học hiện tại, giúp danh sách chọn lọc sạch sẽ, không bị trùng lặp.
+        * Tự động làm mới lại danh mục cán bộ khi thêm đơn lẻ, thêm hàng loạt hoặc xóa bớt học viên.
+        * Chuẩn hóa bộ lọc tương tự tại hộp thoại chọn nhiều cán bộ (`PersonnelSelectorDialog`).
+- [Chi tiết Nghỉ - Bổ sung danh mục và bảng theo dõi "Dưỡng sức"]:
+    + Bổ sung Tab "Dưỡng sức" (`rbTabConvalescence`):
+        * Thêm tab thứ 5 "Dưỡng sức" vào cụm Tab chọn nhanh trên thanh điều hướng ("Tổng hợp", "Nghỉ phép", "Nghỉ ốm", "Dưỡng sức", "Không lương").
+        * Đầy đủ chức năng chuyển tab, cập nhật tiêu đề bảng động theo Tháng/Năm (`BẢNG CHI TIẾT NGHỈ DƯỠNG SỨC NĂM ... / THÁNG ...`).
+    + Bổ sung cột "DƯỠNG SỨC" trên Bảng Tổng Hợp (`dgGeneralSummary`):
+        * Nằm giữa cột "Ốm" và "Không lương" với giao diện Badge bo góc viên thuốc màu xanh ngọc trang nhã (Nền `#E0F2F1`, chữ `#00796B`).
+        * Tự động cộng dồn số ngày nghỉ Dưỡng sức vào cột "TỔNG" số ngày nghỉ của cán bộ.
+    + Xây dựng Bảng chi tiết nghỉ Dưỡng sức (`dgConvalescenceLeave`):
+        * Hiển thị danh sách đầy đủ: STT, Họ và tên (kèm ảnh đại diện, có thể nhấp chuột hoặc bấm đúp để chuyển nhanh sang chi tiết hồ sơ cán bộ), Bộ phận công tác, Số ngày nghỉ dưỡng sức, Nội dung chi tiết (số lần, từ ngày đến ngày, lý do cụ thể).
+        * Tích hợp tìm kiếm từ khóa không dấu, lọc theo phòng ban, lọc theo tháng/năm và tùy chọn "Chỉ hiện cán bộ có ngày nghỉ".
+        * Đồng bộ đầy đủ hệ thống phân trang 20 dòng/trang.
+    + Nâng cấp Xuất Báo Cáo Excel:
+        * Bổ sung tính năng xuất file Excel chuyên biệt cho Tab Dưỡng sức (`BaoCao_DuongSuc_...xlsx`) với đầy đủ tiêu đề, định dạng viền, màu sắc và tự động ngắt dòng nội dung chi tiết.
+        * Cập nhật file Excel "Tổng hợp ngày nghỉ" (`BaoCao_TongHopNgayNghi_...xlsx`) bổ sung thêm cột "DƯỠNG SỨC (NGÀY)".
+
+## v1.6.5.1 — 2026-10-30
+- [Đồng bộ Giao diện Thanh công cụ Màn hình Phân công nhiệm vụ]:
+    + Chuẩn hóa ô chọn Năm (`cboYear`):
+        * Chuyển hoàn toàn sang Style viên thuốc toàn cục `FilterPillComboBox` (`Height="40" Width="120" CornerRadius="20"`): Chỉ hiển thị mỗi số năm (ví dụ: `2026`) căn giữa thanh lịch, loại bỏ tiền tố chữ "Năm: " và icon lịch rườm rà, đồng bộ 100% với các màn hình khác (*Thống kê, Tổng thu nhập năm, Chi tiết nghỉ...*).
+    + Đồng bộ bo tròn 20px toàn bộ các ô điều khiển trên thanh lọc:
+        * Ô tìm kiếm bộ phận (`txtSearch`): Bo góc capsule `CornerRadius="20"`, `Height="40"`, viền chuẩn `BorderThickness="1.5" BorderBrush="#CBD5E1"`, `FontSize="13.5"`.
+        * Cụm Tab chuyển trạng thái ("Tất cả", "Ổn định", "Nhiều thay đổi", "Chưa có file"): Khung bao ngoài bo tròn `CornerRadius="20"`, các nút con bên trong bo tròn capsule `CornerRadius="16" Height="32"` với hiệu ứng nổi bật khi chọn cực kỳ hiện đại.
+        * Khung chứa hàng lọc: Mở rộng bo góc mềm mại `CornerRadius="16"` kèm padding `14 10`.
+        * Nút "Làm mới" và "Tải PDF lên" trên thanh tiêu đề: Nâng cấp bo góc mềm `CornerRadius="19"` (ButtonAssist.CornerRadius="19") đồng điệu phong cách chung.
+- [Cải tiến Bộ Lọc Màn hình Thời gian giữ vị trí công tác]:
+    + Giữ lại các nhãn chữ rõ ràng bên trên các ô lọc ("Tìm kiếm", "Thời điểm tính", "Thâm niên giữ vị trí", "Thời gian công tác trong ngành") giúp người dùng dễ dàng phân biệt các tiêu chí khoảng năm ("Từ ... đến dưới ... năm").
+    + Chuẩn hóa và phân tách chính xác 2 bộ lọc thâm niên độc lập:
+        * Sửa ô lọc trước đây thành "Thời gian công tác trong ngành" (`txtFromTaxYears`, `txtToTaxYears`): Lọc chính xác theo cột "TỔNG THỜI GIAN CÔNG TÁC TRONG NGÀNH THUẾ" (tính từ ngày vào ngành thuế `TaxAuthorityStartDate` đến ngày tính toán).
+        * Bổ sung ô lọc mới "Thâm niên giữ vị trí" (`txtFromPositionYears`, `txtToPositionYears`): Lọc chính xác theo cột "NĂM GIỮ VỊ TRÍ CÔNG TÁC" (tính từ ngày quyết định chức vụ gần nhất `PositionDecisionDate` đến ngày tính toán / mốc tính của cán bộ).
+        * Cả hai bộ lọc đều hỗ trợ linh hoạt các khoảng năm (ví dụ: "Từ 1 đến dưới 3 năm", "Từ 5 năm trở lên", "Dưới 2 năm"...).
+    + Tối ưu hóa xuất Excel: File Excel xuất ra tự động ghi chú chi tiết cả hai tiêu chí lọc (nếu áp dụng) trong phần tiêu đề phụ báo cáo.
+- [Khắc phục Triệt để Lỗi Mất chữ / Tràn viền Ô Lọc Bộ phận]:
+    + Mở rộng chiều rộng ô chọn lọc Bộ phận (`cbDepartmentFilter` / `cbDepartment`) từ 280px lên 380px:
+        * Nguyên nhân: Tên các bộ phận, tổ/đội ngành thuế có độ dài rất lớn (ví dụ: "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1" có độ rộng thực tế lên tới ~284 DIPs). Khi đặt độ rộng cố định 280px kèm lề hai bên, vùng hiển thị chữ chỉ còn ~216px khiến tên bộ phận bị cắt cụt thành "Tổ Quản lý, hỗ trợ cá nhân, hộ ki...".
+        * Đã mở rộng chiều rộng ô lọc bộ phận lên 380px đồng bộ trên toàn bộ các màn hình: Danh sách nhân sự (`PersonnelListView`), Báo cáo thống kê (`StatisticsView`), Đánh giá xếp loại (`EvaluationListView`), Chi tiết nghỉ (`LeaveDetailView`), Quy hoạch nhân sự (`PlanningManagementView`), Luân chuyển điều động (`RotationManagementView`).
+    + Tối ưu không gian hiển thị văn bản trong `FilterPillComboBox` (`App.xaml`):
+        * Tinh chỉnh lề trái vùng văn bản từ 32px xuống 16px (vẫn đảm bảo an toàn tuyệt đối bên trong góc bo cong 20px), lề phải 34px (tránh icon mũi tên), tăng không gian thực tế hiển thị chữ lên tới ~330px.
+        * Đảm bảo mọi tên bộ phận dài nhất đều hiển thị trọn vẹn 100% không bị mất chữ hay xuất hiện dấu ba chấm `...`.
+    + Bổ sung ToolTip thông minh: Tự động hiển thị toàn bộ tên bộ phận khi người dùng rê chuột vào ô chọn.
+- [Tối ưu hóa Hệ thống Bộ lọc & Chuẩn hóa Trình bày Toolbar Toàn diện]:
+    + Loại bỏ hoàn toàn dấu gạch ngang (`-- ... --`) ở tất cả các lựa chọn mặc định:
+        * Đồng bộ chuẩn hóa thống nhất: "Tất cả bộ phận", "Tất cả các năm", "Cả năm", "Tất cả xếp loại", "Tất cả nhiệm kỳ", "Tất cả trạng thái", không còn tình trạng nơi có dấu gạch nơi không có.
+        * Áp dụng tại toàn bộ các màn hình: Danh sách nhân sự, Đánh giá xếp loại, Theo dõi nâng lương, Đào tạo bồi dưỡng, Thêm chức vụ...
+    + Căn giữa cân đối văn bản trong các ô chọn dạng Pill (`FilterPillComboBox`):
+        * Đặt mặc định `HorizontalContentAlignment="Center"` và cân đối khoảng cách đều 32px hai bên đối xứng với icon mũi tên Chevron sát mép phải.
+        * Văn bản ("Tất cả bộ phận", "2026", "Cả năm", "Tất cả trạng thái", "Tất cả nhiệm kỳ", "Tất cả xếp loại" cũng như tên bộ phận khi được chọn) hiển thị căn giữa hoàn hảo, đẹp mắt và không bị che khuất icon.
+    + Tinh gọn thanh công cụ: Loại bỏ toàn bộ các nhãn chữ nhỏ bên trên ô lọc:
+        * Loại bỏ các nhãn dư thừa ("Tìm kiếm", "Bộ phận", "Năm", "Tháng", "Xếp loại", "Nhiệm kỳ", "Trạng thái", "Thời điểm tính", "Thâm niên...") bên trên các ô nhập.
+        * Giúp thanh công cụ thu gọn chiều cao, toàn bộ các ô tìm kiếm, ô chọn ngày, ô ComboBox và nút xuất Excel thẳng hàng hoàn hảo trên cùng 1 dòng duy nhất theo phong cách Dashboard hiện đại.
+        * Áp dụng đồng bộ trên tất cả 9 màn hình: Tổng quan (`PersonnelListView`), Báo cáo thống kê (`StatisticsView`), Nâng lương (`SalaryListView`), Đào tạo bồi dưỡng (`TrainingListView`), Chi tiết nghỉ (`LeaveDetailView`), Đánh giá xếp loại (`EvaluationListView`), Thời gian giữ vị trí (`PositionDurationView`), Quy hoạch nhân sự (`PlanningManagementView`), Luân chuyển điều động (`RotationManagementView`).
+- [Sửa lỗi Hiển thị Nút "Thêm" bị mất chữ]:
+    + Khắc phục triệt để lỗi chữ "Thêm" bị mất chữ cái "m" (bị cắt cụt viền phải) tại hộp thoại "DANH MỤC LÙI THỜI GIAN / LÝ DO" và "DANH MỤC HÌNH THỨC KỶ LUẬT":
+        * Nguyên nhân: Cột chứa nút bấm được cố định độ rộng quá hẹp (`ColumnDefinition Width="90"`), trong khi nút chứa biểu tượng Floppy, khoảng cách và chữ đậm "Thêm" kèm padding của MaterialDesign đòi hỏi tối thiểu hơn 100px, dẫn đến phần đuôi chữ "m" bị tràn và cắt mất.
+        * Đã chuyển cột sang chế độ co giãn tự động (`Width="Auto"`), mở rộng `MinWidth="105"` và căn chỉnh `Padding="14 0"`, `Margin="0 0 6 0"` cho icon, giúp nút bấm tự động vừa vặn hoàn hảo, hiển thị trọn vẹn chữ "Thêm" cũng như khi chuyển sang chế độ "Lưu".
+- [Sửa lỗi Giao diện ComboBox & Ô nhập liệu Chi tiết Nhân sự]:
+    + Khắc phục triệt để lỗi mũi tên sổ xuống (ChevronDown) bị trôi lơ lửng ở giữa ô ComboBox trên các màn hình chi tiết hồ sơ:
+        * Nguyên nhân: ToggleButton bên trong ControlTemplate của ModernComboBox thiếu thuộc tính HorizontalAlignment="Stretch" và Style="{x:Null}". Do đó, WPF tự động áp dụng Style mặc định từ thư viện MaterialDesign, ép ToggleButton căn giữa (HorizontalAlignment="Center") và co lại chỉ còn ~20px ở trung tâm ô, khiến icon mũi tên bị đẩy vào giữa và người dùng chỉ bấm được ở khu vực trung tâm.
+        * Đã bổ sung HorizontalAlignment="Stretch", VerticalAlignment="Stretch", Style="{x:Null}" và ghim icon chevron sang sát mép phải (HorizontalAlignment="Right" Margin="0,0,8,0") cho ModernComboBox (PersonnelDetailView.xaml, App.xaml), DialogComboBox (AddPositionDialog.xaml), ModernSelectComboBox/ModernEditableComboBox (PersonnelDegreesDialog.xaml, WorkHistoryDialog.xaml).
+        * Đồng thời tinh chỉnh Padding="10,0,28,0" để nội dung chữ được chọn không bị đè lên biểu tượng mũi tên.
+        * Khắc phục đồng bộ trên tất cả các điều khiển: Bậc lương, Lùi thời gian nâng lương, Mã ngạch & Bậc lương quá trình lương, Hình thức kỷ luật, Năm (*), Xếp loại năm (*)...
+    + Khắc phục lỗi ô "Số quyết định" tại mục QUYẾT ĐỊNH KỶ LUẬT (txtDisciplineNumber):
+        * Đã gán Style chuẩn ModernTextBox (chiều cao 35px, bo góc 4px, viền xám trang nhã), thay thế cho kiểu gạch chân mặc định, đồng bộ 100% với ô "Ngày ký QĐ" và các ô nhập liệu khác trong form.
+- [Đồng bộ Hệ thống Lịch / DatePicker Giao diện Mới Toàn Ứng dụng]:
+    + Khắc phục triệt để lỗi khi mở popup chọn ngày ở phần Nhân sự và các hộp thoại vẫn hiển thị lịch cổ điển màu xám của Windows 7:
+        * Nguyên nhân: Điều khiển DatePicker trong WPF gán cứng thuộc tính Style của Calendar bên trong bằng thuộc tính `DatePicker.CalendarStyle`. Nếu DatePicker không được thiết lập `CalendarStyle`, nó sẽ gán `Calendar.Style = null`, ngăn không cho Calendar kế thừa Style toàn cục (`App.xaml TargetType="Calendar"`).
+        * Đã bổ sung thuộc tính `<Setter Property="CalendarStyle" Value="{DynamicResource ModernCalendarStyle}"/>` cho toàn bộ các Style DatePicker trong hệ thống: `ModernDatePicker` (`PersonnelDetailView.xaml`), `FormStyles.xaml`, `BulkDecisionDialog.xaml`, `AddTrainingClassDialog.xaml`, `PlanningRecordDialog.xaml`, `RotationRecordDialog.xaml`.
+        * Bổ sung Style toàn cục `TargetType="{x:Type DatePicker}"` trong `App.xaml` tự động gán `ModernCalendarStyle` cho mọi DatePicker chưa có style riêng.
+        * Nâng cấp hiệu ứng mở popup lịch mềm mại: `VerticalOffset="4"`, hiệu ứng chuyển cảnh mượt `PopupAnimation="Fade"`.
+        * Đồng bộ icon lịch sang kiểu hiện đại: Biểu tượng `CalendarMonthOutline` thanh mảnh màu xám slate `#64748B`, con trỏ bàn tay (`Cursor="Hand"`) và chú thích ToolTip trực quan.
+        * Toàn bộ các ô chọn ngày trong Chi tiết Nhân sự (Ngày sinh, Ngày vào cơ quan Thuế, QĐ công tác, Ngày vào Đảng, Ngày về hưu, Nghỉ phép, Lương, Kỷ luật...) và các form nhập liệu đều mở bảng lịch Windows 11 Fluent hiện đại (thẻ bo tròn 14px, đổ bóng mềm, nút bấm mượt mà).
+- [Thời gian công tác & Hệ thống Lịch / DatePicker]:
+    + Căn giữa ngày tháng năm (`29/10/2026`) đối xứng hoàn hảo trong ô nhập dạng Pill (`FilterPillDatePicker`) thay vì bị lệch dính sát mép trái bo tròn như trước. Bổ sung `TextAlignment="Center"`, `HorizontalContentAlignment="Center"` và cân đối khoảng cách đều 34px hai bên đối xứng với nút icon lịch.
+    + Thiết kế lại toàn bộ giao diện bảng lịch chọn ngày (`Calendar` / `DatePickerPopup`) theo phong cách Windows 11 Fluent hiện đại:
+        * Thay thế hoàn toàn khung popup cổ điển xám vuông vức của Windows 7/WPF bằng Card trắng sang trọng bo góc 14px mềm mại (`CornerRadius="14"`) kèm hiệu ứng đổ bóng mượt (`DropShadowEffect`).
+        * Thanh điều hướng tháng/năm tinh tế với icon Chevron tròn (`ChevronLeft` / `ChevronRight`) hover mượt mà và nút tiêu đề tháng/năm dạng Pill tương tác chuyển nhanh xem 12 tháng hoặc các năm.
+        * Tiêu đề thứ trong tuần (CN, T2..T7) chữ sắc nét thanh lịch (`#64748B`), kết hợp hoàn hảo cùng bộ xử lý hiển thị chuẩn tiếng Việt.
+        * Các ô ngày được bo tròn 8px, hiệu ứng hover nhẹ nhàng (`#F1F5F9`), ngày hiện tại có viền xanh `#0078D4`, ngày được chọn nổi bật với nền xanh Windows Blue chữ trắng đậm.
+- [Giao diện Đăng nhập mới] Chuyển thể thiết kế đăng nhập từ bản WinUI 3 (Test-giao-dien-moi) sang WPF (`Views/LoginView.xaml`):
+    + Ảnh nền toàn màn hình `login_bg.jpg`, khẩu hiệu "HIỆN ĐẠI – MINH BẠCH – HIỆU QUẢ" bên trái, thẻ đăng nhập kính mờ bo 22px ở giữa (mô phỏng Acrylic bằng VisualBrush + BlurEffect).
+    + Ô nhập có icon, placeholder, viền xanh khi focus; nút con mắt hiện/ẩn mật khẩu; thông báo lỗi/cảnh báo hiển thị nội tuyến trong thẻ thay cho MessageBox; nút Đăng nhập có trạng thái "ĐANG XÁC THỰC...".
+    + Cửa sổ 1060x660 co giãn tự do, kéo thả bằng vùng tiêu đề, nút thu nhỏ góc phải, bố cục responsive theo chiều rộng/chiều cao.
+    + Giữ nguyên toàn bộ logic: xác thực CSDL, ghi nhớ đăng nhập (`user.config`), hiển thị phiên bản, mở MainWindow.
+- [Sửa lỗi khởi động & Nạp tài nguyên XAML]:
+    + Khắc phục triệt để lỗi ngoại lệ khởi động: `'Provide value on 'System.Windows.StaticResourceExtension' threw an exception.' Cannot find resource named 'FilterPillComboBox'`.
+    + Nguyên nhân: Tồn tại 2 định nghĩa trùng lặp Style Button không gán key (`TargetType="{x:Type Button}"`) trong `App.xaml`, khiến bộ nạp XAML của WPF ném ngoại lệ trùng khóa `System.Windows.Controls.Button`, làm `Application.Current.Resources` bị gián đoạn nạp tài nguyên toàn cục.
+    + Đã loại bỏ Style Button trùng lặp trong `App.xaml` và chuyển ComboBox lọc tại `PersonnelListView.xaml` sang `{DynamicResource FilterPillComboBox}` để đảm bảo ứng dụng luôn nạp mượt mà 100% không gặp lỗi runtime.
+- [Giao diện] Khắc phục triệt để khoảng trắng & đồng bộ bo tròn 12px viền bảng dữ liệu:
+    + Nâng cấp `Helpers/ClipHelper.cs`: Tự động tìm/chèn ô đệm nền xanh `HeaderCornerFiller` tại ô (Row 0, Column 2) phía trên thanh cuộn dọc `VerticalScrollBar`, kéo dài `DataGridColumnHeadersPresenter` phủ tràn cả 2 cột (`Grid.SetColumnSpan = 2`), loại bỏ hoàn toàn khoảng trắng thừa và bo tròn 12px mượt mà cả góc trên trái và góc trên phải của dải tiêu đề xanh.
+    + Thêm `<Setter Property="helpers:ClipHelper.CornerRadius" Value="12" />` vào `TableCardStyle` (`App.xaml`) để mọi bảng sử dụng thẻ card đều tự động clip mượt mà theo góc bo tròn chuẩn 12px.
+    + Áp dụng `TableCardStyle` và `ClipHelper` cho tất cả các menu: Tổng quan (`PersonnelListView`), Nâng lương (`SalaryListView`), Thời gian công tác (`PositionDurationView`), Đánh giá xếp loại (`EvaluationListView`), Đào tạo bồi dưỡng (`TrainingListView`), Quy hoạch (`PlanningManagementView`), Luân chuyển điều động (`RotationManagementView`), Chi tiết nghỉ (`LeaveDetailView`), Tổng thu nhập năm (`AnnualIncomeView`), Phân công nhiệm vụ (`DutyAssignmentView`), Quản lý tài khoản (`UserListView`).
+- [Chuẩn hóa Nút Bấm Toàn diện — Khắc phục Nút Bị Vuông & Tối ưu Hiệu ứng Hover/Focus]:
+    + Khắc phục triệt để lỗi khi hover/focus vào nút bị biến thành khối xanh đen kèm bóng đổ đen xì thô ráp (`Dp6`):
+        * Tối ưu hóa `PremiumButtonStyle` (`App.xaml`) theo chuẩn Fluent Design: Sử dụng bóng đổ nhẹ sang trọng (`Elevation="Dp1"`), khi hover chuyển màu xanh sáng `#106EBE` với độ nổi nhẹ (`Dp2`), loại bỏ bóng đổ nặng `Dp6`.
+        * Xây dựng lại `PremiumOutlineButtonStyle` hoàn toàn độc lập (không kế thừa trigger của nút chính): Thiết lập `Elevation="Dp0"` (không bóng đổ), hiệu ứng hover nhẹ nhàng đổi màu nền sang `#F1F5F9`, chữ xám đen `#0F172A`, viền `#94A3B8`, không còn bị biến đổi sang màu tối hay đổ bóng đen mờ.
+        * Loại bỏ viền nét đứt mặc định của WPF khi click/focus (`FocusVisualStyle="{x:Null}"`) trên toàn bộ hệ thống nút bấm.
+        * Tinh chỉnh nút "THOÁT" trên màn hình Đăng nhập (`LoginView.xaml`) sang nút thứ cấp thanh lịch (`BorderThickness="1" BorderBrush="#E2E8F0" Foreground="#64748B" CornerRadius="8"`).
+    + Tích hợp toàn diện `MaterialDesignTheme.Button.xaml`, `Shadows.xaml`, `Defaults.xaml` trực tiếp vào `App.xaml`, `LeaveDetailView.xaml` và `AnnualIncomeView.xaml`, giải quyết triệt để lỗi nút bấm bị rơi về style mặc định hình vuông của WPF và đảm bảo `materialDesign:ButtonAssist.CornerRadius="20"` hoạt động chính xác 100% trên toàn ứng dụng.
+    + Đổi tên nhãn nút: Rút gọn "Xuất báo cáo Excel" thành **"Xuất Excel"** đồng nhất trên cả màn hình Chi tiết nghỉ (`LeaveDetailView`) và Tổng thu nhập năm (`AnnualIncomeView`).
+    + Phân biệt màu sắc trực quan tại thanh công cụ Tổng thu nhập năm (`AnnualIncomeView`):
+        * Loại bỏ chữ "Cập nhật năm:" trùng lặp, chỉ giữ lại nhãn "Năm:".
+        * Đồng bộ ô chọn năm (`cboYear`) sang Style `FilterPillComboBox`: Chiều cao 40px, bo góc viên nhộng `CornerRadius="20"`, viền mảnh trang nhã, đồng nhất hoàn toàn với các ô lọc năm ở các màn hình khác.
+        * Nút **Xuất Excel**: Màu xanh lá cây thương hiệu `#15803D`, chiều cao 40px, bo tròn dạng Pill (`CornerRadius="20"`).
+        * Nút **Lưu dữ liệu**: Chuyển từ màu xanh lá sang màu xanh dương Windows Blue `#0078D4`, chiều cao 40px, bo tròn dạng Pill (`CornerRadius="20"`), tách biệt hoàn toàn và không còn bị trùng màu với nút Xuất Excel.
+        * Nút **Nhập hàng loạt & Excel**: Tím `#7B1FA2`, chiều cao chuẩn 40px, bo tròn dạng Pill (`CornerRadius="20"`).
+        * Nút **Xóa dữ liệu năm**: Đỏ Crimson `#DC2626`, chiều cao chuẩn 40px, bo tròn dạng Pill (`CornerRadius="20"`).
+- [Đồng bộ Thẻ Card Màn hình Chi tiết Nghỉ & Tổng thu nhập năm]:
+    + Chuyển khung chứa bảng của **Chi tiết nghỉ** (`LeaveDetailView`) và **Tổng thu nhập năm** (`AnnualIncomeView`) sang thẻ card đồng bộ `TableCardStyle` với viền `#E2E8F0`, đổ bóng mềm `Dp1`, bo góc 12px chuẩn mực như các màn hình khác trong hệ thống.
+
 ## v1.6.5.0 — 2026-10-29
 - [Nâng cấp Giao diện] Đồng bộ Hệ thống Bộ lọc Viên nhộng (Pill Filter Toolbar System) Toàn diện:
     + Thiết kế lại thanh công cụ bộ lọc trên thẻ Card nổi bo tròn góc mềm mại (`CornerRadius="12"`), đổ bóng nhẹ sang trọng (`MaterialDesignShadowDepth1`), nền trắng trang nhã.

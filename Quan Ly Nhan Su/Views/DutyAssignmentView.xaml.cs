@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
+using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using TaxPersonnelManagement.Services;
 
@@ -98,12 +99,46 @@ namespace TaxPersonnelManagement.Views
         private void InitYears()
         {
             int currentYear = DateTime.Today.Year;
+            var yearSet = new SortedSet<int>();
+
+            // 1. Cố định mốc bắt đầu từ năm 2020 đến tương lai (currentYear + 5):
+            // Các năm cũ (2020, 2021, 2022, 2023, 2024...) LUÔN LUÔN CÒN ĐÓ, không bao giờ bị mất hay trôi đi!
+            int startYear = 2020;
+            int endYear = Math.Max(currentYear + 5, 2030);
+            for (int y = startYear; y <= endYear; y++)
+            {
+                yearSet.Add(y);
+            }
+
+            // 2. Tự động quét và nạp thêm tất cả các năm đã từng lưu dữ liệu trong CSDL (kể cả trước năm 2020)
+            try
+            {
+                using (var db = new AppDbContext())
+                {
+                    var dbYears = db.DutyAssignmentRecords.Select(r => r.Year).Distinct().ToList();
+                    foreach (var y in dbYears)
+                    {
+                        if (y >= 1990 && y <= 2100)
+                            yearSet.Add(y);
+                    }
+                }
+            }
+            catch { }
+
+            int prevSelected = cboYear.SelectedItem is int prev ? prev : currentYear;
+
+            _suppressEvents = true;
             cboYear.Items.Clear();
-            for (int y = currentYear - 3; y <= currentYear + 2; y++)
+            foreach (var y in yearSet)
             {
                 cboYear.Items.Add(y);
             }
-            cboYear.SelectedItem = currentYear;
+
+            if (yearSet.Contains(prevSelected))
+                cboYear.SelectedItem = prevSelected;
+            else
+                cboYear.SelectedItem = currentYear;
+            _suppressEvents = false;
         }
 
         private int GetSelectedYear()
@@ -528,6 +563,7 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
+            InitYears();
             LoadData();
         }
 
@@ -543,6 +579,7 @@ namespace TaxPersonnelManagement.Views
             if (dlg.ShowDialog() == true)
             {
                 DutyAssignmentNotificationDialog.ShowSuccess(Window.GetWindow(this), "Đã lưu văn bản phân công nhiệm vụ mới thành công!", "Tải lên thành công");
+                InitYears();
                 LoadData();
             }
         }
@@ -561,6 +598,7 @@ namespace TaxPersonnelManagement.Views
                 if (dlg.ShowDialog() == true)
                 {
                     DutyAssignmentNotificationDialog.ShowSuccess(Window.GetWindow(this), $"Đã lưu văn bản phân công nhiệm vụ cho {dept} thành công!", "Tải lên thành công");
+                    InitYears();
                     LoadData();
                 }
             }

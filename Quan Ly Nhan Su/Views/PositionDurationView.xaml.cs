@@ -124,6 +124,21 @@ namespace TaxPersonnelManagement.Views
             e.Handled = !regex.IsMatch(proposedText);
         }
 
+        private double CalculateDurationInYears(DateTime start, DateTime end)
+        {
+            if (end < start) return 0;
+            int years = end.Year - start.Year;
+            if (start.Date > end.AddYears(-years)) years--;
+            DateTime tmpDate = start.AddYears(years);
+            int months = 0;
+            while (tmpDate.AddMonths(1) <= end)
+            {
+                months++;
+                tmpDate = tmpDate.AddMonths(1);
+            }
+            return years + (months / 12.0);
+        }
+
         private void ApplyFilter()
         {
             if (txtSearch == null) return;
@@ -131,17 +146,30 @@ namespace TaxPersonnelManagement.Views
             string keyword = txtSearch.Text.Trim();
             DateTime referenceDate = dpCalculationDate.SelectedDate ?? DateTime.Now;
 
-            // Parse years filter
-            double? fromYears = null;
-            if (txtFromYears != null && double.TryParse(txtFromYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromVal))
+            // 1. Parse Thâm niên giữ vị trí (cột "Năm giữ vị trí công tác")
+            double? fromPosYears = null;
+            if (txtFromPositionYears != null && double.TryParse(txtFromPositionYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromPVal))
             {
-                fromYears = fromVal;
+                fromPosYears = fromPVal;
             }
 
-            double? toYears = null;
-            if (txtToYears != null && double.TryParse(txtToYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toVal))
+            double? toPosYears = null;
+            if (txtToPositionYears != null && double.TryParse(txtToPositionYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toPVal))
             {
-                toYears = toVal;
+                toPosYears = toPVal;
+            }
+
+            // 2. Parse Thời gian công tác trong ngành (cột "Tổng thời gian công tác trong ngành thuế")
+            double? fromTaxYears = null;
+            if (txtFromTaxYears != null && double.TryParse(txtFromTaxYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromTVal))
+            {
+                fromTaxYears = fromTVal;
+            }
+
+            double? toTaxYears = null;
+            if (txtToTaxYears != null && double.TryParse(txtToTaxYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toTVal))
+            {
+                toTaxYears = toTVal;
             }
 
             var queryList = _fullList.AsEnumerable();
@@ -156,8 +184,34 @@ namespace TaxPersonnelManagement.Views
                 );
             }
 
-            // 2. Years worked filter
-            if (fromYears.HasValue || toYears.HasValue)
+            // 2. Filter Thâm niên giữ vị trí (cột "Năm giữ vị trí công tác")
+            if (fromPosYears.HasValue || toPosYears.HasValue)
+            {
+                queryList = queryList.Where(p =>
+                {
+                    if (!p.PositionDecisionDate.HasValue) return false;
+                    DateTime start = p.PositionDecisionDate.Value;
+                    DateTime end = referenceDate;
+                    if (p.DisplayPositionCalculationDate < end)
+                    {
+                        end = p.DisplayPositionCalculationDate;
+                    }
+                    if (end < start) return false;
+
+                    double posYears = CalculateDurationInYears(start, end);
+
+                    if (fromPosYears.HasValue && posYears < fromPosYears.Value)
+                        return false;
+
+                    if (toPosYears.HasValue && posYears >= toPosYears.Value)
+                        return false;
+
+                    return true;
+                });
+            }
+
+            // 3. Filter Thời gian công tác trong ngành (cột "Tổng thời gian công tác trong ngành thuế")
+            if (fromTaxYears.HasValue || toTaxYears.HasValue)
             {
                 queryList = queryList.Where(p =>
                 {
@@ -165,13 +219,12 @@ namespace TaxPersonnelManagement.Views
                     DateTime start = p.TaxAuthorityStartDate.Value;
                     if (start > referenceDate) return false;
 
-                    // Calculate working years precisely
-                    double workedYears = (referenceDate - start).TotalDays / 365.2425;
+                    double taxYears = CalculateDurationInYears(start, referenceDate);
 
-                    if (fromYears.HasValue && workedYears < fromYears.Value)
+                    if (fromTaxYears.HasValue && taxYears < fromTaxYears.Value)
                         return false;
 
-                    if (toYears.HasValue && workedYears >= toYears.Value)
+                    if (toTaxYears.HasValue && taxYears >= toTaxYears.Value)
                         return false;
 
                     return true;
@@ -322,31 +375,46 @@ namespace TaxPersonnelManagement.Views
                         subtitleRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                         // Add Filter Info if applied
-                        string filterText = "";
-                        double? fromYears = null;
-                        if (txtFromYears != null && double.TryParse(txtFromYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromVal))
+                        double? fromPosYears = null;
+                        if (txtFromPositionYears != null && double.TryParse(txtFromPositionYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromPVal))
                         {
-                            fromYears = fromVal;
+                            fromPosYears = fromPVal;
                         }
 
-                        double? toYears = null;
-                        if (txtToYears != null && double.TryParse(txtToYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toVal))
+                        double? toPosYears = null;
+                        if (txtToPositionYears != null && double.TryParse(txtToPositionYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toPVal))
                         {
-                            toYears = toVal;
+                            toPosYears = toPVal;
                         }
 
-                        if (fromYears.HasValue && toYears.HasValue)
+                        double? fromTaxYears = null;
+                        if (txtFromTaxYears != null && double.TryParse(txtFromTaxYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double fromTVal))
                         {
-                            filterText = $"(Thâm niên công tác từ {fromYears.Value} đến dưới {toYears.Value} năm)";
+                            fromTaxYears = fromTVal;
                         }
-                        else if (fromYears.HasValue)
+
+                        double? toTaxYears = null;
+                        if (txtToTaxYears != null && double.TryParse(txtToTaxYears.Text.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double toTVal))
                         {
-                            filterText = $"(Thâm niên công tác từ {fromYears.Value} năm trở lên)";
+                            toTaxYears = toTVal;
                         }
-                        else if (toYears.HasValue)
-                        {
-                            filterText = $"(Thâm niên công tác dưới {toYears.Value} năm)";
-                        }
+
+                        List<string> filterParts = new List<string>();
+                        if (fromPosYears.HasValue && toPosYears.HasValue)
+                            filterParts.Add($"Thâm niên giữ vị trí từ {fromPosYears.Value} đến dưới {toPosYears.Value} năm");
+                        else if (fromPosYears.HasValue)
+                            filterParts.Add($"Thâm niên giữ vị trí từ {fromPosYears.Value} năm trở lên");
+                        else if (toPosYears.HasValue)
+                            filterParts.Add($"Thâm niên giữ vị trí dưới {toPosYears.Value} năm");
+
+                        if (fromTaxYears.HasValue && toTaxYears.HasValue)
+                            filterParts.Add($"Thời gian công tác trong ngành từ {fromTaxYears.Value} đến dưới {toTaxYears.Value} năm");
+                        else if (fromTaxYears.HasValue)
+                            filterParts.Add($"Thời gian công tác trong ngành từ {fromTaxYears.Value} năm trở lên");
+                        else if (toTaxYears.HasValue)
+                            filterParts.Add($"Thời gian công tác trong ngành dưới {toTaxYears.Value} năm");
+
+                        string filterText = filterParts.Count > 0 ? $"({string.Join("; ", filterParts)})" : "";
 
                         if (!string.IsNullOrEmpty(filterText))
                         {

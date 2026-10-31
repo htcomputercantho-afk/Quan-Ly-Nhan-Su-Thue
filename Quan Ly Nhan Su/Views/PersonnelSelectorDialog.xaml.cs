@@ -139,7 +139,7 @@ namespace TaxPersonnelManagement.Views
                 {
                     // Lấy toàn bộ cán bộ đang công tác, loại trừ những người đã có trong danh sách
                     var rawList = db.Personnel
-                                   .Where(p => !excludedIds.Contains(p.Id) && (string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác"))
+                                   .Where(p => !excludedIds.Contains(p.Id) && (string.IsNullOrEmpty(p.Status) || p.Status.Trim() == "Đang công tác"))
                                    .ToList();
 
                     var sortedList = rawList

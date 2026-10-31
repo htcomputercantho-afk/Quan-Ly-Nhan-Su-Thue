@@ -1,4 +1,5 @@
-<Page x:Class="TaxPersonnelManagement.Views.AnnualIncomeView"
+<Page xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
+      x:Class="TaxPersonnelManagement.Views.AnnualIncomeView"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -9,6 +10,17 @@
       d:DesignHeight="700" d:DesignWidth="1000"
       Title="Tổng thu nhập năm"
       FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Shadows.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Button.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ComboBox.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
 
     <Grid Background="#F5F5F5" Margin="10 5 10 10">
         <Grid.ColumnDefinitions>
@@ -140,51 +152,48 @@
                             <materialDesign:PackIcon Kind="CashMultiple" Width="26" Height="26" Foreground="{DynamicResource PrimaryHueMidBrush}" VerticalAlignment="Center" Margin="0 0 8 0"/>
                             <TextBlock Text="CHI TIẾT THU NHẬP TỪNG THÁNG" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="20" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryHueMidBrush}"/>
                         </StackPanel>
-                        <TextBlock Text="Năm:" VerticalAlignment="Center" Margin="0 5 10 5" FontSize="15" FontWeight="SemiBold"/>
-                        <TextBlock Text="Cập nhật năm:" VerticalAlignment="Center" Margin="0 5 10 5" FontSize="14" Foreground="#555555"/>
-                        <ComboBox x:Name="cboYear" Width="80" Height="32" Margin="0 5 15 5" SelectionChanged="CboYear_SelectionChanged"
-                                  FontSize="15" FontWeight="Medium" Foreground="#1976D2"
-                                  Background="#F5F5F5" BorderBrush="#BDBDBD" BorderThickness="1" Padding="10,4" VerticalContentAlignment="Center"
-                                  materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
-                                  materialDesign:TextFieldAssist.UnderlineBrush="{x:Null}"/>
+                        <TextBlock Text="Năm:" VerticalAlignment="Center" Margin="0 5 8 5" FontSize="14" FontWeight="SemiBold" Foreground="#334155"/>
+                        <ComboBox x:Name="cboYear" Width="110" Height="40" Margin="0 5 15 5"
+                                  Style="{StaticResource FilterPillComboBox}"
+                                  SelectionChanged="CboYear_SelectionChanged"/>
 
-                        <Button x:Name="btnBulkAdd" Height="36" Click="BtnBulkAdd_Click" Margin="0 5 10 5" 
+                        <Button x:Name="btnBulkAdd" Height="40" Click="BtnBulkAdd_Click" Margin="0 5 10 5" 
                                 Style="{DynamicResource MaterialDesignRaisedButton}"
-                                Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18">
+                                Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White" Padding="18,0"
+                                materialDesign:ButtonAssist.CornerRadius="20" Cursor="Hand" ToolTip="Nhập thu nhập hàng loạt từ Excel">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="CardsOutline" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Nhập hàng loạt &amp; Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                                <materialDesign:PackIcon Kind="CardsOutline" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Nhập hàng loạt &amp; Excel" FontWeight="Bold" VerticalAlignment="Center" FontSize="13"/>
                             </StackPanel>
                         </Button>
                         
-                        <Button x:Name="btnExportExcel" Height="36" Click="BtnExportExcel_Click" Margin="0 5 10 5"
+                        <Button x:Name="btnExportExcel" Height="40" Click="BtnExportExcel_Click" Margin="0 5 10 5"
                                 Style="{DynamicResource MaterialDesignRaisedButton}"
-                                Background="#0277BD" BorderBrush="#0277BD" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18">
+                                Background="#15803D" BorderBrush="#15803D" Foreground="White" Padding="18,0"
+                                materialDesign:ButtonAssist.CornerRadius="20" Cursor="Hand" ToolTip="Xuất dữ liệu thu nhập ra file Excel">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Xuất báo cáo Excel" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                                <materialDesign:PackIcon Kind="FileExcel" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Xuất Excel" FontWeight="Bold" VerticalAlignment="Center" FontSize="13"/>
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnSave" Height="36" Click="BtnSave_Click" Margin="0 5 10 5"
+                        <Button x:Name="btnSave" Height="40" Click="BtnSave_Click" Margin="0 5 10 5"
                                 Style="{DynamicResource MaterialDesignRaisedButton}"
-                                Background="#2E7D32" BorderBrush="#2E7D32" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18">
+                                Background="#0078D4" BorderBrush="#0078D4" Foreground="White" Padding="18,0"
+                                materialDesign:ButtonAssist.CornerRadius="20" Cursor="Hand" ToolTip="Lưu dữ liệu thu nhập đã sửa">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Lưu dữ liệu" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                                <materialDesign:PackIcon Kind="ContentSave" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Lưu dữ liệu" FontWeight="Bold" VerticalAlignment="Center" FontSize="13"/>
                             </StackPanel>
                         </Button>
 
-                        <Button x:Name="btnClearData" Height="36" Click="BtnClearData_Click" Margin="0 5 10 5"
+                        <Button x:Name="btnClearData" Height="40" Click="BtnClearData_Click" Margin="0 5 10 5"
                                 Style="{DynamicResource MaterialDesignRaisedButton}"
-                                Background="#D32F2F" BorderBrush="#D32F2F" Foreground="White" Padding="15,0"
-                                materialDesign:ButtonAssist.CornerRadius="18">
+                                Background="#DC2626" BorderBrush="#DC2626" Foreground="White" Padding="18,0"
+                                materialDesign:ButtonAssist.CornerRadius="20" Cursor="Hand" ToolTip="Xóa toàn bộ dữ liệu năm được chọn">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Margin="0 0 6 0" VerticalAlignment="Center" Foreground="White"/>
-                                <TextBlock Text="Xóa dữ liệu năm" FontWeight="Medium" VerticalAlignment="Center" FontSize="14"/>
+                                <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Xóa dữ liệu năm" FontWeight="Bold" VerticalAlignment="Center" FontSize="13"/>
                             </StackPanel>
                         </Button>
                     </WrapPanel>
@@ -193,8 +202,9 @@
                     <TextBlock Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center" Text="*Chọn một công chức và click đúp vào ô để sửa dữ liệu" Foreground="Gray" FontStyle="Italic"/>
 
                     <!-- DataGrid -->
-                    <Border Grid.Row="2" CornerRadius="8" ClipToBounds="True" BorderBrush="#E2E8F0" BorderThickness="1">
-                    <DataGrid x:Name="dgMonthlyIncome" BorderThickness="0" Background="White"
+                    <materialDesign:Card Grid.Row="2" Style="{StaticResource TableCardStyle}">
+                        <Grid helpers:ClipHelper.CornerRadius="12">
+                            <DataGrid x:Name="dgMonthlyIncome" BorderThickness="0" Background="White"
                               AutoGenerateColumns="False" AlternationCount="0" AlternatingRowBackground="{x:Null}"
                               MinRowHeight="56"
                               FrozenColumnCount="1"
@@ -1378,7 +1388,8 @@
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    </Border>
+                        </Grid>
+                    </materialDesign:Card>
                 </Grid>
             </Border>
         </Grid>

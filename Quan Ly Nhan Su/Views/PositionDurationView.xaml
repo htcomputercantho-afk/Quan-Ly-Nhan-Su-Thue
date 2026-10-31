@@ -41,9 +41,9 @@
         <materialDesign:Card Grid.Row="1" Margin="0 0 0 12" Padding="20 14" UniformCornerRadius="12" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Search Box -->
-                <StackPanel Margin="0 0 16 0" VerticalAlignment="Center">
+                <StackPanel Margin="0 0 16 0">
                     <TextBlock Text="Tìm kiếm" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
-                    <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Width="270" Height="40">
+                    <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Width="240" Height="40">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -64,22 +64,22 @@
                 </StackPanel>
 
                 <!-- Calculation Date -->
-                <StackPanel Margin="0 0 16 0" VerticalAlignment="Center">
+                <StackPanel Margin="0 0 16 0">
                     <TextBlock Text="Thời điểm tính" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
-                    <DatePicker x:Name="dpCalculationDate" Width="170"
+                    <DatePicker x:Name="dpCalculationDate" Width="160" HorizontalContentAlignment="Center"
                                 Style="{StaticResource FilterPillDatePicker}"
                                 SelectedDateChanged="dpCalculationDate_SelectedDateChanged"/>
                 </StackPanel>
 
-                <!-- Years Worked Filter (Thâm niên) -->
-                <StackPanel Margin="0 0 20 0" VerticalAlignment="Center">
+                <!-- Thâm niên giữ vị trí (Lọc cột "Năm giữ vị trí công tác") -->
+                <StackPanel Margin="0 0 16 0">
                     <TextBlock Text="Thâm niên giữ vị trí" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
                     <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Height="40" Padding="14 0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <materialDesign:PackIcon Kind="FilterVariant" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0 0 6 0"/>
                             <TextBlock Text="Từ" FontSize="13" Foreground="#64748B" VerticalAlignment="Center" Margin="0 0 6 0"/>
                             <Border Background="#F1F5F9" CornerRadius="8" Width="44" Height="28">
-                                <TextBox x:Name="txtFromYears"
+                                <TextBox x:Name="txtFromPositionYears"
                                          BorderThickness="0" Background="Transparent"
                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                                          FontSize="13.5" FontWeight="SemiBold" Foreground="#1E293B"
@@ -88,7 +88,36 @@
                             </Border>
                             <TextBlock Text="đến dưới" FontSize="13" Foreground="#64748B" VerticalAlignment="Center" Margin="8 0"/>
                             <Border Background="#F1F5F9" CornerRadius="8" Width="44" Height="28">
-                                <TextBox x:Name="txtToYears"
+                                <TextBox x:Name="txtToPositionYears"
+                                         BorderThickness="0" Background="Transparent"
+                                         VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                         FontSize="13.5" FontWeight="SemiBold" Foreground="#1E293B"
+                                         TextChanged="txtYearsFilter_TextChanged"
+                                         PreviewTextInput="NumberOnly_PreviewTextInput"/>
+                            </Border>
+                            <TextBlock Text="năm" FontSize="13" Foreground="#64748B" VerticalAlignment="Center" Margin="6 0 0 0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Thời gian công tác trong ngành (Lọc cột "Tổng thời gian công tác trong ngành thuế") -->
+                <StackPanel Margin="0 0 20 0">
+                    <TextBlock Text="Thời gian công tác trong ngành" FontSize="12" FontWeight="SemiBold" Foreground="#64748B" Margin="8 0 0 4"/>
+                    <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Height="40" Padding="14 0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="FilterVariant" Width="16" Height="16" Foreground="#64748B" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                            <TextBlock Text="Từ" FontSize="13" Foreground="#64748B" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                            <Border Background="#F1F5F9" CornerRadius="8" Width="44" Height="28">
+                                <TextBox x:Name="txtFromTaxYears"
+                                         BorderThickness="0" Background="Transparent"
+                                         VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                                         FontSize="13.5" FontWeight="SemiBold" Foreground="#1E293B"
+                                         TextChanged="txtYearsFilter_TextChanged"
+                                         PreviewTextInput="NumberOnly_PreviewTextInput"/>
+                            </Border>
+                            <TextBlock Text="đến dưới" FontSize="13" Foreground="#64748B" VerticalAlignment="Center" Margin="8 0"/>
+                            <Border Background="#F1F5F9" CornerRadius="8" Width="44" Height="28">
+                                <TextBox x:Name="txtToTaxYears"
                                          BorderThickness="0" Background="Transparent"
                                          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
                                          FontSize="13.5" FontWeight="SemiBold" Foreground="#1E293B"
@@ -117,8 +146,8 @@
         </materialDesign:Card>
 
         <!-- Data Grid Card -->
-        <materialDesign:Card Grid.Row="2" Style="{DynamicResource MaterialDesignCard}" UniformCornerRadius="8" ClipToBounds="True">
-            <Grid>
+        <materialDesign:Card Grid.Row="2" Style="{StaticResource TableCardStyle}">
+            <Grid helpers:ClipHelper.CornerRadius="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>

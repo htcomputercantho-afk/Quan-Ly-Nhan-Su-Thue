@@ -66,7 +66,7 @@ namespace TaxPersonnelManagement.Views
 
                     var yearItems = new List<TrainingYearFilterItem>
                     {
-                        new TrainingYearFilterItem { Label = "-- Tất cả --", Value = null }
+                        new TrainingYearFilterItem { Label = "Tất cả các năm", Value = null }
                     };
                     foreach (var y in distinctYears)
                     {

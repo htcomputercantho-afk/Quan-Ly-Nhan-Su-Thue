@@ -209,7 +209,7 @@ namespace TaxPersonnelManagement.Views
                                       .ThenBy(x => x)
                                       .ToList();
 
-                allDepts.Insert(0, "-- Tất cả bộ phận --");
+                allDepts.Insert(0, "Tất cả bộ phận");
                 cbDepartmentFilter.ItemsSource = allDepts;
                 cbDepartmentFilter.SelectedIndex = 0;
             }
@@ -226,7 +226,7 @@ namespace TaxPersonnelManagement.Views
                                    .Include(p => p.PersonnelDegrees)
                                    .AsQueryable();
 
-                if (cbDepartmentFilter.SelectedItem is string dept && dept != "-- Tất cả bộ phận --")
+                if (cbDepartmentFilter.SelectedItem is string dept && dept != "Tất cả bộ phận")
                 {
                     query = query.Where(p => p.Department == dept);
                 }

@@ -38,6 +38,7 @@
                 <Setter Property="Padding" Value="10 0"/>
                 <Setter Property="Foreground" Value="#1E293B"/>
                 <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="CalendarStyle" Value="{DynamicResource ModernCalendarStyle}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="DatePicker">
@@ -93,13 +94,10 @@
                                             BorderThickness="0"
                                             Foreground="#1565C0"
                                             Style="{DynamicResource MaterialDesignToolButton}">
-                                        <materialDesign:PackIcon Kind="CalendarMonth" Width="18" Height="18"/>
+                                        <materialDesign:PackIcon Kind="CalendarMonthOutline" Width="18" Height="18"/>
                                     </Button>
 
-                                    <Popup x:Name="PART_Popup" 
-                                           AllowsTransparency="True" 
-                                           Placement="Bottom" 
-                                           StaysOpen="False"/>
+                                    <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom" VerticalOffset="4" PopupAnimation="Fade" StaysOpen="False"/>
                                 </Grid>
                             </Border>
                             <ControlTemplate.Triggers>

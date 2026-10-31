@@ -49,7 +49,7 @@ namespace TaxPersonnelManagement.Views
         private void LoadDepartments()
         {
             var deptList = new List<string> {
-                "-- Tất cả bộ phận --",
+                "Tất cả bộ phận",
                 "Ban lãnh đạo",
                 "Các tổ"
             };

@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:helpers="clr-namespace:TaxPersonnelManagement.Helpers"
       mc:Ignorable="d"
       Language="vi-VN"
       d:DesignHeight="850" d:DesignWidth="1200"
@@ -69,176 +70,18 @@
                 </Setter>
             </Style>
 
-            <!-- STYLE Ô SELECT NĂM (COMBOBOX) CHUẨN ĐẸP, RỘNG RÃI, KHÔNG TRÀN CHỮ -->
-            <Style x:Key="ModernYearSelectBox" TargetType="ComboBox">
-                <Setter Property="Height" Value="38"/>
-                <Setter Property="Background" Value="White"/>
-                <Setter Property="BorderBrush" Value="#CBD5E1"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="Foreground" Value="#0F172A"/>
-                <Setter Property="FontSize" Value="13.5"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="VerticalContentAlignment" Value="Center"/>
-                <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                <Setter Property="SnapsToDevicePixels" Value="True"/>
-                <Setter Property="OverridesDefaultStyle" Value="True"/>
-                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="ComboBox">
-                            <Grid SnapsToDevicePixels="True">
-                                <!-- Nút Toggle mở Popup: Chiếm trọn 100% diện tích, nền trắng viền xám bo góc chuẩn đẹp -->
-                                <ToggleButton x:Name="toggleButton"
-                                              Focusable="False"
-                                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                              ClickMode="Press"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Stretch"
-                                              Cursor="Hand"
-                                              Style="{x:Null}">
-                                    <ToggleButton.Template>
-                                        <ControlTemplate TargetType="ToggleButton">
-                                            <Border x:Name="tbBorder"
-                                                    Background="White"
-                                                    BorderBrush="#CBD5E1"
-                                                    BorderThickness="1"
-                                                    CornerRadius="8"
-                                                    SnapsToDevicePixels="True">
-                                                <Grid Margin="11 0 10 0" IsHitTestVisible="False">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- Icon Lịch -->
-                                                    <materialDesign:PackIcon Grid.Column="0" Kind="CalendarBlank" Width="16" Height="16"
-                                                                             Foreground="#2563EB" Margin="0 0 6 0" VerticalAlignment="Center"/>
-
-                                                    <!-- Chữ 'Năm: ' -->
-                                                    <TextBlock Grid.Column="1" Text="Năm: " FontSize="13" FontWeight="SemiBold"
-                                                               Foreground="#475569" VerticalAlignment="Center"/>
-
-                                                    <!-- Giá trị năm được chọn -->
-                                                    <ContentPresenter Grid.Column="2"
-                                                                      Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                                      VerticalAlignment="Center"
-                                                                      Margin="0 0 4 0">
-                                                        <ContentPresenter.Resources>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="FontWeight" Value="Bold"/>
-                                                                <Setter Property="Foreground" Value="#0F172A"/>
-                                                                <Setter Property="FontSize" Value="13.5"/>
-                                                            </Style>
-                                                        </ContentPresenter.Resources>
-                                                    </ContentPresenter>
-
-                                                    <!-- Mũi tên xổ xuống ChevronDown ở cạnh phải luôn hiển thị sắc nét -->
-                                                    <materialDesign:PackIcon Grid.Column="3" Kind="ChevronDown"
-                                                                             Width="18" Height="18"
-                                                                             Foreground="#64748B"
-                                                                             VerticalAlignment="Center"/>
-                                                </Grid>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="#2563EB"/>
-                                                </Trigger>
-                                                <Trigger Property="IsChecked" Value="True">
-                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="#2563EB"/>
-                                                    <Setter TargetName="tbBorder" Property="BorderThickness" Value="1.5"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </ToggleButton.Template>
-                                </ToggleButton>
-
-                                <!-- POPUP DANH SÁCH NĂM BO TRÒN HIỆN ĐẠI -->
-                                <Popup x:Name="PART_Popup"
-                                       Placement="Bottom"
-                                       IsOpen="{TemplateBinding IsDropDownOpen}"
-                                       AllowsTransparency="True"
-                                       Focusable="False"
-                                       PopupAnimation="Slide">
-                                    <Grid x:Name="DropDown"
-                                          SnapsToDevicePixels="True"
-                                          MinWidth="150"
-                                          MaxHeight="260"
-                                          Margin="0 4 0 8">
-                                        <Border x:Name="DropDownBorder"
-                                                Background="White"
-                                                BorderBrush="#E2E8F0"
-                                                BorderThickness="1"
-                                                CornerRadius="10">
-                                            <Border.Effect>
-                                                <DropShadowEffect BlurRadius="16" Direction="270" ShadowDepth="4" Opacity="0.14" Color="#0F172A"/>
-                                            </Border.Effect>
-                                            <ScrollViewer Margin="4" CanContentScroll="True" VerticalScrollBarVisibility="Auto">
-                                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
-                                            </ScrollViewer>
-                                        </Border>
-                                    </Grid>
-                                </Popup>
-                            </Grid>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="ItemContainerStyle">
-                    <Setter.Value>
-                        <Style TargetType="ComboBoxItem">
-                            <Setter Property="OverridesDefaultStyle" Value="True"/>
-                            <Setter Property="Height" Value="36"/>
-                            <Setter Property="FontSize" Value="13"/>
-                            <Setter Property="Foreground" Value="#334155"/>
-                            <Setter Property="Padding" Value="12 0"/>
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ComboBoxItem">
-                                        <Border x:Name="ItemBorder"
-                                                Background="Transparent"
-                                                CornerRadius="6"
-                                                Padding="{TemplateBinding Padding}"
-                                                Margin="2 1">
-                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <materialDesign:PackIcon Kind="CalendarBlank" Width="14" Height="14" Foreground="#94A3B8" Margin="0 0 8 0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Năm " FontSize="13" Foreground="#475569" VerticalAlignment="Center"/>
-                                                <ContentPresenter VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="#F1F5F9"/>
-                                                <Setter Property="Foreground" Value="#0F172A"/>
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="#EFF6FF"/>
-                                                <Setter Property="Foreground" Value="#1D4ED8"/>
-                                                <Setter Property="FontWeight" Value="Bold"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-
-            <!-- STYLE RADIOBUTTON DẠNG TAB PILL CHUYỂN TRẠNG THÁI -->
+            <!-- STYLE RADIOBUTTON DẠNG TAB PILL CHUYỂN TRẠNG THÁI BO TRÒN ĐỒNG BỘ -->
             <Style x:Key="FilterSegmentPill" TargetType="RadioButton">
                 <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="FontSize" Value="12.5"/>
+                <Setter Property="FontSize" Value="13"/>
                 <Setter Property="FontWeight" Value="Medium"/>
                 <Setter Property="Foreground" Value="#64748B"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="RadioButton">
-                            <Border x:Name="pillBorder" Background="Transparent" CornerRadius="6"
-                                    Padding="12 6" Margin="1 0">
+                            <Border x:Name="pillBorder" Background="Transparent" CornerRadius="16"
+                                    Padding="14 0" Height="32" Margin="1 0">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
@@ -252,7 +95,7 @@
                                     <Setter Property="FontWeight" Value="SemiBold"/>
                                     <Setter TargetName="pillBorder" Property="Effect">
                                         <Setter.Value>
-                                            <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.10" Color="#000000"/>
+                                            <DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.12" Color="#000000"/>
                                         </Setter.Value>
                                     </Setter>
                                 </Trigger>
@@ -318,9 +161,9 @@
                     <!-- Nút Tác vụ chính -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <!-- Nút Làm mới -->
-                        <Button x:Name="btnRefresh" Click="BtnRefresh_Click" Height="36" Padding="12 0"
-                                Background="White" BorderBrush="#CBD5E1" BorderThickness="1"
-                                materialDesign:ButtonAssist.CornerRadius="8"
+                        <Button x:Name="btnRefresh" Click="BtnRefresh_Click" Height="38" Padding="14 0"
+                                Background="White" BorderBrush="#CBD5E1" BorderThickness="1.5"
+                                materialDesign:ButtonAssist.CornerRadius="19"
                                 Cursor="Hand" ToolTip="Làm mới lại dữ liệu ma trận" Margin="0 0 8 0">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <materialDesign:PackIcon Kind="Refresh" Width="16" Height="16" Foreground="#334155" Margin="0 0 6 0"/>
@@ -329,8 +172,8 @@
                         </Button>
 
                         <!-- Nút Tải file PDF lên -->
-                        <Button x:Name="btnUploadTop" Click="BtnUploadTop_Click" Height="36" Padding="14 0"
-                                materialDesign:ButtonAssist.CornerRadius="8" Cursor="Hand"
+                        <Button x:Name="btnUploadTop" Click="BtnUploadTop_Click" Height="38" Padding="16 0"
+                                materialDesign:ButtonAssist.CornerRadius="19" Cursor="Hand"
                                 BorderThickness="0"
                                 ToolTip="Tải file PDF phân công nhiệm vụ mới">
                             <Button.Background>
@@ -350,27 +193,26 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- HÀNG 2: THANH LỌC THIẾT KẾ MỚI ĐẲNG CẤP & HIỆN ĐẠI -->
-                <Border Grid.Row="1" Margin="0 10 0 0" Padding="12 8" Background="#F8FAFC"
-                        BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10">
+                <!-- HÀNG 2: THANH LỌC THIẾT KẾ BO TRÒN ĐỒNG BỘ TOÀN HỆ THỐNG -->
+                <Border Grid.Row="1" Margin="0 10 0 0" Padding="14 10" Background="#F8FAFC"
+                        BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Cụm bộ lọc: Ô Select Năm chuẩn đẹp + Ô tìm kiếm + Tab trạng thái -->
+                        <!-- Cụm bộ lọc: Ô Select Năm chuẩn capsule + Ô tìm kiếm bo tròn 20px + Tab trạng thái bo tròn -->
                         <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <!-- 1. Ô SELECT NĂM RỘNG RÃI, CHUẨN ĐẸP -->
-                            <ComboBox x:Name="cboYear" Style="{StaticResource ModernYearSelectBox}"
-                                      Width="150" Height="38" Margin="0 0 14 0"
-                                      PreviewMouseLeftButtonDown="CboYear_PreviewMouseLeftButtonDown"
+                            <!-- 1. Ô SELECT NĂM ĐỒNG BỘ CAPSULE PILL VỚI CÁC BÊN -->
+                            <ComboBox x:Name="cboYear" Style="{DynamicResource FilterPillComboBox}"
+                                      Width="120" Height="40" Margin="0 0 14 0"
                                       SelectionChanged="CboYear_SelectionChanged"
                                       ToolTip="Bấm để chọn năm theo dõi"/>
 
-                            <!-- 2. Ô TÌM KIẾM TỔ / BỘ PHẬN -->
-                            <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8"
-                                    Height="38" Width="280" Padding="10 0" Margin="0 0 14 0" VerticalAlignment="Center">
+                            <!-- 2. Ô TÌM KIẾM TỔ / BỘ PHẬN BO TRÒN 20PX -->
+                            <Border Background="White" BorderBrush="#CBD5E1" BorderThickness="1.5" CornerRadius="20"
+                                    Height="40" Width="280" Padding="12 0" Margin="0 0 14 0" VerticalAlignment="Center">
                                 <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -379,17 +221,21 @@
                                     </Grid.ColumnDefinitions>
                                     <materialDesign:PackIcon Grid.Column="0" Kind="Magnify" Width="18" Height="18" Foreground="#64748B" Margin="0 0 8 0" VerticalAlignment="Center"/>
                                     <TextBox x:Name="txtSearch" Grid.Column="1" BorderThickness="0" Background="Transparent"
-                                             FontSize="13" Foreground="#0F172A" VerticalContentAlignment="Center"
-                                             materialDesign:HintAssist.Hint="Tìm kiếm bộ phận..." TextChanged="TxtSearch_TextChanged"/>
+                                             FontSize="13.5" Foreground="#1E293B" VerticalContentAlignment="Center"
+                                             materialDesign:HintAssist.Hint="Tìm kiếm bộ phận..."
+                                             materialDesign:HintAssist.Foreground="#94A3B8"
+                                             materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
+                                             TextChanged="TxtSearch_TextChanged"/>
                                     <Button x:Name="btnClearSearch" Grid.Column="2" Width="18" Height="18" Padding="0" Background="Transparent"
-                                            BorderThickness="0" Cursor="Hand" Visibility="Collapsed" Click="BtnClearSearch_Click">
+                                             BorderThickness="0" Cursor="Hand" Visibility="Collapsed" Click="BtnClearSearch_Click">
                                         <materialDesign:PackIcon Kind="CloseCircle" Width="14" Height="14" Foreground="#94A3B8"/>
                                     </Button>
                                 </Grid>
                             </Border>
 
-                            <!-- 3. TAB LỌC NHANH THEO TRẠNG THÁI -->
-                            <Border Background="#E2E8F0" CornerRadius="8" Padding="2" Height="38" Margin="0 0 10 0" VerticalAlignment="Center">
+                            <!-- 3. TAB LỌC NHANH THEO TRẠNG THÁI BO TRÒN DẠNG PILL SEGMENT -->
+                            <Border Background="#F1F5F9" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="20"
+                                    Padding="4 3" Height="40" Margin="0 0 10 0" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <RadioButton x:Name="rbFilterAll" Content="Tất cả" GroupName="StatusFilter"
                                                  IsChecked="True" Click="FilterStatus_Click" Checked="FilterStatus_Checked" Tag="All"
@@ -412,7 +258,7 @@
 
                         <!-- Đếm số kết quả lọc -->
                         <TextBlock x:Name="txtFilterCount" Grid.Column="1" Text="13 Bộ phận"
-                                   FontSize="12" FontWeight="SemiBold" Foreground="#64748B"
+                                   FontSize="12.5" FontWeight="SemiBold" Foreground="#64748B"
                                    VerticalAlignment="Center" Margin="10 0 4 0"/>
                     </Grid>
                 </Border>
@@ -582,8 +428,8 @@
         </Grid>
 
         <!-- ======================= ROW 2: MATRIX TIMELINE TABLE (GHIM CỐ ĐỊNH THANH TIÊU ĐỀ & CỘT BỘ PHẬN) ======================= -->
-        <Border Grid.Row="2" Style="{StaticResource ModernCard}" Padding="0" ClipToBounds="True">
-            <Grid>
+        <materialDesign:Card Grid.Row="2" Style="{StaticResource TableCardStyle}">
+            <Grid helpers:ClipHelper.CornerRadius="12">
                 <Grid.RowDefinitions>
                     <!-- Tiêu đề cột ma trận: CỐ ĐỊNH Ở ĐỈNH -->
                     <RowDefinition Height="50"/>
@@ -594,7 +440,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- ================= HÀNG 0: HEADER (GHIM CỐ ĐỊNH Ở ĐỈNH) ================= -->
-                <Grid Grid.Row="0" PreviewMouseWheel="Header_PreviewMouseWheel">
+                <Grid Grid.Row="0" helpers:ClipHelper.CornerRadius="12,12,0,0" PreviewMouseWheel="Header_PreviewMouseWheel">
                     <Grid.ColumnDefinitions>
                         <!-- Cột cố định: BỘ PHẬN (330px) -->
                         <ColumnDefinition Width="330"/>
@@ -603,13 +449,13 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Header Cột BỘ PHẬN (Cố định trên cùng bên trái) -->
-                    <Border Grid.Column="0" Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" CornerRadius="11 0 0 0">
+                    <Border Grid.Column="0" Background="{DynamicResource PrimaryHueMidBrush}" BorderBrush="#1565C0" BorderThickness="0 0 1 0" CornerRadius="12 0 0 0">
                         <TextBlock Text="BỘ PHẬN" FontFamily="{StaticResource AppHeadingFont}" FontWeight="Bold" FontSize="13" Foreground="White"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
                     <!-- Header Cột 12 Tháng + Trạng thái + Thao tác (Cuộn ngang đồng bộ) -->
-                    <Border Grid.Column="1" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="0 11 0 0">
+                    <Border Grid.Column="1" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="0 12 0 0" helpers:ClipHelper.CornerRadius="0,12,0,0">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -652,7 +498,7 @@
                             </ScrollViewer>
 
                             <!-- Spacer bù thanh cuộn dọc -->
-                            <Border Grid.Column="1" Width="17" Background="{DynamicResource PrimaryHueMidBrush}"
+                            <Border Grid.Column="1" Width="17" Background="{DynamicResource PrimaryHueMidBrush}" CornerRadius="0 12 0 0"
                                     Visibility="{Binding ComputedVerticalScrollBarVisibility, ElementName=svMatrixRowsRight}"/>
                         </Grid>
                     </Border>
@@ -883,6 +729,6 @@
                     </StackPanel>
                 </Grid>
             </Grid>
-        </Border>
+        </materialDesign:Card>
     </Grid>
 </Page>

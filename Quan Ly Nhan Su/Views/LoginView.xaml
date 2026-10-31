@@ -5,57 +5,375 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="Đăng Nhập - Quản Lý Nhân Sự" Height="600" Width="900"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
-        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Title="Đăng Nhập - Quản Lý Nhân Sự" Height="660" Width="1060"
+        MinWidth="420" MinHeight="520"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResize"
+        WindowStyle="None" Background="#0B2A4A"
         Icon="/icon.ico"
-        FontFamily="{DynamicResource MaterialDesignFont}">
+        FontFamily="{DynamicResource AppRegularFont}">
 
-    <Grid>
-        <!-- Vibrant Gradient Background -->
-        <Grid.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#0078D4" Offset="0.0" />
-                <GradientStop Color="#003A75" Offset="1.0" />
-            </LinearGradientBrush>
-        </Grid.Background>
+    <!-- Bỏ thanh tiêu đề hệ thống nhưng vẫn giữ viền co giãn & bo góc Windows 11 -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="6" GlassFrameThickness="0,0,0,1" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
 
-        <!-- Glass-like Card -->
-        <Border Width="400"  CornerRadius="12" VerticalAlignment="Center" HorizontalAlignment="Center" Effect="{DynamicResource MaterialDesignShadowDepth4}">
-            <Border.Background>
-                <SolidColorBrush Color="White" Opacity="0.95"/>
-            </Border.Background>
-                <StackPanel Margin="40 30">
-                    <Image Source="/logo.png" Width="64" Height="64" HorizontalAlignment="Center" Margin="0 0 0 15" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    
-                    <TextBlock Text="ĐĂNG NHẬP" FontFamily="{StaticResource AppHeadingFont}" FontSize="26" FontWeight="ExtraBold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" Margin="0 0 0 5"/>
-                    <TextBlock Text="QUẢN LÝ NHÂN SỰ" FontFamily="{StaticResource AppHeadingFont}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Margin="0 0 0 30"/>
+    <Window.Resources>
+        <!-- Ô nhập liệu kính mờ: không viền mặc định, có placeholder (dùng Tag làm gợi ý) -->
+        <Style x:Key="LoginInputTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="CaretBrush" Value="#1A84F8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid Background="Transparent">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                            <TextBlock x:Name="Placeholder" Text="{TemplateBinding Tag}" Foreground="#8A9BB0"
+                                       FontSize="{TemplateBinding FontSize}" Margin="{TemplateBinding Padding}"
+                                       Padding="2,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                    <!-- Username -->
-                    <TextBox x:Name="txtUsername" materialDesign:HintAssist.Hint="Tên đăng nhập" Style="{DynamicResource MaterialDesignOutlinedTextBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 10 0" VerticalContentAlignment="Center"/>
-                    
-                    <!-- Password with Manual Reveal -->
-                    <Grid>
-                        <PasswordBox x:Name="txtPassword" materialDesign:HintAssist.Hint="Mật khẩu" Style="{DynamicResource MaterialDesignOutlinedPasswordBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 40 0" VerticalContentAlignment="Center" PasswordChanged="txtPassword_PasswordChanged"/>
-                        <TextBox x:Name="txtVisiblePassword" materialDesign:HintAssist.Hint="Mật khẩu" Style="{DynamicResource MaterialDesignOutlinedTextBox}" Margin="0 8" FontSize="13" Height="38" Padding="10 0 40 0" VerticalContentAlignment="Center" Visibility="Collapsed" TextChanged="txtVisiblePassword_TextChanged"/>
-                        
-                        <ToggleButton x:Name="btnTogglePassword" Width="30" Height="30" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 5 0" Style="{DynamicResource MaterialDesignIconToggleButton}" Background="Transparent" BorderThickness="0" Click="btnTogglePassword_Click" Focusable="False" IsTabStop="False">
-                            <materialDesign:PackIcon Kind="Eye" Foreground="{DynamicResource PrimaryColor}" Width="20" Height="20"/>
-                        </ToggleButton>
-                    </Grid>
+        <Style x:Key="LoginInputPasswordBox" TargetType="PasswordBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="CaretBrush" Value="#1A84F8"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Grid Background="Transparent">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" Focusable="False"
+                                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                    <!-- Remember Me Checkbox -->
-                    <CheckBox x:Name="chkRememberMe" Content="Ghi nhớ đăng nhập" Margin="0 10 0 0" IsChecked="True" Style="{DynamicResource MaterialDesignCheckBox}" Foreground="{DynamicResource TextSecondary}"/>
+        <!-- Nút ĐĂNG NHẬP: xanh dương, bo 10px, hover sáng nhẹ, không đổ bóng gắt -->
+        <Style x:Key="LoginPrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#1A84F8"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="10" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3893FA"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#0F6FD9"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.75"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                    <!-- Primary Action Button -->
-                    <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" FontFamily="{StaticResource AppHeadingFont}" IsDefault="True" Margin="0 30 0 0" Click="btnLogin_Click" Style="{DynamicResource PremiumButtonStyle}"/>
-                    
-                    <!-- Secondary Action Button -->
-                    <Button x:Name="btnExit" Content="THOÁT" FontFamily="{StaticResource AppHeadingFont}" Margin="0 15 0 0" Click="btnExit_Click" Style="{DynamicResource PremiumOutlineButtonStyle}" BorderThickness="0"/>
-                    <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.7" FontSize="11" FontWeight="SemiBold" FontFamily="{StaticResource AppRegularFont}" HorizontalAlignment="Center" Margin="0 25 0 0"/>
-                    <TextBlock x:Name="txtVersion" Text="Phiên bản 1.0.0.0" Foreground="{DynamicResource PrimaryHueMidBrush}" Opacity="0.5" FontSize="10" HorizontalAlignment="Center" Margin="0 2 0 0"/>
+        <!-- Nút THOÁT: nền sáng, viền xanh nhạt, chữ xanh -->
+        <Style x:Key="LoginSecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#F8FBFE"/>
+            <Setter Property="BorderBrush" Value="#8AC2EF"/>
+            <Setter Property="Foreground" Value="#1A84F8"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1.2" CornerRadius="10" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EAF4FE"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#1A84F8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#DCEBFC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Nút trong suốt (con mắt, đóng banner) -->
+        <Style x:Key="LoginIconButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1A1A84F8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Nút thu nhỏ cửa sổ góc trên phải -->
+        <Style x:Key="LoginMinimizeButton" TargetType="Button">
+            <Setter Property="Background" Value="#25001530"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="0,0,0,10">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#45FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#65FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid" SizeChanged="RootGrid_SizeChanged">
+
+        <!-- LỚP NỀN: ảnh toàn màn hình + dải tối bên trái (dùng làm nguồn cho hiệu ứng kính mờ) -->
+        <Grid x:Name="BackgroundLayer" ClipToBounds="True">
+            <Image x:Name="bgImage" Source="/login_bg.jpg" Stretch="UniformToFill"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <Grid x:Name="LeftGradientOverlay" HorizontalAlignment="Left" Width="520">
+                <Grid.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#45002040" Offset="0.0"/>
+                        <GradientStop Color="#2000285A" Offset="0.45"/>
+                        <GradientStop Color="#00000000" Offset="1.0"/>
+                    </LinearGradientBrush>
+                </Grid.Background>
+            </Grid>
+        </Grid>
+
+        <!-- Vùng kéo thả di chuyển cửa sổ -->
+        <Grid x:Name="TitleBarDragArea" Height="42" VerticalAlignment="Top" Background="Transparent"
+              Panel.ZIndex="40" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown"/>
+
+        <!-- Góc trên trái: Logo + tên ứng dụng -->
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left"
+                    Margin="16,10,0,0" IsHitTestVisible="False" Panel.ZIndex="50">
+            <Border Width="22" Height="22" CornerRadius="11" Background="White" Padding="1.5">
+                <Image Source="/logo.png" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+            </Border>
+            <TextBlock Text="Quản lý nhân sự" FontSize="12.5" FontWeight="SemiBold" Foreground="White"
+                       VerticalAlignment="Center" Margin="8,0,0,0"/>
+        </StackPanel>
+
+        <!-- Góc trên phải: Nút thu nhỏ (-) -->
+        <Button x:Name="btnMinimize" Style="{StaticResource LoginMinimizeButton}" Click="btnMinimize_Click"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Height="36"
+                ToolTip="Ẩn ứng dụng xuống thanh tác vụ" Panel.ZIndex="100">
+            <Border Width="16" Height="3.5" Background="White" CornerRadius="1.75"/>
+        </Button>
+
+        <!-- NỘI DUNG CHÍNH -->
+        <ScrollViewer x:Name="ContentScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      ScrollChanged="ContentScrollViewer_ScrollChanged">
+            <Grid x:Name="MainContentGrid" MinHeight="500" VerticalAlignment="Center" Margin="0,32,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="ColLeft" Width="*"/>
+                    <ColumnDefinition x:Name="ColCenter" Width="Auto"/>
+                    <ColumnDefinition x:Name="ColRight" Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- BÊN TRÁI: Khẩu hiệu -->
+                <StackPanel x:Name="SloganPanel" Grid.Column="0" VerticalAlignment="Center" Margin="56,0,24,0">
+                    <TextBlock x:Name="SloganLine1" Text="HIỆN ĐẠI" FontSize="32" FontWeight="ExtraBold" Foreground="#F8FAFC"/>
+                    <TextBlock x:Name="SloganLine2" Text="MINH BẠCH" FontSize="32" FontWeight="ExtraBold" Foreground="#F8FAFC"/>
+                    <TextBlock x:Name="SloganLine3" Text="HIỆU QUẢ" FontSize="32" FontWeight="ExtraBold" Foreground="#F8FAFC" Margin="0,0,0,10"/>
+                    <Border Width="34" Height="2.5" Background="#38BDF8" HorizontalAlignment="Left" Margin="0,0,0,12" CornerRadius="1.5"/>
+                    <TextBlock x:Name="SloganSubtitle1" Text="Số hóa công tác quản lý" FontSize="13" Foreground="#CCE5FF"/>
+                    <TextBlock x:Name="SloganSubtitle2" Text="nguồn nhân lực ngành Thuế." FontSize="13" Foreground="#CCE5FF"/>
                 </StackPanel>
 
-        </Border>
+                <!-- CHÍNH GIỮA: Thẻ đăng nhập kính mờ -->
+                <Grid x:Name="LoginCardContainer" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                      Width="450" MaxWidth="460" MinWidth="300" Margin="16,10">
+
+                    <!-- Bóng đổ mềm phía sau thẻ -->
+                    <Border CornerRadius="22" Background="White" Opacity="0.9">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="40" ShadowDepth="10" Direction="270" Color="#001B3A" Opacity="0.35"/>
+                        </Border.Effect>
+                    </Border>
+
+                    <!-- Lớp kính mờ: làm mờ chính ảnh nền phía sau thẻ -->
+                    <Grid x:Name="GlassHost" SizeChanged="GlassHost_SizeChanged">
+                        <Rectangle x:Name="GlassBlur" Margin="-40">
+                            <Rectangle.Fill>
+                                <VisualBrush x:Name="GlassBrush" Visual="{Binding ElementName=BackgroundLayer}"
+                                             ViewboxUnits="Absolute" Stretch="Fill"/>
+                            </Rectangle.Fill>
+                            <Rectangle.Effect>
+                                <BlurEffect Radius="30" KernelType="Gaussian" RenderingBias="Performance"/>
+                            </Rectangle.Effect>
+                        </Rectangle>
+                        <!-- Lớp phủ màu trắng xanh nhạt tạo cảm giác kính -->
+                        <Rectangle Fill="#9EF4F8FF"/>
+                    </Grid>
+
+                    <Border x:Name="LoginCard" CornerRadius="22" Padding="42,24,42,20"
+                            BorderThickness="1" BorderBrush="#60FFFFFF" Background="Transparent">
+                        <StackPanel x:Name="CardStack">
+                            <!-- Logo -->
+                            <Border x:Name="LogoBorder" Width="72" Height="72" CornerRadius="36"
+                                    HorizontalAlignment="Center" Margin="0,0,0,6"
+                                    Background="White" BorderBrush="#BAE6FD" BorderThickness="1.5" Padding="4">
+                                <Image Source="/logo.png" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+
+                            <!-- Tiêu đề -->
+                            <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12">
+                                <TextBlock x:Name="LoginTitle" Text="ĐĂNG NHẬP" FontFamily="{StaticResource AppHeadingFont}"
+                                           FontSize="23" FontWeight="ExtraBold" Foreground="#0C2340" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="LoginSubtitle" Text="QUẢN LÝ NHÂN SỰ" FontSize="10.5" FontWeight="SemiBold"
+                                           Foreground="#5A7490" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                <Border Width="32" Height="2.5" Background="#1A84F8" HorizontalAlignment="Center" Margin="0,5,0,0" CornerRadius="1.5"/>
+                            </StackPanel>
+
+                            <!-- Khung thông báo nội tuyến -->
+                            <Border x:Name="ErrorBanner" Visibility="Collapsed" CornerRadius="10" Padding="14,9"
+                                    BorderThickness="1" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <materialDesign:PackIcon x:Name="BannerIcon" Grid.Column="0" Width="18" Height="18"
+                                                             VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock x:Name="BannerMessage" Grid.Column="1" FontSize="13.5" FontWeight="SemiBold"
+                                               TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="2" Style="{StaticResource LoginIconButton}" Width="24" Height="24"
+                                            VerticalAlignment="Center" Click="btnDismissBanner_Click">
+                                        <materialDesign:PackIcon x:Name="BannerCloseIcon" Kind="Close" Width="14" Height="14"/>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <!-- Ô tên đăng nhập -->
+                            <Grid x:Name="UsernameFieldGrid" Height="46" Margin="0,0,0,8">
+                                <Border x:Name="UsernameBorder" Background="#C8FFFFFF" BorderBrush="#7090CAF9" BorderThickness="1" CornerRadius="10"/>
+                                <TextBox x:Name="txtUsername" Style="{StaticResource LoginInputTextBox}" Tag="Tên đăng nhập"
+                                         Padding="42,0,12,0"
+                                         GotKeyboardFocus="Username_GotFocus" LostKeyboardFocus="Username_LostFocus"
+                                         KeyDown="Input_KeyDown"/>
+                                <materialDesign:PackIcon Kind="AccountOutline" Width="18" Height="18" Foreground="#4A90C8"
+                                                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                         Margin="14,0,0,0" IsHitTestVisible="False"/>
+                            </Grid>
+
+                            <!-- Ô mật khẩu -->
+                            <Grid x:Name="PasswordFieldGrid" Height="46" Margin="0,0,0,8">
+                                <Border x:Name="PasswordBorder" Background="#C8FFFFFF" BorderBrush="#7090CAF9" BorderThickness="1" CornerRadius="10"/>
+                                <PasswordBox x:Name="txtPassword" Style="{StaticResource LoginInputPasswordBox}"
+                                             Padding="42,0,42,0"
+                                             PasswordChanged="txtPassword_PasswordChanged"
+                                             GotKeyboardFocus="Password_GotFocus" LostKeyboardFocus="Password_LostFocus"
+                                             KeyDown="Input_KeyDown"/>
+                                <TextBox x:Name="txtVisiblePassword" Style="{StaticResource LoginInputTextBox}" Tag="Mật khẩu"
+                                         Padding="42,0,42,0" Visibility="Collapsed"
+                                         TextChanged="txtVisiblePassword_TextChanged"
+                                         GotKeyboardFocus="Password_GotFocus" LostKeyboardFocus="Password_LostFocus"
+                                         KeyDown="Input_KeyDown"/>
+                                <TextBlock x:Name="PasswordPlaceholder" Text="Mật khẩu" Foreground="#8A9BB0" FontSize="13.5"
+                                           Margin="44,0,42,0" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                <materialDesign:PackIcon Kind="LockOutline" Width="18" Height="18" Foreground="#4A90C8"
+                                                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                         Margin="14,0,0,0" IsHitTestVisible="False"/>
+                                <Button x:Name="btnTogglePassword" Style="{StaticResource LoginIconButton}" Click="btnTogglePassword_Click"
+                                        HorizontalAlignment="Right" VerticalAlignment="Center" Width="36" Height="36" Margin="0,0,5,0"
+                                        ToolTip="Hiện/ẩn mật khẩu">
+                                    <materialDesign:PackIcon x:Name="EyeIcon" Kind="EyeOutline" Width="18" Height="18" Foreground="#4A90C8"/>
+                                </Button>
+                            </Grid>
+
+                            <!-- Ghi nhớ đăng nhập -->
+                            <CheckBox x:Name="chkRememberMe" Content="Ghi nhớ đăng nhập" IsChecked="True" FontSize="12"
+                                      Foreground="#334E68" Margin="0,2,0,12" Style="{DynamicResource MaterialDesignCheckBox}"
+                                      materialDesign:CheckBoxAssist.CheckBoxSize="18" Background="#1A84F8"/>
+
+                            <!-- Nút ĐĂNG NHẬP -->
+                            <Button x:Name="btnLogin" Style="{StaticResource LoginPrimaryButton}" Click="btnLogin_Click"
+                                    IsDefault="True" Height="44" Margin="0,0,0,8">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <ProgressBar x:Name="LoginProgress" Style="{DynamicResource MaterialDesignCircularProgressBar}"
+                                                 IsIndeterminate="True" Width="16" Height="16" Foreground="White"
+                                                 Visibility="Collapsed" Margin="0,0,8,0"/>
+                                    <materialDesign:PackIcon x:Name="LoginBtnIcon" Kind="Login" Width="18" Height="18"
+                                                             Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock x:Name="LoginButtonText" Text="ĐĂNG NHẬP" VerticalAlignment="Center" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Nút THOÁT -->
+                            <Button x:Name="btnExit" Style="{StaticResource LoginSecondaryButton}" Click="btnExit_Click"
+                                    Height="42" Margin="0,0,0,10" Content="THOÁT"/>
+
+                            <!-- Chân trang -->
+                            <StackPanel x:Name="FooterStack" HorizontalAlignment="Center">
+                                <TextBlock x:Name="txtCopyright" Text="Copyright © 2026 Linhoang" FontSize="10.5"
+                                           Foreground="#6F87A0" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="txtVersion" Text="Phiên bản 1.0.0.0" FontSize="10"
+                                           Foreground="#8399AF" HorizontalAlignment="Center" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- BÊN PHẢI: Cột trống cân đối -->
+                <Grid Grid.Column="2"/>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Window>

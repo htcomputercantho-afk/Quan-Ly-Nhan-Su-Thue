@@ -57,7 +57,7 @@
                                                VerticalAlignment="Center" FontSize="13" Visibility="Collapsed"/>
                                     
                                     <!-- Dropdown Toggle Button with Chevron -->
-                                    <ToggleButton x:Name="toggleButton" Grid.Column="1" Focusable="False"
+                                    <ToggleButton x:Name="toggleButton" Grid.Column="1" Focusable="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{x:Null}"
                                                   IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                   ClickMode="Press" Background="Transparent" BorderThickness="0" Cursor="Hand">
                                         <ToggleButton.Template>

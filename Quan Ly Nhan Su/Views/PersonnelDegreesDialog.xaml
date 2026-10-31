@@ -135,6 +135,7 @@
                                                                  Grid.Column="1" IsHitTestVisible="False"/>
                                         
                                         <ToggleButton x:Name="toggleButton" Grid.ColumnSpan="2" Focusable="False"
+                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{x:Null}"
                                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                       ClickMode="Press" Background="Transparent" BorderThickness="0" Cursor="Hand">
                                             <ToggleButton.Template>
@@ -230,6 +231,7 @@
                                         
                                         <!-- Nút mở dropdown với icon chevron -->
                                         <ToggleButton x:Name="toggleButton" Grid.Column="1" Focusable="False"
+                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Style="{x:Null}"
                                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                       ClickMode="Press" Background="Transparent" BorderThickness="0" Cursor="Hand">
                                             <ToggleButton.Template>

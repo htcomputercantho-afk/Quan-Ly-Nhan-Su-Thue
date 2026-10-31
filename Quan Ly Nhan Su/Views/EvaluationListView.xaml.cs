@@ -105,7 +105,7 @@ namespace TaxPersonnelManagement.Views
                                           .ThenBy(x => x)
                                           .ToList();
 
-                    allDepts.Insert(0, "-- Tất cả bộ phận --");
+                    allDepts.Insert(0, "Tất cả bộ phận");
                     cbDepartment.ItemsSource = allDepts;
                     cbDepartment.SelectedIndex = 0;
                 }
@@ -119,7 +119,7 @@ namespace TaxPersonnelManagement.Views
 
             // 3. Bộ lọc Năm
             var years = new List<FilterItem>();
-            years.Add(new FilterItem { Label = "-- Tất cả các năm --", Value = 0 });
+            years.Add(new FilterItem { Label = "Tất cả các năm", Value = 0 });
 
             List<int> dbYears = new List<int>();
             try
@@ -157,7 +157,7 @@ namespace TaxPersonnelManagement.Views
             // 2. Bộ lọc Xếp loại
             var ratings = new List<string>
             {
-                "-- Tất cả xếp loại --",
+                "Tất cả xếp loại",
                 "Hoàn thành xuất sắc nhiệm vụ",
                 "Hoàn thành tốt nhiệm vụ",
                 "Hoàn thành nhiệm vụ",
@@ -195,7 +195,7 @@ namespace TaxPersonnelManagement.Views
                         ));
                     }
 
-                    if (!string.IsNullOrEmpty(dept) && dept != "-- Tất cả bộ phận --")
+                    if (!string.IsNullOrEmpty(dept) && dept != "Tất cả bộ phận")
                     {
                         filtered = filtered.Where(e => e.Personnel != null && e.Personnel.Department == dept);
                     }
@@ -238,7 +238,7 @@ namespace TaxPersonnelManagement.Views
 
                     UpdateCardVisuals();
 
-                    if (!string.IsNullOrEmpty(rating) && rating != "-- Tất cả xếp loại --")
+                    if (!string.IsNullOrEmpty(rating) && rating != "Tất cả xếp loại")
                     {
                         filtered = baseFiltered.Where(e => e.Rating == rating);
                     }
@@ -434,7 +434,7 @@ namespace TaxPersonnelManagement.Views
 
         private void cardTotal_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (cbRating != null) cbRating.SelectedIndex = 0; // "-- Tất cả xếp loại --"
+            if (cbRating != null) cbRating.SelectedIndex = 0; // "Tất cả xếp loại"
         }
 
         private void cardExcellent_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
