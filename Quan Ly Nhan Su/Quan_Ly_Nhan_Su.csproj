@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Quan_Ly_Nhan_Su</AssemblyName>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>1.6.5.3</Version>
+    <Version>1.6.5.4</Version>
 
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
@@ -16,6 +16,8 @@
     <PublishReadyToRun>true</PublishReadyToRun>
     <IncludeNativeLibrariesForSelfContained>true</IncludeNativeLibrariesForSelfContained>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <NuGetAudit>false</NuGetAudit>
+    <NoWarn>$(NoWarn);NU1900</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

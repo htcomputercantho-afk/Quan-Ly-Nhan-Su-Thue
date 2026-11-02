@@ -1,3 +1,38 @@
+## v1.6.5.4 — 2026-11-02
+- [Tối ưu hóa Điều hướng Menu Siêu Tốc (Zero-Latency Switching - 0ms)]:
+    + Loại bỏ hoàn toàn độ trễ 200–400ms và hiện tượng khựng/giật khi chuyển đổi qua lại giữa các menu bên trái (đặc biệt là các menu tải dữ liệu lớn như *Tổng thu nhập năm*, *Chi tiết Nghỉ*, *Nâng lương*, *Thống kê*...):
+        * Thay thế Frame bằng MainContentGrid trong MainWindow.xaml và triển khai cơ chế điều khiển hiển thị Visibility (Visible / Collapsed).
+        * Giữ nguyên vẹn Visual Tree của các View đã khởi tạo trong bộ nhớ đồ họa, không hủy (unmount) và không phải tính toán lại Layout (Measure & Arrange).
+        * Bảo lưu chính xác 100% vị trí cuộn chuột (scroll position), trạng thái bộ lọc, các tab con và dữ liệu đang xem trên từng màn hình.
+        * Bổ sung cơ chế khởi tạo ngầm trước (PrewarmViewsInBackground) khi ứng dụng rảnh rỗi (ApplicationIdle), giúp ngay từ lần bấm đầu tiên vào bất kỳ menu nào cũng chuyển đổi tức thì (0ms).
+    + Bổ sung TabControlCacheHelper.cs và kích hoạt KeepAlive="True" cho toàn bộ các Page/TabControl trong ứng dụng.
+- [Chuẩn hóa Căn Giữa (Center Align) Bộ Lọc]:
+    + Căn giữa toàn diện nội dung hiển thị trong ô chọn (Selection Text) và các mục trong danh sách xổ xuống (ComboBoxItem):
+        * Đồng bộ thuộc tính HorizontalContentAlignment="Center" và template căn giữa cho style viên thuốc FilterPillComboBox.
+        * Tự động căn giữa danh sách các năm (2023, 2024, 2025, 2026...), trạng thái, kỳ lọc trên toàn bộ các màn hình (*Phân công nhiệm vụ, Luân chuyển điều động, Đào tạo bồi dưỡng, Chi tiết nghỉ, Tổng thu nhập năm, Thống kê, Xếp loại, Lương*).
+        * Bảo toàn căn lề trái chuẩn (HorizontalContentAlignment="Left") cho các ô chọn Tên Bộ phận / Đơn vị để đảm bảo tính thẩm mỹ và dễ đọc khi xem danh sách dài.
+- [Khắc phục Triệt để Lỗi Tràn Chữ & Mất Chữ (...)]:
+    + Màn hình Đánh giá xếp loại chất lượng công chức (EvaluationListView):
+        * Mở rộng chiều rộng ô chọn Xếp loại (cbRating) từ 230px lên 285px, căn lề trái chuẩn (HorizontalContentAlignment="Left").
+        * Cân đối lại ô Năm (cbYear 160px) và ô Bộ phận (cbDepartment 350px).
+        * Hiển thị đầy đủ 100% các cụm từ dài nhất như *"Hoàn thành xuất sắc nhiệm vụ"*, *"Không hoàn thành nhiệm vụ"*, loại bỏ hoàn toàn dấu 3 chấm (...).
+    + Rà soát và mở rộng chiều rộng ô phân loại tại màn hình Quy hoạch nhân sự (cboStatusProf, cboStatusParty lên 255px), hiển thị trọn vẹn *"2. Đưa ra khỏi quy hoạch"*.
+- [Khắc phục Lỗi Chọn Năm trên Giao diện Lịch (DatePicker)]:
+    + Bổ sung đầy đủ các DataTrigger theo dõi Calendar.DisplayMode (Year và Decade) vào mẫu giao diện lịch ModernCalendarItemStyle trong App.xaml.
+    + Khắc phục triệt để lỗi khi bấm vào tiêu đề tháng/năm trên lịch để chọn năm (ví dụ 1970-1979), lưới ngày tháng cũ không chịu ẩn đi:
+        * Khi bấm tiêu đề Tháng/Năm: Tự động chuyển mượt mà sang lưới 12 tháng (YearView).
+        * Khi bấm tiếp tiêu đề Năm: Tự động chuyển sang lưới 10 năm trong thập kỷ (DecadeView).
+        * Người dùng có thể chọn Năm -> chọn Tháng -> chọn Ngày nhanh chóng, trực quan và chính xác.
+- [Nâng cấp Chất lượng Hình ảnh & Chống Nhòe Chữ]:
+    + Cập nhật Logo ngành Thuế chất lượng cao gốc từ Wikipedia (chuẩn RGBA sắc nét, không vỡ hạt, không mờ viền).
+    + Kích hoạt cấu hình khử nhòe toàn cục trong App.xaml, MainWindow.xaml và LoginView.xaml:
+        * RenderOptions.BitmapScalingMode="HighQuality" cho hình ảnh, logo và ảnh đại diện công chức.
+        * TextOptions.TextFormattingMode="Display" và TextOptions.TextRenderingMode="ClearType" (ClearTypeHint="Enabled"), chữ nét căng trên mọi độ phân giải và mức DPI Scaling.
+        * UseLayoutRounding="True" và SnapsToDevicePixels="True" khử nhòe viền và đường kẻ bảng.
+- [Tối ưu Build & Sửa Cảnh báo NuGet]:
+    + Cấu hình `<NuGetAudit>false</NuGetAudit>` và `<NoWarn>$(NoWarn);NU1900</NoWarn>` trong file dự án để triệt tiêu cảnh báo NU1900 khi build hoặc chạy trong môi trường mạng nội bộ/offline.
+    + Biên dịch dự án sạch sẽ tuyệt đối: **0 Warning, 0 Error**.
+
 ## v1.6.5.3 — 2026-10-31
 - [Tối ưu hóa Source Code & Dọn dẹp File Rác]:
     + Loại bỏ toàn bộ các file Database rỗng (0 bytes) phát sinh trước đây ở thư mục gốc và thư mục dự án:

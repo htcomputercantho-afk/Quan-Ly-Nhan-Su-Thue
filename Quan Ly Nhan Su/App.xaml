@@ -151,6 +151,10 @@
 
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
 
+                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+
+                <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+
                 <Setter Property="UseLayoutRounding" Value="True"/>
 
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -166,6 +170,10 @@
                 <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
 
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+
+                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+
+                <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
 
                 <Setter Property="UseLayoutRounding" Value="True"/>
 
@@ -183,9 +191,23 @@
 
                 <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
 
+                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+
+                <Setter Property="RenderOptions.ClearTypeHint" Value="Enabled"/>
+
                 <Setter Property="UseLayoutRounding" Value="True"/>
 
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
+
+            </Style>
+
+            <Style TargetType="{x:Type Image}">
+
+                <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+
+                <Setter Property="UseLayoutRounding" Value="True"/>
 
             </Style>
 
@@ -437,6 +459,16 @@
                                     </Grid.ColumnDefinitions>
                                 </Grid>
                             </Grid>
+                            <ControlTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Path=DisplayMode, RelativeSource={RelativeSource AncestorType={x:Type Calendar}}}" Value="Year">
+                                    <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden"/>
+                                    <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=DisplayMode, RelativeSource={RelativeSource AncestorType={x:Type Calendar}}}" Value="Decade">
+                                    <Setter TargetName="PART_MonthView" Property="Visibility" Value="Hidden"/>
+                                    <Setter TargetName="PART_YearView" Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -987,6 +1019,8 @@
 
                 <Setter Property="Background" Value="White"/>
 
+                <Setter Property="Foreground" Value="#1E293B"/>
+
                 <Setter Property="FontSize" Value="14"/>
 
                 <Setter Property="Template">
@@ -1133,6 +1167,8 @@
 
                 <Setter Property="Background" Value="White"/>
 
+                <Setter Property="Foreground" Value="#1E293B"/>
+
                 <Setter Property="FontSize" Value="14"/>
 
                 <Setter Property="Template">
@@ -1183,6 +1219,8 @@
 
                 <Setter Property="Height" Value="40"/>
 
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
 
                 <Setter Property="Padding" Value="14 0 32 0"/>
@@ -1217,6 +1255,8 @@
 
                             <Setter Property="SnapsToDevicePixels" Value="True"/>
 
+                            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+
                             <Setter Property="Template">
 
                                 <Setter.Value>
@@ -1227,7 +1267,7 @@
 
                                                 Padding="{TemplateBinding Padding}" Margin="0,2">
 
-                                            <ContentPresenter VerticalAlignment="Center"/>
+                                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
 
                                         </Border>
 
@@ -1295,7 +1335,7 @@
 
                                         <!-- Text Area strictly contained with balanced 32px margins for perfect centering -->
 
-                                        <Grid Grid.ColumnSpan="2" Margin="16,0,34,0" VerticalAlignment="Center" ClipToBounds="True">
+                                        <Grid Grid.ColumnSpan="2" Margin="14,0,30,0" VerticalAlignment="Center" ClipToBounds="True">
 
                                             <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
 
@@ -1327,7 +1367,7 @@
 
                                                        Text="{TemplateBinding materialDesign:HintAssist.Hint}"
 
-                                                       VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                       VerticalAlignment="Center" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
 
                                                        Foreground="#94A3B8" IsHitTestVisible="False"
 

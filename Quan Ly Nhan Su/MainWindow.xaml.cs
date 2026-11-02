@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
@@ -19,6 +21,17 @@ namespace TaxPersonnelManagement
         private PlanningManagementView? _planningCache;
         private RotationManagementView? _rotationCache;
         private DutyAssignmentView? _dutyAssignmentCache;
+        private SalaryListView? _salaryCache;
+        private AnnualIncomeView? _annualIncomeCache;
+        private LeaveDetailView? _leaveDetailCache;
+        private PositionDurationView? _positionDurationCache;
+        private EmulationRewardView? _emulationRewardCache;
+        private EvaluationListView? _evaluationCache;
+        private TrainingListView? _trainingCache;
+        private UserListView? _userListCache;
+        private BackupRestoreView? _backupRestoreCache;
+        private System.Windows.Controls.Button? _activeMenuButton;
+        private object? _currentView;
 
 
         /// <summary>
@@ -62,6 +75,7 @@ namespace TaxPersonnelManagement
 
                     // Tự động kiểm tra bản cập nhật CSDL trên Google Drive khi mở app
                     _ = CheckGoogleDriveStartupSyncAsync();
+                    PrewarmViewsInBackground();
                 }));
             };
         }
@@ -121,6 +135,7 @@ namespace TaxPersonnelManagement
                                 _planningCache = null;
                                 _rotationCache = null;
                                 _dutyAssignmentCache = null;
+                                InvalidateDataCaches();
                                 NavigateDashboard(null, null);
 
                                 var successWin = new SuccessWindow("Đã tải và cập nhật dữ liệu mới nhất từ Google Drive thành công!", "Đồng Bộ Thành Công");
@@ -481,27 +496,134 @@ namespace TaxPersonnelManagement
         }
 
         /// <summary>
+        /// Hiển thị một View trên khung giao diện chính với cơ chế chuyển đổi Visibility (0ms).
+        /// Toàn bộ Visual Tree của các view đã xem được giữ nguyên trong MainContentGrid,
+        /// giúp loại bỏ hoàn toàn độ trễ khi chuyển đổi giữa các menu có dữ liệu lớn.
+        /// </summary>
+        private void ShowView(object? view)
+        {
+            if (view == null || MainContentGrid == null) return;
+            _currentView = view;
+
+            FrameworkElement? targetElement = null;
+
+            foreach (UIElement child in MainContentGrid.Children)
+            {
+                if (child is FrameworkElement fe && fe.Tag == view)
+                {
+                    targetElement = fe;
+                    break;
+                }
+            }
+
+            if (targetElement == null)
+            {
+                if (view is Page page)
+                {
+                    var frame = new Frame
+                    {
+                        Content = page,
+                        NavigationUIVisibility = NavigationUIVisibility.Hidden,
+                        JournalOwnership = JournalOwnership.UsesParentJournal,
+                        Tag = view
+                    };
+                    targetElement = frame;
+                }
+                else if (view is FrameworkElement fe)
+                {
+                    fe.Tag = view;
+                    targetElement = fe;
+                }
+                else
+                {
+                    targetElement = new ContentControl { Content = view, Tag = view };
+                }
+
+                MainContentGrid.Children.Add(targetElement);
+            }
+
+            // Hiện view được chọn, ẩn toàn bộ các view khác tức thì (0ms)
+            foreach (UIElement child in MainContentGrid.Children)
+            {
+                if (child is FrameworkElement fe)
+                {
+                    fe.Visibility = (fe == targetElement) ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void EnsureViewHosted(object? view)
+        {
+            if (view == null || MainContentGrid == null) return;
+
+            foreach (UIElement child in MainContentGrid.Children)
+            {
+                if (child is FrameworkElement fe && fe.Tag == view)
+                {
+                    return; // Đã có trong visual tree
+                }
+            }
+
+            FrameworkElement targetElement;
+            if (view is Page page)
+            {
+                targetElement = new Frame
+                {
+                    Content = page,
+                    NavigationUIVisibility = NavigationUIVisibility.Hidden,
+                    JournalOwnership = JournalOwnership.UsesParentJournal,
+                    Tag = view,
+                    Visibility = Visibility.Collapsed
+                };
+            }
+            else if (view is FrameworkElement fe)
+            {
+                fe.Tag = view;
+                fe.Visibility = Visibility.Collapsed;
+                targetElement = fe;
+            }
+            else
+            {
+                targetElement = new ContentControl { Content = view, Tag = view, Visibility = Visibility.Collapsed };
+            }
+
+            MainContentGrid.Children.Add(targetElement);
+        }
+
+        private void RemoveViewHost(object? view)
+        {
+            if (view == null || MainContentGrid == null) return;
+            for (int i = MainContentGrid.Children.Count - 1; i >= 0; i--)
+            {
+                if (MainContentGrid.Children[i] is FrameworkElement fe && fe.Tag == view)
+                {
+                    MainContentGrid.Children.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
         /// Điều hướng tới màn hình Tổng quan
         /// </summary>
         public void NavigateToDashboard(int? targetPersonnelId = null)
         {
+            if (_activeMenuButton == btnDashboard && !targetPersonnelId.HasValue && _currentView == _dashboardCache)
+                return;
+
             UpdateMenuState(btnDashboard); // Cập nhật trạng thái hiển thị của nút menu
 
             if (_dashboardCache == null)
             {
                 _dashboardCache = new DashboardView(targetPersonnelId);
             }
-            else
+            else if (targetPersonnelId.HasValue)
             {
-                if (targetPersonnelId.HasValue)
-                {
-                    _dashboardCache.PersonnelList.TargetPersonnelId = targetPersonnelId;
-                }
-                // Làm mới dữ liệu để hiển thị thay đổi mới nhất, giữ nguyên bộ lọc đang chọn
+                _dashboardCache.PersonnelList.TargetPersonnelId = targetPersonnelId;
                 _dashboardCache.PersonnelList.LoadData();
             }
 
-            MainFrame.Navigate(_dashboardCache); // Tải nội dung View vào Frame chính
+            ShowView(_dashboardCache);
         }
 
         private void NavigateDashboard(object? sender, RoutedEventArgs? e)
@@ -511,16 +633,10 @@ namespace TaxPersonnelManagement
 
         private void NavigateStatistics(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnStatistics && _currentView == _statisticsCache) return;
             UpdateMenuState(btnStatistics);
-            if (_statisticsCache == null)
-            {
-                _statisticsCache = new StatisticsView();
-            }
-            else
-            {
-                _statisticsCache.LoadStatistics();
-            }
-            MainFrame.Navigate(_statisticsCache);
+            _statisticsCache ??= new StatisticsView();
+            ShowView(_statisticsCache);
         }
 
         /// <summary>
@@ -538,22 +654,44 @@ namespace TaxPersonnelManagement
                 {
                     _personnelDetailCache = new PersonnelDetailView(null, activeTab);
                 }
-                MainFrame.Navigate(_personnelDetailCache);
+                ShowView(_personnelDetailCache);
             }
             else
             {
-                // Nếu là chỉnh sửa nhân sự cụ thể, tạo view mới (hoặc có thể cache theo ID nếu cần, 
-                // nhưng hiện tại ưu tiên fix cho phần "Thêm mới" như yêu cầu)
+                // Nếu là chỉnh sửa nhân sự cụ thể, gỡ host cũ và tạo view mới
+                RemoveViewHost(_personnelDetailCache);
                 _personnelDetailCache = new PersonnelDetailView(p, activeTab);
-                MainFrame.Navigate(_personnelDetailCache);
+                ShowView(_personnelDetailCache);
             }
         }
 
         public void ClearPersonnelCache()
         {
+            RemoveViewHost(_personnelDetailCache);
             _personnelDetailCache = null;
+            InvalidateDataCaches();
         }
 
+        public void InvalidateDataCaches()
+        {
+            MainContentGrid?.Children.Clear();
+            _currentView = null;
+            _dashboardCache = null;
+            _statisticsCache = null;
+            _personnelDetailCache = null;
+            _salaryCache = null;
+            _annualIncomeCache = null;
+            _leaveDetailCache = null;
+            _positionDurationCache = null;
+            _emulationRewardCache = null;
+            _evaluationCache = null;
+            _trainingCache = null;
+            _planningCache = null;
+            _rotationCache = null;
+            _dutyAssignmentCache = null;
+            _userListCache = null;
+            _backupRestoreCache = null;
+        }
 
         private void NavigatePersonnel(object sender, RoutedEventArgs e)
         {
@@ -561,89 +699,84 @@ namespace TaxPersonnelManagement
             // Ghi chú: Dùng màn hình Tổng quan để xem danh sách nhân sự.
         }
 
-
         private void NavigateSalary(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnSalary && _currentView == _salaryCache) return;
             UpdateMenuState(btnSalary);
-            MainFrame.Navigate(new SalaryListView());
+            _salaryCache ??= new SalaryListView();
+            ShowView(_salaryCache);
         }
 
         private void NavigateAnnualIncome(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnAnnualIncome && _currentView == _annualIncomeCache) return;
             UpdateMenuState(btnAnnualIncome);
-            MainFrame.Navigate(new AnnualIncomeView());
+            _annualIncomeCache ??= new AnnualIncomeView();
+            ShowView(_annualIncomeCache);
         }
 
         private void NavigateLeaveDetail(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnLeaveDetail && _currentView == _leaveDetailCache) return;
             UpdateMenuState(btnLeaveDetail);
-            MainFrame.Navigate(new LeaveDetailView());
+            _leaveDetailCache ??= new LeaveDetailView();
+            ShowView(_leaveDetailCache);
         }
 
         private void NavigateEmulationReward(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnEmulationReward && _currentView == _emulationRewardCache) return;
             UpdateMenuState(btnEmulationReward);
-            MainFrame.Navigate(new EmulationRewardView());
+            _emulationRewardCache ??= new EmulationRewardView();
+            ShowView(_emulationRewardCache);
         }
 
         private void NavigateEvaluation(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnEvaluation && _currentView == _evaluationCache) return;
             UpdateMenuState(btnEvaluation);
-            MainFrame.Navigate(new EvaluationListView());
+            _evaluationCache ??= new EvaluationListView();
+            ShowView(_evaluationCache);
         }
 
         private void NavigateTraining(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnTraining && _currentView == _trainingCache) return;
             UpdateMenuState(btnTraining);
-            MainFrame.Navigate(new TrainingListView());
+            _trainingCache ??= new TrainingListView();
+            ShowView(_trainingCache);
         }
 
         private void NavigatePlanning(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnPlanning && _currentView == _planningCache) return;
             UpdateMenuState(btnPlanning);
-            if (_planningCache == null)
-            {
-                _planningCache = new PlanningManagementView();
-            }
-            else
-            {
-                _planningCache.LoadData();
-            }
-            MainFrame.Navigate(_planningCache);
+            _planningCache ??= new PlanningManagementView();
+            ShowView(_planningCache);
         }
 
         private void NavigateRotation(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnRotation && _currentView == _rotationCache) return;
             UpdateMenuState(btnRotation);
-            if (_rotationCache == null)
-            {
-                _rotationCache = new RotationManagementView();
-            }
-            else
-            {
-                _rotationCache.LoadData();
-            }
-            MainFrame.Navigate(_rotationCache);
+            _rotationCache ??= new RotationManagementView();
+            ShowView(_rotationCache);
         }
 
         private void NavigateDutyAssignment(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnDutyAssignment && _currentView == _dutyAssignmentCache) return;
             UpdateMenuState(btnDutyAssignment);
-            if (_dutyAssignmentCache == null)
-            {
-                _dutyAssignmentCache = new DutyAssignmentView();
-            }
-            else
-            {
-                _dutyAssignmentCache.LoadData();
-            }
-            MainFrame.Navigate(_dutyAssignmentCache);
+            _dutyAssignmentCache ??= new DutyAssignmentView();
+            ShowView(_dutyAssignmentCache);
         }
 
         private void NavigatePositionDuration(object sender, RoutedEventArgs e)
         {
+            if (_activeMenuButton == btnPositionDuration && _currentView == _positionDurationCache) return;
             UpdateMenuState(btnPositionDuration);
-            MainFrame.Navigate(new PositionDurationView());
+            _positionDurationCache ??= new PositionDurationView();
+            ShowView(_positionDurationCache);
         }
 
         private void NavigateUsers(object sender, RoutedEventArgs e)
@@ -654,8 +787,10 @@ namespace TaxPersonnelManagement
                 MessageBox.Show("Bạn không có quyền truy cập!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+            if (_activeMenuButton == btnUsers && _currentView == _userListCache) return;
             UpdateMenuState(btnUsers);
-            MainFrame.Navigate(new UserListView());
+            _userListCache ??= new UserListView();
+            ShowView(_userListCache);
         }
 
         private void NavigateBackupRestore(object sender, RoutedEventArgs e)
@@ -665,12 +800,17 @@ namespace TaxPersonnelManagement
                 MessageBox.Show("Bạn không có quyền truy cập!", "Cảnh báo", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+            if (_activeMenuButton == btnBackupRestore && _currentView == _backupRestoreCache) return;
             UpdateMenuState(btnBackupRestore);
-            MainFrame.Navigate(new BackupRestoreView());
+            _backupRestoreCache ??= new BackupRestoreView();
+            ShowView(_backupRestoreCache);
         }
 
         private void UpdateMenuState(System.Windows.Controls.Button activeButton)
         {
+            if (_activeMenuButton == activeButton) return;
+            _activeMenuButton = activeButton;
+
             // Đặt lại nền tất cả các nút menu về trong suốt
             var transparent = System.Windows.Media.Brushes.Transparent;
             btnDashboard.Background = transparent;
@@ -691,6 +831,58 @@ namespace TaxPersonnelManagement
 
             // Đánh dấu nút đang active với nền trắng bán trong suốt (~30% opacity)
             activeButton.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(80, 255, 255, 255));
+        }
+
+        /// <summary>
+        /// Khởi tạo trước (pre-warm) các màn hình menu trong thời gian rảnh của ứng dụng (ApplicationIdle)
+        /// và nạp sẵn vào visual tree của MainContentGrid để khi click lần đầu tiên cũng chuyển tức thì (0ms).
+        /// </summary>
+        private void PrewarmViewsInBackground()
+        {
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _statisticsCache ??= new StatisticsView(); EnsureViewHosted(_statisticsCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _salaryCache ??= new SalaryListView(); EnsureViewHosted(_salaryCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _leaveDetailCache ??= new LeaveDetailView(); EnsureViewHosted(_leaveDetailCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _positionDurationCache ??= new PositionDurationView(); EnsureViewHosted(_positionDurationCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _annualIncomeCache ??= new AnnualIncomeView(); EnsureViewHosted(_annualIncomeCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _emulationRewardCache ??= new EmulationRewardView(); EnsureViewHosted(_emulationRewardCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _evaluationCache ??= new EvaluationListView(); EnsureViewHosted(_evaluationCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _trainingCache ??= new TrainingListView(); EnsureViewHosted(_trainingCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _planningCache ??= new PlanningManagementView(); EnsureViewHosted(_planningCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _rotationCache ??= new RotationManagementView(); EnsureViewHosted(_rotationCache); } catch { }
+            }));
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() =>
+            {
+                try { _dutyAssignmentCache ??= new DutyAssignmentView(); EnsureViewHosted(_dutyAssignmentCache); } catch { }
+            }));
         }
 
         private bool _isSidebarExpanded = true;

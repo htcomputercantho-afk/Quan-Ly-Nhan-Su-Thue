@@ -129,13 +129,13 @@
                 <!-- Filter Section -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 16">
                     <!-- Lọc theo bộ phận -->
-                    <ComboBox x:Name="cbDepartmentFilter" 
+                    <ComboBox x:Name="cbDepartmentFilter" HorizontalContentAlignment="Left" 
                               Width="380" MinWidth="260" Margin="0 0 16 0"
                               Style="{DynamicResource FilterPillComboBox}"
                               SelectionChanged="cbDepartmentFilter_SelectionChanged"/>
 
                     <!-- Trạng thái công tác -->
-                    <ComboBox x:Name="cbStatusFilter" 
+                    <ComboBox x:Name="cbStatusFilter" HorizontalContentAlignment="Left" 
                               Width="240" MinWidth="220" MaxWidth="300"
                               Style="{DynamicResource FilterPillComboBox}"
                               SelectionChanged="cbStatusFilter_SelectionChanged">

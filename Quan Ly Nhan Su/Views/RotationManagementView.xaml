@@ -11,7 +11,8 @@
       d:DesignHeight="850" d:DesignWidth="1400"
       Title="Luân Chuyển, Điều Động"
       Background="#F8FAFC"
-      FontFamily="{DynamicResource MaterialDesignFont}">
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      KeepAlive="True">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -547,7 +548,8 @@
         <!-- ROW 2: MAIN WORKSPACE CARD & TABS -->
         <!-- ============================================================ -->
         <Grid Grid.Row="2">
-            <TabControl x:Name="tabMain" Style="{StaticResource ModernTabControl}" Padding="0" Background="Transparent">
+            <TabControl x:Name="tabMain" Style="{StaticResource ModernTabControl}" Padding="0" Background="Transparent"
+                        helpers:TabControlCacheHelper.IsCached="True">
 
                 <!-- ==================== TAB 1: TRONG KẾ HOẠCH ==================== -->
                 <TabItem x:Name="tabInPlan" Style="{StaticResource ModernTabItem}">
@@ -627,7 +629,7 @@
                                         </Border>
 
                                     <!-- Bộ phận -->
-                                    <ComboBox x:Name="cmbFilterDeptInPlan" Width="380" Height="40" Margin="0 0 16 0"
+                                    <ComboBox x:Name="cmbFilterDeptInPlan" HorizontalContentAlignment="Left" Width="380" Height="40" Margin="0 0 16 0"
                                               Style="{StaticResource FilterPillComboBox}"
                                               SelectionChanged="FilterChanged"/>
 
@@ -967,7 +969,7 @@
                                         </Border>
 
                                     <!-- Bộ phận -->
-                                    <ComboBox x:Name="cmbFilterDeptOutPlan" Width="380" Height="40" Margin="0 0 16 0"
+                                    <ComboBox x:Name="cmbFilterDeptOutPlan" HorizontalContentAlignment="Left" Width="380" Height="40" Margin="0 0 16 0"
                                               Style="{StaticResource FilterPillComboBox}"
                                               SelectionChanged="FilterChanged"/>
 

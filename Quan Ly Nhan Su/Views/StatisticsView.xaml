@@ -53,7 +53,7 @@
         <materialDesign:Card Grid.Row="1" Margin="0 0 0 15" Padding="20 14" UniformCornerRadius="12" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Bộ phận -->
-                <ComboBox x:Name="cbDepartmentFilter" Width="380" Margin="0 0 16 0"
+                <ComboBox x:Name="cbDepartmentFilter" HorizontalContentAlignment="Left" Width="380" Margin="0 0 16 0"
                           Style="{StaticResource FilterPillComboBox}"
                           SelectionChanged="Filter_Changed"/>
 

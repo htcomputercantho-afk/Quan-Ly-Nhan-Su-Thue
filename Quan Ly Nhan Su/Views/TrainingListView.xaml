@@ -10,7 +10,8 @@
       Language="vi-VN"
       d:DesignHeight="600" d:DesignWidth="1200"
       Title="Quản Lý Đào Tạo Và Bồi Dưỡng"
-      FontFamily="{DynamicResource MaterialDesignFont}">
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      KeepAlive="True">
 
     <Page.Resources>
         <ResourceDictionary>

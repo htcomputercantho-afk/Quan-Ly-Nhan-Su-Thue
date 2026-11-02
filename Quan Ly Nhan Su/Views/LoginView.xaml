@@ -10,7 +10,13 @@
         WindowStartupLocation="CenterScreen" ResizeMode="CanResize"
         WindowStyle="None" Background="#0B2A4A"
         Icon="/icon.ico"
-        FontFamily="{DynamicResource AppRegularFont}">
+        FontFamily="{DynamicResource AppRegularFont}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality"
+        RenderOptions.ClearTypeHint="Enabled"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
 
     <!-- Bỏ thanh tiêu đề hệ thống nhưng vẫn giữ viền co giãn & bo góc Windows 11 -->
     <WindowChrome.WindowChrome>

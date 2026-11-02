@@ -11,6 +11,7 @@
       Title="Phân công nhiệm vụ"
       Background="#F8FAFC"
       FontFamily="{DynamicResource MaterialDesignFont}"
+      KeepAlive="True"
       TextOptions.TextFormattingMode="Display"
       TextOptions.TextRenderingMode="ClearType"
       UseLayoutRounding="True"

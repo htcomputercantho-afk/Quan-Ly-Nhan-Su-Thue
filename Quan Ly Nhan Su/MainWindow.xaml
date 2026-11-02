@@ -14,6 +14,8 @@
         FontSize="15"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.BitmapScalingMode="HighQuality"
+        RenderOptions.ClearTypeHint="Enabled"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
         SizeChanged="MainWindow_SizeChanged"
@@ -326,7 +328,7 @@
 
         <!-- Main Content Area (Maximizes vertical data display) -->
         <Grid Grid.Column="1" Background="#F5F5F5">
-            <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Margin="12 10"/>
+            <Grid x:Name="MainContentGrid" Margin="12 10"/>
         </Grid>
         </Grid>
     </Grid>

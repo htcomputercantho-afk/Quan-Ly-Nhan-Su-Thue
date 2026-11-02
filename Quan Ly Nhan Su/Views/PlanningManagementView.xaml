@@ -10,7 +10,8 @@
       Language="vi-VN"
       d:DesignHeight="700" d:DesignWidth="1200"
       Title="Quản Lý Quy hoạch Nhân sự"
-      FontFamily="{DynamicResource MaterialDesignFont}">
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      KeepAlive="True">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -144,7 +145,8 @@
         <!-- Tab Control for Professional / Party Planning -->
         <materialDesign:Card Grid.Row="1" Style="{DynamicResource MaterialDesignCard}" UniformCornerRadius="12">
             <TabControl x:Name="tcPlanning" Style="{StaticResource ModernTabControl}" 
-                        Background="Transparent" BorderThickness="0" Padding="0" SelectionChanged="tcPlanning_SelectionChanged">
+                        Background="Transparent" BorderThickness="0" Padding="0" SelectionChanged="tcPlanning_SelectionChanged"
+                        helpers:TabControlCacheHelper.IsCached="True">
                 <TabControl.Resources>
                     <Style TargetType="TabItem" BasedOn="{StaticResource ModernTabItem}"/>
                 </TabControl.Resources>
@@ -182,7 +184,7 @@
                                     </Border>
 
                                 <!-- Department -->
-                                <ComboBox x:Name="cboDeptProf" Width="380" Height="40" Margin="0 0 16 0"
+                                <ComboBox x:Name="cboDeptProf" HorizontalContentAlignment="Left" Width="380" Height="40" Margin="0 0 16 0"
                                           Style="{StaticResource FilterPillComboBox}"
                                           SelectionChanged="FilterProf_Changed"/>
 
@@ -192,7 +194,7 @@
                                           SelectionChanged="FilterProf_Changed"/>
 
                                 <!-- Status (Phân loại) -->
-                                <ComboBox x:Name="cboStatusProf" Width="230" Height="40" Margin="0 0 20 0"
+                                <ComboBox x:Name="cboStatusProf" HorizontalContentAlignment="Left" Width="255" Height="40" Margin="0 0 20 0"
                                           Style="{StaticResource FilterPillComboBox}"
                                           SelectionChanged="FilterProf_Changed">
                                         <ComboBoxItem Content="Tất cả trạng thái" IsSelected="True"/>
@@ -428,7 +430,7 @@
                                     </Border>
 
                                 <!-- Department -->
-                                <ComboBox x:Name="cboDeptParty" Width="380" Height="40" Margin="0 0 16 0"
+                                <ComboBox x:Name="cboDeptParty" HorizontalContentAlignment="Left" Width="380" Height="40" Margin="0 0 16 0"
                                           Style="{StaticResource FilterPillComboBox}"
                                           SelectionChanged="FilterParty_Changed"/>
 
@@ -438,7 +440,7 @@
                                           SelectionChanged="FilterParty_Changed"/>
 
                                 <!-- Status (Phân loại) -->
-                                <ComboBox x:Name="cboStatusParty" Width="230" Height="40" Margin="0 0 20 0"
+                                <ComboBox x:Name="cboStatusParty" HorizontalContentAlignment="Left" Width="255" Height="40" Margin="0 0 20 0"
                                           Style="{StaticResource FilterPillComboBox}"
                                           SelectionChanged="FilterParty_Changed">
                                         <ComboBoxItem Content="Tất cả trạng thái" IsSelected="True"/>

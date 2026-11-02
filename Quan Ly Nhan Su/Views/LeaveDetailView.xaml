@@ -10,7 +10,8 @@
       Title="Chi tiết Nghỉ"
       xmlns:converters="clr-namespace:TaxPersonnelManagement.Converters"
       Language="vi-VN"
-      FontFamily="{DynamicResource MaterialDesignFont}">
+      FontFamily="{DynamicResource MaterialDesignFont}"
+      KeepAlive="True">
     
     <Page.Resources>
         <ResourceDictionary>
@@ -195,7 +196,7 @@
                 <!-- Row 2: Modern Filter Dropdowns with Clean Labels -->
                 <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 0 16">
                     <!-- Filter Bộ phận -->
-                    <ComboBox x:Name="cbDepartmentFilter" Width="380" Height="40" Margin="0 0 16 0"
+                    <ComboBox x:Name="cbDepartmentFilter" HorizontalContentAlignment="Left" Width="380" Height="40" Margin="0 0 16 0"
                               Style="{StaticResource FilterPillComboBox}"
                               SelectionChanged="FilterComboBox_SelectionChanged"/>
 
