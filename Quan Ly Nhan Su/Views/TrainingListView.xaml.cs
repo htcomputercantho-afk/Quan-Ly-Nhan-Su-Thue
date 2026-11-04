@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace TaxPersonnelManagement.Views
         public TrainingListView()
         {
             InitializeComponent();
+            btnAddClass.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_TrainingClass) ? Visibility.Visible : Visibility.Collapsed;
             LoadData();
         }
 
@@ -159,6 +161,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddClass_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_TrainingClass, "Thêm mới lớp đào tạo / hội nghị")) return;
             var dialog = new AddTrainingClassDialog();
             if (Window.GetWindow(this) is Window parent)
             {

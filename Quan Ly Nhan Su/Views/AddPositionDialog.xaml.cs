@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -21,6 +22,14 @@ namespace TaxPersonnelManagement.Views
         public AddPositionDialog(bool isPartyMode = false, bool isPlanningMode = false)
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_Position) && !PermissionService.HasPermission(PermissionRegistry.Catalog_PlanningTerm)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền quản lý danh mục Chức vụ.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             _isPartyMode = isPartyMode;
             _isPlanningMode = isPlanningMode;
 

@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -17,6 +18,14 @@ namespace TaxPersonnelManagement.Views
         public AddDepartmentDialog()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_Department)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền quản lý danh mục Bộ phận / Phòng ban.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             LoadDepartments();
         }
 

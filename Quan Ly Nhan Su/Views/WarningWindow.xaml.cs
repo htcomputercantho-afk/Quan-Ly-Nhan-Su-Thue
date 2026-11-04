@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -8,23 +9,88 @@ namespace TaxPersonnelManagement.Views
 {
     public partial class WarningWindow : Window
     {
-        public WarningWindow(string message, string title = "Thông báo")
+        public WarningWindow(string param1, string param2 = "Thông báo")
         {
             InitializeComponent();
 
-            // Handle legacy reversed arguments if title was passed first
-            if ((message == "Lỗi" || message == "Cảnh báo" || message == "Cảnh Báo" || message == "Thông báo" || message == "Từ chối truy cập")
-                && !string.IsNullOrEmpty(title) && title.Length > message.Length)
+            string actualTitle = "Thông Báo";
+            string actualMessage = "";
+
+            string p1 = param1?.Trim() ?? "";
+            string p2 = param2?.Trim() ?? "";
+
+            // Xử lý trường hợp chỉ truyền 1 tham số (param2 là giá trị mặc định "Thông báo" hoặc rỗng)
+            if (string.IsNullOrWhiteSpace(p2) || p2.Equals("Thông báo", StringComparison.OrdinalIgnoreCase))
             {
-                string tmp = message;
-                message = title;
-                title = tmp;
+                actualMessage = p1;
+                actualTitle = string.IsNullOrWhiteSpace(p2) ? "Thông Báo" : p2;
+            }
+            else
+            {
+                // Cả 2 tham số đều được truyền giá trị cụ thể.
+                // Tự động phân định tham số nào là Title (tiêu đề ngắn), tham số nào là Message (nội dung chi tiết):
+                if (p1.Contains('\n') && !p2.Contains('\n'))
+                {
+                    // p1 có xuống dòng -> 100% p1 là Message, p2 là Title
+                    actualMessage = p1;
+                    actualTitle = p2;
+                }
+                else if (p2.Contains('\n') && !p1.Contains('\n'))
+                {
+                    // p2 có xuống dòng -> 100% p2 là Message, p1 là Title
+                    actualTitle = p1;
+                    actualMessage = p2;
+                }
+                else if (p1.Length > p2.Length + 6)
+                {
+                    // p1 dài hơn p2 rõ rệt -> p1 là Message, p2 là Title
+                    actualMessage = p1;
+                    actualTitle = p2;
+                }
+                else if (p2.Length > p1.Length + 6)
+                {
+                    // p2 dài hơn p1 rõ rệt -> p1 là Title, p2 là Message
+                    actualTitle = p1;
+                    actualMessage = p2;
+                }
+                else
+                {
+                    // Độ dài xấp xỉ nhau: kiểm tra từ khóa tiêu đề phổ biến
+                    string[] titleKeywords = new[] { 
+                        "thông báo", "cảnh báo", "lỗi", "thiếu thông tin", "từ chối", 
+                        "thất bại", "không thể", "trùng tên", "xác nhận", "nhập liệu", "error", "warning" 
+                    };
+                    bool p1IsKeyword = titleKeywords.Any(k => p1.ToLower().Contains(k));
+                    bool p2IsKeyword = titleKeywords.Any(k => p2.ToLower().Contains(k));
+
+                    if (p1IsKeyword && !p2IsKeyword)
+                    {
+                        actualTitle = p1;
+                        actualMessage = p2;
+                    }
+                    else if (p2IsKeyword && !p1IsKeyword)
+                    {
+                        actualTitle = p2;
+                        actualMessage = p1;
+                    }
+                    else
+                    {
+                        // Mặc định theo signature: param1 là message, param2 là title
+                        actualMessage = p1;
+                        actualTitle = p2;
+                    }
+                }
             }
 
-            txtMessage.Text = message;
-            txtTitle.Text = string.IsNullOrWhiteSpace(title) ? "Thông Báo" : title;
+            if (string.IsNullOrWhiteSpace(actualTitle))
+            {
+                actualTitle = "Thông Báo";
+            }
 
-            ApplyTheme(title, message);
+            txtTitle.Text = actualTitle;
+            txtMessage.Text = actualMessage;
+
+            ApplyTheme(actualTitle, actualMessage);
 
             // Set parent window for center owner positioning
             if (this.Owner == null)
@@ -65,32 +131,32 @@ namespace TaxPersonnelManagement.Views
 
         private void ApplyTheme(string title, string message)
         {
-            string lowerTitle = title?.ToLower() ?? "";
-            string lowerMsg = message?.ToLower() ?? "";
+            string combined = ((title ?? "") + " " + (message ?? "")).ToLower();
 
-            // 1. Error theme (Red)
-            if (lowerTitle.Contains("lỗi") || lowerTitle.Contains("error") || lowerTitle.Contains("thất bại"))
+            // 1. Error / Denied Theme (Đỏ sang trọng)
+            if (combined.Contains("lỗi") || combined.Contains("error") || combined.Contains("thất bại") || combined.Contains("từ chối") || combined.Contains("không thể xóa"))
             {
                 SetColors(
                     outerBg: "#FEF2F2",
                     innerBg: "#FEE2E2",
                     iconColor: "#DC2626",
-                    iconKind: PackIconKind.AlertCircle,
+                    iconKind: PackIconKind.AlertCircleOutline,
                     accentColor: "#DC2626"
                 );
             }
-            // 2. Info / Blue theme (General notifications without warning intent)
-            else if (lowerTitle.Contains("thông báo") && !lowerMsg.Contains("không có") && !lowerMsg.Contains("chưa") && !lowerMsg.Contains("vui lòng") && !lowerMsg.Contains("lỗi"))
+            // 2. Info / Blue Theme (Xanh dương cho thông báo chung, hướng dẫn)
+            else if ((title?.ToLower().Contains("thông báo") == true || title?.ToLower().Contains("hướng dẫn") == true)
+                     && !combined.Contains("thiếu") && !combined.Contains("chưa") && !combined.Contains("vui lòng") && !combined.Contains("trùng") && !combined.Contains("không có"))
             {
                 SetColors(
                     outerBg: "#EFF6FF",
                     innerBg: "#DBEAFE",
-                    iconColor: "#0284C7",
+                    iconColor: "#2563EB",
                     iconKind: PackIconKind.InformationOutline,
-                    accentColor: "#0284C7"
+                    accentColor: "#2563EB"
                 );
             }
-            // 3. Warning theme (Warm Amber / Gold) - default for "Không có dữ liệu", warnings, prompts
+            // 3. Warning / Prompt Theme (Vàng hổ phách Amber ấm áp cho thiếu thông tin, cảnh báo, nhắc nhở)
             else
             {
                 SetColors(

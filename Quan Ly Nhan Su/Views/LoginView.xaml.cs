@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using System;
@@ -139,7 +140,7 @@ namespace TaxPersonnelManagement.Views
                 User? user = await Task.Run(() =>
                 {
                     using var context = new AppDbContext();
-                    return context.Users.FirstOrDefault(u => u.Username == username && u.PasswordHash == password);
+                    return context.Users.Include(u => u.UserRoleEntity).FirstOrDefault(u => u.Username == username && u.PasswordHash == password);
                 });
 
                 if (user != null)

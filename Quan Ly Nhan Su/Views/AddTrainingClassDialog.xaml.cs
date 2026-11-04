@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Windows;
 using TaxPersonnelManagement.Data;
@@ -13,6 +14,14 @@ namespace TaxPersonnelManagement.Views
         public AddTrainingClassDialog(int? classId = null)
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_TrainingClass)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền thêm mới hoặc chỉnh sửa Lớp đào tạo, bồi dưỡng.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             _classId = classId;
             LoadData();
         }

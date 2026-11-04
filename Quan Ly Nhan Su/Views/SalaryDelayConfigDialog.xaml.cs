@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Linq;
 using System.Windows;
@@ -17,6 +18,14 @@ namespace TaxPersonnelManagement.Views
         public SalaryDelayConfigDialog()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_SalaryDelay)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền cấu hình Lý do kéo dài thời hạn nâng lương.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             LoadData();
             lstReasons.ItemsSource = _reasons;
         }

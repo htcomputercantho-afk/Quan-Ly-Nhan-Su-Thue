@@ -1,0 +1,307 @@
+<Window x:Class="TaxPersonnelManagement.Views.RoleEditDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        SizeToContent="Manual" Width="1020" Height="740"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="False"
+        ShowInTaskbar="False">
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2"/>
+                    <DoubleAnimation Storyboard.TargetName="DialogScale" Storyboard.TargetProperty="ScaleX" From="0.95" To="1.0" Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                    <DoubleAnimation Storyboard.TargetName="DialogScale" Storyboard.TargetProperty="ScaleY" From="0.95" To="1.0" Duration="0:0:0.25">
+                        <DoubleAnimation.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Border Background="White" CornerRadius="16" Margin="16"
+            BorderBrush="#E2E8F0" BorderThickness="1"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="DialogScale" ScaleX="1" ScaleY="1"/>
+        </Border.RenderTransform>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="36" ShadowDepth="8" Opacity="0.18" Color="#0F172A"/>
+        </Border.Effect>
+
+        <Grid Margin="24 20 24 20">
+            <Grid.RowDefinitions>
+                <!-- Row 0: Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 1: Basic Info Form -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 2: Action Bar (Select All / Status) -->
+                <RowDefinition Height="Auto"/>
+                <!-- Row 3: Permissions List -->
+                <RowDefinition Height="*"/>
+                <!-- Row 4: Footer Buttons -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Dialog Header -->
+            <Grid Grid.Row="0" Margin="0 0 0 16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="44" Height="44" CornerRadius="22" Background="#EFF6FF" Margin="0 0 14 0" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="ShieldLockOutline" Width="24" Height="24" Foreground="#0052CC" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="txtDialogTitle" Text="THÊM VAI TRÒ &amp; PHÂN QUYỀN MỚI" 
+                                   FontFamily="{StaticResource AppHeadingFont}"
+                                   FontSize="18" FontWeight="Bold" Foreground="#0052CC"/>
+                        <TextBlock Text="Cấu hình chi tiết quyền hạn truy cập từng phân hệ và quyền quản trị các popup chọn dữ liệu (RBAC)" 
+                                   FontSize="12" Foreground="#64748B" Margin="0 3 0 0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Close Button -->
+                <Button Grid.Column="1" Click="BtnCancel_Click" Width="34" Height="34" Padding="0"
+                        Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Đóng (Esc)">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="bd" Background="Transparent" CornerRadius="17">
+                                            <materialDesign:PackIcon Kind="Close" Width="20" Height="20" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bd" Property="Background" Value="#FEE2E2"/>
+                                                <Setter Property="Foreground" Value="#EF4444"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- Basic Info Form -->
+            <Border Grid.Row="1" Background="#F8FAFC" CornerRadius="12" BorderBrush="#E2E8F0" BorderThickness="1" Padding="18 12" Margin="0 0 0 14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Tên vai trò -->
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                            <materialDesign:PackIcon Kind="AccountTieOutline" Width="16" Height="16" Foreground="#0052CC" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                            <TextBlock Text="Tên vai trò / Chức danh *" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
+                        </StackPanel>
+                        <TextBox x:Name="txtRoleName" Style="{StaticResource ModernTextBox}" Height="38"
+                                 materialDesign:HintAssist.Hint="Ví dụ: Kế toán, Văn thư, Trưởng phòng..." Margin="0"/>
+                    </StackPanel>
+
+                    <!-- Mô tả vai trò -->
+                    <StackPanel Grid.Column="2">
+                        <StackPanel Orientation="Horizontal" Margin="0 0 0 6">
+                            <materialDesign:PackIcon Kind="NoteTextOutline" Width="16" Height="16" Foreground="#0052CC" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                            <TextBlock Text="Mô tả nhiệm vụ / Ghi chú" FontWeight="Bold" FontSize="13" Foreground="#1E293B"/>
+                        </StackPanel>
+                        <TextBox x:Name="txtDescription" Style="{StaticResource ModernTextBox}" Height="38"
+                                 materialDesign:HintAssist.Hint="Mô tả phạm vi quyền hạn và trách nhiệm của vai trò..." Margin="0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Quick Action Bar -->
+            <Border Grid.Row="2" Background="#F1F5F9" CornerRadius="10" Padding="14 10" Margin="0 0 0 12" BorderBrush="#E2E8F0" BorderThickness="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Title & Status Badges -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 16 0">
+                        <materialDesign:PackIcon Kind="ShieldCheck" Width="20" Height="20" Foreground="#0052CC" VerticalAlignment="Center" Margin="0 0 8 0"/>
+                        <TextBlock Text="DANH MỤC PHÂN QUYỀN CHI TIẾT" FontWeight="Bold" FontSize="13" Foreground="#0F172A" VerticalAlignment="Center"/>
+                        
+                        <!-- Normal Counter Badge -->
+                        <Border x:Name="borderSelectedCount" Background="#DBEAFE" CornerRadius="10" Padding="8 3" Margin="10 0 0 0" VerticalAlignment="Center">
+                            <TextBlock x:Name="txtSelectedCount" Text="0 / 0 quyền đã chọn" FontWeight="Bold" FontSize="11.5" Foreground="#1E40AF"/>
+                        </Border>
+
+                        <!-- SuperAdmin Active Badge -->
+                        <Border x:Name="borderSuperAdminBadge" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="10" Padding="8 3" Margin="10 0 0 0" VerticalAlignment="Center" Visibility="Collapsed"
+                                ToolTip="Vai trò này được cấp toàn quyền tối cao (tự động nhận mọi menu và tính năng mới trong tương lai)">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Crown" Width="14" Height="14" Foreground="#B45309" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                <TextBlock Text="Đang kích hoạt Toàn quyền tối cao" FontWeight="Bold" FontSize="11.5" Foreground="#92400E" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Right: SuperAdmin Checkbox & Normal Action Buttons -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- SuperAdmin Pill Checkbox -->
+                        <Border Background="#FFFBEB" BorderBrush="#F59E0B" BorderThickness="1.5" CornerRadius="16" Padding="12 4" Margin="0 0 8 0" VerticalAlignment="Center">
+                            <CheckBox x:Name="chkSuperAdmin" Click="ChkSuperAdmin_Click" VerticalAlignment="Center" Cursor="Hand"
+                                      ToolTip="Khi bật: Cấp quyền tối cao cho vai trò, tự động mở mọi tính năng hiện tại và bất kỳ menu/popup nào phát triển trong tương lai">
+                                <CheckBox.Content>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="CrownOutline" Width="16" Height="16" Foreground="#B45309" VerticalAlignment="Center" Margin="0 0 4 0"/>
+                                        <TextBlock Text="Toàn quyền (SuperAdmin)" FontWeight="Bold" FontSize="12.5" Foreground="#92400E" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </CheckBox.Content>
+                            </CheckBox>
+                        </Border>
+
+                        <!-- Normal Selection Buttons Container (Ẩn khi bật SuperAdmin) -->
+                        <StackPanel x:Name="pnlNormalSelectionButtons" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Select All -->
+                            <Button x:Name="btnSelectAll" Height="32" Padding="12 0" Margin="0 0 8 0" Click="BtnSelectAll_Click"
+                                    Background="White" Foreground="#0052CC" BorderBrush="#0052CC" BorderThickness="1" 
+                                    materialDesign:ButtonAssist.CornerRadius="16" FontSize="12" Cursor="Hand"
+                                    ToolTip="Tích chọn toàn bộ các quyền hiện có trong danh sách bên dưới">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="CheckAll" Width="16" Height="16" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                                    <TextBlock Text="Chọn tất cả" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+
+                            <!-- Unselect All -->
+                            <Button x:Name="btnUnselectAll" Height="32" Padding="12 0" Click="BtnUnselectAll_Click"
+                                    Background="White" Foreground="#64748B" BorderBrush="#CBD5E1" BorderThickness="1" 
+                                    materialDesign:ButtonAssist.CornerRadius="16" FontSize="12" Cursor="Hand"
+                                    ToolTip="Bỏ tích chọn toàn bộ các quyền">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon Kind="Close" Width="15" Height="15" VerticalAlignment="Center" Margin="0 0 5 0"/>
+                                    <TextBlock Text="Bỏ chọn tất cả" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Dynamic Permissions ScrollViewer -->
+            <ScrollViewer x:Name="svPermissionsContainer" Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0 0 0 12" Padding="0 0 6 0">
+                <ItemsControl x:Name="icPermissionGroups">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#F8FAFC" CornerRadius="10" BorderBrush="#E2E8F0" BorderThickness="1" Margin="0 0 0 12" Padding="14 12">
+                                <StackPanel>
+                                    <!-- Group Header -->
+                                    <DockPanel LastChildFill="False" Margin="0 0 0 8">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
+                                            <Border Width="30" Height="30" CornerRadius="15" Background="#EFF6FF" Margin="0 0 10 0" VerticalAlignment="Center">
+                                                <materialDesign:PackIcon Kind="{Binding GroupIcon}" Width="17" Height="17" Foreground="#0052CC" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding GroupName}" FontWeight="Bold" FontSize="14" Foreground="#0F172A"/>
+                                                <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#64748B" FontStyle="Italic" Margin="0 2 0 0"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Select Group CheckBox -->
+                                        <CheckBox IsChecked="{Binding IsAllSelected, Mode=TwoWay}" DockPanel.Dock="Right" VerticalAlignment="Center" Cursor="Hand">
+                                            <TextBlock Text="Chọn cả nhóm này" FontSize="12.5" Foreground="#475569" FontWeight="SemiBold"/>
+                                        </CheckBox>
+                                    </DockPanel>
+
+                                    <Separator Background="#E2E8F0" Margin="0 0 0 10"/>
+
+                                    <!-- Permissions Items Grid (2 Cột rộng rãi, thông thoáng) -->
+                                    <ItemsControl ItemsSource="{Binding Permissions}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="2"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="White" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1"
+                                                        Margin="4 4" Padding="12 10" Cursor="Hand">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="BorderBrush" Value="#93C5FD"/>
+                                                                    <Setter Property="Background" Value="#F0F7FF"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+
+                                                    <DockPanel LastChildFill="True">
+                                                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                                                  DockPanel.Dock="Left" VerticalAlignment="Top" Margin="0 2 10 0" Cursor="Hand"/>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13" Foreground="#1E293B" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="{Binding Description}" FontSize="11.5" Foreground="#64748B" TextWrapping="Wrap" Margin="0 3 0 0"/>
+                                                        </StackPanel>
+                                                    </DockPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Footer Dialog Actions -->
+            <Border Grid.Row="4" BorderBrush="#E2E8F0" BorderThickness="0 1 0 0" Padding="0 12 0 0">
+                <DockPanel LastChildFill="False">
+                    <!-- Tip on Left -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" DockPanel.Dock="Left">
+                        <materialDesign:PackIcon Kind="LightbulbOutline" Width="16" Height="16" Foreground="#F59E0B" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                        <TextBlock Text="Mẹo: Quản trị viên (Admin) luôn tự động có toàn quyền đối với mọi chức năng mới trong tương lai." 
+                                   FontSize="12" Foreground="#64748B" FontStyle="Italic" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Buttons on Right -->
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <!-- Hủy bỏ -->
+                        <Button Click="BtnCancel_Click" Width="110" Height="40" Margin="0 0 12 0"
+                                Background="White" Foreground="#475569" BorderBrush="#CBD5E1" BorderThickness="1.5"
+                                materialDesign:ButtonAssist.CornerRadius="20" FontWeight="SemiBold" FontSize="13" Cursor="Hand"
+                                Style="{DynamicResource MaterialDesignRaisedButton}">
+                            <TextBlock Text="Hủy bỏ"/>
+                        </Button>
+
+                        <!-- Lưu vai trò -->
+                        <Button Click="BtnSave_Click" MinWidth="130" Height="40" Padding="20 0"
+                                Background="#0052CC" Foreground="White" BorderBrush="#0052CC"
+                                materialDesign:ButtonAssist.CornerRadius="20" FontWeight="Bold" FontSize="13" Cursor="Hand"
+                                Style="{DynamicResource MaterialDesignRaisedButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Check" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 6 0"/>
+                                <TextBlock Text="Lưu vai trò" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

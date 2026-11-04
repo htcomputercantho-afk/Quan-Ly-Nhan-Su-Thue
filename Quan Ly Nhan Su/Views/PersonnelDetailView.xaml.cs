@@ -1,4444 +1,4461 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
-using Microsoft.EntityFrameworkCore;
-using TaxPersonnelManagement.Data;
-using TaxPersonnelManagement.Helpers;
-using TaxPersonnelManagement.Models;
-namespace TaxPersonnelManagement.Views
-{
-    public partial class PersonnelDetailView : UserControl
-    {
-        private Personnel? _personnel;
-        private string? _currentAvatarBase64;
-        private bool _isAvatarChanged = false;
-        private bool _isRefreshing = false;
-        private bool _isFormatting = false;
-        private List<Position> _allPositions = new List<Position>();
-        private SalaryRecord? _editingSalaryRecord;
-        private EvaluationRecord? _editingEvaluationRecord;
-        private readonly System.Collections.ObjectModel.ObservableCollection<WorkHistoryRecord> _workHistories = new();
-
-        /// <summary>
-        /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
-        /// </summary>
-        /// <param name="personnel">Đối tượng cán bộ cần hiển thị. Nếu thêm mới thì truyền null.</param>
-        public PersonnelDetailView(Personnel? personnel, int activeTab = 0)
-        {
-            InitializeComponent();
-            dpPositionCalculationDate.SelectedDate = DateTime.Now;
-            try { LoadSalaryDelayReasons(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
-            try { LoadDisciplineTypes(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
-            _personnel = personnel;
-
-            _isRefreshing = true; // NGĂN CHẶN TÍNH TOÁN TỰ ĐỘNG TRONG QUÁ TRÌNH NẠP DỮ LIỆU BAN ĐẦU
-
-            // Nạp dữ liệu danh mục trước
-            LoadDepartments();
-            LoadPositions();
-            LoadRanks();
-
-            if (_personnel != null)
-            {
-                // Nạp dữ liệu cán bộ
-                txtStaffId.Text = _personnel.StaffId;
-                txtName.Text = _personnel.FullName;
-                SetComboBoxByContent(cboGender, _personnel.Gender);
-                dpDOB.SelectedDate = _personnel.DateOfBirth;
-                txtPhone.Text = FormatPhoneNumber(_personnel.PhoneNumber);
-                txtIdentityNumber.Text = _personnel.IdentityCardNumber;
-                txtIdentityPlace.Text = _personnel.IdentityCardPlace;
-                txtEmail.Text = _personnel.Email;
-                txtSocialInsurance.Text = _personnel.SocialSecurityNumber;
-                txtBirthPlace.Text = _personnel.BirthPlace;
-                txtHometown.Text = _personnel.Hometown;
-                txtCurrentResidence.Text = _personnel.CurrentResidence;
-                txtEthnicity.Text = _personnel.Ethnicity;
-                txtReligion.Text = _personnel.Religion;
-
-                // Thông tin công tác (Phòng ban và Chức vụ đã được thiết lập qua LoadDepartments và LoadPositions)
-
-                txtRankName.Text = _personnel.RankName;
-                dpStartDate.SelectedDate = _personnel.TaxAuthorityStartDate;
-                SetComboBoxByContent(cboStatus, _personnel.Status ?? "Đang công tác");
-                txtStatusDecisionNumber.Text = _personnel.StatusDecisionNumber ?? "";
-                dpStatusDecisionDate.SelectedDate = _personnel.StatusDecisionDate;
-                dpStatusEffectiveDate.SelectedDate = _personnel.StatusEffectiveDate;
-                txtStatusDecisionUnit.Text = _personnel.StatusDecisionUnit ?? "";
-
-
-                // Trình độ học vấn & Chuyên môn
-                SetComboBoxByContent(cboEducationLevel, _personnel.EducationLevel);
-                txtMajor.Text = _personnel.Major;
-                txtUniversity.Text = _personnel.University;
-                SetComboBoxByContent(cboStateManagement, _personnel.StateManagementLevel);
-                SetComboBoxByContent(cboPoliticalTheory, _personnel.PoliticalTheoryLevel);
-                txtITSkill.Text = _personnel.ITSkillLevel;
-
-                txtLanguageSkill.Text = _personnel.LanguageSkillLevel;
-                UpdateDegreeBadges();
-
-                // Tab 2: Thời gian giữ vị trí công tác
-                dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
-                
-                string currentStatus = _personnel.Status ?? "";
-                bool isNonWorking = !string.IsNullOrEmpty(currentStatus) && !currentStatus.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
-
-                if (isNonWorking && _personnel.StatusEffectiveDate.HasValue)
-                {
-                    dpPositionCalculationDate.SelectedDate = _personnel.StatusEffectiveDate.Value;
-                }
-                else if (_personnel.PositionCalculationDate.HasValue)
-                {
-                    dpPositionCalculationDate.SelectedDate = _personnel.PositionCalculationDate.Value;
-                }
-                else
-                {
-                    dpPositionCalculationDate.SelectedDate = DateTime.Now;
-                }
-                txtPositionYear.Text = _personnel.PositionYear;
-                txtDetailedWorkHistory.Text = _personnel.DetailedWorkHistory;
-                LoadWorkHistoriesForPersonnel();
-
-                CalculateWorkDuration();
-
-                // Tab 3: Thông tin nghỉ hưu
-                dpRetirementDate.SelectedDate = _personnel.RetirementDate;
-                CalculateRetirementInfo();
-
-                // Tab 4: Thông tin Đảng viên
-                dpPartyEntryDate.SelectedDate = _personnel.PartyEntryDate;
-                dpPartyOfficialDate.SelectedDate = _personnel.PartyOfficialDate;
-                CalculatePartyAge();
-                txtPartyCell.Text = _personnel.PartyCell ?? "";
-                txtPartyIntroducer1Name.Text = _personnel.PartyIntroducer1Name ?? "";
-                txtPartyIntroducer1Position.Text = _personnel.PartyIntroducer1Position ?? "";
-                txtPartyIntroducer1Workplace.Text = _personnel.PartyIntroducer1Workplace ?? "";
-                txtPartyIntroducer2Name.Text = _personnel.PartyIntroducer2Name ?? "";
-                txtPartyIntroducer2Position.Text = _personnel.PartyIntroducer2Position ?? "";
-                txtPartyIntroducer2Workplace.Text = _personnel.PartyIntroducer2Workplace ?? "";
-                txtPartyIntroducingOrganization.Text = _personnel.PartyIntroducingOrganization ?? "";
-                dpPartyDecisionDate.SelectedDate = _personnel.PartyDecisionDate;
-
-                // Tab 6: Thông tin lương
-                cboSalaryStep.SelectedValue = _personnel.CurrentSalaryStep; // Use SelectedValue
-                txtSalaryCoefficient.Text = _personnel.CurrentSalaryCoefficient.ToString();
-                txtExceedFrame.Text = _personnel.ExceedFramePercent.ToString();
-                txtPositionAllowance.Text = _personnel.PositionAllowance;
-                dpSalaryReservation.SelectedDate = _personnel.SalaryReservationDeadline;
-                dpNextSalaryStepDate.SelectedDate = _personnel.NextSalaryStepDate;
-
-                SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
-
-                dpExpectedSalaryIncrease.SelectedDate = _personnel.ExpectedSalaryIncreaseDate;
-                // Nạp lịch sử diễn biến lương
-                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
-                RefreshSalaryHistoryGrid();
-
-                // Tab 5: Thông tin nghỉ phép
-                dpLeaveCalculationDate.SelectedDate = _personnel.LeaveCalculationDate;
-                // Đảm bảo danh sách không bị null
-                if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
-                RefreshLeaveHistoryGrid();
-                // UpdateLeaveStatistics(); // Handled by CalculateAnnualLeave via CalculateWorkDuration
-
-                // Tab 7: Khen thưởng
-                txtEmulationTitles.Text = _personnel.EmulationTitles;
-                txtRewardForms.Text = _personnel.RewardForms;
-
-                // Tab 8: Kỷ luật
-                if (!string.IsNullOrEmpty(_personnel.DisciplineType))
-                    SetComboBoxByContent(cboDisciplineType, _personnel.DisciplineType);
-
-                txtDisciplineNumber.Text = _personnel.DisciplineDecisionNumber;
-                dpDisciplineDate.SelectedDate = _personnel.DisciplineDecisionDate;
-                txtDisciplineReason.Text = _personnel.DisciplineReason;
-
-                // Nạp dữ liệu đánh giá xếp loại
-                if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new System.Collections.Generic.List<EvaluationRecord>();
-                RefreshEvaluationHistoryGrid();
-
-                // Nạp ảnh đại diện
-                if (!string.IsNullOrEmpty(_personnel.AvatarBase64))
-                {
-                    try
-                    {
-                        var bitmap = Base64ToImage(_personnel.AvatarBase64);
-                        imgAvatar.Fill = new System.Windows.Media.ImageBrush(bitmap) { Stretch = System.Windows.Media.Stretch.UniformToFill };
-                        iconAvatarPlaceholder.Visibility = Visibility.Collapsed;
-                        btnRemoveAvatar.Visibility = Visibility.Visible;
-                    }
-                    catch { /* Bỏ qua dữ liệu ảnh không hợp lệ */ }
-                }
-            }
-            else
-            {
-                txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
-                LoadWorkHistoriesForPersonnel();
-            }
-
-            if (_personnel != null)
-            {
-                lblSaveText.Text = "Cập nhật";
-            }
-            else
-            {
-                lblSaveText.Text = "Lưu Hồ Sơ";
-            }
-
-            // Initial Calculation to ensure consistency
-            if (_personnel == null || !dpExpectedSalaryIncrease.SelectedDate.HasValue)
-            {
-                // Chỉ tự động tính ngày dự kiến lên lương nếu thêm mới
-                // hoặc ngày đã lưu bị rỗng
-                bool wasRefreshing = _isRefreshing;
-                _isRefreshing = false; // Tạm mở khóa để hàm cập nhật
-                CalculateExpectedSalaryDate();
-                _isRefreshing = wasRefreshing;
-            }
-
-            CalculateAnnualLeave(DateTime.Now); // Force recalculation with valid _personnel
-            RefreshLeaveHistoryGrid(); // Populate and clean leave history
-
-            // Initialize Year ComboBox
-            var currentYear = DateTime.Now.Year;
-            var startYear = 2025;
-            var years = new List<int>();
-            for (int i = startYear; i <= currentYear; i++) years.Add(i);
-            cboLeaveYear.ItemsSource = years;
-            cboLeaveYear.SelectedItem = currentYear;
-
-            // Event for Year Change
-            cboLeaveYear.SelectionChanged += (s, e) => { UpdateLeaveStatistics(); };
-
-            LoadLeaveYears();
-            LoadEvaluationYears();
-            ApplyAuthorization();
-
-            if (_personnel == null)
-            {
-                SetComboBoxByContent(cboStatus, "Đang công tác");
-            }
-            UpdateStatusDecisionFieldsState();
-
-            _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
-            CalculateExpectedSalaryDate();
-
-            if (activeTab > 0 && tcPersonnelDetails != null && activeTab < tcPersonnelDetails.Items.Count)
-            {
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    tcPersonnelDetails.SelectedIndex = activeTab;
-                }), System.Windows.Threading.DispatcherPriority.Loaded);
-            }
-        }
-
-        /// <summary>
-        /// Phân quyền hiển thị các chức năng thêm/sửa/xóa tùy theo Role của người dùng đăng nhập.
-        /// </summary>
-        private void ApplyAuthorization()
-        {
-            if (App.CurrentUser?.Role == UserRole.Staff)
-            {
-                // Ẩn nút Lưu
-                btnSave.Visibility = Visibility.Collapsed;
-
-                // Hide config/add buttons
-                btnAddDepartment.Visibility = Visibility.Collapsed;
-                btnAddPosition.Visibility = Visibility.Collapsed;
-                btnAddRank.Visibility = Visibility.Collapsed;
-
-                // Hide avatar buttons (if they exist as explicit named buttons)
-                btnRemoveAvatar.Visibility = Visibility.Collapsed;
-
-                // Ẩn nút Thêm đợt nghỉ
-                btnAddLeave.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void AdminOnly_Loaded(object? sender, RoutedEventArgs e)
-        {
-            if (App.CurrentUser?.Role == UserRole.Staff && sender is FrameworkElement element)
-            {
-                element.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void LoadLeaveYears(int? includeYear = null)
-        {
-            if (cboLeaveYear == null) return;
-
-            var currentYear = DateTime.Now.Year;
-            var startYear = 2025;
-            var years = new List<int>();
-
-            // Logic: Iterate 2025 to CurrentYear
-            for (int i = startYear; i <= currentYear; i++)
-            {
-                // Always add current year
-                if (i == currentYear)
-                {
-                    years.Add(i);
-                    continue;
-                }
-
-                // Add if explicitly included (e.g. editing old record)
-                if (includeYear.HasValue && i == includeYear.Value)
-                {
-                    years.Add(i);
-                    continue;
-                }
-
-                // Add if has remaining days
-                if (GetRemainingAnnualLeaveDays(i) > 0)
-                {
-                    years.Add(i);
-                }
-            }
-
-            // Preserve selection if possible
-            var previouslySelected = cboLeaveYear.SelectedItem;
-
-            cboLeaveYear.ItemsSource = years;
-
-            if (previouslySelected is int val && years.Contains(val))
-            {
-                cboLeaveYear.SelectedItem = val;
-            }
-            else
-            {
-                cboLeaveYear.SelectedItem = currentYear;
-            }
-        }
-
-        private void LoadDepartments()
-        {
-            var deptOrder = new System.Collections.Generic.List<string> {
-                "Ban lãnh đạo",
-                "Tổ Hành chính, tổng hợp",
-                "Tổ Kiểm tra số 1",
-                "Tổ Kiểm tra số 2",
-                "Tổ Kiểm tra số 3",
-                "Tổ Nghiệp vụ, dự toán, pháp chế",
-                "Tổ Quản lý các khoản thu khác",
-                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
-                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
-                "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
-                "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
-            };
-
-            using (var context = new AppDbContext())
-            {
-                // Nạp danh sách từ bảng Phòng ban (Departments)
-                var dbDepts = context.Departments.Select(d => d.Name).ToList();
-
-                // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
-                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Department) && !dbDepts.Contains(_personnel.Department))
-                {
-                    dbDepts.Add(_personnel.Department);
-                }
-
-                var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x))
-                                      .Distinct()
-                                      .OrderBy(x => DepartmentSorter.GetSortKey(x).Order)
-                                      .ThenBy(x => DepartmentSorter.GetSortKey(x).Number)
-                                      .ThenBy(x => x)
-                                      .ToList();
-                allDepts.Insert(0, "");
-
-                cboDepartment.ItemsSource = allDepts;
-
-                if (_personnel != null)
-                {
-                    SetComboBoxByContent(cboDepartment, _personnel.Department);
-                }
-            }
-        }
-
-        private void cboDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_isRefreshing) return;
-            UpdatePositionFilter();
-        }
-
-        private void UpdatePositionFilter()
-        {
-            if (cboDepartment == null || cboPosition == null) return;
-
-            string selectedDept = "";
-            if (cboDepartment.SelectedItem != null)
-            {
-                selectedDept = cboDepartment.SelectedItem.ToString() ?? "";
-            }
-            else if (!string.IsNullOrEmpty(cboDepartment.Text))
-            {
-                selectedDept = cboDepartment.Text;
-            }
-
-            System.Collections.Generic.List<string> filtered;
-
-            if (string.IsNullOrEmpty(selectedDept))
-            {
-                filtered = new System.Collections.Generic.List<string>();
-            }
-            else
-            {
-                var leadershipPositions = new[] { 
-                    "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng", 
-                    "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
-                    "Cục trưởng", "Phó Cục trưởng"
-                };
-                var unitPositions = new[] { 
-                    "Đội trưởng", "Phó Đội trưởng", "Trưởng phòng", "Phó Trưởng phòng",
-                    "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên" 
-                };
-
-                bool isLeadershipDept = selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase);
-
-                filtered = _allPositions.Where(pos =>
-                {
-                    if (string.IsNullOrWhiteSpace(pos.Name))
-                        return false;
-
-                    // Ưu tiên kiểm tra GroupType (Ban lãnh đạo / Các tổ / null = tất cả)
-                    if (!string.IsNullOrEmpty(pos.GroupType))
-                    {
-                        if (isLeadershipDept)
-                            return pos.GroupType.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase);
-                        else
-                            return pos.GroupType.Equals("Các tổ", StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (!string.IsNullOrEmpty(pos.DepartmentName))
-                    {
-                        if (pos.DepartmentName.Equals(selectedDept, StringComparison.OrdinalIgnoreCase))
-                            return true;
-
-                        if (pos.DepartmentName.Equals("Các tổ", StringComparison.OrdinalIgnoreCase) &&
-                            selectedDept.Contains("Tổ", StringComparison.OrdinalIgnoreCase))
-                            return true;
-
-                        return false;
-                    }
-
-                    // Fallback cho chức vụ có GroupType và DepartmentName rỗng/null:
-                    if (isLeadershipDept)
-                    {
-                        return leadershipPositions.Any(lp => lp.Equals(pos.Name, StringComparison.OrdinalIgnoreCase));
-                    }
-                    else
-                    {
-                        return unitPositions.Any(up => up.Equals(pos.Name, StringComparison.OrdinalIgnoreCase));
-                    }
-                })
-                .Select(pos => pos.Name)
-                .Distinct()
-                .ToList();
-            }
-
-            var currentPos = cboPosition.SelectedItem?.ToString() ?? (_personnel?.Position);
-
-            filtered.Insert(0, "");
-            cboPosition.ItemsSource = filtered;
-
-            if (!string.IsNullOrEmpty(currentPos) && filtered.Any(f => f.Equals(currentPos, StringComparison.OrdinalIgnoreCase)))
-            {
-                SetComboBoxByContent(cboPosition, currentPos);
-            }
-            else
-            {
-                cboPosition.SelectedIndex = 0;
-            }
-        }
-
-
-        private void btnAddDepartment_Click(object? sender, RoutedEventArgs e)
-        {
-            var dialog = new AddDepartmentDialog(); // No args
-            if (dialog.ShowDialog() == true)
-            {
-                LoadDepartments(); // Reload list from DB
-
-                if (!string.IsNullOrEmpty(dialog.SelectedDepartment))
-                {
-                    cboDepartment.SelectedItem = dialog.SelectedDepartment;
-                    cboDepartment.Text = dialog.SelectedDepartment;
-                }
-            }
-        }
-
-        private void btnConfigSalary_Click(object? sender, RoutedEventArgs e)
-        {
-            var dialog = new SalaryConfigDialog();
-            dialog.Owner = Window.GetWindow(this);
-            dialog.ShowDialog();
-
-            // Cập nhật lại các bậc lương theo ngạch đã chọn
-            if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
-            {
-                LoadSalarySteps(selectedRank.Code);
-            }
-        }
-
-        private void LoadPositions()
-        {
-            var posOrder = new System.Collections.Generic.List<string> {
-                "Chi cục trưởng",
-                "Quyền Chi cục trưởng",
-                "Phó Chi cục trưởng",
-                "Trưởng Thuế cơ sở",
-                "Quyền Trưởng Thuế cơ sở",
-                "Phó Trưởng Thuế cơ sở",
-                "Đội trưởng",
-                "Trưởng phòng",
-                "Phó Đội trưởng",
-                "Phó Trưởng phòng",
-                "Tổ trưởng",
-                "Phó Tổ trưởng",
-                "Công chức",
-                "Nhân viên"
-            };
-
-            using (var context = new AppDbContext())
-            {
-                var leadershipNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
-                    "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
-                    "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
-                    "Cục trưởng", "Phó Cục trưởng"
-                };
-                var unitNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
-                    "Đội trưởng", "Trưởng phòng", "Phó Đội trưởng", "Phó Trưởng phòng",
-                    "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên"
-                };
-
-                var unclassified = context.Positions.Where(p => p.DepartmentName != "__ĐẢNG__" && string.IsNullOrEmpty(p.GroupType)).ToList();
-                if (unclassified.Any())
-                {
-                    foreach (var p in unclassified)
-                    {
-                        if (leadershipNames.Contains(p.Name)) p.GroupType = "Ban lãnh đạo";
-                        else if (unitNames.Contains(p.Name)) p.GroupType = "Các tổ";
-                    }
-                    try { context.SaveChanges(); } catch { }
-                }
-
-                var dbPos = context.Positions.ToList();
-
-                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x.Name) && x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__")
-                                  .GroupBy(x => x.Name.ToLower())
-                                  .Select(g => g.First())
-                                  .OrderBy(x =>
-                                  {
-                                      int idx = posOrder.FindIndex(p => p.Equals(x.Name, StringComparison.OrdinalIgnoreCase));
-                                      return idx == -1 ? 999 : idx;
-                                  })
-                                  .ThenBy(x => x.Name)
-                                  .ToList();
-
-                UpdatePositionFilter();
-            }
-        }
-
-        private void btnAddPosition_Click(object? sender, RoutedEventArgs e)
-        {
-            var dialog = new AddPositionDialog();
-            if (dialog.ShowDialog() == true)
-            {
-                LoadPositions();
-
-                if (!string.IsNullOrEmpty(dialog.SelectedPosition))
-                {
-                    cboPosition.SelectedItem = dialog.SelectedPosition;
-                    cboPosition.Text = dialog.SelectedPosition;
-                }
-            }
-        }
-
-        private void LoadRanks()
-        {
-            using (var context = new AppDbContext())
-            {
-                var dbRanks = context.Ranks.ToList();
-
-                // Nếu nhân sự đang xem có mã ngạch không tồn tại trong danh mục chính, thêm mã ngạch đó vào danh sách hiển thị
-                if (_personnel != null && !string.IsNullOrEmpty(_personnel.RankCode) && !dbRanks.Any(r => r.Code == _personnel.RankCode))
-                {
-                    dbRanks.Add(new Rank { Code = _personnel.RankCode, Name = _personnel.RankName ?? "" });
-                }
-
-                var sortedRanks = dbRanks.OrderBy(r => r.Code).ToList();
-                sortedRanks.Insert(0, new Rank { Code = "", Name = "" });
-
-                cboRankCode.ItemsSource = sortedRanks;
-                cboRankCode.DisplayMemberPath = "Code";
-                cboRankCode.SelectedValuePath = "Code";
-
-                // Also populate the history input section
-                cboSalaryHistRankCode.ItemsSource = sortedRanks;
-                cboSalaryHistRankCode.DisplayMemberPath = "Code";
-                cboSalaryHistRankCode.SelectedValuePath = "Code";
-
-                if (_personnel != null)
-                {
-                    cboRankCode.SelectedValue = _personnel.RankCode;
-                    if (!string.IsNullOrEmpty(_personnel.RankCode))
-                    {
-                        LoadSalarySteps(_personnel.RankCode);
-                    }
-                }
-            }
-        }
-
-        private void cboStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            UpdateStatusDecisionFieldsState();
-            SyncPositionCalculationDateWithStatus();
-        }
-
-        private void dpStatusEffectiveDate_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            SyncPositionCalculationDateWithStatus();
-        }
-
-        private void SyncPositionCalculationDateWithStatus()
-        {
-            if (dpPositionCalculationDate == null || cboStatus == null) return;
-
-            string status = GetCurrentStatus();
-            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
-
-            if (!isWorking)
-            {
-                if (dpStatusEffectiveDate != null && dpStatusEffectiveDate.SelectedDate.HasValue)
-                {
-                    dpPositionCalculationDate.SelectedDate = dpStatusEffectiveDate.SelectedDate.Value;
-                }
-            }
-            else
-            {
-                dpPositionCalculationDate.SelectedDate = DateTime.Now;
-            }
-        }
-
-        private string GetCurrentStatus()
-        {
-            if (cboStatus == null) return "";
-            if (cboStatus.SelectedItem is ComboBoxItem item && item.Content != null)
-                return item.Content.ToString() ?? "";
-            if (cboStatus.SelectedItem is string str)
-                return str;
-            return cboStatus.Text ?? "";
-        }
-
-        private DateTime? GetPositionCalculationDateToSave()
-        {
-            string status = GetCurrentStatus();
-            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
-
-            if (!isWorking)
-            {
-                return dpPositionCalculationDate.SelectedDate ?? dpStatusEffectiveDate.SelectedDate;
-            }
-
-            return (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date)
-                ? null
-                : dpPositionCalculationDate.SelectedDate;
-        }
-
-        /// <summary>
-        /// Cập nhật trạng thái hiển thị của 4 ô thông tin quyết định (Số QĐ, Ngày ra QĐ, Ngày thực hiện, Đơn vị ra QĐ).
-        /// Ngoại trừ 'Đang công tác', các trạng thái còn lại sẽ sáng lên để nhập; nếu là 'Đang công tác' thì làm mờ và vô hiệu hóa.
-        /// </summary>
-        private void UpdateStatusDecisionFieldsState()
-        {
-            if (gridStatusDecision == null || cboStatus == null) return;
-
-            string status = GetCurrentStatus();
-            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
-
-            gridStatusDecision.IsEnabled = !isWorking;
-            gridStatusDecision.Opacity = isWorking ? 0.45 : 1.0;
-        }
-
-        private void LoadSalaryDelayReasons()
-        {
-            try
-            {
-                using (var context = new AppDbContext())
-                {
-                    try
-                    {
-                        var reasons = context.SalaryDelayReasons.OrderBy(r => r.Id).Select(r => r.Name).ToList();
-
-                        cboSalaryDelay.Items.Clear();
-                        cboSalaryDelay.Items.Add("-- Không lùi --");
-                        foreach (var r in reasons)
-                        {
-                            if (!r.Contains("Nghỉ không lương", StringComparison.OrdinalIgnoreCase))
-                            {
-                                cboSalaryDelay.Items.Add(r);
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        // Fallback: Table might not exist, create it manually
-                        // Use FRESH context
-                        using (var repairContext = new AppDbContext())
-                        {
-                            // 1. Create SQL
-                            repairContext.Database.ExecuteSqlRaw(@"
-                                CREATE TABLE IF NOT EXISTS SalaryDelayReasons (
-                                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    Name TEXT NOT NULL
-                                );");
-
-                            // 2. Kiểm tra và chèn bằng câu lệnh SQL
-                            var count = -1;
-                            using (var command = repairContext.Database.GetDbConnection().CreateCommand())
-                            {
-                                command.CommandText = "SELECT COUNT(*) FROM SalaryDelayReasons";
-                                repairContext.Database.OpenConnection();
-                                try
-                                {
-                                    var result = command.ExecuteScalar();
-                                    if (result != null) count = Convert.ToInt32(result);
-                                }
-                                catch { }
-                                repairContext.Database.CloseConnection();
-                            }
-
-                            if (count == 0)
-                            {
-                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')");
-                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')");
-                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')");
-                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')");
-                            }
-                        }
-
-                        // Thử nạp lại với DbContext mới
-                        using (var retryContext = new AppDbContext())
-                        {
-                            var retryReasons = retryContext.SalaryDelayReasons.OrderBy(r => r.Id).Select(r => r.Name).ToList();
-                            cboSalaryDelay.Items.Clear();
-                            cboSalaryDelay.Items.Add("-- Không lùi --");
-                            foreach (var r in retryReasons)
-                            {
-                                if (!r.Contains("Nghỉ không lương", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    cboSalaryDelay.Items.Add(r);
-                                }
-                            }
-                        }
-                    }
-
-                    if (_personnel != null)
-                    {
-                        SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
-                    }
-                    else
-                    {
-                        SetSalaryDelaySelection(null);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Phương án dự phòng cuối: hiển thị danh sách mặc định
-                cboSalaryDelay.Items.Clear();
-                cboSalaryDelay.Items.Add("-- Không lùi --");
-                cboSalaryDelay.Items.Add("Lùi 3 tháng (Khiển trách)");
-                cboSalaryDelay.Items.Add("Lùi 6 tháng (Cảnh cáo)");
-                cboSalaryDelay.Items.Add("Lùi 12 tháng (Giáng chức/Cách chức)");
-                System.Diagnostics.Debug.WriteLine($"Error loading salary delay reasons: {ex.Message}");
-            }
-        }
-
-        private void btnSalaryDelayConfig_Click(object? sender, RoutedEventArgs e)
-        {
-            var dialog = new SalaryDelayConfigDialog();
-            dialog.Owner = Window.GetWindow(this);
-            dialog.ShowDialog();
-            LoadSalaryDelayReasons(); // Refresh after close
-        }
-
-        private void cboRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
-            {
-                if (!string.IsNullOrEmpty(selectedRank.Name))
-                    txtRankName.Text = selectedRank.Name;
-                else
-                    txtRankName.Text = "";
-
-                LoadSalarySteps(selectedRank.Code);
-            }
-            else
-            {
-                // Xóa danh sách bậc lương nếu bỏ chọn ngạch hoặc chọn ngạch trống
-                cboSalaryStep.ItemsSource = null;
-                txtRankName.Text = "";
-            }
-            CalculateExpectedSalaryDate();
-        }
-
-        private void cboSalaryHistRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (cboSalaryHistRankCode.SelectedItem is Rank selectedRank)
-            {
-                LoadSalaryHistSteps(selectedRank.Code);
-            }
-            else
-            {
-                cboSalaryHistStep.ItemsSource = null;
-            }
-        }
-
-        private void LoadSalaryHistSteps(string rankCode)
-        {
-            try
-            {
-                using (var context = new AppDbContext())
-                {
-                    var steps = context.RankSalarySpecs
-                                       .Where(s => s.RankCode == rankCode)
-                                       .ToList()
-                                       .OrderBy(s => {
-                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
-                                           var parts = s.SalaryStep.Split('/');
-                                           if (parts.Length > 0 && int.TryParse(parts[0], out int val))
-                                               return val;
-                                           return 999;
-                                       })
-                                       .ThenBy(s => {
-                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
-                                           var parts = s.SalaryStep.Split('/');
-                                           if (parts.Length > 1 && int.TryParse(parts[1], out int val))
-                                               return val;
-                                           return 999;
-                                       })
-                                       .ToList();
-
-                    cboSalaryHistStep.ItemsSource = steps;
-                    cboSalaryHistStep.DisplayMemberPath = "SalaryStep";
-                    cboSalaryHistStep.SelectedValuePath = "SalaryStep";
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading salary hist steps: {ex.Message}");
-            }
-        }
-
-        private void LoadSalarySteps(string rankCode)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(rankCode))
-                {
-                    cboSalaryStep.ItemsSource = null;
-                    return;
-                }
-                using (var context = new AppDbContext())
-                {
-                    var steps = context.RankSalarySpecs
-                                       .Where(s => s.RankCode == rankCode)
-                                       .ToList()
-                                       .OrderBy(s => {
-                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
-                                           var parts = s.SalaryStep.Split('/');
-                                           if (parts.Length > 0 && int.TryParse(parts[0], out int val))
-                                               return val;
-                                           return 999;
-                                       })
-                                       .ThenBy(s => {
-                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
-                                           var parts = s.SalaryStep.Split('/');
-                                           if (parts.Length > 1 && int.TryParse(parts[1], out int val))
-                                               return val;
-                                           return 999;
-                                       })
-                                       .ToList();
-                    steps.Insert(0, new RankSalarySpec { RankCode = rankCode, SalaryStep = "", Coefficient = 0 });
-
-                    cboSalaryStep.ItemsSource = steps;
-                    cboSalaryStep.DisplayMemberPath = "SalaryStep";
-                    cboSalaryStep.SelectedValuePath = "SalaryStep";
-                }
-            }
-            catch (Exception ex)
-            {
-                // Bỏ qua lỗi hoặc ghi log hệ thống
-                System.Diagnostics.Debug.WriteLine($"Error loading salary steps: {ex.Message}");
-            }
-        }
-
-        private void cboSalaryStep_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (cboSalaryStep.SelectedItem is RankSalarySpec spec)
-            {
-                if (spec.Coefficient > 0)
-                {
-                    string coeffStr = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
-                    txtSalaryCoefficient.Text = coeffStr;
-                }
-                else
-                {
-                    txtSalaryCoefficient.Text = "";
-                }
-            }
-            else
-            {
-                txtSalaryCoefficient.Text = "";
-            }
-        }
-
-        private void cboSalaryHistStep_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (cboSalaryHistStep.SelectedItem is RankSalarySpec spec)
-            {
-                txtSalaryHistCoeff.Text = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
-            }
-        }
-
-        private void btnAddRank_Click(object? sender, RoutedEventArgs e)
-        {
-            var dialog = new AddRankDialog();
-            if (dialog.ShowDialog() == true)
-            {
-                LoadRanks();
-                if (!string.IsNullOrEmpty(dialog.SelectedRankCode))
-                {
-                    cboRankCode.SelectedValue = dialog.SelectedRankCode;
-                    // Cập nhật tên ngạch tương ứng
-                }
-            }
-        }
-
-        private void LoadDisciplineTypes()
-        {
-            using (var context = new AppDbContext())
-            {
-                var types = context.DisciplineTypes.Select(t => t.Name).ToList();
-                types.Insert(0, "-- Không có --");
-                cboDisciplineType.ItemsSource = types;
-
-                // Default to "-- Không có --" if list is not empty
-                if (types.Count > 0)
-                {
-                    cboDisciplineType.SelectedIndex = 0;
-                }
-            }
-        }
-
-        private void btnAddDisciplineType_Click(object? sender, RoutedEventArgs e)
-        {
-            var dialog = new DisciplineConfigDialog();
-            dialog.ShowDialog(); // Just show dialog, refresh data afterwards regardless of return value
-            LoadDisciplineTypes();
-        }
-
-        /// <summary>
-        /// Xử lý sự kiện khi người dùng nhấn nút Lưu/Cập nhật.
-        /// Thực hiện Validate dữ liệu và tiến hành Lưu mới hoặc Cập nhật bản ghi vào Cơ sở dữ liệu.
-        /// </summary>
-        private async void btnSave_Click(object? sender, RoutedEventArgs e)
-        {
-            // Kiểm tra tính hợp lệ của dữ liệu (Validation)
-            if (string.IsNullOrWhiteSpace(txtName.Text))
-            {
-                MessageBox.Show("Vui lòng nhập tên!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            // Phone Validation
-            string phoneDigits = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
-            if (!string.IsNullOrEmpty(txtPhone.Text) && (phoneDigits.Length != 10 || !phoneDigits.StartsWith("0")))
-            {
-                MessageBox.Show("Số điện thoại không hợp lệ! (Phải bắt đầu bằng số 0 và có 10 chữ số)", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            // Email Validation
-            if (!string.IsNullOrWhiteSpace(txtEmail.Text) && !IsValidEmail(txtEmail.Text))
-            {
-                MessageBox.Show("Địa chỉ Email không đúng định dạng!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            using (var context = new AppDbContext())
-            {
-                if (_personnel == null || _personnel.Id == 0)
-                {
-                    // Add New
-                    var newP = new Personnel
-                    {
-                        StaffId = txtStaffId.Text,
-                        FullName = txtName.Text,
-                        Gender = cboGender.Text,
-                        DateOfBirth = dpDOB.SelectedDate,
-                        PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray()),
-                        IdentityCardNumber = txtIdentityNumber.Text,
-                        IdentityCardPlace = txtIdentityPlace.Text,
-                        Email = txtEmail.Text,
-                        SocialSecurityNumber = txtSocialInsurance.Text,
-                        BirthPlace = txtBirthPlace.Text,
-                        Hometown = txtHometown.Text,
-                        CurrentResidence = txtCurrentResidence.Text,
-                        Ethnicity = txtEthnicity.Text,
-                        Religion = txtReligion.Text,
-
-                        Department = cboDepartment.Text,
-                        Position = cboPosition.Text,
-                        RankCode = (cboRankCode.SelectedItem as Rank)?.Code ?? "", // Allow free text if it's editable? Style is ComboBox, usually allows text if IsEditable=True. Default style might not.
-                                                                                   // If DropDown only, use SelectedValue or Text (which returns selected item string)
-                        RankName = txtRankName.Text,
-                        TaxAuthorityStartDate = dpStartDate.SelectedDate,
-                        StartDate = dpStartDate.SelectedDate,
-                        Status = cboStatus.Text,
-                        StatusDecisionNumber = txtStatusDecisionNumber.Text?.Trim(),
-                        StatusDecisionDate = dpStatusDecisionDate.SelectedDate,
-                        StatusEffectiveDate = dpStatusEffectiveDate.SelectedDate,
-                        StatusDecisionUnit = txtStatusDecisionUnit.Text?.Trim(),
-
-                        EducationLevel = cboEducationLevel.Text,
-                        Major = txtMajor.Text,
-                        University = txtUniversity.Text,
-                        StateManagementLevel = cboStateManagement.Text,
-                        PoliticalTheoryLevel = cboPoliticalTheory.Text,
-                        ITSkillLevel = txtITSkill.Text,
-                        LanguageSkillLevel = txtLanguageSkill.Text,
-                        AvatarBase64 = _currentAvatarBase64, // Save new avatar
-
-                        // Tab 2: Thời gian giữ vị trí công tác
-                        PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
-                        PositionCalculationDate = GetPositionCalculationDateToSave(),
-                        PositionYear = txtPositionYear.Text,
-                        DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories),
-
-                        // Tab 3: Thông tin nghỉ hưu
-                        RetirementDate = dpRetirementDate.SelectedDate,
-
-                        // Tab 4: Thông tin Đảng viên
-                        PartyEntryDate = dpPartyEntryDate.SelectedDate,
-                        PartyOfficialDate = dpPartyOfficialDate.SelectedDate,
-                        PartyCell = txtPartyCell.Text?.Trim(),
-                        PartyIntroducer1Name = txtPartyIntroducer1Name.Text?.Trim(),
-                        PartyIntroducer1Position = txtPartyIntroducer1Position.Text?.Trim(),
-                        PartyIntroducer1Workplace = txtPartyIntroducer1Workplace.Text?.Trim(),
-                        PartyIntroducer2Name = txtPartyIntroducer2Name.Text?.Trim(),
-                        PartyIntroducer2Position = txtPartyIntroducer2Position.Text?.Trim(),
-                        PartyIntroducer2Workplace = txtPartyIntroducer2Workplace.Text?.Trim(),
-                        PartyIntroducingOrganization = txtPartyIntroducingOrganization.Text?.Trim(),
-                        PartyDecisionDate = dpPartyDecisionDate.SelectedDate,
-
-                        // Tab 6: Lương
-                        CurrentSalaryStep = cboSalaryStep.SelectedValue?.ToString(),
-                        CurrentSalaryCoefficient = double.TryParse(txtSalaryCoefficient.Text, out double coeff) ? coeff : 0,
-                        ExceedFramePercent = double.TryParse(txtExceedFrame.Text, out double exceed) ? exceed : 0,
-                        PositionAllowance = txtPositionAllowance.Text,
-                        SalaryReservationDeadline = dpSalaryReservation.SelectedDate,
-                        NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate,
-                        SalaryIncreaseDelayType = cboSalaryDelay.Text,
-                        ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate,
-                        SalaryHistoryLog = string.Join("\n", _personnel?.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? Enumerable.Empty<string>()), // Legacy fallback
-                        SalaryRecords = _personnel?.SalaryRecords,
-
-                        // Tab 7: Khen thưởng
-                        EmulationTitles = txtEmulationTitles.Text,
-                        RewardForms = txtRewardForms.Text,
-
-                        // Tab 8: Kỷ luật
-                        DisciplineType = cboDisciplineType.Text,
-                        DisciplineDecisionNumber = txtDisciplineNumber.Text,
-                        DisciplineDecisionDate = dpDisciplineDate.SelectedDate,
-                        DisciplineReason = txtDisciplineReason.Text,
-
-                        // Tab 5: Nghỉ phép
-                        TotalAnnualLeaveDays = int.TryParse(txtTotalAnnualLeave.Text, out int leaves) ? leaves : 12,
-                        LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate,
-                    };
-
-                    // Copy Leave Histories if any (Handling the case where _personnel was initialized by btnAddLeave)
-                    if (_personnel != null && _personnel.LeaveHistories != null)
-                    {
-                        foreach (var lh in _personnel.LeaveHistories)
-                        {
-                            newP.LeaveHistories.Add(new LeaveHistory
-                            {
-                                LeaveType = lh.LeaveType,
-                                StartDate = lh.StartDate,
-                                EndDate = lh.EndDate,
-                                DurationDays = lh.DurationDays,
-                                Reason = lh.Reason,
-                                LeaveYear = lh.LeaveYear
-                            });
-                        }
-                    }
-
-                    // Copy Work History Records if any
-                    foreach (var wh in _workHistories)
-                    {
-                        newP.WorkHistoryRecords.Add(new WorkHistoryRecord
-                        {
-                            FromDate = wh.FromDate,
-                            ToDate = wh.ToDate,
-                            Position = wh.Position,
-                            Department = wh.Department,
-                            OrganizationUnit = wh.OrganizationUnit,
-                            DepartmentOrUnit = wh.DepartmentOrUnit,
-                            IsPartyConcurrent = wh.IsPartyConcurrent,
-                            PartyPosition = wh.PartyPosition,
-                            Note = wh.Note,
-                            OrderIndex = wh.OrderIndex
-                        });
-                    }
-
-                    // Copy Evaluation Records if any
-                    if (_personnel != null && _personnel.EvaluationRecords != null)
-                    {
-                        newP.EvaluationRecords ??= new List<EvaluationRecord>();
-                        foreach (var ev in _personnel.EvaluationRecords)
-                        {
-                            newP.EvaluationRecords.Add(new EvaluationRecord
-                            {
-                                Year = ev.Year,
-                                Rating = ev.Rating,
-                                DecisionNumber = ev.DecisionNumber,
-                                DecisionDate = ev.DecisionDate,
-                                DecisionAgency = ev.DecisionAgency
-                            });
-                        }
-                    }
-
-                    // Copy Personnel Degrees if any (Handling case where degrees were added before saving personnel)
-                    if (_personnel != null && _personnel.PersonnelDegrees != null && _personnel.PersonnelDegrees.Any())
-                    {
-                        newP.PersonnelDegrees = new List<PersonnelDegree>();
-                        foreach (var deg in _personnel.PersonnelDegrees)
-                        {
-                            newP.PersonnelDegrees.Add(new PersonnelDegree
-                            {
-                                DegreeType = deg.DegreeType,
-                                DegreeName = deg.DegreeName,
-                                Major = deg.Major,
-                                Institution = deg.Institution,
-                                Classification = deg.Classification,
-                                GraduationYear = deg.GraduationYear,
-                                IsPrimary = deg.IsPrimary
-                            });
-                        }
-                    }
-
-                    context.Personnel.Add(newP);
-                    _personnel = newP;
-                }
-                else
-                {
-                    // Cập nhật
-                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").Include("PersonnelDegrees").Include("WorkHistoryRecords").FirstOrDefault(p => p.Id == _personnel.Id);
-                    if (existingP != null)
-                    {
-                        existingP.StaffId = txtStaffId.Text;
-                        existingP.FullName = txtName.Text;
-                        // ... (Other fields remain same, not restating all for brevity in thought, but implementation needs them)
-                        // Actually replace_file_content needs EXACT TargetContent.
-                        // I will target the existingP retrieval and the end of the block.
-
-                        existingP.Gender = cboGender.Text;
-                        existingP.DateOfBirth = dpDOB.SelectedDate;
-                        existingP.PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
-                        existingP.IdentityCardNumber = txtIdentityNumber.Text;
-                        existingP.IdentityCardPlace = txtIdentityPlace.Text;
-                        existingP.Email = txtEmail.Text;
-                        existingP.SocialSecurityNumber = txtSocialInsurance.Text;
-                        existingP.BirthPlace = txtBirthPlace.Text;
-                        existingP.Hometown = txtHometown.Text;
-                        existingP.CurrentResidence = txtCurrentResidence.Text;
-                        existingP.Ethnicity = txtEthnicity.Text;
-                        existingP.Religion = txtReligion.Text;
-
-                        existingP.Department = cboDepartment.Text;
-                        existingP.Position = cboPosition.Text;
-                        existingP.RankCode = cboRankCode.Text;
-                        existingP.RankName = txtRankName.Text;
-                        existingP.TaxAuthorityStartDate = dpStartDate.SelectedDate;
-                        existingP.Status = cboStatus.Text;
-                        existingP.StatusDecisionNumber = txtStatusDecisionNumber.Text?.Trim();
-                        existingP.StatusDecisionDate = dpStatusDecisionDate.SelectedDate;
-                        existingP.StatusEffectiveDate = dpStatusEffectiveDate.SelectedDate;
-                        existingP.StatusDecisionUnit = txtStatusDecisionUnit.Text?.Trim();
-
-                        existingP.EducationLevel = cboEducationLevel.Text;
-                        existingP.Major = txtMajor.Text;
-                        existingP.University = txtUniversity.Text;
-                        existingP.StateManagementLevel = cboStateManagement.Text;
-                        existingP.PoliticalTheoryLevel = cboPoliticalTheory.Text;
-                        existingP.ITSkillLevel = txtITSkill.Text;
-                        existingP.LanguageSkillLevel = txtLanguageSkill.Text;
-
-                        if (_isAvatarChanged)
-                        {
-                            existingP.AvatarBase64 = _currentAvatarBase64;
-                        }
-
-                        // Tab 2: Thời gian giữ vị trí công tác
-                        existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
-                        existingP.PositionCalculationDate = GetPositionCalculationDateToSave();
-                        existingP.PositionYear = txtPositionYear.Text;
-                        existingP.DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories);
-
-                        // Tab 3: Thông tin nghỉ hưu
-                        existingP.RetirementDate = dpRetirementDate.SelectedDate;
-
-                        // Tab 4: Thông tin Đảng viên
-                        existingP.PartyEntryDate = dpPartyEntryDate.SelectedDate;
-                        existingP.PartyOfficialDate = dpPartyOfficialDate.SelectedDate;
-                        existingP.PartyCell = txtPartyCell.Text?.Trim();
-                        existingP.PartyIntroducer1Name = txtPartyIntroducer1Name.Text?.Trim();
-                        existingP.PartyIntroducer1Position = txtPartyIntroducer1Position.Text?.Trim();
-                        existingP.PartyIntroducer1Workplace = txtPartyIntroducer1Workplace.Text?.Trim();
-                        existingP.PartyIntroducer2Name = txtPartyIntroducer2Name.Text?.Trim();
-                        existingP.PartyIntroducer2Position = txtPartyIntroducer2Position.Text?.Trim();
-                        existingP.PartyIntroducer2Workplace = txtPartyIntroducer2Workplace.Text?.Trim();
-                        existingP.PartyIntroducingOrganization = txtPartyIntroducingOrganization.Text?.Trim();
-                        existingP.PartyDecisionDate = dpPartyDecisionDate.SelectedDate;
-
-                        // Tab 6: Lương
-                        existingP.CurrentSalaryStep = cboSalaryStep.Text;
-                        existingP.CurrentSalaryCoefficient = double.TryParse(txtSalaryCoefficient.Text, out double sc2) ? sc2 : 0;
-                        existingP.ExceedFramePercent = double.TryParse(txtExceedFrame.Text, out double ef2) ? ef2 : 0;
-                        existingP.PositionAllowance = txtPositionAllowance.Text;
-                        existingP.SalaryReservationDeadline = dpSalaryReservation.SelectedDate;
-                        existingP.NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate;
-                        existingP.SalaryIncreaseDelayType = cboSalaryDelay.Text;
-                        existingP.ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate;
-
-                        // Handle Salary Records Sync
-                        if (existingP.SalaryRecords == null) existingP.SalaryRecords = new List<SalaryRecord>();
-                        if (_personnel.SalaryRecords != null)
-                        {
-                            // 1. Identify IDs to keep
-                            var currentSalaryIds = _personnel.SalaryRecords.Select(s => s.Id).Where(id => id != 0).ToList();
-
-                            // 2. Remove deleted
-                            var toDeleteSalary = existingP.SalaryRecords.Where(s => !currentSalaryIds.Contains(s.Id)).ToList();
-                            foreach (var item in toDeleteSalary)
-                            {
-                                context.SalaryRecords.Remove(item);
-                            }
-
-                            // 3. Add new
-                            var toAddSalary = _personnel.SalaryRecords.Where(s => s.Id == 0).ToList();
-                            foreach (var item in toAddSalary)
-                            {
-                                item.PersonnelId = existingP.Id;
-                                context.SalaryRecords.Add(item);
-                            }
-
-                            // 4. Cập nhật bản ghi hiện có
-                            var toUpdateSalary = _personnel.SalaryRecords.Where(s => s.Id != 0).ToList();
-                            foreach (var item in toUpdateSalary)
-                            {
-                                var dbItem = existingP.SalaryRecords.FirstOrDefault(x => x.Id == item.Id);
-                                if (dbItem != null)
-                                {
-                                    dbItem.StartDate = item.StartDate;
-                                    dbItem.EndDate = item.EndDate;
-                                    dbItem.SalaryCalculationDate = item.SalaryCalculationDate;
-                                    dbItem.Coefficient = item.Coefficient;
-                                    dbItem.Percentage = item.Percentage;
-                                    dbItem.DecisionNumber = item.DecisionNumber;
-                                    dbItem.DecisionDate = item.DecisionDate;
-                                }
-                            }
-                        }
-
-                        existingP.SalaryHistoryLog = string.Join("\n", existingP.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? new List<string>());
-
-                        // Tab 7: Khen thưởng
-                        existingP.EmulationTitles = txtEmulationTitles.Text;
-                        existingP.RewardForms = txtRewardForms.Text;
-
-                        // Tab 8: Kỷ luật
-                        existingP.DisciplineType = cboDisciplineType.Text;
-                        existingP.DisciplineDecisionNumber = txtDisciplineNumber.Text;
-                        existingP.DisciplineDecisionDate = dpDisciplineDate.SelectedDate;
-                        existingP.DisciplineReason = txtDisciplineReason.Text;
-
-                        // Cập nhật cấu hình lương
-                        // Kiểm tra bậc lương có thay đổi để cập nhật lịch sử tự động
-                        // Tab 5: Nghỉ phép
-                        if (int.TryParse(txtTotalAnnualLeave.Text, out int totalLeave))
-                        {
-                            existingP.TotalAnnualLeaveDays = totalLeave;
-                        }
-                        existingP.LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate;
-
-                        // Sync Leave History
-                        if (_personnel.LeaveHistories != null)
-                        {
-                            // 1. Identify IDs to keep
-                            var currentIds = _personnel.LeaveHistories.Select(L => L.Id).Where(id => id != 0).ToList();
-
-                            // 2. Remove deleted
-                            var toDelete = existingP.LeaveHistories.Where(lh => !currentIds.Contains(lh.Id)).ToList();
-                            foreach (var item in toDelete)
-                            {
-                                context.LeaveHistories.Remove(item);
-                            }
-
-                            // 3. Add new
-                            var toAdd = _personnel.LeaveHistories.Where(lh => lh.Id == 0).ToList();
-                            foreach (var item in toAdd)
-                            {
-                                item.PersonnelId = existingP.Id; // Link ForeignKey
-                                context.LeaveHistories.Add(item);
-                            }
-
-                            // 4. Cập nhật bản ghi hiện có
-                            var toUpdate = _personnel.LeaveHistories.Where(lh => lh.Id != 0).ToList();
-                            foreach (var item in toUpdate)
-                            {
-                                var dbItem = existingP.LeaveHistories.FirstOrDefault(x => x.Id == item.Id);
-                                if (dbItem != null)
-                                {
-                                    dbItem.LeaveType = item.LeaveType;
-                                    dbItem.StartDate = item.StartDate;
-                                    dbItem.EndDate = item.EndDate;
-                                    dbItem.DurationDays = item.DurationDays;
-                                    dbItem.Reason = item.Reason;
-                                    dbItem.LeaveYear = item.LeaveYear;
-                                }
-                            }
-                        }
-
-                        // Sync Work History Records
-                        if (existingP.WorkHistoryRecords == null) existingP.WorkHistoryRecords = new List<WorkHistoryRecord>();
-                        var currentWhIds = _workHistories.Select(w => w.Id).Where(id => id != 0).ToList();
-                        var whToDelete = existingP.WorkHistoryRecords.Where(w => !currentWhIds.Contains(w.Id)).ToList();
-                        foreach (var item in whToDelete)
-                        {
-                            context.WorkHistoryRecords.Remove(item);
-                        }
-
-                        var whToAdd = _workHistories.Where(w => w.Id == 0).ToList();
-                        foreach (var item in whToAdd)
-                        {
-                            item.PersonnelId = existingP.Id;
-                            context.WorkHistoryRecords.Add(item);
-                        }
-
-                        var whToUpdate = _workHistories.Where(w => w.Id != 0).ToList();
-                        foreach (var item in whToUpdate)
-                        {
-                            var dbWh = existingP.WorkHistoryRecords.FirstOrDefault(x => x.Id == item.Id);
-                            if (dbWh != null)
-                            {
-                                dbWh.FromDate = item.FromDate;
-                                dbWh.ToDate = item.ToDate;
-                                dbWh.Position = item.Position;
-                                dbWh.Department = item.Department;
-                                dbWh.OrganizationUnit = item.OrganizationUnit;
-                                dbWh.DepartmentOrUnit = item.DepartmentOrUnit;
-                                dbWh.IsPartyConcurrent = item.IsPartyConcurrent;
-                                dbWh.PartyPosition = item.PartyPosition;
-                                dbWh.Note = item.Note;
-                                dbWh.OrderIndex = item.OrderIndex;
-                            }
-                        }
-
-                        // Sync Evaluation Records
-                        if (existingP.EvaluationRecords == null) existingP.EvaluationRecords = new List<EvaluationRecord>();
-                        if (_personnel.EvaluationRecords != null)
-                        {
-                            // 1. Identify IDs to keep
-                            var currentEvalIds = _personnel.EvaluationRecords.Select(e => e.Id).Where(id => id != 0).ToList();
-
-                            // 2. Remove deleted
-                            var toDeleteEval = existingP.EvaluationRecords.Where(e => !currentEvalIds.Contains(e.Id)).ToList();
-                            foreach (var item in toDeleteEval)
-                            {
-                                context.EvaluationRecords.Remove(item);
-                            }
-
-                            // 3. Add new
-                            var toAddEval = _personnel.EvaluationRecords.Where(e => e.Id == 0).ToList();
-                            foreach (var item in toAddEval)
-                            {
-                                item.PersonnelId = existingP.Id;
-                                context.EvaluationRecords.Add(item);
-                            }
-
-                            // 4. Cập nhật bản ghi hiện có
-                            var toUpdateEval = _personnel.EvaluationRecords.Where(e => e.Id != 0).ToList();
-                            foreach (var item in toUpdateEval)
-                            {
-                                var dbItem = existingP.EvaluationRecords.FirstOrDefault(x => x.Id == item.Id);
-                                if (dbItem != null)
-                                {
-                                    dbItem.Year = item.Year;
-                                    dbItem.Rating = item.Rating;
-                                    dbItem.DecisionNumber = item.DecisionNumber;
-                                    dbItem.DecisionDate = item.DecisionDate;
-                                    dbItem.DecisionAgency = item.DecisionAgency;
-                                }
-                            }
-                        }
-                    }
-                }
-                try
-                {
-                    context.SaveChanges();
-                }
-                catch (Exception ex)
-                {
-                    string errorMsg = ex.Message;
-                    if (ex.InnerException != null)
-                    {
-                        errorMsg += "\nInner Error: " + ex.InnerException.Message;
-                    }
-                    MessageBox.Show("Lỗi khi lưu dữ liệu:\n" + errorMsg, "Lỗi Database", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                // Show Custom Success Window
-                var successWindow = new SuccessWindow();
-                successWindow.Owner = Application.Current.MainWindow; // Set owner to center over main window
-                successWindow.ShowDialog();
-            }
-
-            if (Application.Current.MainWindow is MainWindow mw)
-            {
-                int? targetId = _personnel?.Id;
-                mw.ClearPersonnelCache();
-                mw.NavigateToDashboard(targetId);
-            }
-        }
-
-        private void btnAvatar_Click(object? sender, RoutedEventArgs e)
-        {
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Filter = "Image files (*.png;*.jpg)|*.png;*.jpg"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                try
-                {
-                    // 1. Display (Orient image using EXIF orientation metadata)
-                    var bitmap = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(openFileDialog.FileName);
-                    var brush = new System.Windows.Media.ImageBrush(bitmap)
-                    {
-                        Stretch = System.Windows.Media.Stretch.UniformToFill
-                    };
-                    imgAvatar.Fill = brush;
-                    iconAvatarPlaceholder.Visibility = Visibility.Collapsed;
-                    btnRemoveAvatar.Visibility = Visibility.Visible;
-
-                    // 2. Convert to Base64 (Resize if needed)
-                    _currentAvatarBase64 = ImageToBase64(openFileDialog.FileName);
-                    _isAvatarChanged = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Lỗi khi tải ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void btnRemoveAvatar_Click(object? sender, RoutedEventArgs e)
-        {
-            imgAvatar.Fill = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F5F5F5"));
-            iconAvatarPlaceholder.Visibility = Visibility.Visible;
-            btnRemoveAvatar.Visibility = Visibility.Collapsed;
-
-            _currentAvatarBase64 = null;
-            _isAvatarChanged = true;
-        }
-
-        // Hàm bổ trợ: Chuyển file ảnh thành Base64 (thu nhỏ tối đa 500px để tiết kiệm dung lượng, xoay đúng hướng EXIF)
-        private string ImageToBase64(string path)
-        {
-            try
-            {
-                // Nạp và điều chỉnh hướng ảnh theo EXIF
-                var image = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(path);
-
-                double scale = 1.0;
-                double maxDimension = 600;
-                if (image.PixelWidth > maxDimension || image.PixelHeight > maxDimension)
-                {
-                    scale = Math.Min(maxDimension / image.PixelWidth, maxDimension / image.PixelHeight);
-                }
-
-                var transformed = new System.Windows.Media.Imaging.TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale, scale));
-
-                var encoder = new System.Windows.Media.Imaging.JpegBitmapEncoder(); // JPG is smaller than PNG usually
-                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(transformed));
-                encoder.QualityLevel = 80;
-
-                using (var ms = new System.IO.MemoryStream())
-                {
-                    encoder.Save(ms);
-                    return Convert.ToBase64String(ms.ToArray());
-                }
-            }
-            catch
-            {
-                return "";
-            }
-        }
-
-        // Hàm bổ trợ: Chuyển Base64 thành BitmapSource (xoay ảnh đúng theo metadata EXIF)
-        private System.Windows.Media.Imaging.BitmapSource? Base64ToImage(string base64String)
-        {
-            try
-            {
-                byte[] binaryData = Convert.FromBase64String(base64String);
-                return TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(binaryData);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private void btnRefresh_Click(object? sender, RoutedEventArgs e)
-        {
-            _isRefreshing = true;
-            try
-            {
-                // Detach events to prevent loops
-                cboLeaveType.SelectionChanged -= OnLeaveDateChanged;
-                dpLeaveStartDate.SelectedDateChanged -= OnLeaveDateChanged;
-                dpLeaveEndDate.SelectedDateChanged -= OnLeaveDateChanged;
-                dpStartDate.SelectedDateChanged -= OnRetirementDateChanged;
-
-                // Reset fields
-                _personnel = null;
-                lblSaveText.Text = "Lưu Hồ Sơ";
-
-                txtStaffId.Clear();
-                txtName.Clear();
-                cboGender.SelectedItem = null;
-                cboGender.Text = "";
-                dpDOB.SelectedDate = null;
-                txtPhone.Clear();
-                txtIdentityNumber.Clear();
-                txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
-                txtEmail.Clear();
-                txtSocialInsurance.Clear();
-                txtBirthPlace.Clear();
-                txtHometown.Clear();
-                txtCurrentResidence.Clear();
-                txtEthnicity.Clear();
-                txtReligion.Clear();
-
-                cboDepartment.SelectedItem = null;
-                cboDepartment.Text = "";
-                cboPosition.SelectedItem = null;
-                cboPosition.Text = "";
-
-                cboRankCode.SelectedItem = null;
-                cboRankCode.Text = "";
-                txtRankName.Clear();
-                dpStartDate.SelectedDate = null;
-                SetComboBoxByContent(cboStatus, "Đang công tác");
-                txtStatusDecisionNumber.Clear();
-                dpStatusDecisionDate.SelectedDate = null;
-                dpStatusEffectiveDate.SelectedDate = null;
-                txtStatusDecisionUnit.Clear();
-                UpdateStatusDecisionFieldsState();
-
-                cboEducationLevel.SelectedItem = null;
-                cboEducationLevel.Text = "";
-                txtMajor.Clear();
-                txtUniversity.Clear();
-                cboStateManagement.SelectedItem = null;
-                cboStateManagement.Text = "";
-                cboPoliticalTheory.SelectedItem = null;
-                cboPoliticalTheory.Text = "";
-                txtITSkill.Clear();
-                txtLanguageSkill.Clear();
-
-                // Tab 2: Thời gian giữ vị trí công tác
-                dpPositionDecisionDate.SelectedDate = null;
-                dpPositionCalculationDate.SelectedDate = DateTime.Now;
-                txtPositionYear.Clear();
-                txtDetailedWorkHistory.Clear();
-                _workHistories.Clear();
-                ApplyWorkHistoryFilterAndSort();
-                txtYearsWorked.Clear();
-                txtYearsWorked.Clear();
-                txtMonthsWorked.Clear();
-
-                // Tab 3: Thông tin nghỉ hưu
-                dpRetirementDate.SelectedDate = null;
-                txtRetirementYearsWorked.Clear();
-                txtRemainingYears.Clear();
-
-                // Tab 4: Thông tin Đảng viên
-                dpPartyEntryDate.SelectedDate = null;
-                dpPartyOfficialDate.SelectedDate = null;
-                txtPartyAge.Clear();
-                txtPartyCell.Clear();
-                txtPartyIntroducer1Name.Clear();
-                txtPartyIntroducer1Position.Clear();
-                txtPartyIntroducer1Workplace.Clear();
-                txtPartyIntroducer2Name.Clear();
-                txtPartyIntroducer2Position.Clear();
-                txtPartyIntroducer2Workplace.Clear();
-                txtPartyIntroducingOrganization.Clear();
-                dpPartyDecisionDate.SelectedDate = null;
-
-                // Tab 6: Thông tin lương
-                cboSalaryStep.ItemsSource = null;
-                cboSalaryStep.SelectedIndex = -1;
-                cboSalaryStep.Text = "";
-                txtSalaryCoefficient.Clear();
-                txtExceedFrame.Clear();
-                txtPositionAllowance.Clear();
-                dpSalaryReservation.SelectedDate = null;
-                dpNextSalaryStepDate.SelectedDate = null;
-                cboSalaryDelay.SelectedIndex = -1;
-                cboSalaryDelay.Text = "";
-                dpExpectedSalaryIncrease.SelectedDate = null;
-                // Tab 6: Lương
-                if (_personnel == null) _personnel = new Personnel();
-                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
-                _personnel.SalaryRecords.Clear();
-                RefreshSalaryHistoryGrid();
-
-                dpSalaryHistStart.SelectedDate = null;
-                dpSalaryHistEnd.SelectedDate = null;
-                dpSalaryHistCalc.SelectedDate = null;
-                txtSalaryHistCoeff.Clear();
-                txtSalaryHistPercent.Text = "100";
-                txtSalaryHistDecisionNo.Clear();
-                dpSalaryHistDecisionDate.SelectedDate = null;
-
-                // Tab 5: Nghỉ phép
-                // Tab 5: Nghỉ phép
-                txtTotalAnnualLeave.Text = "12";
-                txtAnnualLeaveTaken.Text = "0";
-                txtAnnualLeaveRemaining.Text = "12";
-                txtSickLeaveTaken.Text = "0";
-                txtUnpaidLeaveTaken.Text = "0";
-                txtMaternityLeaveTaken.Text = "0";
-                txtConvalescenceLeaveTaken.Text = "0";
-                dpLeaveCalculationDate.SelectedDate = null;
-
-                dpLeaveStartDate.SelectedDate = null;
-                dpLeaveEndDate.SelectedDate = null;
-                cboLeaveType.SelectedIndex = -1;
-                txtLeaveReason.Clear();
-                txtLeaveDuration.Clear();
-                dgLeaveHistory.ItemsSource = null;
-
-                // Reset Edit Mode
-                _editingLeaveHistory = null;
-                if (btnAddLeave.Content is StackPanel sp)
-                {
-                    foreach (var child in sp.Children)
-                    {
-                        if (child is TextBlock tb)
-                        {
-                            tb.Text = "Thêm vào bảng";
-                            break;
-                        }
-                    }
-                }
-
-                // Đặt lại dữ liệu Tab 9: Xếp loại
-                cboEvaluationYear.SelectedIndex = 0;
-                cboEvaluationRating.SelectedIndex = 0;
-                txtEvaluationDecisionNo.Clear();
-                dpEvaluationDecisionDate.SelectedDate = null;
-                txtEvaluationDecisionAgency.Clear();
-                _editingEvaluationRecord = null;
-                dgEvaluationHistory.ItemsSource = null;
-
-                // Xóa ảnh đại diện
-                btnRemoveAvatar_Click(sender, e);
-                _isAvatarChanged = false; // Reset change flag as we are starting fresh
-
-                // Xóa thông báo lỗi
-                lblPhoneError.Visibility = Visibility.Collapsed;
-                lblEmailError.Visibility = Visibility.Collapsed;
-
-                // Focus first field
-                txtStaffId.Focus();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi khi làm mới: " + ex.Message);
-            }
-            finally
-            {
-                // Reattach events
-                cboLeaveType.SelectionChanged += OnLeaveDateChanged;
-                dpLeaveStartDate.SelectedDateChanged += OnLeaveDateChanged;
-                dpLeaveEndDate.SelectedDateChanged += OnLeaveDateChanged;
-                dpStartDate.SelectedDateChanged += OnRetirementDateChanged;
-                _isRefreshing = false;
-            }
-        }
-
-
-        private void txtEmail_TextChanged(object? sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrEmpty(txtEmail.Text))
-            {
-                lblEmailError.Visibility = Visibility.Collapsed;
-                return;
-            }
-
-            if (IsValidEmail(txtEmail.Text))
-            {
-                lblEmailError.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // To avoid annoying on first char, maybe only show if it LOOKS like they tried to finish?
-                // But user asked for "nhập không đúng định dạng báo luôn". 
-                // Let's show it always when invalid.
-                lblEmailError.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void dpExpectedSalaryIncrease_DateValidationError(object? sender, DatePickerDateValidationErrorEventArgs e)
-        {
-            var warning = new WarningWindow("Ngày vừa nhập không hợp lệ. Vui lòng nhập ngày theo định dạng dd/MM/yyyy (VD: 15/05/2026).", "Lỗi định dạng");
-            warning.Owner = Window.GetWindow(this);
-            warning.ShowDialog();
-            e.ThrowException = false;
-        }
-        private void OnPositionDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            CalculateWorkDuration();
-        }
-
-        private void CalculateWorkDuration()
-        {
-            // Yêu cầu cập nhật:
-            // Start Date = PositionDecisionDate ("Thời gian công tác tính theo QĐ gần nhất")
-            // End Date = PositionCalculationDate or DateTime.Now
-            if (dpPositionDecisionDate.SelectedDate.HasValue)
-            {
-                DateTime startDate = dpPositionDecisionDate.SelectedDate.Value;
-                DateTime endDate = dpPositionCalculationDate.SelectedDate ?? DateTime.Now;
-
-                if (endDate < startDate)
-                {
-                    txtYearsWorked.Text = "0";
-                    txtMonthsWorked.Text = "0";
-                    txtPositionYear.Text = "0 năm 0 tháng";
-                    return;
-                }
-
-                // Years: Full years
-                int years = endDate.Year - startDate.Year;
-                if (startDate.Date > endDate.AddYears(-years)) years--;
-
-                // Months: Remainder months
-                DateTime tmpDate = startDate.AddYears(years);
-                int months = 0;
-                while (tmpDate.AddMonths(1) <= endDate)
-                {
-                    months++;
-                    tmpDate = tmpDate.AddMonths(1);
-                }
-
-                txtYearsWorked.Text = years.ToString();
-                txtMonthsWorked.Text = months.ToString();
-                txtPositionYear.Text = $"{years} năm {months} tháng";
-            }
-            else
-            {
-                txtYearsWorked.Clear();
-                txtMonthsWorked.Clear();
-                txtPositionYear.Clear();
-            }
-        }
-
-        private void OnRetirementDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            CalculateRetirementInfo();
-        }
-
-        private void dpPartyEntryDate_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            CalculatePartyAge();
-        }
-
-        private void CalculatePartyAge()
-        {
-            if (txtPartyAge == null) return;
-            if (dpPartyEntryDate.SelectedDate.HasValue)
-            {
-                DateTime startDate = dpPartyEntryDate.SelectedDate.Value;
-                DateTime endDate = DateTime.Now;
-
-                if (endDate < startDate)
-                {
-                    txtPartyAge.Text = "0 năm 0 tháng";
-                    return;
-                }
-
-                int years = endDate.Year - startDate.Year;
-                if (startDate.Date > endDate.AddYears(-years)) years--;
-
-                DateTime tmpDate = startDate.AddYears(years);
-                int months = 0;
-                while (tmpDate.AddMonths(1) <= endDate)
-                {
-                    months++;
-                    tmpDate = tmpDate.AddMonths(1);
-                }
-
-                txtPartyAge.Text = $"{years} năm {months} tháng";
-            }
-            else
-            {
-                txtPartyAge.Clear();
-            }
-        }
-
-        private void CalculateRetirementInfo()
-        {
-            // Yêu cầu cập nhật:
-            // 1. Số năm công tác = Now - StartDate (TaxAuthorityStartDate) -> Output: X năm Y tháng Z ngày
-            // 2. Số năm còn công tác = RetirementDate - Now -> Output: X năm Y tháng Z ngày
-
-            DateTime now = DateTime.Now.Date;
-
-            // Tính toán phép năm (Tab 5)
-            CalculateAnnualLeave(now);
-
-
-            // 1. Tính số năm đã công tác ngành Thuế (Ngày vào ngành -> Hiện tại)
-            if (dpStartDate.SelectedDate.HasValue)
-            {
-                DateTime start = dpStartDate.SelectedDate.Value;
-
-                if (now > start)
-                {
-                    txtRetirementYearsWorked.Text = CalculateDetailedDateDifference(start, now);
-                }
-                else
-                {
-                    txtRetirementYearsWorked.Text = "0 năm 0 tháng 0 ngày";
-                }
-            }
-            else
-            {
-                txtRetirementYearsWorked.Clear();
-            }
-
-            // 2. Tính số năm công tác còn lại (Hiện tại -> Ngày nghỉ hưu)
-            // Requirement: Add 1 day to the difference (Inclusive)
-            if (dpRetirementDate.SelectedDate.HasValue)
-            {
-                DateTime retirement = dpRetirementDate.SelectedDate.Value;
-
-                if (retirement > now)
-                {
-                    txtRemainingYears.Text = CalculateDetailedDateDifference(now, retirement);
-                }
-                else
-                {
-                    txtRemainingYears.Text = "0 năm 0 tháng 0 ngày"; // Already retired
-                }
-            }
-            else
-            {
-                txtRemainingYears.Clear();
-            }
-        }
-
-        private void OnLeaveCalculationDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            CalculateAnnualLeave(DateTime.Now);
-        }
-
-        private void CalculateAnnualLeave(DateTime now)
-        {
-            // Rule: Total Annual Leave = (Years Worked / 5) + 12
-            int totalLeave = 12;
-
-            DateTime? targetStartDate = dpLeaveCalculationDate.SelectedDate ?? dpStartDate.SelectedDate;
-
-            if (targetStartDate.HasValue)
-            {
-                DateTime start = targetStartDate.Value;
-
-                // New formula: Số năm tính ngày phép = Năm hiện tại - Năm tính phép + 1
-                int years = now.Year - start.Year + 1;
-
-                if (years < 0) years = 0;
-
-                int bonusDays = years / 5;
-                totalLeave = 12 + bonusDays;
-            }
-
-            // Cập nhật đối tượng dữ liệu và giao diện
-            if (_personnel != null) _personnel.TotalAnnualLeaveDays = totalLeave;
-            txtTotalAnnualLeave.Text = totalLeave.ToString();
-            UpdateLeaveStatistics(); // Recalculate and display statistics for the current selected year
-        }
-
-        private string CalculateDetailedDateDifference(DateTime startDate, DateTime endDate)
-        {
-            if (startDate > endDate) return "0 năm 0 tháng 0 ngày";
-            DateTime tempDate = startDate;
-            int years = 0, months = 0, days = 0;
-            while (tempDate.AddYears(1) <= endDate) { years++; tempDate = tempDate.AddYears(1); }
-            while (tempDate.AddMonths(1) <= endDate) { months++; tempDate = tempDate.AddMonths(1); }
-            days = (endDate - tempDate).Days;
-            return $"{years} năm {months} tháng {days} ngày";
-        }
-
-        private void RefreshSalaryHistoryGrid()
-        {
-            if (_personnel == null) return;
-            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
-            dgSalaryHistory.ItemsSource = null;
-            dgSalaryHistory.ItemsSource = _personnel.SalaryRecords.OrderByDescending(s => s.StartDate).ToList();
-        }
-
-        private void ReconcileSalaryRecordsAfterAdd(System.Collections.Generic.ICollection<SalaryRecord> records, SalaryRecord newItem)
-        {
-            if (newItem.StartDate == null) return;
-            DateTime newStart = newItem.StartDate.Value;
-
-            var otherRecords = records
-                .Where(r => r != newItem && r.StartDate.HasValue)
-                .OrderBy(r => r.StartDate!.Value)
-                .ToList();
-
-            // Find predecessor and successor
-            SalaryRecord? predecessor = otherRecords.LastOrDefault(r => r.StartDate!.Value < newStart);
-            SalaryRecord? successor = otherRecords.FirstOrDefault(r => r.StartDate!.Value > newStart);
-
-            // Nếu đợt mới chưa có ngày kết thúc và có đợt kế tiếp, tự động gán ngày kết thúc
-            if (newItem.EndDate == null && successor != null && successor.StartDate.HasValue)
-            {
-                newItem.EndDate = successor.StartDate!.Value.AddDays(-1);
-            }
-
-            // If predecessor exists
-            if (predecessor != null)
-            {
-                if (predecessor.EndDate == null)
-                {
-                    predecessor.EndDate = newStart.AddDays(-1);
-                }
-                else if (successor != null && successor.StartDate.HasValue && predecessor.EndDate == successor.StartDate!.Value.AddDays(-1))
-                {
-                    predecessor.EndDate = newStart.AddDays(-1);
-                }
-            }
-        }
-
-        private void ReconcileSalaryRecordsAfterDelete(System.Collections.Generic.ICollection<SalaryRecord> records, DateTime? deletedStartDate)
-        {
-            if (deletedStartDate == null) return;
-            DateTime delStart = deletedStartDate.Value;
-
-            var remainingRecords = records
-                .Where(r => r.StartDate.HasValue)
-                .OrderBy(r => r.StartDate!.Value)
-                .ToList();
-
-            SalaryRecord? predecessor = remainingRecords.LastOrDefault(r => r.StartDate!.Value < delStart);
-            SalaryRecord? successor = remainingRecords.FirstOrDefault(r => r.StartDate!.Value > delStart);
-
-            if (predecessor != null && predecessor.EndDate == delStart.AddDays(-1))
-            {
-                if (successor != null && successor.StartDate.HasValue)
-                {
-                    predecessor.EndDate = successor.StartDate!.Value.AddDays(-1);
-                }
-                else
-                {
-                    predecessor.EndDate = null;
-                }
-            }
-        }
-
-        private void ReconcileSalaryRecordsAfterUpdate(System.Collections.Generic.ICollection<SalaryRecord> records, SalaryRecord editedItem, DateTime? oldStartDate)
-        {
-            if (editedItem.StartDate == oldStartDate)
-            {
-                // Tự động tính ngày kết thúc nếu trường này đang để trống
-                if (editedItem.EndDate == null && editedItem.StartDate.HasValue)
-                {
-                    var successor = records
-                        .Where(r => r != editedItem && r.StartDate.HasValue && r.StartDate!.Value > editedItem.StartDate!.Value)
-                        .OrderBy(r => r.StartDate!.Value)
-                        .FirstOrDefault();
-                    if (successor != null && successor.StartDate.HasValue)
-                    {
-                        editedItem.EndDate = successor.StartDate!.Value.AddDays(-1);
-                    }
-                }
-                return;
-            }
-
-            // If StartDate changed:
-            // 1. Temporarily remove editedItem from list to simulate delete of oldStartDate
-            records.Remove(editedItem);
-
-            // 2. Run delete reconciliation for oldStartDate
-            ReconcileSalaryRecordsAfterDelete(records, oldStartDate);
-
-            // 3. Put editedItem back
-            records.Add(editedItem);
-
-            // 4. Run add reconciliation for newStartDate
-            ReconcileSalaryRecordsAfterAdd(records, editedItem);
-        }
-
-        private bool ValidateSalaryRecordsOverlap(System.Collections.Generic.ICollection<SalaryRecord> records)
-        {
-            var sorted = records
-                .Where(r => r.StartDate.HasValue)
-                .OrderBy(r => r.StartDate!.Value)
-                .ToList();
-
-            for (int i = 0; i < sorted.Count - 1; i++)
-            {
-                var current = sorted[i];
-                var next = sorted[i + 1];
-
-                if (current.StartDate!.Value == next.StartDate!.Value)
-                {
-                    return false; // Trùng ngày bắt đầu
-                }
-
-                if (current.EndDate.HasValue && current.EndDate!.Value >= next.StartDate!.Value)
-                {
-                    return false; // Trùng lặp/chồng chéo khoảng thời gian
-                }
-            }
-
-            return true;
-        }
-
-        private void btnAddSalaryHistory_Click(object sender, RoutedEventArgs e)
-        {
-            if (dpSalaryHistStart.SelectedDate == null)
-            {
-                new WarningWindow("Vui lòng nhập ngày bắt đầu!", "Thiếu thông tin").ShowDialog();
-                return;
-            }
-
-            if (_personnel == null) _personnel = new Personnel();
-            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
-
-            // 1. Create a clone list for dry-run
-            var tempRecords = new System.Collections.Generic.List<SalaryRecord>();
-            foreach (var r in _personnel.SalaryRecords)
-            {
-                tempRecords.Add(new SalaryRecord
-                {
-                    Id = r.Id,
-                    PersonnelId = r.PersonnelId,
-                    StartDate = r.StartDate,
-                    EndDate = r.EndDate,
-                    SalaryCalculationDate = r.SalaryCalculationDate,
-                    RankCode = r.RankCode,
-                    SalaryStep = r.SalaryStep,
-                    Coefficient = r.Coefficient,
-                    Percentage = r.Percentage,
-                    ExceedFramePercent = r.ExceedFramePercent,
-                    DecisionNumber = r.DecisionNumber,
-                    DecisionDate = r.DecisionDate,
-                    Note = r.Note
-                });
-            }
-
-            if (_editingSalaryRecord != null)
-            {
-                // Find matching record in tempRecords
-                var tempEdit = tempRecords.FirstOrDefault(r => r.Id == _editingSalaryRecord.Id && r.StartDate == _editingSalaryRecord.StartDate && r.RankCode == _editingSalaryRecord.RankCode && r.SalaryStep == _editingSalaryRecord.SalaryStep);
-                if (tempEdit == null)
-                {
-                    // Fallback to match by reference index if Id is 0
-                    int idx = _personnel.SalaryRecords.ToList().IndexOf(_editingSalaryRecord);
-                    if (idx >= 0 && idx < tempRecords.Count)
-                    {
-                        tempEdit = tempRecords[idx];
-                    }
-                }
-
-                if (tempEdit != null)
-                {
-                    DateTime? oldStartDate = tempEdit.StartDate;
-                    tempEdit.StartDate = dpSalaryHistStart.SelectedDate;
-                    tempEdit.EndDate = dpSalaryHistEnd.SelectedDate;
-                    tempEdit.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
-                    tempEdit.RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "";
-                    tempEdit.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
-                    tempEdit.Coefficient = txtSalaryHistCoeff.Text;
-                    tempEdit.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
-                    tempEdit.ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0;
-                    tempEdit.DecisionNumber = txtSalaryHistDecisionNo.Text;
-                    tempEdit.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
-
-                    ReconcileSalaryRecordsAfterUpdate(tempRecords, tempEdit, oldStartDate);
-                }
-            }
-            else
-            {
-                var tempNew = new SalaryRecord
-                {
-                    StartDate = dpSalaryHistStart.SelectedDate,
-                    EndDate = dpSalaryHistEnd.SelectedDate,
-                    SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
-                    RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "",
-                    SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
-                    Coefficient = txtSalaryHistCoeff.Text,
-                    Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
-                    ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0,
-                    DecisionNumber = txtSalaryHistDecisionNo.Text,
-                    DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
-                    PersonnelId = _personnel.Id
-                };
-                tempRecords.Add(tempNew);
-                ReconcileSalaryRecordsAfterAdd(tempRecords, tempNew);
-            }
-
-            // 2. Validate overlaps in tempRecords
-            if (!ValidateSalaryRecordsOverlap(tempRecords))
-            {
-                new WarningWindow("Khoảng thời gian quá trình lương bị trùng hoặc ngày bắt đầu đã tồn tại!", "Trùng lặp thời gian").ShowDialog();
-                return;
-            }
-
-            // 3. Nếu hợp lệ, lưu vào danh sách quá trình lương
-            if (_editingSalaryRecord != null)
-            {
-                DateTime? oldStartDate = _editingSalaryRecord.StartDate;
-                _editingSalaryRecord.StartDate = dpSalaryHistStart.SelectedDate;
-                _editingSalaryRecord.EndDate = dpSalaryHistEnd.SelectedDate;
-                _editingSalaryRecord.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
-                _editingSalaryRecord.RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "";
-                _editingSalaryRecord.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
-                _editingSalaryRecord.Coefficient = txtSalaryHistCoeff.Text;
-                _editingSalaryRecord.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
-                _editingSalaryRecord.ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0;
-                _editingSalaryRecord.DecisionNumber = txtSalaryHistDecisionNo.Text;
-                _editingSalaryRecord.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
-
-                ReconcileSalaryRecordsAfterUpdate(_personnel.SalaryRecords, _editingSalaryRecord, oldStartDate);
-                _editingSalaryRecord = null; // Clear editing state
-            }
-            else
-            {
-                var newItem = new SalaryRecord
-                {
-                    StartDate = dpSalaryHistStart.SelectedDate,
-                    EndDate = dpSalaryHistEnd.SelectedDate,
-                    SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
-                    RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "",
-                    SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
-                    Coefficient = txtSalaryHistCoeff.Text,
-                    Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
-                    ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0,
-                    DecisionNumber = txtSalaryHistDecisionNo.Text,
-                    DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
-                    PersonnelId = _personnel.Id
-                };
-                _personnel.SalaryRecords.Add(newItem);
-                ReconcileSalaryRecordsAfterAdd(_personnel.SalaryRecords, newItem);
-            }
-
-            RefreshSalaryHistoryGrid();
-
-            // Xóa trắng các ô nhập liệu
-            dpSalaryHistStart.SelectedDate = null;
-            dpSalaryHistEnd.SelectedDate = null;
-            dpSalaryHistCalc.SelectedDate = null;
-            cboSalaryHistRankCode.SelectedIndex = -1;
-            cboSalaryHistStep.ItemsSource = null;
-            txtSalaryHistCoeff.Clear();
-            txtSalaryHistPercent.Text = "100";
-            txtSalaryHistExceedPercent.Text = "0";
-            txtSalaryHistDecisionNo.Clear();
-            dpSalaryHistDecisionDate.SelectedDate = null;
-        }
-
-        private void dgSalaryHistory_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var dep = (DependencyObject)e.OriginalSource;
-            while ((dep != null) && !(dep is DataGridRow))
-            {
-                dep = VisualTreeHelper.GetParent(dep);
-            }
-
-            if (dep is DataGridRow row)
-            {
-                var item = row.DataContext as SalaryRecord;
-                if (item == null) return;
-
-                // Nạp lại dữ liệu lên form để chỉnh sửa
-                dpSalaryHistStart.SelectedDate = item.StartDate;
-                dpSalaryHistEnd.SelectedDate = item.EndDate;
-                dpSalaryHistCalc.SelectedDate = item.SalaryCalculationDate;
-                cboSalaryHistRankCode.SelectedValue = item.RankCode;
-                if (!string.IsNullOrEmpty(item.RankCode))
-                {
-                    LoadSalaryHistSteps(item.RankCode);
-                    cboSalaryHistStep.SelectedValue = item.SalaryStep;
-                }
-                txtSalaryHistCoeff.Text = item.Coefficient;
-                txtSalaryHistPercent.Text = item.Percentage.ToString();
-                txtSalaryHistExceedPercent.Text = item.ExceedFramePercent.ToString();
-                txtSalaryHistDecisionNo.Text = item.DecisionNumber;
-                dpSalaryHistDecisionDate.SelectedDate = item.DecisionDate;
-
-                // Đánh dấu đang sửa để không bị tạo trùng bản ghi khi lưu
-                _editingSalaryRecord = item;
-            }
-        }
-
-        private void btnDeleteSalaryHistory_Click(object sender, RoutedEventArgs e)
-        {
-            var item = (sender as FrameworkElement)?.DataContext as SalaryRecord;
-            if (item != null && _personnel?.SalaryRecords != null)
-            {
-                var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng quá trình lương này không?");
-                if (confirm.ShowDialog() == true)
-                {
-                    DateTime? deletedStartDate = item.StartDate;
-                    _personnel.SalaryRecords.Remove(item);
-                    ReconcileSalaryRecordsAfterDelete(_personnel.SalaryRecords, deletedStartDate);
-                    RefreshSalaryHistoryGrid();
-                }
-            }
-        }
-
-        private void btnAddLeave_Click(object? sender, RoutedEventArgs e)
-        {
-            // Validate input
-            if (cboLeaveType.SelectedIndex == -1)
-            {
-                new WarningWindow("Vui lòng chọn loại nghỉ phép!", "Thiếu thông tin").ShowDialog();
-                return;
-            }
-            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
-
-            // Validate dates
-            if (dpLeaveStartDate.SelectedDate == null)
-            {
-                new WarningWindow("Vui lòng nhập ngày bắt đầu!", "Thiếu thông tin").ShowDialog();
-                return;
-            }
-
-            // End date is mandatory for Annual Leave ("Phép năm")
-            if (type == "Phép năm" && dpLeaveEndDate.SelectedDate == null)
-            {
-                new WarningWindow("Vui lòng nhập ngày kết thúc cho Phép năm!", "Thiếu thông tin").ShowDialog();
-                return;
-            }
-
-            if (dpLeaveEndDate.SelectedDate != null && dpLeaveEndDate.SelectedDate < dpLeaveStartDate.SelectedDate)
-            {
-                new WarningWindow("Ngày kết thúc không thể nhỏ hơn ngày bắt đầu!", "Lỗi thời gian").ShowDialog();
-                return;
-            }
-
-
-            var start = dpLeaveStartDate.SelectedDate.Value;
-            DateTime? end = dpLeaveEndDate.SelectedDate;
-
-
-            // Kiểm tra trùng lặp khoảng thời gian
-            if (_personnel != null && _personnel.LeaveHistories != null)
-            {
-                foreach (var history in _personnel.LeaveHistories)
-                {
-                    // Skip self if editing
-                    if (_editingLeaveHistory != null && history == _editingLeaveHistory) continue;
-
-                    // Handle overlap with ongoing or closed leaves
-                    bool isOverlap = false;
-
-                    if (history.EndDate.HasValue)
-                    {
-                        if (end.HasValue)
-                        {
-                            // Case: Both have end dates
-                            isOverlap = (start <= history.EndDate.Value && end.Value >= history.StartDate);
-                        }
-                        else
-                        {
-                            // Case: New is ongoing
-                            isOverlap = (start <= history.EndDate.Value);
-                        }
-                    }
-                    else
-                    {
-                        // Existing is ongoing
-                        if (end.HasValue)
-                        {
-                            isOverlap = (end.Value >= history.StartDate);
-                        }
-                        else
-                        {
-                            // Both ongoing
-                            isOverlap = true;
-                        }
-                    }
-
-                    if (isOverlap)
-                    {
-                        string historyEndStr = history.EndDate.HasValue ? history.EndDate.Value.ToString("dd/MM/yyyy") : "Đang nghỉ";
-                        var msg = $"Khoảng thời gian này đã trùng với đợt nghỉ phép: {history.LeaveType} \n(Từ {history.StartDate:dd/MM/yyyy} đến {historyEndStr}).\nVui lòng kiểm tra lại!";
-                        new WarningWindow(msg, "Trùng lịch nghỉ").ShowDialog();
-                        return;
-                    }
-
-                }
-            }
-
-            double duration = 0;
-            if (double.TryParse(txtLeaveDuration.Text, out double manualDuration))
-            {
-                duration = manualDuration;
-            }
-            else
-            {
-                // Fallback if empty or invalid, though UpdateLeaveDuration should handle this
-                if (type == "Phép năm")
-                {
-                    // end is guaranteed non-null here due to validation above
-                    duration = CalculateWorkingDays(start, end!.Value);
-                }
-                else
-                {
-                    if (end.HasValue)
-                        duration = (end.Value - start).TotalDays + 1;
-                    else
-                        duration = 0; // Unknown duration for ongoing leave
-                }
-
-            }
-
-            // --- KIỂM TRA HỢP LỆ: Kiểm tra số ngày phép còn lại ---
-            if (type == "Phép năm")
-            {
-                int currentYear = DateTime.Now.Year;
-                int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? currentYear;
-                double totalAvailable = 0;
-
-                // Scenario 1: Adding New Record for Current Year (Eligible for Split/Carry-over)
-                if (_editingLeaveHistory == null && selectedYear == currentYear)
-                {
-                    double remainingCurrent = GetRemainingAnnualLeaveDays(currentYear);
-                    double remainingOld = GetRemainingAnnualLeaveDays(currentYear - 1);
-
-                    if (chkPrioritizeOldYear.IsChecked == true)
-                        totalAvailable = remainingCurrent + (remainingOld > 0 ? remainingOld : 0);
-                    else
-                        totalAvailable = remainingCurrent;
-                }
-                // Scenario 2: Editing OR Specific Past Year (Strict Limit)
-                else
-                {
-                    totalAvailable = GetRemainingAnnualLeaveDays(selectedYear);
-
-                    // If editing, add back the *original* duration to the available pool
-                    if (_editingLeaveHistory != null &&
-                        _editingLeaveHistory.LeaveType == "Phép năm" &&
-                        (_editingLeaveHistory.LeaveYear ?? _editingLeaveHistory.StartDate.Year) == selectedYear)
-                    {
-                        totalAvailable += _editingLeaveHistory.DurationDays;
-                    }
-                }
-
-                if (duration > totalAvailable)
-                {
-                    new WarningWindow($"Số ngày nghỉ ({duration}) vượt quá số ngày phép còn lại ({totalAvailable})!", "Lỗi quá hạn mức").ShowDialog();
-                    return;
-                }
-            }
-            // --- VALIDATION END ---
-
-            var reason = txtLeaveReason.Text;
-
-            if (_editingLeaveHistory != null)
-            {
-                // Cập nhật bản ghi hiện có
-                _editingLeaveHistory.LeaveType = type;
-                _editingLeaveHistory.StartDate = start;
-                _editingLeaveHistory.EndDate = end;
-                _editingLeaveHistory.DurationDays = duration;
-                _editingLeaveHistory.DurationDays = duration;
-                _editingLeaveHistory.Reason = reason;
-
-                if (type == "Phép năm")
-                {
-                    _editingLeaveHistory.LeaveYear = (int?)cboLeaveYear.SelectedItem;
-                }
-                else
-                {
-                    _editingLeaveHistory.LeaveYear = null;
-                }
-
-                // Lưu ghi chú hệ thống
-                _editingLeaveHistory.SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim();
-
-
-
-                // Reset Edit Mode
-                _editingLeaveHistory = null;
-                dgLeaveHistory.SelectedItem = null;
-
-                // Reset Button Text
-                // Find TextBlock inside button
-                if (btnAddLeave.Content is StackPanel sp)
-                {
-                    foreach (var child in sp.Children)
-                    {
-                        if (child is TextBlock tb)
-                        {
-                            tb.Text = "Thêm vào bảng";
-                            break;
-                        }
-                    }
-                }
-            }
-            else
-
-            {
-                // Logic tự động trừ phép: Tách bản ghi nếu lấy từ phép năm cũ
-                // NEW LOGIC: Smart Consumption (Prioritize Previous Year)
-                if (type == "Phép năm")
-                {
-                    int currentYear = DateTime.Now.Year;
-                    int previousYear = currentYear - 1;
-
-                    // Kiểm tra nếu còn phép năm trước và ưu tiên trừ phép năm trước
-                    double remainingOld = GetRemainingAnnualLeaveDays(previousYear);
-                    int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? currentYear;
-
-                    if (chkPrioritizeOldYear.IsChecked == true && selectedYear == currentYear && remainingOld > 0)
-                    {
-                        // 1. Take from Previous Year first
-                        double takenFromOld = Math.Min(duration, remainingOld);
-                        double takenFromCurrent = duration - takenFromOld;
-
-                        // Generate Link ID
-                        string linkId = Guid.NewGuid().ToString();
-
-                        // Create Old Year Record
-                        if (takenFromOld > 0)
-                        {
-                            var itemOld = new LeaveHistory
-                            {
-                                LeaveType = type,
-                                StartDate = start,
-                                EndDate = start.AddDays(takenFromOld - 1),
-                                DurationDays = takenFromOld,
-                                Reason = reason + $"|SYS:Ưu tiên trừ phép tồn năm {previousYear}|LINK:{linkId}",
-                                PersonnelId = _personnel != null ? _personnel.Id : 0,
-                                LeaveYear = previousYear,
-                                SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
-                            };
-
-
-                            if (_personnel == null) _personnel = new Personnel();
-                            if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
-                            _personnel.LeaveHistories.Add(itemOld);
-                        }
-
-                        // Create Current Year Record (if overflow)
-                        if (takenFromCurrent > 0)
-                        {
-                            var itemCurrent = new LeaveHistory
-                            {
-                                LeaveType = type,
-                                StartDate = start, // Simplified date logic as per user request for auto-deduct
-                                EndDate = end,
-                                DurationDays = takenFromCurrent,
-                                Reason = reason + $"|SYS:Trừ tiếp vào phép tồn năm {currentYear}|LINK:{linkId}",
-                                PersonnelId = _personnel != null ? _personnel.Id : 0,
-                                LeaveYear = currentYear,
-                                SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
-                            };
-
-
-                            if (_personnel == null) _personnel = new Personnel();
-                            if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
-                            _personnel.LeaveHistories.Add(itemCurrent);
-                        }
-
-                        CalculateAnnualLeave(DateTime.Now); // Refresh totals
-                        RefreshLeaveHistoryGrid();
-                        UpdateLeaveStatistics(); // Show stats
-
-                        string msg = $"Đã ưu tiên trừ {takenFromOld} ngày từ phép tồn năm {previousYear}.";
-                        if (takenFromCurrent > 0)
-                        {
-                            msg += $"\nHệ thống tự động chuyển {takenFromCurrent} ngày còn lại vào phép năm {currentYear}.";
-                        }
-
-                        new NotificationWindow(msg, "Thông báo tự động").ShowDialog();
-
-                        // Cleanup UI
-                        cboLeaveType.SelectedIndex = -1;
-                        cboLeaveYear.IsEnabled = false;
-                        cboLeaveYear.SelectedItem = DateTime.Now.Year;
-                        dpLeaveStartDate.SelectedDate = null;
-                        dpLeaveEndDate.SelectedDate = null;
-                        txtLeaveDuration.Clear();
-                        txtLeaveReason.Clear();
-                        txtSystemNote.Clear();
-                        return; // EXIT FUNCTION
-                    }
-                }
-
-                // Standard Logic (No split)
-                var newItem = new LeaveHistory
-                {
-                    LeaveType = type,
-                    StartDate = start,
-                    EndDate = end,
-                    DurationDays = duration,
-                    Reason = reason,
-                    PersonnelId = _personnel != null ? _personnel.Id : 0,
-                    LeaveYear = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() == "Phép năm" ? (int?)cboLeaveYear.SelectedItem : null,
-                    SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
-                };
-
-
-
-                if (_personnel == null) _personnel = new Personnel();
-                if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
-
-                _personnel.LeaveHistories.Add(newItem);
-            }
-
-            _isRefreshing = false;
-            // Làm mới bảng danh sách
-            RefreshLeaveHistoryGrid();
-
-            UpdateLeaveStatistics();
-            CalculateExpectedSalaryDate();
-
-            // Xóa trắng các ô nhập liệu
-            cboLeaveType.SelectedIndex = -1;
-            cboLeaveYear.IsEnabled = false;
-            cboLeaveYear.SelectedItem = DateTime.Now.Year;
-            dpLeaveStartDate.SelectedDate = null;
-            dpLeaveEndDate.SelectedDate = null;
-            txtLeaveDuration.Clear();
-            txtLeaveReason.Clear();
-            txtSystemNote.Clear();
-        }
-
-        private void OnLeaveDateChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (sender != dpLeaveEndDate)
-            {
-                CalculateMaternityEndDate();
-            }
-            UpdateLeaveDuration();
-
-            // Enable Year Selection if "Phép năm"
-            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            if (type == "Phép năm")
-            {
-                cboLeaveYear.IsEnabled = true;
-                if (!_isRefreshing) LoadLeaveYears(); // Don't reload if we are already in selection changed from LoadLeaveYears
-
-                int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? DateTime.Now.Year;
-                if (selectedYear == DateTime.Now.Year)
-                {
-                    chkPrioritizeOldYear.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    chkPrioritizeOldYear.Visibility = Visibility.Collapsed;
-                    chkPrioritizeOldYear.IsChecked = false;
-                }
-            }
-            else
-            {
-                cboLeaveYear.IsEnabled = false;
-                chkPrioritizeOldYear.Visibility = Visibility.Collapsed;
-                chkPrioritizeOldYear.IsChecked = false;
-            }
-
-            // Cập nhật lại thống kê số ngày nghỉ theo năm đã chọn
-            UpdateLeaveStatistics();
-        }
-
-        private void OnLeaveReasonTextChanged(object sender, TextChangedEventArgs e)
-        {
-            CalculateMaternityEndDate();
-            UpdateLeaveDuration();
-        }
-
-        private void SetComboBoxByContent(ComboBox cbo, string? content)
-        {
-            if (string.IsNullOrEmpty(content))
-            {
-                cbo.SelectedIndex = -1;
-                return;
-            }
-
-            foreach (var item in cbo.Items)
-            {
-                if (item is ComboBoxItem cbi && cbi.Content?.ToString() == content)
-                {
-                    cbo.SelectedItem = cbi;
-                    return;
-                }
-                else if (item?.ToString() == content)
-                {
-                    cbo.SelectedItem = item;
-                    return;
-                }
-            }
-
-            // Fallback for non-item list (like strings)
-            cbo.Text = content;
-        }
-
-        private void SetSalaryDelaySelection(string? delayType)
-        {
-            if (string.IsNullOrEmpty(delayType) || delayType == "-- Không lùi --" || delayType == "-- Không lương --" || delayType.StartsWith("Nghỉ không lương (", StringComparison.OrdinalIgnoreCase))
-            {
-                if (cboSalaryDelay.Items.Count > 0)
-                {
-                    cboSalaryDelay.SelectedIndex = 0;
-                }
-                else
-                {
-                    cboSalaryDelay.Text = "-- Không lùi --";
-                }
-            }
-            else
-            {
-                SetComboBoxByContent(cboSalaryDelay, delayType);
-            }
-        }
-
-        private void CalculateMaternityEndDate()
-        {
-            if (_isRefreshing) return;
-
-            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            if (type != "Thai sản") return;
-
-            if (dpLeaveStartDate.SelectedDate == null) return;
-
-            DateTime start = dpLeaveStartDate.SelectedDate.Value;
-            DateTime cutoff = new DateTime(2026, 7, 1);
-            
-            // Base maternity leave duration: 7 months from 1/7/2026 onwards, otherwise 6 months
-            int months = (start < cutoff) ? 6 : 7;
-
-            // Plus 1 month if "sinh đôi" is in the reason
-            string reason = txtLeaveReason?.Text ?? "";
-            if (reason.ToLower().Contains("sinh đôi"))
-            {
-                months += 1;
-            }
-
-            DateTime end = start.AddMonths(months).AddDays(-1);
-
-            if (dpLeaveEndDate.SelectedDate != end)
-            {
-                dpLeaveEndDate.SelectedDate = end;
-            }
-        }
-
-        private void UpdateLeaveDuration()
-        {
-            // Debug logging
-
-            if (_isRefreshing) return;
-
-            if (dpLeaveStartDate.SelectedDate == null || dpLeaveEndDate.SelectedDate == null)
-            {
-                txtLeaveDuration.Text = "";
-                txtSystemNote.Text = "";
-                return;
-            }
-
-            var start = dpLeaveStartDate.SelectedDate.Value;
-            var end = dpLeaveEndDate.SelectedDate.Value;
-
-            if (end < start)
-            {
-                txtLeaveDuration.Text = "";
-                txtSystemNote.Text = "";
-                return;
-            }
-
-            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
-            double duration = 0;
-
-            if (type == "Phép năm")
-            {
-                duration = CalculateWorkingDays(start, end);
-            }
-            else
-            {
-                duration = (end - start).TotalDays + 1;
-            }
-
-            txtLeaveDuration.Text = duration.ToString();
-
-            // Tự động tính ghi chú hệ thống
-            txtSystemNote.Text = GetLeaveBreakdownNote(start, end, type);
-        }
-
-        private double CalculateWorkingDays(DateTime start, DateTime end)
-        {
-            double days = 0;
-            using (var context = new AppDbContext())
-            {
-                var holidays = context.PublicHolidays
-                                      .Where(h => h.Date >= start.Date && h.Date <= end.Date)
-                                      .Select(h => h.Date.Date)
-                                      .ToList();
-
-                for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
-                {
-                    // Exclude weekends
-                    if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
-                        continue;
-
-                    // Exclude public holidays
-                    if (holidays.Contains(date))
-                        continue;
-
-                    days++;
-                }
-            }
-            return days;
-        }
-
-        private string GetLeaveBreakdownNote(DateTime start, DateTime end, string leaveType)
-        {
-            int totalDays = (int)(end.Date - start.Date).TotalDays + 1;
-            int weekends = 0;
-            int holidaysCount = 0;
-            int workDays = 0;
-
-            using (var context = new AppDbContext())
-            {
-                var holidaysList = context.PublicHolidays
-                                          .Where(h => h.Date >= start.Date && h.Date <= end.Date)
-                                          .Select(h => h.Date.Date)
-                                          .ToList();
-
-                for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
-                {
-                    bool isWeekend = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
-                    bool isHoliday = holidaysList.Contains(date);
-
-                    if (isWeekend)
-                    {
-                        weekends++;
-                    }
-                    else if (isHoliday)
-                    {
-                        holidaysCount++;
-                    }
-                    else
-                    {
-                        workDays++;
-                    }
-                }
-            }
-
-            string typeName = leaveType == "Phép năm" ? "nghỉ phép năm" : "ngày nghỉ";
-            return $"Nghỉ {totalDays:00} ngày, trong đó: {weekends:00} ngày thứ 7, chủ nhật; {holidaysCount:00} ngày nghỉ lễ; {workDays:00} {typeName}";
-        }
-
-
-
-        private LeaveHistory? _editingLeaveHistory = null;
-
-        private void dgLeaveHistory_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            if (dgLeaveHistory.SelectedItem is LeaveHistory item)
-            {
-                _isRefreshing = true;
-                _editingLeaveHistory = item;
-
-                // Populate fields
-                foreach (ComboBoxItem cbi in cboLeaveType.Items)
-                {
-                    if (cbi.Content?.ToString() == item.LeaveType)
-                    {
-                        cboLeaveType.SelectedItem = cbi;
-                        break;
-                    }
-                }
-
-                dpLeaveStartDate.SelectedDate = item.StartDate;
-                dpLeaveEndDate.SelectedDate = item.EndDate;
-                txtLeaveDuration.Text = item.DurationDays.ToString();
-                txtLeaveReason.Text = item.UserReasonDisplay; // Only show user part
-                txtSystemNote.Text = item.SystemNote ?? "";
-
-                if (item.LeaveType == "Phép năm")
-                {
-                    if (item.LeaveYear.HasValue)
-                    {
-                        LoadLeaveYears(item.LeaveYear.Value); // Ensure the edited year is visible
-                        cboLeaveYear.SelectedItem = item.LeaveYear.Value;
-                        cboLeaveYear.IsEnabled = true;
-                    }
-                    else
-                    {
-                        // Fallback to start date year if LeaveYear is missing
-                        int startYear = item.StartDate.Year;
-                        LoadLeaveYears(startYear);
-                        cboLeaveYear.SelectedItem = startYear;
-                        cboLeaveYear.IsEnabled = true;
-                    }
-
-                    // NEW: Detect Priority from Reason
-                    bool isPriority = !string.IsNullOrEmpty(item.Reason) &&
-                                     (item.Reason.Contains("|SYS:Ưu tiên trừ phép tồn năm") ||
-                                      item.Reason.Contains("|SYS:Trừ tiếp vào phép tồn năm"));
-
-                    if (isPriority)
-                    {
-                        chkPrioritizeOldYear.Visibility = Visibility.Visible;
-                        chkPrioritizeOldYear.IsChecked = true;
-                    }
-                }
-                else
-                {
-                    cboLeaveYear.IsEnabled = false;
-                }
-
-                _isRefreshing = false;
-
-                // Change Button Text
-                // Find TextBlock inside button
-                if (btnAddLeave.Content is StackPanel sp)
-                {
-                    foreach (var child in sp.Children)
-                    {
-                        if (child is TextBlock tb)
-                        {
-                            tb.Text = "Cập nhật ngày nghỉ";
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void btnDeleteLeave_Click(object? sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is int id)
-            {
-                // Note: If ID is 0 (newly added), we need to find by object reference logic or assume last one? 
-                // Or simply find by object in list matching the bounded item?
-                // The Tag binding binds to Id, which might be 0 for new items. 
-                // Lấy DataContext của dòng được chọn
-                var item = btn.DataContext as LeaveHistory;
-                if (item != null && _personnel?.LeaveHistories != null)
-                {
-                    // Kiểm tra các bản ghi liên kết
-                    var linkedItems = new List<LeaveHistory>();
-                    if (!string.IsNullOrEmpty(item.LinkId))
-                    {
-                        linkedItems = _personnel.LeaveHistories
-                            .Where(x => x.LinkId == item.LinkId && x != item)
-                            .ToList();
-                    }
-
-                    if (linkedItems.Any())
-                    {
-                        // Simplified Logic: Always delete ALL linked records
-                        var confirm = new ConfirmWindow(
-                            $"Bản ghi này thuộc về một đợt nghỉ phép bị tách ({linkedItems.Count + 1} phần).\n" +
-                            "Hệ thống sẽ xóa TẤT CẢ các bản ghi liên quan để đảm bảo đồng bộ.\n" +
-                            "Bạn có chắc chắn muốn xóa không?",
-                            "Xác nhận xóa liên kết");
-
-                        if (confirm.ShowDialog() == true)
-                        {
-                            _personnel.LeaveHistories.Remove(item);
-                            foreach (var link in linkedItems)
-                            {
-                                _personnel.LeaveHistories.Remove(link);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Standard delete
-                        var confirm = new ConfirmWindow($"Bạn có chắc muốn xóa lịch sử nghỉ: {item.LeaveType}?", "Xác nhận xóa");
-                        if (confirm.ShowDialog() == true)
-                        {
-                            _personnel.LeaveHistories.Remove(item);
-                        }
-                    }
-
-                    // Làm mới bảng danh sách
-                    RefreshLeaveHistoryGrid();
-                    UpdateLeaveStatistics();
-                    CalculateExpectedSalaryDate();
-                }
-            }
-        }
-
-
-
-        private void UpdateLeaveStatistics(int? yearOverride = null)
-        {
-            if (_personnel != null && _personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
-
-            var histories = _personnel?.LeaveHistories ?? new List<LeaveHistory>();
-
-            double annualTakenCurrentYear = 0;
-            double annualTakenOldYear = 0;
-            double sickTaken = 0;
-            double convalescenceTaken = 0;
-
-            // Maternity Logic
-            string maternityDisplay = "0";
-            // Find ALL Maternity records, sort by StartDate descending
-            var maternityLeaves = histories
-                                    .Where(x => x.LeaveType == "Thai sản")
-                                    .OrderByDescending(x => x.StartDate)
-                                    .ToList();
-
-            if (maternityLeaves.Any())
-            {
-                // Display the range of the LATEST maternity leave
-                var latest = maternityLeaves.First();
-                // Since LeaveHistory properties are likely non-nullable DateTime based on the error
-                maternityDisplay = $"{latest.StartDate:dd/MM/yyyy} - {latest.EndDate:dd/MM/yyyy}";
-            }
-
-            // Xác định năm cần tính toán
-            int yearToCalculate = yearOverride ?? DateTime.Now.Year;
-
-            // If user selected a year in ComboBox, we might want to prioritize that for display
-            if (yearOverride == null && cboLeaveYear.SelectedItem is int selectedYear)
-            {
-                yearToCalculate = selectedYear;
-            }
-
-            double totalUnpaidTakenAllYears = 0; // NEW: Track unpaid leave across ALL years for salary delay
-
-            foreach (var item in histories)
-            {
-                // Cộng dồn toàn bộ ngày nghỉ không lương qua các năm để tính lùi nâng lương
-                if (item.LeaveType == "Không lương")
-                {
-                    totalUnpaidTakenAllYears += item.DurationDays;
-                }
-
-                // We want to process all leaves that were TAKEN in this year
-                if (item.StartDate.Year == yearToCalculate)
-                {
-                    if (item.LeaveType == "Phép năm")
-                    {
-                        // Kiểm tra xem có thuộc hạn mức phép năm cũ không
-                        // Được coi là năm cũ nếu LeaveYear nhỏ hơn năm đang tính
-                        if (item.LeaveYear.HasValue && item.LeaveYear.Value < yearToCalculate)
-                        {
-                            annualTakenOldYear += item.DurationDays;
-                        }
-                        else
-                        {
-                            annualTakenCurrentYear += item.DurationDays;
-                        }
-                    }
-                    else if (item.LeaveType == "Nghỉ ốm") sickTaken += item.DurationDays;
-                    else if (item.LeaveType == "Dưỡng sức") convalescenceTaken += item.DurationDays;
-                }
-            }
-
-            // Hiển thị lên giao diện
-            // Mặc định 12 ngày phép nếu chưa thiết lập
-            int totalAnnual = 12;
-
-            // Ưu tiên lấy từ Model hơn là lấy từ TextBox
-            if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
-            {
-                totalAnnual = _personnel.TotalAnnualLeaveDays;
-            }
-            else
-            {
-                int.TryParse(txtTotalAnnualLeave.Text, out totalAnnual);
-            }
-
-            // Gán dữ liệu lên giao diện
-            txtAnnualLeaveTaken.Text = (annualTakenCurrentYear + annualTakenOldYear).ToString();
-            txtAnnualLeaveRemaining.Text = (totalAnnual - annualTakenCurrentYear).ToString();
-            txtSickLeaveTaken.Text = sickTaken.ToString();
-            txtUnpaidLeaveTaken.Text = totalUnpaidTakenAllYears.ToString();
-            txtMaternityLeaveTaken.Text = maternityDisplay;
-            txtConvalescenceLeaveTaken.Text = convalescenceTaken.ToString();
-
-            CalculateExpectedSalaryDate();
-        }
-
-        private double GetRemainingAnnualLeaveDays(int year)
-        {
-            // Mặc định 12 ngày phép nếu nhân sự chưa có dữ liệu
-            int total = 12;
-
-            if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
-            {
-                total = _personnel.TotalAnnualLeaveDays;
-            }
-            else
-            {
-                // Lấy từ giao diện nếu tạo mới nhân sự
-                if (int.TryParse(txtTotalAnnualLeave.Text, out int uiTotal))
-                {
-                    total = uiTotal;
-                }
-            }
-
-            double taken = 0;
-            if (_personnel != null && _personnel.LeaveHistories != null)
-            {
-                taken = _personnel.LeaveHistories
-                     .Where(x => x.LeaveType == "Phép năm" && (x.LeaveYear ?? x.StartDate.Year) == year)
-                     .Sum(x => x.DurationDays);
-            }
-
-            return total - taken;
-        }
-
-        private void RefreshLeaveHistoryGrid()
-        {
-            if (_personnel == null || _personnel.LeaveHistories == null) return;
-
-            // _personnel.LeaveHistories.RemoveAll(x => x.EndDate.Year < currentYear);
-
-            // Sort by StartDate Descending, then by Id Descending (newest leaves/recently added ones are placed on top)
-            var sortedList = _personnel.LeaveHistories
-                                .OrderByDescending(x => x.StartDate)
-                                .ThenByDescending(x => x.Id)
-                                .ToList();
-
-            // Do not group anymore - show delete button for every individual item
-            foreach (var item in sortedList)
-            {
-                item.ShowDeleteButton = true;
-                item.IsLinkedGroupHead = false;
-            }
-
-            _personnel.LeaveHistories = sortedList;
-
-            int stt = 1;
-            foreach (var item in _personnel.LeaveHistories)
-            {
-                item.STT = stt++;
-            }
-
-            dgLeaveHistory.ItemsSource = null;
-            dgLeaveHistory.ItemsSource = _personnel.LeaveHistories;
-        }
-        private void OnSalaryStructureChanged(object? sender, RoutedEventArgs e)
-        {
-            CalculateExpectedSalaryDate();
-        }
-
-        private void OnSalaryStructureChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            CalculateExpectedSalaryDate();
-        }
-
-        /// <summary>
-        /// Quy đổi số ngày nghỉ lẻ thành số tháng lùi thời hạn nâng lương theo Điều 2 Thông tư 03/2021/TT-BNV:
-        /// - Mỗi 30 ngày = 1 tháng.
-        /// - Số ngày lẻ còn lại: nếu từ đủ 11 ngày trở lên (>= 11 ngày) thì làm tròn thành 1 tháng; nếu dưới 11 ngày thì không tính.
-        /// </summary>
-        public static int ConvertDaysToDelayMonths(double days)
-        {
-            return SalaryHelper.ConvertDaysToDelayMonths(days);
-        }
-
-        private void CalculateExpectedSalaryDate()
-        {
-            if (_isRefreshing) return;
-
-            DateTime? baseDate = dpNextSalaryStepDate.SelectedDate;
-            if (!baseDate.HasValue)
-            {
-                dpExpectedSalaryIncrease.SelectedDate = null;
-                return;
-            }
-
-            double exceedFrame = 0;
-            double.TryParse(txtExceedFrame.Text, out exceedFrame);
-
-            string rankCode = "";
-            if (cboRankCode.SelectedItem is Rank r) rankCode = r.Code;
-            else if (cboRankCode.SelectedValue != null) rankCode = cboRankCode.SelectedValue.ToString() ?? "";
-            else rankCode = cboRankCode.Text;
-            rankCode = rankCode.Trim();
-
-            string currentDelayReason = "";
-            if (cboSalaryDelay.SelectedItem is ComboBoxItem cbi)
-                currentDelayReason = cbi.Content?.ToString() ?? "";
-            else if (cboSalaryDelay.SelectedItem != null)
-                currentDelayReason = cboSalaryDelay.SelectedItem.ToString() ?? "";
-            else
-                currentDelayReason = cboSalaryDelay.Text;
-
-            // Sử dụng SalaryHelper để tính toán chuẩn TT 03/2021/TT-BNV
-            var res = SalaryHelper.CalculateSalaryIncrease(
-                _personnel,
-                baseDateOverride: baseDate,
-                rankCodeOverride: rankCode,
-                exceedFrameOverride: exceedFrame,
-                delayReasonOverride: currentDelayReason);
-
-            double unpaidDays = res.UnpaidDays;
-            int unpaidDelayMonths = res.UnpaidDelayMonths;
-            bool hasUnpaidLeave = unpaidDays > 0;
-
-            // 1. Quản lý mục "Nghỉ không lương (X ngày - Lùi Y tháng)" trong cboSalaryDelay
-            if (cboSalaryDelay.Items.Count > 0)
-            {
-                // Ensure the first item is always "-- Không lùi --"
-                var firstItemObj = cboSalaryDelay.Items[0];
-                string firstItemText = firstItemObj is ComboBoxItem cbi0 ? cbi0.Content?.ToString() ?? "" : firstItemObj.ToString() ?? "";
-                if (firstItemText != "-- Không lùi --")
-                {
-                    bool wasRefreshing = _isRefreshing;
-                    _isRefreshing = true;
-                    try
-                    {
-                        if (firstItemObj is ComboBoxItem cbiUpdate)
-                            cbiUpdate.Content = "-- Không lùi --";
-                        else
-                            cboSalaryDelay.Items[0] = "-- Không lùi --";
-                    }
-                    finally { _isRefreshing = wasRefreshing; }
-                }
-
-                int unpaidItemIndex = -1;
-                string currentUnpaidTextInList = "";
-                for (int i = 0; i < cboSalaryDelay.Items.Count; i++)
-                {
-                    var itemObj = cboSalaryDelay.Items[i];
-                    string itemText = itemObj is ComboBoxItem cbiItem ? cbiItem.Content?.ToString() ?? "" : itemObj.ToString() ?? "";
-                    if (itemText.StartsWith("Nghỉ không lương (", StringComparison.OrdinalIgnoreCase))
-                    {
-                        unpaidItemIndex = i;
-                        currentUnpaidTextInList = itemText;
-                        break;
-                    }
-                }
-
-                string expectedUnpaidText = unpaidDelayMonths > 0
-                    ? $"Nghỉ không lương ({(int)Math.Round(unpaidDays)} ngày - Lùi {unpaidDelayMonths} tháng)"
-                    : $"Nghỉ không lương ({(int)Math.Round(unpaidDays)} ngày)";
-
-                if (hasUnpaidLeave)
-                {
-                    if (unpaidItemIndex == -1)
-                    {
-                        bool wasRefreshing = _isRefreshing;
-                        _isRefreshing = true;
-                        try
-                        {
-                            cboSalaryDelay.Items.Insert(1, expectedUnpaidText);
-                            int selectedIndex = cboSalaryDelay.SelectedIndex;
-                            string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
-                            if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
-                            {
-                                cboSalaryDelay.SelectedIndex = 1;
-                            }
-                        }
-                        finally { _isRefreshing = wasRefreshing; }
-                    }
-                    else
-                    {
-                        int selectedIndex = cboSalaryDelay.SelectedIndex;
-                        string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
-                        if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
-                        {
-                            bool wasRefreshing = _isRefreshing;
-                            _isRefreshing = true;
-                            try { cboSalaryDelay.SelectedIndex = unpaidItemIndex; }
-                            finally { _isRefreshing = wasRefreshing; }
-                        }
-
-                        if (currentUnpaidTextInList != expectedUnpaidText)
-                        {
-                            bool wasRefreshing = _isRefreshing;
-                            _isRefreshing = true;
-                            try
-                            {
-                                var existingItem = cboSalaryDelay.Items[unpaidItemIndex];
-                                if (existingItem is ComboBoxItem cbiUpdate) cbiUpdate.Content = expectedUnpaidText;
-                                else cboSalaryDelay.Items[unpaidItemIndex] = expectedUnpaidText;
-
-                                if (cboSalaryDelay.SelectedIndex == unpaidItemIndex)
-                                {
-                                    cboSalaryDelay.SelectedIndex = -1;
-                                    cboSalaryDelay.SelectedIndex = unpaidItemIndex;
-                                }
-                            }
-                            finally { _isRefreshing = wasRefreshing; }
-                        }
-                    }
-                }
-                else if (unpaidItemIndex != -1)
-                {
-                    bool wasRefreshing = _isRefreshing;
-                    _isRefreshing = true;
-                    try
-                    {
-                        int selectedIndex = cboSalaryDelay.SelectedIndex;
-                        cboSalaryDelay.Items.RemoveAt(unpaidItemIndex);
-                        if (selectedIndex == unpaidItemIndex) cboSalaryDelay.SelectedIndex = 0;
-                    }
-                    finally { _isRefreshing = wasRefreshing; }
-                }
-            }
-
-            // 2. Hiển thị/ẩn cảnh báo tạm tính nghỉ ốm
-            if (txtSickLeaveProvisionalWarning != null)
-            {
-                txtSickLeaveProvisionalWarning.Visibility = res.HasOngoingSickLeave
-                    ? Visibility.Visible
-                    : Visibility.Collapsed;
-                if (res.HasOngoingSickLeave)
-                {
-                    txtSickLeaveProvisionalWarning.ToolTip = "Đang có đợt nghỉ ốm chưa xác định ngày kết thúc nên hệ thống tạm tính đến hôm nay. Khi cán bộ đi làm lại và nhập Ngày kết thúc, hệ thống sẽ chốt số tháng lùi chính xác.";
-                }
-            }
-
-            // 3. Tự động thêm/xoá mục "Nghỉ ốm quá hạn X ngày (Lùi Y tháng)" trong cboSalaryDelay
-            if (cboSalaryDelay.Items.Count > 0)
-            {
-                int sickItemIndex = -1;
-                for (int i = 0; i < cboSalaryDelay.Items.Count; i++)
-                {
-                    var itemObj = cboSalaryDelay.Items[i];
-                    string itemText = itemObj is ComboBoxItem cbiSickCheck
-                        ? cbiSickCheck.Content?.ToString() ?? ""
-                        : itemObj.ToString() ?? "";
-                    if (itemText.StartsWith("Nghỉ ốm quá hạn", StringComparison.OrdinalIgnoreCase))
-                    {
-                        sickItemIndex = i;
-                        break;
-                    }
-                }
-
-                if (res.SickDelayMonths > 0)
-                {
-                    string sickLabel = $"Nghỉ ốm quá hạn {(int)Math.Round(res.SickExcessDays)} ngày (Lùi {res.SickDelayMonths} tháng)";
-                    bool wasRefreshing2 = _isRefreshing;
-                    _isRefreshing = true;
-                    try
-                    {
-                        int newSickIndex;
-                        if (sickItemIndex == -1)
-                        {
-                            cboSalaryDelay.Items.Insert(cboSalaryDelay.Items.Count, sickLabel);
-                            newSickIndex = cboSalaryDelay.Items.Count - 1;
-                        }
-                        else
-                        {
-                            newSickIndex = sickItemIndex;
-                            var existing = cboSalaryDelay.Items[sickItemIndex];
-                            string existingText = existing is ComboBoxItem cbiEx ? cbiEx.Content?.ToString() ?? "" : existing.ToString() ?? "";
-                            if (existingText != sickLabel)
-                            {
-                                if (existing is ComboBoxItem cbiUpdate2) cbiUpdate2.Content = sickLabel;
-                                else cboSalaryDelay.Items[sickItemIndex] = sickLabel;
-                            }
-                        }
-
-                        // Tự động chọn mục này nếu người dùng chưa chọn lý do kỷ luật nào khác
-                        string currentSel = cboSalaryDelay.SelectedItem is ComboBoxItem cbiCur
-                            ? cbiCur.Content?.ToString() ?? ""
-                            : cboSalaryDelay.SelectedItem?.ToString() ?? "";
-
-                        bool hasDisciplinary = currentSel.Contains("Khiển trách") ||
-                                               currentSel.Contains("Cảnh cáo") ||
-                                               currentSel.Contains("Giáng chức") ||
-                                               currentSel.Contains("Cách chức");
-
-                        if (!hasDisciplinary)
-                        {
-                            cboSalaryDelay.SelectedIndex = newSickIndex;
-                        }
-
-                        cboSalaryDelay.ToolTip = $"Theo TT 03/2021/TT-BNV: Tổng nghỉ ốm {(int)Math.Round(res.TotalSickDaysInPeriod)} ngày - 180 ngày BHXH = {(int)Math.Round(res.SickExcessDays)} ngày vượt hạn => Quy đổi lùi {res.SickDelayMonths} tháng.";
-                    }
-                    finally { _isRefreshing = wasRefreshing2; }
-                }
-                else if (sickItemIndex != -1)
-                {
-                    bool wasRefreshing2 = _isRefreshing;
-                    _isRefreshing = true;
-                    try
-                    {
-                        cboSalaryDelay.Items.RemoveAt(sickItemIndex);
-                        cboSalaryDelay.ToolTip = null;
-                    }
-                    finally { _isRefreshing = wasRefreshing2; }
-                }
-            }
-
-            // 4. Cập nhật kết quả ngày dự kiến lên lương
-            if (dpExpectedSalaryIncrease.SelectedDate != res.ExpectedDate)
-            {
-                dpExpectedSalaryIncrease.SelectedDate = res.ExpectedDate;
-            }
-        }
-
-
-        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
-            e.Handled = regex.IsMatch(e.Text);
-        }
-
-        private void txtPhone_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isRefreshing || _isFormatting) return;
-
-            _isFormatting = true;
-            try
-            {
-                int caretIndex = txtPhone.CaretIndex;
-                string originalText = txtPhone.Text;
-                string digits = new string(originalText.Where(char.IsDigit).ToArray());
-
-                // Limit to 10 digits
-                if (digits.Length > 10) digits = digits.Substring(0, 10);
-
-                string formatted = FormatPhoneNumber(digits);
-
-                if (txtPhone.Text != formatted)
-                {
-                    txtPhone.Text = formatted;
-
-                    // Restore caret position
-                    int digitsBefore = originalText.Substring(0, Math.Min(caretIndex, originalText.Length)).Count(char.IsDigit);
-                    int newCaretIndex = 0;
-                    int digitCount = 0;
-                    while (newCaretIndex < formatted.Length && digitCount < digitsBefore)
-                    {
-                        if (char.IsDigit(formatted[newCaretIndex])) digitCount++;
-                        newCaretIndex++;
-                    }
-
-                    if (newCaretIndex < formatted.Length && formatted[newCaretIndex] == '.')
-                    {
-                        if (e.Changes.Any(c => c.AddedLength > 0))
-                            newCaretIndex++;
-                    }
-
-                    txtPhone.CaretIndex = Math.Min(newCaretIndex, formatted.Length);
-                }
-
-                // Error validation logic
-                if (digits.Length > 0 && !digits.StartsWith("0"))
-                {
-                    lblPhoneError.Text = "SĐT phải bắt đầu bằng số 0";
-                    lblPhoneError.Visibility = Visibility.Visible;
-                }
-                else if (digits.Length > 0 && digits.Length < 10)
-                {
-                    lblPhoneError.Text = "SĐT phải có 10 chữ số";
-                    lblPhoneError.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    lblPhoneError.Visibility = Visibility.Collapsed;
-                }
-            }
-            finally
-            {
-                _isFormatting = false;
-            }
-        }
-
-        private string FormatPhoneNumber(string? digits)
-        {
-            if (string.IsNullOrEmpty(digits)) return "";
-
-            // Clean non-digits first
-            digits = new string(digits.Where(char.IsDigit).ToArray());
-
-            if (digits.Length == 0) return "";
-
-            string formatted = digits.Substring(0, Math.Min(4, digits.Length));
-            if (digits.Length > 4)
-            {
-                formatted += "." + digits.Substring(4, Math.Min(3, digits.Length - 4));
-                if (digits.Length > 7)
-                {
-                    formatted += "." + digits.Substring(7, Math.Min(3, digits.Length - 7));
-                }
-            }
-            return formatted;
-        }
-
-        private bool IsValidEmail(string email)
-        {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private void LoadEvaluationYears()
-        {
-            var years = new List<string> { "" };
-            int currentYear = DateTime.Now.Year;
-            for (int y = currentYear; y >= 1980; y--)
-            {
-                years.Add(y.ToString());
-            }
-            cboEvaluationYear.ItemsSource = years;
-            cboEvaluationYear.SelectedIndex = 0;
-        }
-
-        private void RefreshEvaluationHistoryGrid()
-        {
-            if (_personnel == null) return;
-            if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new List<EvaluationRecord>();
-            var sortedList = _personnel.EvaluationRecords.OrderByDescending(e => e.Year).ToList();
-            dgEvaluationHistory.ItemsSource = null;
-            dgEvaluationHistory.ItemsSource = sortedList;
-        }
-
-        private void btnAddEvaluation_Click(object sender, RoutedEventArgs e)
-        {
-            var yearStr = cboEvaluationYear.SelectedItem?.ToString() ?? "";
-            if (string.IsNullOrEmpty(yearStr))
-            {
-                new WarningWindow("Vui lòng chọn năm xếp loại!", "Thiếu thông tin").ShowDialog();
-                return;
-            }
-            if (!int.TryParse(yearStr, out int year))
-            {
-                new WarningWindow("Năm xếp loại không hợp lệ!", "Lỗi dữ liệu").ShowDialog();
-                return;
-            }
-
-            var rating = cboEvaluationRating.SelectedItem is ComboBoxItem cbi ? cbi.Content?.ToString() ?? "" : cboEvaluationRating.Text;
-            if (string.IsNullOrEmpty(rating))
-            {
-                new WarningWindow("Vui lòng chọn xếp loại năm!", "Thiếu thông tin").ShowDialog();
-                return;
-            }
-
-            var decisionNo = txtEvaluationDecisionNo.Text;
-            var decisionDate = dpEvaluationDecisionDate.SelectedDate;
-            var decisionAgency = txtEvaluationDecisionAgency.Text;
-
-            if (_personnel != null && _personnel.EvaluationRecords != null)
-            {
-                foreach (var ev in _personnel.EvaluationRecords)
-                {
-                    if (_editingEvaluationRecord != ev && ev.Year == year)
-                    {
-                        new WarningWindow($"Đã tồn tại xếp loại cho năm {year}!", "Trùng thông tin").ShowDialog();
-                        return;
-                    }
-                }
-            }
-
-            if (_editingEvaluationRecord != null)
-            {
-                _editingEvaluationRecord.Year = year;
-                _editingEvaluationRecord.Rating = rating;
-                _editingEvaluationRecord.DecisionNumber = decisionNo;
-                _editingEvaluationRecord.DecisionDate = decisionDate;
-                _editingEvaluationRecord.DecisionAgency = decisionAgency;
-
-                _editingEvaluationRecord = null;
-                dgEvaluationHistory.SelectedItem = null;
-            }
-            else
-            {
-                var newItem = new EvaluationRecord
-                {
-                    Year = year,
-                    Rating = rating,
-                    DecisionNumber = decisionNo,
-                    DecisionDate = decisionDate,
-                    DecisionAgency = decisionAgency,
-                    PersonnelId = _personnel != null ? _personnel.Id : 0
-                };
-                if (_personnel == null) _personnel = new Personnel();
-                if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new List<EvaluationRecord>();
-                _personnel.EvaluationRecords.Add(newItem);
-            }
-
-            RefreshEvaluationHistoryGrid();
-
-            cboEvaluationYear.SelectedIndex = 0;
-            cboEvaluationRating.SelectedIndex = 0;
-            txtEvaluationDecisionNo.Clear();
-            dpEvaluationDecisionDate.SelectedDate = null;
-            txtEvaluationDecisionAgency.Clear();
-        }
-
-        private void dgEvaluationHistory_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var dep = (DependencyObject)e.OriginalSource;
-            while ((dep != null) && !(dep is DataGridRow))
-            {
-                dep = VisualTreeHelper.GetParent(dep);
-            }
-
-            if (dep is DataGridRow row)
-            {
-                var item = row.DataContext as EvaluationRecord;
-                if (item == null) return;
-
-                cboEvaluationYear.SelectedItem = item.Year.ToString();
-                
-                cboEvaluationRating.SelectedIndex = 0;
-                foreach (var obj in cboEvaluationRating.Items)
-                {
-                    if (obj is ComboBoxItem cbi && cbi.Content?.ToString() == item.Rating)
-                    {
-                        cboEvaluationRating.SelectedItem = cbi;
-                        break;
-                    }
-                }
-
-                txtEvaluationDecisionNo.Text = item.DecisionNumber;
-                dpEvaluationDecisionDate.SelectedDate = item.DecisionDate;
-                txtEvaluationDecisionAgency.Text = item.DecisionAgency;
-
-                _editingEvaluationRecord = item;
-            }
-        }
-
-        private void btnDeleteEvaluation_Click(object sender, RoutedEventArgs e)
-        {
-            var item = (sender as FrameworkElement)?.DataContext as EvaluationRecord;
-            if (item != null && _personnel?.EvaluationRecords != null)
-            {
-                var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng xếp loại này không?");
-                if (confirm.ShowDialog() == true)
-                {
-                    _personnel.EvaluationRecords.Remove(item);
-                    RefreshEvaluationHistoryGrid();
-
-                    if (_editingEvaluationRecord == item)
-                    {
-                        _editingEvaluationRecord = null;
-                        cboEvaluationYear.SelectedIndex = 0;
-                        cboEvaluationRating.SelectedIndex = 0;
-                        txtEvaluationDecisionNo.Clear();
-                        dpEvaluationDecisionDate.SelectedDate = null;
-                        txtEvaluationDecisionAgency.Clear();
-                    }
-                }
-            }
-        }
-
-        #region Quản lý văn bằng & chứng chỉ
-        private void UpdateDegreeBadges()
-        {
-            // Các nút xem bằng riêng lẻ đã được lược bỏ theo yêu cầu, chỉ dùng nút Quản lý danh sách ở header
-        }
-
-        private void OpenDegreesDialog(string? initialTab = null)
-        {
-            if (_personnel == null)
-            {
-                _personnel = new Personnel
-                {
-                    FullName = txtName.Text?.Trim() ?? "Cán bộ mới",
-                    Department = cboDepartment.Text,
-                    Position = cboPosition.Text,
-                    ITSkillLevel = txtITSkill.Text,
-                    LanguageSkillLevel = txtLanguageSkill.Text,
-                    EducationLevel = cboEducationLevel.Text,
-                    Major = txtMajor.Text,
-                    University = txtUniversity.Text,
-                    StateManagementLevel = cboStateManagement.Text,
-                    PoliticalTheoryLevel = cboPoliticalTheory.Text
-                };
-            }
-            else if (_personnel.Id <= 0)
-            {
-                if (!string.IsNullOrWhiteSpace(txtName.Text))
-                    _personnel.FullName = txtName.Text.Trim();
-                if (!string.IsNullOrWhiteSpace(cboDepartment.Text))
-                    _personnel.Department = cboDepartment.Text;
-                if (!string.IsNullOrWhiteSpace(cboPosition.Text))
-                    _personnel.Position = cboPosition.Text;
-            }
-
-            var dialog = new PersonnelDegreesDialog(_personnel, initialTab)
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            dialog.ShowDialog();
-
-            if (dialog.HasChanges)
-            {
-                // Đồng bộ lại các ô trên form
-                txtITSkill.Text = _personnel.ITSkillLevel ?? "";
-                txtLanguageSkill.Text = _personnel.LanguageSkillLevel ?? "";
-                SetComboBoxByContent(cboEducationLevel, _personnel.EducationLevel);
-                txtMajor.Text = _personnel.Major ?? "";
-                txtUniversity.Text = _personnel.University ?? "";
-                SetComboBoxByContent(cboStateManagement, _personnel.StateManagementLevel);
-                SetComboBoxByContent(cboPoliticalTheory, _personnel.PoliticalTheoryLevel);
-            }
-        }
-
-        private void btnManageAllDegrees_Click(object sender, RoutedEventArgs e)
-        {
-            OpenDegreesDialog("All");
-        }
-        #endregion
-
-        #region Work History Timeline Management (Như hình 2)
-        private void LoadWorkHistoriesForPersonnel()
-        {
-            _workHistories.Clear();
-
-            if (_personnel != null && _personnel.Id > 0)
-            {
-                using (var context = new AppDbContext())
-                {
-                    var list = context.WorkHistoryRecords
-                                      .Where(w => w.PersonnelId == _personnel.Id)
-                                      .OrderBy(w => w.OrderIndex)
-                                      .ToList();
-
-                    if (list.Count > 0)
-                    {
-                        foreach (var item in list)
-                        {
-                            NormalizeWorkHistoryRecord(item);
-                            _workHistories.Add(item);
-                        }
-                    }
-                    else if (!string.IsNullOrWhiteSpace(_personnel.DetailedWorkHistory))
-                    {
-                        // Tự động phân tích các dòng văn bản cũ sang danh sách có cấu trúc
-                        var parsed = ParseWorkHistoryTextToRecords(_personnel.DetailedWorkHistory);
-                        foreach (var item in parsed)
-                        {
-                            _workHistories.Add(item);
-                        }
-                    }
-                }
-            }
-            else if (_personnel != null && !string.IsNullOrWhiteSpace(_personnel.DetailedWorkHistory))
-            {
-                var parsed = ParseWorkHistoryTextToRecords(_personnel.DetailedWorkHistory);
-                foreach (var item in parsed)
-                {
-                    _workHistories.Add(item);
-                }
-            }
-
-            ApplyWorkHistoryFilterAndSort();
-        }
-
-        private void ApplyWorkHistoryFilterAndSort()
-        {
-            if (dgWorkHistory == null) return;
-
-            string query = txtSearchWorkHistory?.Text?.Trim().ToLower() ?? "";
-            var list = _workHistories.AsEnumerable();
-
-            if (!string.IsNullOrEmpty(query))
-            {
-                list = list.Where(w =>
-                    (w.Position != null && w.Position.ToLower().Contains(query)) ||
-                    (w.Department != null && w.Department.ToLower().Contains(query)) ||
-                    (w.OrganizationUnit != null && w.OrganizationUnit.ToLower().Contains(query)) ||
-                    (w.DepartmentOrUnit != null && w.DepartmentOrUnit.ToLower().Contains(query)) ||
-                    (w.PartyPosition != null && w.PartyPosition.ToLower().Contains(query)) ||
-                    (w.FromDate != null && w.FromDate.ToLower().Contains(query)) ||
-                    (w.ToDate != null && w.ToDate.ToLower().Contains(query)));
-            }
-
-            // Sắp xếp
-            if (cboSortWorkHistory != null && cboSortWorkHistory.SelectedIndex == 1)
-            {
-                // Mới nhất trước: đảo ngược thứ tự
-                list = list.Reverse();
-            }
-
-            var result = list.ToList();
-            dgWorkHistory.ItemsSource = result;
-
-            if (txtWorkHistoryCount != null)
-            {
-                txtWorkHistoryCount.Text = $"{result.Count} giai đoạn";
-            }
-
-            if (lblEmptyWorkHistory != null)
-            {
-                lblEmptyWorkHistory.Visibility = result.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-            }
-        }
-
-        public static void NormalizeWorkHistoryRecord(WorkHistoryRecord r)
-        {
-            if (r == null) return;
-            string pos = r.Position?.Trim() ?? "";
-
-            // 1. Phân tách nếu Position dính chức vụ Đảng qua dấu chấm phẩy ";"
-            // Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp"
-            if (pos.Contains(";"))
-            {
-                var parts = pos.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
-                if (parts.Count >= 2)
-                {
-                    if (WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
-                    {
-                        if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
-                        {
-                            r.IsPartyConcurrent = true;
-                            r.PartyPosition = parts[0];
-                        }
-                        r.Position = string.Join("; ", parts.Skip(1));
-                    }
-                    else if (WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
-                    {
-                        if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
-                        {
-                            r.IsPartyConcurrent = true;
-                            r.PartyPosition = parts[1];
-                        }
-                        r.Position = parts[0];
-                    }
-                }
-            }
-            // 2. Phân tách nếu bắt đầu bằng "Phó Bí thư, Đội trưởng..."
-            else if (pos.Contains(","))
-            {
-                int cIdx = pos.IndexOf(',');
-                string prefix = pos.Substring(0, cIdx).Trim();
-                string suffix = pos.Substring(cIdx + 1).Trim();
-                if (WorkHistoryRecord.IsPartyRoleText(prefix))
-                {
-                    if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
-                    {
-                        r.IsPartyConcurrent = true;
-                        r.PartyPosition = prefix;
-                    }
-                    r.Position = suffix;
-                }
-            }
-
-            // 3. Phân tách (Kiêm: ...) hoặc (Chức vụ Đảng) nếu dính trong Position
-            var partyMatch = System.Text.RegularExpressions.Regex.Match(r.Position ?? "",
-                @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (partyMatch.Success)
-            {
-                if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
-                {
-                    r.IsPartyConcurrent = true;
-                    r.PartyPosition = partyMatch.Groups["party"].Value.Trim();
-                }
-                r.Position = (r.Position!.Substring(0, partyMatch.Index) + " " + r.Position.Substring(partyMatch.Index + partyMatch.Length)).Trim();
-            }
-            else
-            {
-                var parenMatch = System.Text.RegularExpressions.Regex.Match(r.Position ?? "", @"\s*\((?<party>[^)]+)\)\s*");
-                if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
-                {
-                    if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
-                    {
-                        r.IsPartyConcurrent = true;
-                        r.PartyPosition = parenMatch.Groups["party"].Value.Trim();
-                    }
-                    r.Position = (r.Position!.Substring(0, parenMatch.Index) + " " + r.Position.Substring(parenMatch.Index + parenMatch.Length)).Trim();
-                }
-            }
-
-            // 3b. Làm sạch chữ "Kiêm: " nếu lỡ dính trong PartyPosition
-            if (!string.IsNullOrWhiteSpace(r.PartyPosition))
-            {
-                var m = System.Text.RegularExpressions.Regex.Match(r.PartyPosition, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                if (m.Success)
-                {
-                    r.PartyPosition = m.Groups[1].Value.Trim();
-                }
-            }
-
-            // 4. Chuẩn hóa Department và OrganizationUnit từ DepartmentOrUnit nếu đang trống
-            if (string.IsNullOrEmpty(r.Department) && string.IsNullOrEmpty(r.OrganizationUnit) && !string.IsNullOrWhiteSpace(r.DepartmentOrUnit))
-            {
-                string u = r.DepartmentOrUnit.Trim();
-                if (u.Contains(" - "))
-                {
-                    int dIdx = u.IndexOf(" - ");
-                    r.Department = u.Substring(0, dIdx).Trim();
-                    r.OrganizationUnit = u.Substring(dIdx + 3).Trim();
-                }
-                else if (u.Contains(","))
-                {
-                    int cIdx = u.IndexOf(',');
-                    r.Department = u.Substring(0, cIdx).Trim();
-                    r.OrganizationUnit = u.Substring(cIdx + 1).Trim();
-                }
-                else
-                {
-                    r.Department = u;
-                }
-            }
-        }
-
-        public static void ParsePositionUnitAndParty(
-            string rawRest,
-            out string position,
-            out string unit,
-            out string dept,
-            out string org,
-            out bool isParty,
-            out string partyPosition)
-        {
-            isParty = false;
-            partyPosition = "";
-            position = "";
-            unit = "";
-            dept = "";
-            org = "";
-
-            string rest = rawRest?.Trim().TrimEnd('.') ?? "";
-            if (string.IsNullOrWhiteSpace(rest)) return;
-
-            // 1. Tách (Kiêm: ...) hoặc (Chức vụ Đảng) trong ngoặc đơn nếu có ở bất kỳ vị trí nào
-            var partyMatch = System.Text.RegularExpressions.Regex.Match(rest,
-                @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (partyMatch.Success)
-            {
-                isParty = true;
-                partyPosition = partyMatch.Groups["party"].Value.Trim();
-                rest = (rest.Substring(0, partyMatch.Index) + " " + rest.Substring(partyMatch.Index + partyMatch.Length)).Trim();
-            }
-            else
-            {
-                var parenMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?<party>[^)]+)\)\s*");
-                if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
-                {
-                    isParty = true;
-                    partyPosition = parenMatch.Groups["party"].Value.Trim();
-                    rest = (rest.Substring(0, parenMatch.Index) + " " + rest.Substring(parenMatch.Index + parenMatch.Length)).Trim();
-                }
-            }
-
-            // Làm sạch chữ "Kiêm: " nếu có trong partyPosition
-            if (!string.IsNullOrWhiteSpace(partyPosition))
-            {
-                var m = System.Text.RegularExpressions.Regex.Match(partyPosition, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                if (m.Success)
-                {
-                    partyPosition = m.Groups[1].Value.Trim();
-                }
-            }
-
-            // 2. Tách nếu có dấu chấm phẩy ";" phân cách giữa Đảng và Chuyên môn
-            // Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp - Đội Thuế TP Hạ Long"
-            if (rest.Contains(";"))
-            {
-                var parts = rest.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
-                if (parts.Count >= 2)
-                {
-                    if (WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
-                    {
-                        isParty = true;
-                        partyPosition = parts[0];
-                        rest = string.Join("; ", parts.Skip(1));
-                    }
-                    else if (WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
-                    {
-                        isParty = true;
-                        partyPosition = parts[1];
-                        rest = parts[0];
-                    }
-                }
-            }
-
-            // 3. Tách nếu bắt đầu bằng Chức vụ Đảng + dấu phẩy: "Phó Bí thư, Đội trưởng..."
-            if (!isParty && rest.Contains(","))
-            {
-                int cIdx = rest.IndexOf(',');
-                string prefix = rest.Substring(0, cIdx).Trim();
-                string suffix = rest.Substring(cIdx + 1).Trim();
-                if (WorkHistoryRecord.IsPartyRoleText(prefix))
-                {
-                    isParty = true;
-                    partyPosition = prefix;
-                    rest = suffix;
-                }
-            }
-
-            // 4. Phân tách Chức vụ chuyên môn và Đơn vị công tác
-            if (rest.Contains(" - "))
-            {
-                int dashIdx = rest.IndexOf(" - ");
-                position = rest.Substring(0, dashIdx).Trim();
-                unit = rest.Substring(dashIdx + 3).Trim();
-            }
-            else if (rest.IndexOf(" tại ", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                int taiIdx = rest.IndexOf(" tại ", StringComparison.OrdinalIgnoreCase);
-                position = rest.Substring(0, taiIdx).Trim();
-                unit = rest.Substring(taiIdx + 5).Trim();
-            }
-            else
-            {
-                string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
-                bool found = false;
-                foreach (var m in markers)
-                {
-                    int mIdx = rest.IndexOf(m, StringComparison.OrdinalIgnoreCase);
-                    if (mIdx > 0)
-                    {
-                        position = rest.Substring(0, mIdx).Trim();
-                        unit = rest.Substring(mIdx).Trim();
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    int commaIdx = rest.IndexOf(',');
-                    if (commaIdx >= 0)
-                    {
-                        position = rest.Substring(0, commaIdx).Trim();
-                        unit = rest.Substring(commaIdx + 1).Trim();
-                    }
-                    else
-                    {
-                        position = rest;
-                        unit = "";
-                    }
-                }
-            }
-
-            // 5. Phân tách unit thành dept và org nếu có
-            dept = unit;
-            org = "";
-            if (unit.Contains(" - "))
-            {
-                int uDash = unit.IndexOf(" - ");
-                dept = unit.Substring(0, uDash).Trim();
-                org = unit.Substring(uDash + 3).Trim();
-            }
-            else if (unit.Contains(","))
-            {
-                int uComma = unit.IndexOf(',');
-                dept = unit.Substring(0, uComma).Trim();
-                org = unit.Substring(uComma + 1).Trim();
-            }
-        }
-
-        public static string GenerateDetailedWorkHistoryText(IEnumerable<WorkHistoryRecord> items)
-        {
-            if (items == null) return "";
-            var sb = new System.Text.StringBuilder();
-
-            foreach (var r in items.OrderBy(i => i.OrderIndex))
-            {
-                NormalizeWorkHistoryRecord(r);
-
-                string from = string.IsNullOrWhiteSpace(r.FromDate) ? "" : r.FromDate.Trim();
-                if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
-
-                string to = string.IsNullOrWhiteSpace(r.ToDate) ? "nay" : r.ToDate.Trim();
-                if (to.StartsWith("↓")) to = to.TrimStart('↓', ' ');
-
-                string timePart = "";
-                if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
-                {
-                    if (to.Equals("Hiện nay", StringComparison.OrdinalIgnoreCase) ||
-                        to.Equals("Đến nay", StringComparison.OrdinalIgnoreCase) ||
-                        to.Equals("nay", StringComparison.OrdinalIgnoreCase))
-                    {
-                        timePart = $"Từ {from} đến nay";
-                    }
-                    else
-                    {
-                        timePart = $"Từ {from} đến {to}";
-                    }
-                }
-                else if (!string.IsNullOrEmpty(from))
-                {
-                    timePart = $"Từ {from}";
-                }
-
-                // Chức vụ chuyên môn
-                string posPart = r.Position?.Trim() ?? "";
-
-                // Chức vụ Đảng: loại bỏ hoàn toàn chữ "Kiêm"
-                string cleanParty = r.PartyPosition?.Trim() ?? "";
-                if (!string.IsNullOrWhiteSpace(cleanParty))
-                {
-                    var m = System.Text.RegularExpressions.Regex.Match(cleanParty, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                    if (m.Success) cleanParty = m.Groups[1].Value.Trim();
-                }
-
-                // Quy tắc hiển thị quá trình công tác:
-                // Bên Đảng hiện TRƯỚC bên chuyên môn bằng dấu "; " (Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp")
-                // Tuyệt đối không để trong ngoặc đơn "()", không để chữ "Kiêm".
-                string rolePart = "";
-                bool hasParty = r.IsPartyConcurrent && !string.IsNullOrWhiteSpace(cleanParty);
-                bool hasPos = !string.IsNullOrWhiteSpace(posPart);
-
-                if (hasParty && hasPos)
-                {
-                    if (posPart.Equals(cleanParty, StringComparison.OrdinalIgnoreCase))
-                    {
-                        rolePart = posPart;
-                    }
-                    else if (posPart.StartsWith(cleanParty + ";", StringComparison.OrdinalIgnoreCase) ||
-                             posPart.StartsWith(cleanParty + ",", StringComparison.OrdinalIgnoreCase))
-                    {
-                        rolePart = posPart;
-                    }
-                    else
-                    {
-                        rolePart = $"{cleanParty}; {posPart}";
-                    }
-                }
-                else if (hasParty)
-                {
-                    rolePart = cleanParty;
-                }
-                else if (hasPos)
-                {
-                    rolePart = posPart;
-                }
-
-                // Đơn vị công tác
-                string rawUnit = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? r.DepartmentOrUnit.Trim() : "";
-                if (string.IsNullOrWhiteSpace(rawUnit))
-                {
-                    if (!string.IsNullOrWhiteSpace(r.Department) && !string.IsNullOrWhiteSpace(r.OrganizationUnit))
-                        rawUnit = $"{r.Department.Trim()} - {r.OrganizationUnit.Trim()}";
-                    else if (!string.IsNullOrWhiteSpace(r.Department))
-                        rawUnit = r.Department.Trim();
-                    else if (!string.IsNullOrWhiteSpace(r.OrganizationUnit))
-                        rawUnit = r.OrganizationUnit.Trim();
-                }
-
-                string unitPart = "";
-                if (!string.IsNullOrWhiteSpace(rawUnit))
-                {
-                    string u = rawUnit.TrimStart('-', ',', ' ').Trim();
-                    if (!string.IsNullOrEmpty(u))
-                    {
-                        if (posPart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase) ||
-                            rolePart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase))
-                        {
-                            unitPart = "";
-                        }
-                        else
-                        {
-                            unitPart = $" - {u}";
-                        }
-                    }
-                }
-
-                string notePart = !string.IsNullOrWhiteSpace(r.Note) ? $" ({r.Note.Trim()})" : "";
-
-                string lineContent = $"{rolePart}{unitPart}{notePart}".Trim().TrimEnd('.');
-                if (!string.IsNullOrEmpty(timePart))
-                {
-                    sb.AppendLine($"- {timePart}: {lineContent}");
-                }
-                else if (!string.IsNullOrEmpty(lineContent))
-                {
-                    sb.AppendLine($"- {lineContent}");
-                }
-            }
-
-            return sb.ToString().TrimEnd();
-        }
-
-        public static List<WorkHistoryRecord> ParseWorkHistoryTextToRecords(string text)
-        {
-            var result = new List<WorkHistoryRecord>();
-            if (string.IsNullOrWhiteSpace(text)) return result;
-
-            var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var pattern = new System.Text.RegularExpressions.Regex(
-                @"^(?:[-*•]\s*)?(?:Từ\s+)?(?:tháng\s+|ngày\s+)?(?<from>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4})\s*(?:đến|–|-|tới)\s*(?:tháng\s+|ngày\s+)?(?<to>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4}|nay|hiện nay|đến nay)[\s:–-]+(?<rest>.*)$",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-            int idx = 0;
-            foreach (var rawLine in lines)
-            {
-                string line = rawLine.Trim();
-                if (string.IsNullOrWhiteSpace(line)) continue;
-
-                var match = pattern.Match(line);
-                if (match.Success)
-                {
-                    string from = match.Groups["from"].Value.Trim();
-                    string to = match.Groups["to"].Value.Trim();
-                    if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase)) 
-                        to = "Hiện nay";
-
-                    string rest = match.Groups["rest"].Value.Trim().TrimEnd('.');
-                    string note = "";
-                    var noteMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
-                    if (noteMatch.Success)
-                    {
-                        string candidateNote = noteMatch.Groups["note"].Value.Trim();
-                        if (!WorkHistoryRecord.IsPartyRoleText(candidateNote) && !candidateNote.StartsWith("Kiêm", StringComparison.OrdinalIgnoreCase))
-                        {
-                            note = candidateNote;
-                            rest = rest.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
-                        }
-                    }
-
-                    ParsePositionUnitAndParty(rest, out string pos, out string unit, out string whDept, out string whOrg, out bool isParty, out string partyPos);
-
-                    result.Add(new WorkHistoryRecord
-                    {
-                        FromDate = from,
-                        ToDate = to,
-                        Position = pos,
-                        Department = whDept,
-                        OrganizationUnit = whOrg,
-                        DepartmentOrUnit = unit,
-                        IsPartyConcurrent = isParty,
-                        PartyPosition = partyPos,
-                        Note = note,
-                        OrderIndex = idx++
-                    });
-                }
-                else
-                {
-                    int colonIdx = line.IndexOf(':');
-                    if (colonIdx > 0)
-                    {
-                        string timePart = line.Substring(0, colonIdx).Trim().TrimStart('-', '*', '•', ' ').Trim();
-                        string restPart = line.Substring(colonIdx + 1).Trim().TrimEnd('.');
-
-                        string note = "";
-                        var noteMatch = System.Text.RegularExpressions.Regex.Match(restPart, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
-                        if (noteMatch.Success)
-                        {
-                            string candidateNote = noteMatch.Groups["note"].Value.Trim();
-                            if (!WorkHistoryRecord.IsPartyRoleText(candidateNote) && !candidateNote.StartsWith("Kiêm", StringComparison.OrdinalIgnoreCase))
-                            {
-                                note = candidateNote;
-                                restPart = restPart.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
-                            }
-                        }
-
-                        ParsePositionUnitAndParty(restPart, out string pos, out string unit, out string whDept2, out string whOrg2, out bool isParty2, out string partyPos2);
-
-                        string from = timePart;
-                        string to = "Hiện nay";
-
-                        var tm = System.Text.RegularExpressions.Regex.Match(
-                            timePart,
-                            @"^(?:Từ\s+)?(?:tháng\s+|ngày\s+)?(?<from>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4})(?:\s*(?:đến|–|-|tới)\s*(?:tháng\s+|ngày\s+)?(?<to>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4}|nay|hiện nay|đến nay))?",
-                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-
-                        if (tm.Success)
-                        {
-                            from = tm.Groups["from"].Value.Trim();
-                            if (tm.Groups["to"].Success && !string.IsNullOrWhiteSpace(tm.Groups["to"].Value))
-                            {
-                                to = tm.Groups["to"].Value.Trim();
-                                if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
-                                    to = "Hiện nay";
-                            }
-                            else
-                            {
-                                to = "Hiện nay";
-                            }
-                        }
-                        else
-                        {
-                            if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
-                            int denIndex = from.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
-                            if (denIndex > 0)
-                            {
-                                to = from.Substring(denIndex + 5).Trim();
-                                from = from.Substring(0, denIndex).Trim();
-                                if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
-                                    to = "Hiện nay";
-                            }
-                        }
-
-                        result.Add(new WorkHistoryRecord
-                        {
-                            FromDate = from,
-                            ToDate = to,
-                            Position = pos,
-                            Department = whDept2,
-                            OrganizationUnit = whOrg2,
-                            DepartmentOrUnit = unit,
-                            IsPartyConcurrent = isParty2,
-                            PartyPosition = partyPos2,
-                            Note = note,
-                            OrderIndex = idx++
-                        });
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        private void WorkHistoryMode_Changed(object sender, RoutedEventArgs e)
-        {
-            if (pnlWorkHistoryListMode == null || pnlWorkHistorySummaryMode == null || btnAddWorkHistory == null) return;
-
-            if (rbWorkHistoryList?.IsChecked == true)
-            {
-                pnlWorkHistoryListMode.Visibility = Visibility.Visible;
-                pnlWorkHistorySummaryMode.Visibility = Visibility.Collapsed;
-                btnAddWorkHistory.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                pnlWorkHistoryListMode.Visibility = Visibility.Collapsed;
-                pnlWorkHistorySummaryMode.Visibility = Visibility.Visible;
-                btnAddWorkHistory.Visibility = Visibility.Collapsed;
-
-                txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
-            }
-        }
-
-        private void txtSearchWorkHistory_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ApplyWorkHistoryFilterAndSort();
-        }
-
-        private void cboSortWorkHistory_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ApplyWorkHistoryFilterAndSort();
-        }
-
-        private void btnAddWorkHistory_Click(object sender, RoutedEventArgs e)
-        {
-            var dlg = new WorkHistoryDialog
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (dlg.ShowDialog() == true)
-            {
-                dlg.WorkHistory.OrderIndex = _workHistories.Count;
-                _workHistories.Add(dlg.WorkHistory);
-                txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
-                ApplyWorkHistoryFilterAndSort();
-            }
-        }
-
-        private void btnEditWorkHistory_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement fe && fe.Tag is WorkHistoryRecord item)
-            {
-                var dlg = new WorkHistoryDialog(item)
-                {
-                    Owner = Window.GetWindow(this)
-                };
-
-                if (dlg.ShowDialog() == true)
-                {
-                    txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
-                    ApplyWorkHistoryFilterAndSort();
-                }
-            }
-        }
-
-        private void btnDeleteWorkHistory_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement fe && fe.Tag is WorkHistoryRecord item)
-            {
-                var confirm = new ConfirmWindow(
-                    $"Bạn có chắc chắn muốn xóa giai đoạn công tác:\n\"{item.Position}\" ({item.FromDate} - {item.ToDate})?",
-                    "Xác nhận xóa")
-                {
-                    Owner = Window.GetWindow(this)
-                };
-
-                if (confirm.ShowDialog() == true)
-                {
-                    _workHistories.Remove(item);
-                    for (int i = 0; i < _workHistories.Count; i++)
-                    {
-                        _workHistories[i].OrderIndex = i;
-                    }
-                    txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
-                    ApplyWorkHistoryFilterAndSort();
-                }
-            }
-        }
-
-        private void btnCopyWorkHistorySummary_Click(object sender, RoutedEventArgs e)
-        {
-            if (!string.IsNullOrWhiteSpace(txtDetailedWorkHistory.Text))
-            {
-                Clipboard.SetText(txtDetailedWorkHistory.Text);
-                var success = new SuccessWindow("Sao chép thành công!", "Nội dung quá trình công tác đã được lưu vào bộ nhớ tạm.")
-                {
-                    Owner = Window.GetWindow(this)
-                };
-                success.ShowDialog();
-            }
-        }
-
-        private void btnSyncFromSummaryToPeriods_Click(object sender, RoutedEventArgs e)
-        {
-            string text = txtDetailedWorkHistory.Text?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                var warn = new WarningWindow("Ô văn bản tổng hợp đang trống!", "Chưa có nội dung")
-                {
-                    Owner = Window.GetWindow(this)
-                };
-                warn.ShowDialog();
-                return;
-            }
-
-            var parsed = ParseWorkHistoryTextToRecords(text);
-            if (parsed.Count == 0)
-            {
-                var warn = new WarningWindow(
-                    "Không tìm thấy các dòng giai đoạn phù hợp trong văn bản.\n(Gợi ý: Mỗi dòng bắt đầu bằng dấu gạch ngang '-', ví dụ: '- Từ 11/1994 đến 09/1997: Kiểm thu viên thuế, Chi cục Thuế huyện Hoành Bồ.')",
-                    "Không tìm thấy dữ liệu")
-                {
-                    Owner = Window.GetWindow(this)
-                };
-                warn.ShowDialog();
-                return;
-            }
-
-            var confirm = new ConfirmWindow(
-                $"Tìm thấy {parsed.Count} giai đoạn công tác từ văn bản.\nBạn có muốn thay thế danh sách các giai đoạn hiện tại bằng {parsed.Count} giai đoạn này không?",
-                "Xác nhận chuyển đổi")
-            {
-                Owner = Window.GetWindow(this)
-            };
-
-            if (confirm.ShowDialog() == true)
-            {
-                _workHistories.Clear();
-                foreach (var p in parsed)
-                {
-                    _workHistories.Add(p);
-                }
-                ApplyWorkHistoryFilterAndSort();
-                rbWorkHistoryList.IsChecked = true;
-
-                var success = new SuccessWindow("Chuyển đổi thành công!", $"Đã cập nhật {parsed.Count} giai đoạn công tác vào danh sách.")
-                {
-                    Owner = Window.GetWindow(this)
-                };
-                success.ShowDialog();
-            }
-        }
-        #endregion
-
-        #region Mouse Wheel Forwarding
-        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (e.Handled) return;
-
-            // Kiểm tra xem DataGrid này có ScrollViewer nội bộ đang cuộn được không
-            if (sender is DependencyObject dep)
-            {
-                var innerSv = FindVisualChild<ScrollViewer>(dep);
-                if (innerSv != null && innerSv.ScrollableHeight > 0)
-                {
-                    bool atTop = e.Delta > 0 && innerSv.VerticalOffset <= 0;
-                    bool atBottom = e.Delta < 0 && innerSv.VerticalOffset >= innerSv.ScrollableHeight;
-                    if (!atTop && !atBottom)
-                    {
-                        // ScrollViewer nội bộ vẫn cuộn được nội dung bảng -> để DataGrid tự cuộn
-                        return;
-                    }
-                }
-            }
-
-            // Chặn sự kiện tunneling để ScrollViewer nội bộ của DataGrid không nuốt mất sự kiện
-            e.Handled = true;
-
-            // Tạo sự kiện bubbling MouseWheel mới để gửi lên ScrollViewer cha
-            var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
-            {
-                RoutedEvent = UIElement.MouseWheelEvent,
-                Source = sender
-            };
-
-            var parent = ((FrameworkElement)sender).Parent as UIElement 
-                         ?? VisualTreeHelper.GetParent((DependencyObject)sender) as UIElement;
-            parent?.RaiseEvent(eventArg);
-
-            // Dự phòng: Nếu sự kiện không được xử lý qua bubbling, cuộn trực tiếp ScrollViewer tổ tiên
-            if (!eventArg.Handled)
-            {
-                DependencyObject? curr = VisualTreeHelper.GetParent((DependencyObject)sender);
-                while (curr != null)
-                {
-                    if (curr is ScrollViewer sv)
-                    {
-                        if (e.Delta > 0)
-                            sv.LineUp();
-                        else
-                            sv.LineDown();
-                        break;
-                    }
-                    curr = VisualTreeHelper.GetParent(curr);
-                }
-            }
-        }
-
-        private static T? FindVisualChild<T>(DependencyObject? obj) where T : DependencyObject
-        {
-            if (obj == null) return null;
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T t)
-                    return t;
-                T? childOfChild = FindVisualChild<T>(child);
-                if (childOfChild != null)
-                    return childOfChild;
-            }
-            return null;
-        }
-        #endregion
-    }
-}
+using TaxPersonnelManagement.Services;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using MaterialDesignThemes.Wpf;
+using Microsoft.EntityFrameworkCore;
+using TaxPersonnelManagement.Data;
+using TaxPersonnelManagement.Helpers;
+using TaxPersonnelManagement.Models;
+namespace TaxPersonnelManagement.Views
+{
+    public partial class PersonnelDetailView : UserControl
+    {
+        private Personnel? _personnel;
+        private string? _currentAvatarBase64;
+        private bool _isAvatarChanged = false;
+        private bool _isRefreshing = false;
+        private bool _isFormatting = false;
+        private List<Position> _allPositions = new List<Position>();
+        private SalaryRecord? _editingSalaryRecord;
+        private EvaluationRecord? _editingEvaluationRecord;
+        private readonly System.Collections.ObjectModel.ObservableCollection<WorkHistoryRecord> _workHistories = new();
+
+        /// <summary>
+        /// Khởi tạo màn hình chi tiết hồ sơ cán bộ.
+        /// </summary>
+        /// <param name="personnel">Đối tượng cán bộ cần hiển thị. Nếu thêm mới thì truyền null.</param>
+        public PersonnelDetailView(Personnel? personnel, int activeTab = 0)
+        {
+            InitializeComponent();
+            dpPositionCalculationDate.SelectedDate = DateTime.Now;
+            try { LoadSalaryDelayReasons(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
+            try { LoadDisciplineTypes(); } catch { /* Bỏ qua lỗi khởi tạo CSDL */ }
+            _personnel = personnel;
+
+            _isRefreshing = true; // NGĂN CHẶN TÍNH TOÁN TỰ ĐỘNG TRONG QUÁ TRÌNH NẠP DỮ LIỆU BAN ĐẦU
+
+            // Nạp dữ liệu danh mục trước
+            LoadDepartments();
+            LoadPositions();
+            LoadRanks();
+
+            if (_personnel != null)
+            {
+                // Nạp dữ liệu cán bộ
+                txtStaffId.Text = _personnel.StaffId;
+                txtName.Text = _personnel.FullName;
+                SetComboBoxByContent(cboGender, _personnel.Gender);
+                dpDOB.SelectedDate = _personnel.DateOfBirth;
+                txtPhone.Text = FormatPhoneNumber(_personnel.PhoneNumber);
+                txtIdentityNumber.Text = _personnel.IdentityCardNumber;
+                txtIdentityPlace.Text = _personnel.IdentityCardPlace;
+                txtEmail.Text = _personnel.Email;
+                txtSocialInsurance.Text = _personnel.SocialSecurityNumber;
+                txtBirthPlace.Text = _personnel.BirthPlace;
+                txtHometown.Text = _personnel.Hometown;
+                txtCurrentResidence.Text = _personnel.CurrentResidence;
+                txtEthnicity.Text = _personnel.Ethnicity;
+                txtReligion.Text = _personnel.Religion;
+
+                // Thông tin công tác (Phòng ban và Chức vụ đã được thiết lập qua LoadDepartments và LoadPositions)
+
+                txtRankName.Text = _personnel.RankName;
+                dpStartDate.SelectedDate = _personnel.TaxAuthorityStartDate;
+                SetComboBoxByContent(cboStatus, _personnel.Status ?? "Đang công tác");
+                txtStatusDecisionNumber.Text = _personnel.StatusDecisionNumber ?? "";
+                dpStatusDecisionDate.SelectedDate = _personnel.StatusDecisionDate;
+                dpStatusEffectiveDate.SelectedDate = _personnel.StatusEffectiveDate;
+                txtStatusDecisionUnit.Text = _personnel.StatusDecisionUnit ?? "";
+
+
+                // Trình độ học vấn & Chuyên môn
+                SetComboBoxByContent(cboEducationLevel, _personnel.EducationLevel);
+                txtMajor.Text = _personnel.Major;
+                txtUniversity.Text = _personnel.University;
+                SetComboBoxByContent(cboStateManagement, _personnel.StateManagementLevel);
+                SetComboBoxByContent(cboPoliticalTheory, _personnel.PoliticalTheoryLevel);
+                txtITSkill.Text = _personnel.ITSkillLevel;
+
+                txtLanguageSkill.Text = _personnel.LanguageSkillLevel;
+                UpdateDegreeBadges();
+
+                // Tab 2: Thời gian giữ vị trí công tác
+                dpPositionDecisionDate.SelectedDate = _personnel.PositionDecisionDate;
+                
+                string currentStatus = _personnel.Status ?? "";
+                bool isNonWorking = !string.IsNullOrEmpty(currentStatus) && !currentStatus.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+                if (isNonWorking && _personnel.StatusEffectiveDate.HasValue)
+                {
+                    dpPositionCalculationDate.SelectedDate = _personnel.StatusEffectiveDate.Value;
+                }
+                else if (_personnel.PositionCalculationDate.HasValue)
+                {
+                    dpPositionCalculationDate.SelectedDate = _personnel.PositionCalculationDate.Value;
+                }
+                else
+                {
+                    dpPositionCalculationDate.SelectedDate = DateTime.Now;
+                }
+                txtPositionYear.Text = _personnel.PositionYear;
+                txtDetailedWorkHistory.Text = _personnel.DetailedWorkHistory;
+                LoadWorkHistoriesForPersonnel();
+
+                CalculateWorkDuration();
+
+                // Tab 3: Thông tin nghỉ hưu
+                dpRetirementDate.SelectedDate = _personnel.RetirementDate;
+                CalculateRetirementInfo();
+
+                // Tab 4: Thông tin Đảng viên
+                dpPartyEntryDate.SelectedDate = _personnel.PartyEntryDate;
+                dpPartyOfficialDate.SelectedDate = _personnel.PartyOfficialDate;
+                CalculatePartyAge();
+                txtPartyCell.Text = _personnel.PartyCell ?? "";
+                txtPartyIntroducer1Name.Text = _personnel.PartyIntroducer1Name ?? "";
+                txtPartyIntroducer1Position.Text = _personnel.PartyIntroducer1Position ?? "";
+                txtPartyIntroducer1Workplace.Text = _personnel.PartyIntroducer1Workplace ?? "";
+                txtPartyIntroducer2Name.Text = _personnel.PartyIntroducer2Name ?? "";
+                txtPartyIntroducer2Position.Text = _personnel.PartyIntroducer2Position ?? "";
+                txtPartyIntroducer2Workplace.Text = _personnel.PartyIntroducer2Workplace ?? "";
+                txtPartyIntroducingOrganization.Text = _personnel.PartyIntroducingOrganization ?? "";
+                dpPartyDecisionDate.SelectedDate = _personnel.PartyDecisionDate;
+
+                // Tab 6: Thông tin lương
+                cboSalaryStep.SelectedValue = _personnel.CurrentSalaryStep; // Use SelectedValue
+                txtSalaryCoefficient.Text = _personnel.CurrentSalaryCoefficient.ToString();
+                txtExceedFrame.Text = _personnel.ExceedFramePercent.ToString();
+                txtPositionAllowance.Text = _personnel.PositionAllowance;
+                dpSalaryReservation.SelectedDate = _personnel.SalaryReservationDeadline;
+                dpNextSalaryStepDate.SelectedDate = _personnel.NextSalaryStepDate;
+
+                SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
+
+                dpExpectedSalaryIncrease.SelectedDate = _personnel.ExpectedSalaryIncreaseDate;
+                // Nạp lịch sử diễn biến lương
+                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+                RefreshSalaryHistoryGrid();
+
+                // Tab 5: Thông tin nghỉ phép
+                dpLeaveCalculationDate.SelectedDate = _personnel.LeaveCalculationDate;
+                // Đảm bảo danh sách không bị null
+                if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
+                RefreshLeaveHistoryGrid();
+                // UpdateLeaveStatistics(); // Handled by CalculateAnnualLeave via CalculateWorkDuration
+
+                // Tab 7: Khen thưởng
+                txtEmulationTitles.Text = _personnel.EmulationTitles;
+                txtRewardForms.Text = _personnel.RewardForms;
+
+                // Tab 8: Kỷ luật
+                if (!string.IsNullOrEmpty(_personnel.DisciplineType))
+                    SetComboBoxByContent(cboDisciplineType, _personnel.DisciplineType);
+
+                txtDisciplineNumber.Text = _personnel.DisciplineDecisionNumber;
+                dpDisciplineDate.SelectedDate = _personnel.DisciplineDecisionDate;
+                txtDisciplineReason.Text = _personnel.DisciplineReason;
+
+                // Nạp dữ liệu đánh giá xếp loại
+                if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new System.Collections.Generic.List<EvaluationRecord>();
+                RefreshEvaluationHistoryGrid();
+
+                // Nạp ảnh đại diện
+                if (!string.IsNullOrEmpty(_personnel.AvatarBase64))
+                {
+                    try
+                    {
+                        var bitmap = Base64ToImage(_personnel.AvatarBase64);
+                        imgAvatar.Fill = new System.Windows.Media.ImageBrush(bitmap) { Stretch = System.Windows.Media.Stretch.UniformToFill };
+                        iconAvatarPlaceholder.Visibility = Visibility.Collapsed;
+                        btnRemoveAvatar.Visibility = Visibility.Visible;
+                    }
+                    catch { /* Bỏ qua dữ liệu ảnh không hợp lệ */ }
+                }
+            }
+            else
+            {
+                txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
+                LoadWorkHistoriesForPersonnel();
+            }
+
+            if (_personnel != null)
+            {
+                lblSaveText.Text = "Cập nhật";
+            }
+            else
+            {
+                lblSaveText.Text = "Lưu Hồ Sơ";
+            }
+
+            // Initial Calculation to ensure consistency
+            if (_personnel == null || !dpExpectedSalaryIncrease.SelectedDate.HasValue)
+            {
+                // Chỉ tự động tính ngày dự kiến lên lương nếu thêm mới
+                // hoặc ngày đã lưu bị rỗng
+                bool wasRefreshing = _isRefreshing;
+                _isRefreshing = false; // Tạm mở khóa để hàm cập nhật
+                CalculateExpectedSalaryDate();
+                _isRefreshing = wasRefreshing;
+            }
+
+            CalculateAnnualLeave(DateTime.Now); // Force recalculation with valid _personnel
+            RefreshLeaveHistoryGrid(); // Populate and clean leave history
+
+            // Initialize Year ComboBox
+            var currentYear = DateTime.Now.Year;
+            var startYear = 2025;
+            var years = new List<int>();
+            for (int i = startYear; i <= currentYear; i++) years.Add(i);
+            cboLeaveYear.ItemsSource = years;
+            cboLeaveYear.SelectedItem = currentYear;
+
+            // Event for Year Change
+            cboLeaveYear.SelectionChanged += (s, e) => { UpdateLeaveStatistics(); };
+
+            LoadLeaveYears();
+            LoadEvaluationYears();
+            ApplyAuthorization();
+
+            if (_personnel == null)
+            {
+                SetComboBoxByContent(cboStatus, "Đang công tác");
+            }
+            UpdateStatusDecisionFieldsState();
+
+            _isRefreshing = false; // HOÀN TẤT NẠP DỮ LIỆU BAN ĐẦU
+            CalculateExpectedSalaryDate();
+
+            if (activeTab > 0 && tcPersonnelDetails != null && activeTab < tcPersonnelDetails.Items.Count)
+            {
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    tcPersonnelDetails.SelectedIndex = activeTab;
+                }), System.Windows.Threading.DispatcherPriority.Loaded);
+            }
+        }
+
+        /// <summary>
+        /// Phân quyền hiển thị các chức năng thêm/sửa/xóa tùy theo Role của người dùng đăng nhập.
+        /// </summary>
+        private void ApplyAuthorization()
+        {
+            // Kiểm tra quyền lưu/cập nhật hồ sơ
+            bool canEdit = PermissionService.HasPermission(PermissionRegistry.Personnel_AddEdit);
+            btnSave.Visibility = canEdit ? Visibility.Visible : Visibility.Collapsed;
+
+            // Kiểm tra quyền các popup danh mục select
+            btnAddDepartment.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_Department) ? Visibility.Visible : Visibility.Collapsed;
+            btnAddPosition.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_Position) ? Visibility.Visible : Visibility.Collapsed;
+            btnAddRank.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_Rank) ? Visibility.Visible : Visibility.Collapsed;
+            if (btnConfigSalary != null) btnConfigSalary.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_SalaryConfig) ? Visibility.Visible : Visibility.Collapsed;
+            if (btnSalaryDelayConfig != null) btnSalaryDelayConfig.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_SalaryDelay) ? Visibility.Visible : Visibility.Collapsed;
+            if (btnAddDisciplineType != null) btnAddDisciplineType.Visibility = PermissionService.HasPermission(PermissionRegistry.Catalog_Discipline) ? Visibility.Visible : Visibility.Collapsed;
+
+            // Kiểm tra quyền nghiệp vụ con
+            bool canManageLeave = PermissionService.HasPermission(PermissionRegistry.Leave_Manage);
+            btnAddLeave.Visibility = canManageLeave ? Visibility.Visible : Visibility.Collapsed;
+
+            bool canManageSalary = PermissionService.HasPermission(PermissionRegistry.Salary_Update);
+            btnAddSalaryHistory.Visibility = canManageSalary ? Visibility.Visible : Visibility.Collapsed;
+
+            bool canManageEvaluation = PermissionService.HasPermission(PermissionRegistry.Evaluation_Manage);
+            btnAddEvaluation.Visibility = canManageEvaluation ? Visibility.Visible : Visibility.Collapsed;
+
+            if (!canEdit)
+            {
+                btnRemoveAvatar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void AdminOnly_Loaded(object? sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser?.Role == UserRole.Staff && sender is FrameworkElement element)
+            {
+                element.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void LoadLeaveYears(int? includeYear = null)
+        {
+            if (cboLeaveYear == null) return;
+
+            var currentYear = DateTime.Now.Year;
+            var startYear = 2025;
+            var years = new List<int>();
+
+            // Logic: Iterate 2025 to CurrentYear
+            for (int i = startYear; i <= currentYear; i++)
+            {
+                // Always add current year
+                if (i == currentYear)
+                {
+                    years.Add(i);
+                    continue;
+                }
+
+                // Add if explicitly included (e.g. editing old record)
+                if (includeYear.HasValue && i == includeYear.Value)
+                {
+                    years.Add(i);
+                    continue;
+                }
+
+                // Add if has remaining days
+                if (GetRemainingAnnualLeaveDays(i) > 0)
+                {
+                    years.Add(i);
+                }
+            }
+
+            // Preserve selection if possible
+            var previouslySelected = cboLeaveYear.SelectedItem;
+
+            cboLeaveYear.ItemsSource = years;
+
+            if (previouslySelected is int val && years.Contains(val))
+            {
+                cboLeaveYear.SelectedItem = val;
+            }
+            else
+            {
+                cboLeaveYear.SelectedItem = currentYear;
+            }
+        }
+
+        private void LoadDepartments()
+        {
+            var deptOrder = new System.Collections.Generic.List<string> {
+                "Ban lãnh đạo",
+                "Tổ Hành chính, tổng hợp",
+                "Tổ Kiểm tra số 1",
+                "Tổ Kiểm tra số 2",
+                "Tổ Kiểm tra số 3",
+                "Tổ Nghiệp vụ, dự toán, pháp chế",
+                "Tổ Quản lý các khoản thu khác",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1",
+                "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 2",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 1",
+                "Tổ Quản lý, hỗ trợ doanh nghiệp số 2"
+            };
+
+            using (var context = new AppDbContext())
+            {
+                // Nạp danh sách từ bảng Phòng ban (Departments)
+                var dbDepts = context.Departments.Select(d => d.Name).ToList();
+
+                // Thêm bộ phận hiện tại của nhân sự đang xem (nếu chưa có trong danh mục)
+                if (_personnel != null && !string.IsNullOrEmpty(_personnel.Department) && !dbDepts.Contains(_personnel.Department))
+                {
+                    dbDepts.Add(_personnel.Department);
+                }
+
+                var allDepts = dbDepts.Where(x => !string.IsNullOrEmpty(x))
+                                      .Distinct()
+                                      .OrderBy(x => DepartmentSorter.GetSortKey(x).Order)
+                                      .ThenBy(x => DepartmentSorter.GetSortKey(x).Number)
+                                      .ThenBy(x => x)
+                                      .ToList();
+                allDepts.Insert(0, "");
+
+                cboDepartment.ItemsSource = allDepts;
+
+                if (_personnel != null)
+                {
+                    SetComboBoxByContent(cboDepartment, _personnel.Department);
+                }
+            }
+        }
+
+        private void cboDepartment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_isRefreshing) return;
+            UpdatePositionFilter();
+        }
+
+        private void UpdatePositionFilter()
+        {
+            if (cboDepartment == null || cboPosition == null) return;
+
+            string selectedDept = "";
+            if (cboDepartment.SelectedItem != null)
+            {
+                selectedDept = cboDepartment.SelectedItem.ToString() ?? "";
+            }
+            else if (!string.IsNullOrEmpty(cboDepartment.Text))
+            {
+                selectedDept = cboDepartment.Text;
+            }
+
+            System.Collections.Generic.List<string> filtered;
+
+            if (string.IsNullOrEmpty(selectedDept))
+            {
+                filtered = new System.Collections.Generic.List<string>();
+            }
+            else
+            {
+                var leadershipPositions = new[] { 
+                    "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng", 
+                    "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
+                    "Cục trưởng", "Phó Cục trưởng"
+                };
+                var unitPositions = new[] { 
+                    "Đội trưởng", "Phó Đội trưởng", "Trưởng phòng", "Phó Trưởng phòng",
+                    "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên" 
+                };
+
+                bool isLeadershipDept = selectedDept.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase);
+
+                filtered = _allPositions.Where(pos =>
+                {
+                    if (string.IsNullOrWhiteSpace(pos.Name))
+                        return false;
+
+                    // Ưu tiên kiểm tra GroupType (Ban lãnh đạo / Các tổ / null = tất cả)
+                    if (!string.IsNullOrEmpty(pos.GroupType))
+                    {
+                        if (isLeadershipDept)
+                            return pos.GroupType.Equals("Ban lãnh đạo", StringComparison.OrdinalIgnoreCase);
+                        else
+                            return pos.GroupType.Equals("Các tổ", StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    if (!string.IsNullOrEmpty(pos.DepartmentName))
+                    {
+                        if (pos.DepartmentName.Equals(selectedDept, StringComparison.OrdinalIgnoreCase))
+                            return true;
+
+                        if (pos.DepartmentName.Equals("Các tổ", StringComparison.OrdinalIgnoreCase) &&
+                            selectedDept.Contains("Tổ", StringComparison.OrdinalIgnoreCase))
+                            return true;
+
+                        return false;
+                    }
+
+                    // Fallback cho chức vụ có GroupType và DepartmentName rỗng/null:
+                    if (isLeadershipDept)
+                    {
+                        return leadershipPositions.Any(lp => lp.Equals(pos.Name, StringComparison.OrdinalIgnoreCase));
+                    }
+                    else
+                    {
+                        return unitPositions.Any(up => up.Equals(pos.Name, StringComparison.OrdinalIgnoreCase));
+                    }
+                })
+                .Select(pos => pos.Name)
+                .Distinct()
+                .ToList();
+            }
+
+            var currentPos = cboPosition.SelectedItem?.ToString() ?? (_personnel?.Position);
+
+            filtered.Insert(0, "");
+            cboPosition.ItemsSource = filtered;
+
+            if (!string.IsNullOrEmpty(currentPos) && filtered.Any(f => f.Equals(currentPos, StringComparison.OrdinalIgnoreCase)))
+            {
+                SetComboBoxByContent(cboPosition, currentPos);
+            }
+            else
+            {
+                cboPosition.SelectedIndex = 0;
+            }
+        }
+
+
+        private void btnAddDepartment_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_Department, "Quản lý danh mục Bộ phận / Phòng ban")) return;
+            var dialog = new AddDepartmentDialog(); // No args
+            if (dialog.ShowDialog() == true)
+            {
+                LoadDepartments(); // Reload list from DB
+
+                if (!string.IsNullOrEmpty(dialog.SelectedDepartment))
+                {
+                    cboDepartment.SelectedItem = dialog.SelectedDepartment;
+                    cboDepartment.Text = dialog.SelectedDepartment;
+                }
+            }
+        }
+
+        private void btnConfigSalary_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_SalaryConfig, "Cấu hình Bảng lương & Lương cơ sở")) return;
+            var dialog = new SalaryConfigDialog();
+            dialog.Owner = Window.GetWindow(this);
+            dialog.ShowDialog();
+
+            // Cập nhật lại các bậc lương theo ngạch đã chọn
+            if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
+            {
+                LoadSalarySteps(selectedRank.Code);
+            }
+        }
+
+        private void LoadPositions()
+        {
+            var posOrder = new System.Collections.Generic.List<string> {
+                "Chi cục trưởng",
+                "Quyền Chi cục trưởng",
+                "Phó Chi cục trưởng",
+                "Trưởng Thuế cơ sở",
+                "Quyền Trưởng Thuế cơ sở",
+                "Phó Trưởng Thuế cơ sở",
+                "Đội trưởng",
+                "Trưởng phòng",
+                "Phó Đội trưởng",
+                "Phó Trưởng phòng",
+                "Tổ trưởng",
+                "Phó Tổ trưởng",
+                "Công chức",
+                "Nhân viên"
+            };
+
+            using (var context = new AppDbContext())
+            {
+                var leadershipNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
+                    "Chi cục trưởng", "Quyền Chi cục trưởng", "Phó Chi cục trưởng",
+                    "Trưởng Thuế cơ sở", "Quyền Trưởng Thuế cơ sở", "Phó Trưởng Thuế cơ sở",
+                    "Cục trưởng", "Phó Cục trưởng"
+                };
+                var unitNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) {
+                    "Đội trưởng", "Trưởng phòng", "Phó Đội trưởng", "Phó Trưởng phòng",
+                    "Tổ trưởng", "Phó Tổ trưởng", "Công chức", "Nhân viên"
+                };
+
+                var unclassified = context.Positions.Where(p => p.DepartmentName != "__ĐẢNG__" && string.IsNullOrEmpty(p.GroupType)).ToList();
+                if (unclassified.Any())
+                {
+                    foreach (var p in unclassified)
+                    {
+                        if (leadershipNames.Contains(p.Name)) p.GroupType = "Ban lãnh đạo";
+                        else if (unitNames.Contains(p.Name)) p.GroupType = "Các tổ";
+                    }
+                    try { context.SaveChanges(); } catch { }
+                }
+
+                var dbPos = context.Positions.ToList();
+
+                _allPositions = dbPos.Where(x => !string.IsNullOrEmpty(x.Name) && x.DepartmentName != "__ĐẢNG__" && x.DepartmentName != "__QUY_HOẠCH__")
+                                  .GroupBy(x => x.Name.ToLower())
+                                  .Select(g => g.First())
+                                  .OrderBy(x =>
+                                  {
+                                      int idx = posOrder.FindIndex(p => p.Equals(x.Name, StringComparison.OrdinalIgnoreCase));
+                                      return idx == -1 ? 999 : idx;
+                                  })
+                                  .ThenBy(x => x.Name)
+                                  .ToList();
+
+                UpdatePositionFilter();
+            }
+        }
+
+        private void btnAddPosition_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_Position, "Quản lý danh mục Chức vụ")) return;
+            var dialog = new AddPositionDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                LoadPositions();
+
+                if (!string.IsNullOrEmpty(dialog.SelectedPosition))
+                {
+                    cboPosition.SelectedItem = dialog.SelectedPosition;
+                    cboPosition.Text = dialog.SelectedPosition;
+                }
+            }
+        }
+
+        private void LoadRanks()
+        {
+            using (var context = new AppDbContext())
+            {
+                var dbRanks = context.Ranks.ToList();
+
+                // Nếu nhân sự đang xem có mã ngạch không tồn tại trong danh mục chính, thêm mã ngạch đó vào danh sách hiển thị
+                if (_personnel != null && !string.IsNullOrEmpty(_personnel.RankCode) && !dbRanks.Any(r => r.Code == _personnel.RankCode))
+                {
+                    dbRanks.Add(new Rank { Code = _personnel.RankCode, Name = _personnel.RankName ?? "" });
+                }
+
+                var sortedRanks = dbRanks.OrderBy(r => r.Code).ToList();
+                sortedRanks.Insert(0, new Rank { Code = "", Name = "" });
+
+                cboRankCode.ItemsSource = sortedRanks;
+                cboRankCode.DisplayMemberPath = "Code";
+                cboRankCode.SelectedValuePath = "Code";
+
+                // Also populate the history input section
+                cboSalaryHistRankCode.ItemsSource = sortedRanks;
+                cboSalaryHistRankCode.DisplayMemberPath = "Code";
+                cboSalaryHistRankCode.SelectedValuePath = "Code";
+
+                if (_personnel != null)
+                {
+                    cboRankCode.SelectedValue = _personnel.RankCode;
+                    if (!string.IsNullOrEmpty(_personnel.RankCode))
+                    {
+                        LoadSalarySteps(_personnel.RankCode);
+                    }
+                }
+            }
+        }
+
+        private void cboStatus_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateStatusDecisionFieldsState();
+            SyncPositionCalculationDateWithStatus();
+        }
+
+        private void dpStatusEffectiveDate_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            SyncPositionCalculationDateWithStatus();
+        }
+
+        private void SyncPositionCalculationDateWithStatus()
+        {
+            if (dpPositionCalculationDate == null || cboStatus == null) return;
+
+            string status = GetCurrentStatus();
+            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+            if (!isWorking)
+            {
+                if (dpStatusEffectiveDate != null && dpStatusEffectiveDate.SelectedDate.HasValue)
+                {
+                    dpPositionCalculationDate.SelectedDate = dpStatusEffectiveDate.SelectedDate.Value;
+                }
+            }
+            else
+            {
+                dpPositionCalculationDate.SelectedDate = DateTime.Now;
+            }
+        }
+
+        private string GetCurrentStatus()
+        {
+            if (cboStatus == null) return "";
+            if (cboStatus.SelectedItem is ComboBoxItem item && item.Content != null)
+                return item.Content.ToString() ?? "";
+            if (cboStatus.SelectedItem is string str)
+                return str;
+            return cboStatus.Text ?? "";
+        }
+
+        private DateTime? GetPositionCalculationDateToSave()
+        {
+            string status = GetCurrentStatus();
+            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+            if (!isWorking)
+            {
+                return dpPositionCalculationDate.SelectedDate ?? dpStatusEffectiveDate.SelectedDate;
+            }
+
+            return (dpPositionCalculationDate.SelectedDate.HasValue && dpPositionCalculationDate.SelectedDate.Value.Date == DateTime.Now.Date)
+                ? null
+                : dpPositionCalculationDate.SelectedDate;
+        }
+
+        /// <summary>
+        /// Cập nhật trạng thái hiển thị của 4 ô thông tin quyết định (Số QĐ, Ngày ra QĐ, Ngày thực hiện, Đơn vị ra QĐ).
+        /// Ngoại trừ 'Đang công tác', các trạng thái còn lại sẽ sáng lên để nhập; nếu là 'Đang công tác' thì làm mờ và vô hiệu hóa.
+        /// </summary>
+        private void UpdateStatusDecisionFieldsState()
+        {
+            if (gridStatusDecision == null || cboStatus == null) return;
+
+            string status = GetCurrentStatus();
+            bool isWorking = string.IsNullOrEmpty(status) || status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+
+            gridStatusDecision.IsEnabled = !isWorking;
+            gridStatusDecision.Opacity = isWorking ? 0.45 : 1.0;
+        }
+
+        private void LoadSalaryDelayReasons()
+        {
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                    try
+                    {
+                        var reasons = context.SalaryDelayReasons.OrderBy(r => r.Id).Select(r => r.Name).ToList();
+
+                        cboSalaryDelay.Items.Clear();
+                        cboSalaryDelay.Items.Add("-- Không lùi --");
+                        foreach (var r in reasons)
+                        {
+                            if (!r.Contains("Nghỉ không lương", StringComparison.OrdinalIgnoreCase))
+                            {
+                                cboSalaryDelay.Items.Add(r);
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // Fallback: Table might not exist, create it manually
+                        // Use FRESH context
+                        using (var repairContext = new AppDbContext())
+                        {
+                            // 1. Create SQL
+                            repairContext.Database.ExecuteSqlRaw(@"
+                                CREATE TABLE IF NOT EXISTS SalaryDelayReasons (
+                                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    Name TEXT NOT NULL
+                                );");
+
+                            // 2. Kiểm tra và chèn bằng câu lệnh SQL
+                            var count = -1;
+                            using (var command = repairContext.Database.GetDbConnection().CreateCommand())
+                            {
+                                command.CommandText = "SELECT COUNT(*) FROM SalaryDelayReasons";
+                                repairContext.Database.OpenConnection();
+                                try
+                                {
+                                    var result = command.ExecuteScalar();
+                                    if (result != null) count = Convert.ToInt32(result);
+                                }
+                                catch { }
+                                repairContext.Database.CloseConnection();
+                            }
+
+                            if (count == 0)
+                            {
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (1, 'Lùi 3 tháng (Khiển trách)')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (2, 'Lùi 6 tháng (Cảnh cáo)')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (3, 'Lùi 12 tháng (Giáng chức/Cách chức)')");
+                                repairContext.Database.ExecuteSqlRaw("INSERT INTO SalaryDelayReasons (Id, Name) VALUES (4, 'Nghỉ không lương')");
+                            }
+                        }
+
+                        // Thử nạp lại với DbContext mới
+                        using (var retryContext = new AppDbContext())
+                        {
+                            var retryReasons = retryContext.SalaryDelayReasons.OrderBy(r => r.Id).Select(r => r.Name).ToList();
+                            cboSalaryDelay.Items.Clear();
+                            cboSalaryDelay.Items.Add("-- Không lùi --");
+                            foreach (var r in retryReasons)
+                            {
+                                if (!r.Contains("Nghỉ không lương", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    cboSalaryDelay.Items.Add(r);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_personnel != null)
+                    {
+                        SetSalaryDelaySelection(_personnel.SalaryIncreaseDelayType);
+                    }
+                    else
+                    {
+                        SetSalaryDelaySelection(null);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Phương án dự phòng cuối: hiển thị danh sách mặc định
+                cboSalaryDelay.Items.Clear();
+                cboSalaryDelay.Items.Add("-- Không lùi --");
+                cboSalaryDelay.Items.Add("Lùi 3 tháng (Khiển trách)");
+                cboSalaryDelay.Items.Add("Lùi 6 tháng (Cảnh cáo)");
+                cboSalaryDelay.Items.Add("Lùi 12 tháng (Giáng chức/Cách chức)");
+                System.Diagnostics.Debug.WriteLine($"Error loading salary delay reasons: {ex.Message}");
+            }
+        }
+
+        private void btnSalaryDelayConfig_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_SalaryDelay, "Cấu hình Kéo dài thời hạn nâng bậc lương")) return;
+            var dialog = new SalaryDelayConfigDialog();
+            dialog.Owner = Window.GetWindow(this);
+            dialog.ShowDialog();
+            LoadSalaryDelayReasons(); // Refresh after close
+        }
+
+        private void cboRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (cboRankCode.SelectedItem is Rank selectedRank && !string.IsNullOrEmpty(selectedRank.Code))
+            {
+                if (!string.IsNullOrEmpty(selectedRank.Name))
+                    txtRankName.Text = selectedRank.Name;
+                else
+                    txtRankName.Text = "";
+
+                LoadSalarySteps(selectedRank.Code);
+            }
+            else
+            {
+                // Xóa danh sách bậc lương nếu bỏ chọn ngạch hoặc chọn ngạch trống
+                cboSalaryStep.ItemsSource = null;
+                txtRankName.Text = "";
+            }
+            CalculateExpectedSalaryDate();
+        }
+
+        private void cboSalaryHistRankCode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (cboSalaryHistRankCode.SelectedItem is Rank selectedRank)
+            {
+                LoadSalaryHistSteps(selectedRank.Code);
+            }
+            else
+            {
+                cboSalaryHistStep.ItemsSource = null;
+            }
+        }
+
+        private void LoadSalaryHistSteps(string rankCode)
+        {
+            try
+            {
+                using (var context = new AppDbContext())
+                {
+                    var steps = context.RankSalarySpecs
+                                       .Where(s => s.RankCode == rankCode)
+                                       .ToList()
+                                       .OrderBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 0 && int.TryParse(parts[0], out int val))
+                                               return val;
+                                           return 999;
+                                       })
+                                       .ThenBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 1 && int.TryParse(parts[1], out int val))
+                                               return val;
+                                           return 999;
+                                       })
+                                       .ToList();
+
+                    cboSalaryHistStep.ItemsSource = steps;
+                    cboSalaryHistStep.DisplayMemberPath = "SalaryStep";
+                    cboSalaryHistStep.SelectedValuePath = "SalaryStep";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading salary hist steps: {ex.Message}");
+            }
+        }
+
+        private void LoadSalarySteps(string rankCode)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(rankCode))
+                {
+                    cboSalaryStep.ItemsSource = null;
+                    return;
+                }
+                using (var context = new AppDbContext())
+                {
+                    var steps = context.RankSalarySpecs
+                                       .Where(s => s.RankCode == rankCode)
+                                       .ToList()
+                                       .OrderBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 0 && int.TryParse(parts[0], out int val))
+                                               return val;
+                                           return 999;
+                                       })
+                                       .ThenBy(s => {
+                                           if (string.IsNullOrEmpty(s.SalaryStep)) return 0;
+                                           var parts = s.SalaryStep.Split('/');
+                                           if (parts.Length > 1 && int.TryParse(parts[1], out int val))
+                                               return val;
+                                           return 999;
+                                       })
+                                       .ToList();
+                    steps.Insert(0, new RankSalarySpec { RankCode = rankCode, SalaryStep = "", Coefficient = 0 });
+
+                    cboSalaryStep.ItemsSource = steps;
+                    cboSalaryStep.DisplayMemberPath = "SalaryStep";
+                    cboSalaryStep.SelectedValuePath = "SalaryStep";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Bỏ qua lỗi hoặc ghi log hệ thống
+                System.Diagnostics.Debug.WriteLine($"Error loading salary steps: {ex.Message}");
+            }
+        }
+
+        private void cboSalaryStep_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (cboSalaryStep.SelectedItem is RankSalarySpec spec)
+            {
+                if (spec.Coefficient > 0)
+                {
+                    string coeffStr = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+                    txtSalaryCoefficient.Text = coeffStr;
+                }
+                else
+                {
+                    txtSalaryCoefficient.Text = "";
+                }
+            }
+            else
+            {
+                txtSalaryCoefficient.Text = "";
+            }
+        }
+
+        private void cboSalaryHistStep_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (cboSalaryHistStep.SelectedItem is RankSalarySpec spec)
+            {
+                txtSalaryHistCoeff.Text = spec.Coefficient.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+            }
+        }
+
+        private void btnAddRank_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_Rank, "Quản lý danh mục Ngạch công chức")) return;
+            var dialog = new AddRankDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                LoadRanks();
+                if (!string.IsNullOrEmpty(dialog.SelectedRankCode))
+                {
+                    cboRankCode.SelectedValue = dialog.SelectedRankCode;
+                    // Cập nhật tên ngạch tương ứng
+                }
+            }
+        }
+
+        private void LoadDisciplineTypes()
+        {
+            using (var context = new AppDbContext())
+            {
+                var types = context.DisciplineTypes.Select(t => t.Name).ToList();
+                types.Insert(0, "-- Không có --");
+                cboDisciplineType.ItemsSource = types;
+
+                // Default to "-- Không có --" if list is not empty
+                if (types.Count > 0)
+                {
+                    cboDisciplineType.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private void btnAddDisciplineType_Click(object? sender, RoutedEventArgs e)
+        {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Catalog_Discipline, "Cấu hình Hình thức kỷ luật")) return;
+            var dialog = new DisciplineConfigDialog();
+            dialog.ShowDialog(); // Just show dialog, refresh data afterwards regardless of return value
+            LoadDisciplineTypes();
+        }
+
+        /// <summary>
+        /// Xử lý sự kiện khi người dùng nhấn nút Lưu/Cập nhật.
+        /// Thực hiện Validate dữ liệu và tiến hành Lưu mới hoặc Cập nhật bản ghi vào Cơ sở dữ liệu.
+        /// </summary>
+        private async void btnSave_Click(object? sender, RoutedEventArgs e)
+        {
+            // Kiểm tra tính hợp lệ của dữ liệu (Validation)
+            if (string.IsNullOrWhiteSpace(txtName.Text))
+            {
+                MessageBox.Show("Vui lòng nhập tên!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Phone Validation
+            string phoneDigits = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
+            if (!string.IsNullOrEmpty(txtPhone.Text) && (phoneDigits.Length != 10 || !phoneDigits.StartsWith("0")))
+            {
+                MessageBox.Show("Số điện thoại không hợp lệ! (Phải bắt đầu bằng số 0 và có 10 chữ số)", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Email Validation
+            if (!string.IsNullOrWhiteSpace(txtEmail.Text) && !IsValidEmail(txtEmail.Text))
+            {
+                MessageBox.Show("Địa chỉ Email không đúng định dạng!", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            using (var context = new AppDbContext())
+            {
+                if (_personnel == null || _personnel.Id == 0)
+                {
+                    // Add New
+                    var newP = new Personnel
+                    {
+                        StaffId = txtStaffId.Text,
+                        FullName = txtName.Text,
+                        Gender = cboGender.Text,
+                        DateOfBirth = dpDOB.SelectedDate,
+                        PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray()),
+                        IdentityCardNumber = txtIdentityNumber.Text,
+                        IdentityCardPlace = txtIdentityPlace.Text,
+                        Email = txtEmail.Text,
+                        SocialSecurityNumber = txtSocialInsurance.Text,
+                        BirthPlace = txtBirthPlace.Text,
+                        Hometown = txtHometown.Text,
+                        CurrentResidence = txtCurrentResidence.Text,
+                        Ethnicity = txtEthnicity.Text,
+                        Religion = txtReligion.Text,
+
+                        Department = cboDepartment.Text,
+                        Position = cboPosition.Text,
+                        RankCode = (cboRankCode.SelectedItem as Rank)?.Code ?? "", // Allow free text if it's editable? Style is ComboBox, usually allows text if IsEditable=True. Default style might not.
+                                                                                   // If DropDown only, use SelectedValue or Text (which returns selected item string)
+                        RankName = txtRankName.Text,
+                        TaxAuthorityStartDate = dpStartDate.SelectedDate,
+                        StartDate = dpStartDate.SelectedDate,
+                        Status = cboStatus.Text,
+                        StatusDecisionNumber = txtStatusDecisionNumber.Text?.Trim(),
+                        StatusDecisionDate = dpStatusDecisionDate.SelectedDate,
+                        StatusEffectiveDate = dpStatusEffectiveDate.SelectedDate,
+                        StatusDecisionUnit = txtStatusDecisionUnit.Text?.Trim(),
+
+                        EducationLevel = cboEducationLevel.Text,
+                        Major = txtMajor.Text,
+                        University = txtUniversity.Text,
+                        StateManagementLevel = cboStateManagement.Text,
+                        PoliticalTheoryLevel = cboPoliticalTheory.Text,
+                        ITSkillLevel = txtITSkill.Text,
+                        LanguageSkillLevel = txtLanguageSkill.Text,
+                        AvatarBase64 = _currentAvatarBase64, // Save new avatar
+
+                        // Tab 2: Thời gian giữ vị trí công tác
+                        PositionDecisionDate = dpPositionDecisionDate.SelectedDate,
+                        PositionCalculationDate = GetPositionCalculationDateToSave(),
+                        PositionYear = txtPositionYear.Text,
+                        DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories),
+
+                        // Tab 3: Thông tin nghỉ hưu
+                        RetirementDate = dpRetirementDate.SelectedDate,
+
+                        // Tab 4: Thông tin Đảng viên
+                        PartyEntryDate = dpPartyEntryDate.SelectedDate,
+                        PartyOfficialDate = dpPartyOfficialDate.SelectedDate,
+                        PartyCell = txtPartyCell.Text?.Trim(),
+                        PartyIntroducer1Name = txtPartyIntroducer1Name.Text?.Trim(),
+                        PartyIntroducer1Position = txtPartyIntroducer1Position.Text?.Trim(),
+                        PartyIntroducer1Workplace = txtPartyIntroducer1Workplace.Text?.Trim(),
+                        PartyIntroducer2Name = txtPartyIntroducer2Name.Text?.Trim(),
+                        PartyIntroducer2Position = txtPartyIntroducer2Position.Text?.Trim(),
+                        PartyIntroducer2Workplace = txtPartyIntroducer2Workplace.Text?.Trim(),
+                        PartyIntroducingOrganization = txtPartyIntroducingOrganization.Text?.Trim(),
+                        PartyDecisionDate = dpPartyDecisionDate.SelectedDate,
+
+                        // Tab 6: Lương
+                        CurrentSalaryStep = cboSalaryStep.SelectedValue?.ToString(),
+                        CurrentSalaryCoefficient = double.TryParse(txtSalaryCoefficient.Text, out double coeff) ? coeff : 0,
+                        ExceedFramePercent = double.TryParse(txtExceedFrame.Text, out double exceed) ? exceed : 0,
+                        PositionAllowance = txtPositionAllowance.Text,
+                        SalaryReservationDeadline = dpSalaryReservation.SelectedDate,
+                        NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate,
+                        SalaryIncreaseDelayType = cboSalaryDelay.Text,
+                        ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate,
+                        SalaryHistoryLog = string.Join("\n", _personnel?.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? Enumerable.Empty<string>()), // Legacy fallback
+                        SalaryRecords = _personnel?.SalaryRecords,
+
+                        // Tab 7: Khen thưởng
+                        EmulationTitles = txtEmulationTitles.Text,
+                        RewardForms = txtRewardForms.Text,
+
+                        // Tab 8: Kỷ luật
+                        DisciplineType = cboDisciplineType.Text,
+                        DisciplineDecisionNumber = txtDisciplineNumber.Text,
+                        DisciplineDecisionDate = dpDisciplineDate.SelectedDate,
+                        DisciplineReason = txtDisciplineReason.Text,
+
+                        // Tab 5: Nghỉ phép
+                        TotalAnnualLeaveDays = int.TryParse(txtTotalAnnualLeave.Text, out int leaves) ? leaves : 12,
+                        LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate,
+                    };
+
+                    // Copy Leave Histories if any (Handling the case where _personnel was initialized by btnAddLeave)
+                    if (_personnel != null && _personnel.LeaveHistories != null)
+                    {
+                        foreach (var lh in _personnel.LeaveHistories)
+                        {
+                            newP.LeaveHistories.Add(new LeaveHistory
+                            {
+                                LeaveType = lh.LeaveType,
+                                StartDate = lh.StartDate,
+                                EndDate = lh.EndDate,
+                                DurationDays = lh.DurationDays,
+                                Reason = lh.Reason,
+                                LeaveYear = lh.LeaveYear
+                            });
+                        }
+                    }
+
+                    // Copy Work History Records if any
+                    foreach (var wh in _workHistories)
+                    {
+                        newP.WorkHistoryRecords.Add(new WorkHistoryRecord
+                        {
+                            FromDate = wh.FromDate,
+                            ToDate = wh.ToDate,
+                            Position = wh.Position,
+                            Department = wh.Department,
+                            OrganizationUnit = wh.OrganizationUnit,
+                            DepartmentOrUnit = wh.DepartmentOrUnit,
+                            IsPartyConcurrent = wh.IsPartyConcurrent,
+                            PartyPosition = wh.PartyPosition,
+                            Note = wh.Note,
+                            OrderIndex = wh.OrderIndex
+                        });
+                    }
+
+                    // Copy Evaluation Records if any
+                    if (_personnel != null && _personnel.EvaluationRecords != null)
+                    {
+                        newP.EvaluationRecords ??= new List<EvaluationRecord>();
+                        foreach (var ev in _personnel.EvaluationRecords)
+                        {
+                            newP.EvaluationRecords.Add(new EvaluationRecord
+                            {
+                                Year = ev.Year,
+                                Rating = ev.Rating,
+                                DecisionNumber = ev.DecisionNumber,
+                                DecisionDate = ev.DecisionDate,
+                                DecisionAgency = ev.DecisionAgency
+                            });
+                        }
+                    }
+
+                    // Copy Personnel Degrees if any (Handling case where degrees were added before saving personnel)
+                    if (_personnel != null && _personnel.PersonnelDegrees != null && _personnel.PersonnelDegrees.Any())
+                    {
+                        newP.PersonnelDegrees = new List<PersonnelDegree>();
+                        foreach (var deg in _personnel.PersonnelDegrees)
+                        {
+                            newP.PersonnelDegrees.Add(new PersonnelDegree
+                            {
+                                DegreeType = deg.DegreeType,
+                                DegreeName = deg.DegreeName,
+                                Major = deg.Major,
+                                Institution = deg.Institution,
+                                Classification = deg.Classification,
+                                GraduationYear = deg.GraduationYear,
+                                IsPrimary = deg.IsPrimary
+                            });
+                        }
+                    }
+
+                    context.Personnel.Add(newP);
+                    _personnel = newP;
+                }
+                else
+                {
+                    // Cập nhật
+                    var existingP = context.Personnel.Include("LeaveHistories").Include("SalaryRecords").Include("EvaluationRecords").Include("PersonnelDegrees").Include("WorkHistoryRecords").FirstOrDefault(p => p.Id == _personnel.Id);
+                    if (existingP != null)
+                    {
+                        existingP.StaffId = txtStaffId.Text;
+                        existingP.FullName = txtName.Text;
+                        // ... (Other fields remain same, not restating all for brevity in thought, but implementation needs them)
+                        // Actually replace_file_content needs EXACT TargetContent.
+                        // I will target the existingP retrieval and the end of the block.
+
+                        existingP.Gender = cboGender.Text;
+                        existingP.DateOfBirth = dpDOB.SelectedDate;
+                        existingP.PhoneNumber = new string(txtPhone.Text.Where(char.IsDigit).ToArray());
+                        existingP.IdentityCardNumber = txtIdentityNumber.Text;
+                        existingP.IdentityCardPlace = txtIdentityPlace.Text;
+                        existingP.Email = txtEmail.Text;
+                        existingP.SocialSecurityNumber = txtSocialInsurance.Text;
+                        existingP.BirthPlace = txtBirthPlace.Text;
+                        existingP.Hometown = txtHometown.Text;
+                        existingP.CurrentResidence = txtCurrentResidence.Text;
+                        existingP.Ethnicity = txtEthnicity.Text;
+                        existingP.Religion = txtReligion.Text;
+
+                        existingP.Department = cboDepartment.Text;
+                        existingP.Position = cboPosition.Text;
+                        existingP.RankCode = cboRankCode.Text;
+                        existingP.RankName = txtRankName.Text;
+                        existingP.TaxAuthorityStartDate = dpStartDate.SelectedDate;
+                        existingP.Status = cboStatus.Text;
+                        existingP.StatusDecisionNumber = txtStatusDecisionNumber.Text?.Trim();
+                        existingP.StatusDecisionDate = dpStatusDecisionDate.SelectedDate;
+                        existingP.StatusEffectiveDate = dpStatusEffectiveDate.SelectedDate;
+                        existingP.StatusDecisionUnit = txtStatusDecisionUnit.Text?.Trim();
+
+                        existingP.EducationLevel = cboEducationLevel.Text;
+                        existingP.Major = txtMajor.Text;
+                        existingP.University = txtUniversity.Text;
+                        existingP.StateManagementLevel = cboStateManagement.Text;
+                        existingP.PoliticalTheoryLevel = cboPoliticalTheory.Text;
+                        existingP.ITSkillLevel = txtITSkill.Text;
+                        existingP.LanguageSkillLevel = txtLanguageSkill.Text;
+
+                        if (_isAvatarChanged)
+                        {
+                            existingP.AvatarBase64 = _currentAvatarBase64;
+                        }
+
+                        // Tab 2: Thời gian giữ vị trí công tác
+                        existingP.PositionDecisionDate = dpPositionDecisionDate.SelectedDate;
+                        existingP.PositionCalculationDate = GetPositionCalculationDateToSave();
+                        existingP.PositionYear = txtPositionYear.Text;
+                        existingP.DetailedWorkHistory = GenerateDetailedWorkHistoryText(_workHistories);
+
+                        // Tab 3: Thông tin nghỉ hưu
+                        existingP.RetirementDate = dpRetirementDate.SelectedDate;
+
+                        // Tab 4: Thông tin Đảng viên
+                        existingP.PartyEntryDate = dpPartyEntryDate.SelectedDate;
+                        existingP.PartyOfficialDate = dpPartyOfficialDate.SelectedDate;
+                        existingP.PartyCell = txtPartyCell.Text?.Trim();
+                        existingP.PartyIntroducer1Name = txtPartyIntroducer1Name.Text?.Trim();
+                        existingP.PartyIntroducer1Position = txtPartyIntroducer1Position.Text?.Trim();
+                        existingP.PartyIntroducer1Workplace = txtPartyIntroducer1Workplace.Text?.Trim();
+                        existingP.PartyIntroducer2Name = txtPartyIntroducer2Name.Text?.Trim();
+                        existingP.PartyIntroducer2Position = txtPartyIntroducer2Position.Text?.Trim();
+                        existingP.PartyIntroducer2Workplace = txtPartyIntroducer2Workplace.Text?.Trim();
+                        existingP.PartyIntroducingOrganization = txtPartyIntroducingOrganization.Text?.Trim();
+                        existingP.PartyDecisionDate = dpPartyDecisionDate.SelectedDate;
+
+                        // Tab 6: Lương
+                        existingP.CurrentSalaryStep = cboSalaryStep.Text;
+                        existingP.CurrentSalaryCoefficient = double.TryParse(txtSalaryCoefficient.Text, out double sc2) ? sc2 : 0;
+                        existingP.ExceedFramePercent = double.TryParse(txtExceedFrame.Text, out double ef2) ? ef2 : 0;
+                        existingP.PositionAllowance = txtPositionAllowance.Text;
+                        existingP.SalaryReservationDeadline = dpSalaryReservation.SelectedDate;
+                        existingP.NextSalaryStepDate = dpNextSalaryStepDate.SelectedDate;
+                        existingP.SalaryIncreaseDelayType = cboSalaryDelay.Text;
+                        existingP.ExpectedSalaryIncreaseDate = dpExpectedSalaryIncrease.SelectedDate;
+
+                        // Handle Salary Records Sync
+                        if (existingP.SalaryRecords == null) existingP.SalaryRecords = new List<SalaryRecord>();
+                        if (_personnel.SalaryRecords != null)
+                        {
+                            // 1. Identify IDs to keep
+                            var currentSalaryIds = _personnel.SalaryRecords.Select(s => s.Id).Where(id => id != 0).ToList();
+
+                            // 2. Remove deleted
+                            var toDeleteSalary = existingP.SalaryRecords.Where(s => !currentSalaryIds.Contains(s.Id)).ToList();
+                            foreach (var item in toDeleteSalary)
+                            {
+                                context.SalaryRecords.Remove(item);
+                            }
+
+                            // 3. Add new
+                            var toAddSalary = _personnel.SalaryRecords.Where(s => s.Id == 0).ToList();
+                            foreach (var item in toAddSalary)
+                            {
+                                item.PersonnelId = existingP.Id;
+                                context.SalaryRecords.Add(item);
+                            }
+
+                            // 4. Cập nhật bản ghi hiện có
+                            var toUpdateSalary = _personnel.SalaryRecords.Where(s => s.Id != 0).ToList();
+                            foreach (var item in toUpdateSalary)
+                            {
+                                var dbItem = existingP.SalaryRecords.FirstOrDefault(x => x.Id == item.Id);
+                                if (dbItem != null)
+                                {
+                                    dbItem.StartDate = item.StartDate;
+                                    dbItem.EndDate = item.EndDate;
+                                    dbItem.SalaryCalculationDate = item.SalaryCalculationDate;
+                                    dbItem.Coefficient = item.Coefficient;
+                                    dbItem.Percentage = item.Percentage;
+                                    dbItem.DecisionNumber = item.DecisionNumber;
+                                    dbItem.DecisionDate = item.DecisionDate;
+                                }
+                            }
+                        }
+
+                        existingP.SalaryHistoryLog = string.Join("\n", existingP.SalaryRecords?.Select(s => $"{s.StartDate?.ToString("dd/MM/yyyy")} - {s.Coefficient}") ?? new List<string>());
+
+                        // Tab 7: Khen thưởng
+                        existingP.EmulationTitles = txtEmulationTitles.Text;
+                        existingP.RewardForms = txtRewardForms.Text;
+
+                        // Tab 8: Kỷ luật
+                        existingP.DisciplineType = cboDisciplineType.Text;
+                        existingP.DisciplineDecisionNumber = txtDisciplineNumber.Text;
+                        existingP.DisciplineDecisionDate = dpDisciplineDate.SelectedDate;
+                        existingP.DisciplineReason = txtDisciplineReason.Text;
+
+                        // Cập nhật cấu hình lương
+                        // Kiểm tra bậc lương có thay đổi để cập nhật lịch sử tự động
+                        // Tab 5: Nghỉ phép
+                        if (int.TryParse(txtTotalAnnualLeave.Text, out int totalLeave))
+                        {
+                            existingP.TotalAnnualLeaveDays = totalLeave;
+                        }
+                        existingP.LeaveCalculationDate = dpLeaveCalculationDate.SelectedDate;
+
+                        // Sync Leave History
+                        if (_personnel.LeaveHistories != null)
+                        {
+                            // 1. Identify IDs to keep
+                            var currentIds = _personnel.LeaveHistories.Select(L => L.Id).Where(id => id != 0).ToList();
+
+                            // 2. Remove deleted
+                            var toDelete = existingP.LeaveHistories.Where(lh => !currentIds.Contains(lh.Id)).ToList();
+                            foreach (var item in toDelete)
+                            {
+                                context.LeaveHistories.Remove(item);
+                            }
+
+                            // 3. Add new
+                            var toAdd = _personnel.LeaveHistories.Where(lh => lh.Id == 0).ToList();
+                            foreach (var item in toAdd)
+                            {
+                                item.PersonnelId = existingP.Id; // Link ForeignKey
+                                context.LeaveHistories.Add(item);
+                            }
+
+                            // 4. Cập nhật bản ghi hiện có
+                            var toUpdate = _personnel.LeaveHistories.Where(lh => lh.Id != 0).ToList();
+                            foreach (var item in toUpdate)
+                            {
+                                var dbItem = existingP.LeaveHistories.FirstOrDefault(x => x.Id == item.Id);
+                                if (dbItem != null)
+                                {
+                                    dbItem.LeaveType = item.LeaveType;
+                                    dbItem.StartDate = item.StartDate;
+                                    dbItem.EndDate = item.EndDate;
+                                    dbItem.DurationDays = item.DurationDays;
+                                    dbItem.Reason = item.Reason;
+                                    dbItem.LeaveYear = item.LeaveYear;
+                                }
+                            }
+                        }
+
+                        // Sync Work History Records
+                        if (existingP.WorkHistoryRecords == null) existingP.WorkHistoryRecords = new List<WorkHistoryRecord>();
+                        var currentWhIds = _workHistories.Select(w => w.Id).Where(id => id != 0).ToList();
+                        var whToDelete = existingP.WorkHistoryRecords.Where(w => !currentWhIds.Contains(w.Id)).ToList();
+                        foreach (var item in whToDelete)
+                        {
+                            context.WorkHistoryRecords.Remove(item);
+                        }
+
+                        var whToAdd = _workHistories.Where(w => w.Id == 0).ToList();
+                        foreach (var item in whToAdd)
+                        {
+                            item.PersonnelId = existingP.Id;
+                            context.WorkHistoryRecords.Add(item);
+                        }
+
+                        var whToUpdate = _workHistories.Where(w => w.Id != 0).ToList();
+                        foreach (var item in whToUpdate)
+                        {
+                            var dbWh = existingP.WorkHistoryRecords.FirstOrDefault(x => x.Id == item.Id);
+                            if (dbWh != null)
+                            {
+                                dbWh.FromDate = item.FromDate;
+                                dbWh.ToDate = item.ToDate;
+                                dbWh.Position = item.Position;
+                                dbWh.Department = item.Department;
+                                dbWh.OrganizationUnit = item.OrganizationUnit;
+                                dbWh.DepartmentOrUnit = item.DepartmentOrUnit;
+                                dbWh.IsPartyConcurrent = item.IsPartyConcurrent;
+                                dbWh.PartyPosition = item.PartyPosition;
+                                dbWh.Note = item.Note;
+                                dbWh.OrderIndex = item.OrderIndex;
+                            }
+                        }
+
+                        // Sync Evaluation Records
+                        if (existingP.EvaluationRecords == null) existingP.EvaluationRecords = new List<EvaluationRecord>();
+                        if (_personnel.EvaluationRecords != null)
+                        {
+                            // 1. Identify IDs to keep
+                            var currentEvalIds = _personnel.EvaluationRecords.Select(e => e.Id).Where(id => id != 0).ToList();
+
+                            // 2. Remove deleted
+                            var toDeleteEval = existingP.EvaluationRecords.Where(e => !currentEvalIds.Contains(e.Id)).ToList();
+                            foreach (var item in toDeleteEval)
+                            {
+                                context.EvaluationRecords.Remove(item);
+                            }
+
+                            // 3. Add new
+                            var toAddEval = _personnel.EvaluationRecords.Where(e => e.Id == 0).ToList();
+                            foreach (var item in toAddEval)
+                            {
+                                item.PersonnelId = existingP.Id;
+                                context.EvaluationRecords.Add(item);
+                            }
+
+                            // 4. Cập nhật bản ghi hiện có
+                            var toUpdateEval = _personnel.EvaluationRecords.Where(e => e.Id != 0).ToList();
+                            foreach (var item in toUpdateEval)
+                            {
+                                var dbItem = existingP.EvaluationRecords.FirstOrDefault(x => x.Id == item.Id);
+                                if (dbItem != null)
+                                {
+                                    dbItem.Year = item.Year;
+                                    dbItem.Rating = item.Rating;
+                                    dbItem.DecisionNumber = item.DecisionNumber;
+                                    dbItem.DecisionDate = item.DecisionDate;
+                                    dbItem.DecisionAgency = item.DecisionAgency;
+                                }
+                            }
+                        }
+                    }
+                }
+                try
+                {
+                    context.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    string errorMsg = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        errorMsg += "\nInner Error: " + ex.InnerException.Message;
+                    }
+                    MessageBox.Show("Lỗi khi lưu dữ liệu:\n" + errorMsg, "Lỗi Database", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                // Show Custom Success Window
+                var successWindow = new SuccessWindow();
+                successWindow.Owner = Application.Current.MainWindow; // Set owner to center over main window
+                successWindow.ShowDialog();
+            }
+
+            if (Application.Current.MainWindow is MainWindow mw)
+            {
+                int? targetId = _personnel?.Id;
+                mw.ClearPersonnelCache();
+                mw.NavigateToDashboard(targetId);
+            }
+        }
+
+        private void btnAvatar_Click(object? sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Image files (*.png;*.jpg)|*.png;*.jpg"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // 1. Display (Orient image using EXIF orientation metadata)
+                    var bitmap = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(openFileDialog.FileName);
+                    var brush = new System.Windows.Media.ImageBrush(bitmap)
+                    {
+                        Stretch = System.Windows.Media.Stretch.UniformToFill
+                    };
+                    imgAvatar.Fill = brush;
+                    iconAvatarPlaceholder.Visibility = Visibility.Collapsed;
+                    btnRemoveAvatar.Visibility = Visibility.Visible;
+
+                    // 2. Convert to Base64 (Resize if needed)
+                    _currentAvatarBase64 = ImageToBase64(openFileDialog.FileName);
+                    _isAvatarChanged = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Lỗi khi tải ảnh: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void btnRemoveAvatar_Click(object? sender, RoutedEventArgs e)
+        {
+            imgAvatar.Fill = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F5F5F5"));
+            iconAvatarPlaceholder.Visibility = Visibility.Visible;
+            btnRemoveAvatar.Visibility = Visibility.Collapsed;
+
+            _currentAvatarBase64 = null;
+            _isAvatarChanged = true;
+        }
+
+        // Hàm bổ trợ: Chuyển file ảnh thành Base64 (thu nhỏ tối đa 500px để tiết kiệm dung lượng, xoay đúng hướng EXIF)
+        private string ImageToBase64(string path)
+        {
+            try
+            {
+                // Nạp và điều chỉnh hướng ảnh theo EXIF
+                var image = TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(path);
+
+                double scale = 1.0;
+                double maxDimension = 600;
+                if (image.PixelWidth > maxDimension || image.PixelHeight > maxDimension)
+                {
+                    scale = Math.Min(maxDimension / image.PixelWidth, maxDimension / image.PixelHeight);
+                }
+
+                var transformed = new System.Windows.Media.Imaging.TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale, scale));
+
+                var encoder = new System.Windows.Media.Imaging.JpegBitmapEncoder(); // JPG is smaller than PNG usually
+                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(transformed));
+                encoder.QualityLevel = 80;
+
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    encoder.Save(ms);
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        // Hàm bổ trợ: Chuyển Base64 thành BitmapSource (xoay ảnh đúng theo metadata EXIF)
+        private System.Windows.Media.Imaging.BitmapSource? Base64ToImage(string base64String)
+        {
+            try
+            {
+                byte[] binaryData = Convert.FromBase64String(base64String);
+                return TaxPersonnelManagement.Helpers.ImageHelper.LoadAndOrientImage(binaryData);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void btnRefresh_Click(object? sender, RoutedEventArgs e)
+        {
+            _isRefreshing = true;
+            try
+            {
+                // Detach events to prevent loops
+                cboLeaveType.SelectionChanged -= OnLeaveDateChanged;
+                dpLeaveStartDate.SelectedDateChanged -= OnLeaveDateChanged;
+                dpLeaveEndDate.SelectedDateChanged -= OnLeaveDateChanged;
+                dpStartDate.SelectedDateChanged -= OnRetirementDateChanged;
+
+                // Reset fields
+                _personnel = null;
+                lblSaveText.Text = "Lưu Hồ Sơ";
+
+                txtStaffId.Clear();
+                txtName.Clear();
+                cboGender.SelectedItem = null;
+                cboGender.Text = "";
+                dpDOB.SelectedDate = null;
+                txtPhone.Clear();
+                txtIdentityNumber.Clear();
+                txtIdentityPlace.Text = "Cục Cảnh sát quản lý hành chính về trật tự xã hội";
+                txtEmail.Clear();
+                txtSocialInsurance.Clear();
+                txtBirthPlace.Clear();
+                txtHometown.Clear();
+                txtCurrentResidence.Clear();
+                txtEthnicity.Clear();
+                txtReligion.Clear();
+
+                cboDepartment.SelectedItem = null;
+                cboDepartment.Text = "";
+                cboPosition.SelectedItem = null;
+                cboPosition.Text = "";
+
+                cboRankCode.SelectedItem = null;
+                cboRankCode.Text = "";
+                txtRankName.Clear();
+                dpStartDate.SelectedDate = null;
+                SetComboBoxByContent(cboStatus, "Đang công tác");
+                txtStatusDecisionNumber.Clear();
+                dpStatusDecisionDate.SelectedDate = null;
+                dpStatusEffectiveDate.SelectedDate = null;
+                txtStatusDecisionUnit.Clear();
+                UpdateStatusDecisionFieldsState();
+
+                cboEducationLevel.SelectedItem = null;
+                cboEducationLevel.Text = "";
+                txtMajor.Clear();
+                txtUniversity.Clear();
+                cboStateManagement.SelectedItem = null;
+                cboStateManagement.Text = "";
+                cboPoliticalTheory.SelectedItem = null;
+                cboPoliticalTheory.Text = "";
+                txtITSkill.Clear();
+                txtLanguageSkill.Clear();
+
+                // Tab 2: Thời gian giữ vị trí công tác
+                dpPositionDecisionDate.SelectedDate = null;
+                dpPositionCalculationDate.SelectedDate = DateTime.Now;
+                txtPositionYear.Clear();
+                txtDetailedWorkHistory.Clear();
+                _workHistories.Clear();
+                ApplyWorkHistoryFilterAndSort();
+                txtYearsWorked.Clear();
+                txtYearsWorked.Clear();
+                txtMonthsWorked.Clear();
+
+                // Tab 3: Thông tin nghỉ hưu
+                dpRetirementDate.SelectedDate = null;
+                txtRetirementYearsWorked.Clear();
+                txtRemainingYears.Clear();
+
+                // Tab 4: Thông tin Đảng viên
+                dpPartyEntryDate.SelectedDate = null;
+                dpPartyOfficialDate.SelectedDate = null;
+                txtPartyAge.Clear();
+                txtPartyCell.Clear();
+                txtPartyIntroducer1Name.Clear();
+                txtPartyIntroducer1Position.Clear();
+                txtPartyIntroducer1Workplace.Clear();
+                txtPartyIntroducer2Name.Clear();
+                txtPartyIntroducer2Position.Clear();
+                txtPartyIntroducer2Workplace.Clear();
+                txtPartyIntroducingOrganization.Clear();
+                dpPartyDecisionDate.SelectedDate = null;
+
+                // Tab 6: Thông tin lương
+                cboSalaryStep.ItemsSource = null;
+                cboSalaryStep.SelectedIndex = -1;
+                cboSalaryStep.Text = "";
+                txtSalaryCoefficient.Clear();
+                txtExceedFrame.Clear();
+                txtPositionAllowance.Clear();
+                dpSalaryReservation.SelectedDate = null;
+                dpNextSalaryStepDate.SelectedDate = null;
+                cboSalaryDelay.SelectedIndex = -1;
+                cboSalaryDelay.Text = "";
+                dpExpectedSalaryIncrease.SelectedDate = null;
+                // Tab 6: Lương
+                if (_personnel == null) _personnel = new Personnel();
+                if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+                _personnel.SalaryRecords.Clear();
+                RefreshSalaryHistoryGrid();
+
+                dpSalaryHistStart.SelectedDate = null;
+                dpSalaryHistEnd.SelectedDate = null;
+                dpSalaryHistCalc.SelectedDate = null;
+                txtSalaryHistCoeff.Clear();
+                txtSalaryHistPercent.Text = "100";
+                txtSalaryHistDecisionNo.Clear();
+                dpSalaryHistDecisionDate.SelectedDate = null;
+
+                // Tab 5: Nghỉ phép
+                // Tab 5: Nghỉ phép
+                txtTotalAnnualLeave.Text = "12";
+                txtAnnualLeaveTaken.Text = "0";
+                txtAnnualLeaveRemaining.Text = "12";
+                txtSickLeaveTaken.Text = "0";
+                txtUnpaidLeaveTaken.Text = "0";
+                txtMaternityLeaveTaken.Text = "0";
+                txtConvalescenceLeaveTaken.Text = "0";
+                dpLeaveCalculationDate.SelectedDate = null;
+
+                dpLeaveStartDate.SelectedDate = null;
+                dpLeaveEndDate.SelectedDate = null;
+                cboLeaveType.SelectedIndex = -1;
+                txtLeaveReason.Clear();
+                txtLeaveDuration.Clear();
+                dgLeaveHistory.ItemsSource = null;
+
+                // Reset Edit Mode
+                _editingLeaveHistory = null;
+                if (btnAddLeave.Content is StackPanel sp)
+                {
+                    foreach (var child in sp.Children)
+                    {
+                        if (child is TextBlock tb)
+                        {
+                            tb.Text = "Thêm vào bảng";
+                            break;
+                        }
+                    }
+                }
+
+                // Đặt lại dữ liệu Tab 9: Xếp loại
+                cboEvaluationYear.SelectedIndex = 0;
+                cboEvaluationRating.SelectedIndex = 0;
+                txtEvaluationDecisionNo.Clear();
+                dpEvaluationDecisionDate.SelectedDate = null;
+                txtEvaluationDecisionAgency.Clear();
+                _editingEvaluationRecord = null;
+                dgEvaluationHistory.ItemsSource = null;
+
+                // Xóa ảnh đại diện
+                btnRemoveAvatar_Click(sender, e);
+                _isAvatarChanged = false; // Reset change flag as we are starting fresh
+
+                // Xóa thông báo lỗi
+                lblPhoneError.Visibility = Visibility.Collapsed;
+                lblEmailError.Visibility = Visibility.Collapsed;
+
+                // Focus first field
+                txtStaffId.Focus();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi làm mới: " + ex.Message);
+            }
+            finally
+            {
+                // Reattach events
+                cboLeaveType.SelectionChanged += OnLeaveDateChanged;
+                dpLeaveStartDate.SelectedDateChanged += OnLeaveDateChanged;
+                dpLeaveEndDate.SelectedDateChanged += OnLeaveDateChanged;
+                dpStartDate.SelectedDateChanged += OnRetirementDateChanged;
+                _isRefreshing = false;
+            }
+        }
+
+
+        private void txtEmail_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtEmail.Text))
+            {
+                lblEmailError.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            if (IsValidEmail(txtEmail.Text))
+            {
+                lblEmailError.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // To avoid annoying on first char, maybe only show if it LOOKS like they tried to finish?
+                // But user asked for "nhập không đúng định dạng báo luôn". 
+                // Let's show it always when invalid.
+                lblEmailError.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void dpExpectedSalaryIncrease_DateValidationError(object? sender, DatePickerDateValidationErrorEventArgs e)
+        {
+            var warning = new WarningWindow("Ngày vừa nhập không hợp lệ. Vui lòng nhập ngày theo định dạng dd/MM/yyyy (VD: 15/05/2026).", "Lỗi định dạng");
+            warning.Owner = Window.GetWindow(this);
+            warning.ShowDialog();
+            e.ThrowException = false;
+        }
+        private void OnPositionDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculateWorkDuration();
+        }
+
+        private void CalculateWorkDuration()
+        {
+            // Yêu cầu cập nhật:
+            // Start Date = PositionDecisionDate ("Thời gian công tác tính theo QĐ gần nhất")
+            // End Date = PositionCalculationDate or DateTime.Now
+            if (dpPositionDecisionDate.SelectedDate.HasValue)
+            {
+                DateTime startDate = dpPositionDecisionDate.SelectedDate.Value;
+                DateTime endDate = dpPositionCalculationDate.SelectedDate ?? DateTime.Now;
+
+                if (endDate < startDate)
+                {
+                    txtYearsWorked.Text = "0";
+                    txtMonthsWorked.Text = "0";
+                    txtPositionYear.Text = "0 năm 0 tháng";
+                    return;
+                }
+
+                // Years: Full years
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+
+                // Months: Remainder months
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+
+                txtYearsWorked.Text = years.ToString();
+                txtMonthsWorked.Text = months.ToString();
+                txtPositionYear.Text = $"{years} năm {months} tháng";
+            }
+            else
+            {
+                txtYearsWorked.Clear();
+                txtMonthsWorked.Clear();
+                txtPositionYear.Clear();
+            }
+        }
+
+        private void OnRetirementDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculateRetirementInfo();
+        }
+
+        private void dpPartyEntryDate_SelectedDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculatePartyAge();
+        }
+
+        private void CalculatePartyAge()
+        {
+            if (txtPartyAge == null) return;
+            if (dpPartyEntryDate.SelectedDate.HasValue)
+            {
+                DateTime startDate = dpPartyEntryDate.SelectedDate.Value;
+                DateTime endDate = DateTime.Now;
+
+                if (endDate < startDate)
+                {
+                    txtPartyAge.Text = "0 năm 0 tháng";
+                    return;
+                }
+
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+
+                txtPartyAge.Text = $"{years} năm {months} tháng";
+            }
+            else
+            {
+                txtPartyAge.Clear();
+            }
+        }
+
+        private void CalculateRetirementInfo()
+        {
+            // Yêu cầu cập nhật:
+            // 1. Số năm công tác = Now - StartDate (TaxAuthorityStartDate) -> Output: X năm Y tháng Z ngày
+            // 2. Số năm còn công tác = RetirementDate - Now -> Output: X năm Y tháng Z ngày
+
+            DateTime now = DateTime.Now.Date;
+
+            // Tính toán phép năm (Tab 5)
+            CalculateAnnualLeave(now);
+
+
+            // 1. Tính số năm đã công tác ngành Thuế (Ngày vào ngành -> Hiện tại)
+            if (dpStartDate.SelectedDate.HasValue)
+            {
+                DateTime start = dpStartDate.SelectedDate.Value;
+
+                if (now > start)
+                {
+                    txtRetirementYearsWorked.Text = CalculateDetailedDateDifference(start, now);
+                }
+                else
+                {
+                    txtRetirementYearsWorked.Text = "0 năm 0 tháng 0 ngày";
+                }
+            }
+            else
+            {
+                txtRetirementYearsWorked.Clear();
+            }
+
+            // 2. Tính số năm công tác còn lại (Hiện tại -> Ngày nghỉ hưu)
+            // Requirement: Add 1 day to the difference (Inclusive)
+            if (dpRetirementDate.SelectedDate.HasValue)
+            {
+                DateTime retirement = dpRetirementDate.SelectedDate.Value;
+
+                if (retirement > now)
+                {
+                    txtRemainingYears.Text = CalculateDetailedDateDifference(now, retirement);
+                }
+                else
+                {
+                    txtRemainingYears.Text = "0 năm 0 tháng 0 ngày"; // Already retired
+                }
+            }
+            else
+            {
+                txtRemainingYears.Clear();
+            }
+        }
+
+        private void OnLeaveCalculationDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculateAnnualLeave(DateTime.Now);
+        }
+
+        private void CalculateAnnualLeave(DateTime now)
+        {
+            // Rule: Total Annual Leave = (Years Worked / 5) + 12
+            int totalLeave = 12;
+
+            DateTime? targetStartDate = dpLeaveCalculationDate.SelectedDate ?? dpStartDate.SelectedDate;
+
+            if (targetStartDate.HasValue)
+            {
+                DateTime start = targetStartDate.Value;
+
+                // New formula: Số năm tính ngày phép = Năm hiện tại - Năm tính phép + 1
+                int years = now.Year - start.Year + 1;
+
+                if (years < 0) years = 0;
+
+                int bonusDays = years / 5;
+                totalLeave = 12 + bonusDays;
+            }
+
+            // Cập nhật đối tượng dữ liệu và giao diện
+            if (_personnel != null) _personnel.TotalAnnualLeaveDays = totalLeave;
+            txtTotalAnnualLeave.Text = totalLeave.ToString();
+            UpdateLeaveStatistics(); // Recalculate and display statistics for the current selected year
+        }
+
+        private string CalculateDetailedDateDifference(DateTime startDate, DateTime endDate)
+        {
+            if (startDate > endDate) return "0 năm 0 tháng 0 ngày";
+            DateTime tempDate = startDate;
+            int years = 0, months = 0, days = 0;
+            while (tempDate.AddYears(1) <= endDate) { years++; tempDate = tempDate.AddYears(1); }
+            while (tempDate.AddMonths(1) <= endDate) { months++; tempDate = tempDate.AddMonths(1); }
+            days = (endDate - tempDate).Days;
+            return $"{years} năm {months} tháng {days} ngày";
+        }
+
+        private void RefreshSalaryHistoryGrid()
+        {
+            if (_personnel == null) return;
+            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+            dgSalaryHistory.ItemsSource = null;
+            dgSalaryHistory.ItemsSource = _personnel.SalaryRecords.OrderByDescending(s => s.StartDate).ToList();
+        }
+
+        private void ReconcileSalaryRecordsAfterAdd(System.Collections.Generic.ICollection<SalaryRecord> records, SalaryRecord newItem)
+        {
+            if (newItem.StartDate == null) return;
+            DateTime newStart = newItem.StartDate.Value;
+
+            var otherRecords = records
+                .Where(r => r != newItem && r.StartDate.HasValue)
+                .OrderBy(r => r.StartDate!.Value)
+                .ToList();
+
+            // Find predecessor and successor
+            SalaryRecord? predecessor = otherRecords.LastOrDefault(r => r.StartDate!.Value < newStart);
+            SalaryRecord? successor = otherRecords.FirstOrDefault(r => r.StartDate!.Value > newStart);
+
+            // Nếu đợt mới chưa có ngày kết thúc và có đợt kế tiếp, tự động gán ngày kết thúc
+            if (newItem.EndDate == null && successor != null && successor.StartDate.HasValue)
+            {
+                newItem.EndDate = successor.StartDate!.Value.AddDays(-1);
+            }
+
+            // If predecessor exists
+            if (predecessor != null)
+            {
+                if (predecessor.EndDate == null)
+                {
+                    predecessor.EndDate = newStart.AddDays(-1);
+                }
+                else if (successor != null && successor.StartDate.HasValue && predecessor.EndDate == successor.StartDate!.Value.AddDays(-1))
+                {
+                    predecessor.EndDate = newStart.AddDays(-1);
+                }
+            }
+        }
+
+        private void ReconcileSalaryRecordsAfterDelete(System.Collections.Generic.ICollection<SalaryRecord> records, DateTime? deletedStartDate)
+        {
+            if (deletedStartDate == null) return;
+            DateTime delStart = deletedStartDate.Value;
+
+            var remainingRecords = records
+                .Where(r => r.StartDate.HasValue)
+                .OrderBy(r => r.StartDate!.Value)
+                .ToList();
+
+            SalaryRecord? predecessor = remainingRecords.LastOrDefault(r => r.StartDate!.Value < delStart);
+            SalaryRecord? successor = remainingRecords.FirstOrDefault(r => r.StartDate!.Value > delStart);
+
+            if (predecessor != null && predecessor.EndDate == delStart.AddDays(-1))
+            {
+                if (successor != null && successor.StartDate.HasValue)
+                {
+                    predecessor.EndDate = successor.StartDate!.Value.AddDays(-1);
+                }
+                else
+                {
+                    predecessor.EndDate = null;
+                }
+            }
+        }
+
+        private void ReconcileSalaryRecordsAfterUpdate(System.Collections.Generic.ICollection<SalaryRecord> records, SalaryRecord editedItem, DateTime? oldStartDate)
+        {
+            if (editedItem.StartDate == oldStartDate)
+            {
+                // Tự động tính ngày kết thúc nếu trường này đang để trống
+                if (editedItem.EndDate == null && editedItem.StartDate.HasValue)
+                {
+                    var successor = records
+                        .Where(r => r != editedItem && r.StartDate.HasValue && r.StartDate!.Value > editedItem.StartDate!.Value)
+                        .OrderBy(r => r.StartDate!.Value)
+                        .FirstOrDefault();
+                    if (successor != null && successor.StartDate.HasValue)
+                    {
+                        editedItem.EndDate = successor.StartDate!.Value.AddDays(-1);
+                    }
+                }
+                return;
+            }
+
+            // If StartDate changed:
+            // 1. Temporarily remove editedItem from list to simulate delete of oldStartDate
+            records.Remove(editedItem);
+
+            // 2. Run delete reconciliation for oldStartDate
+            ReconcileSalaryRecordsAfterDelete(records, oldStartDate);
+
+            // 3. Put editedItem back
+            records.Add(editedItem);
+
+            // 4. Run add reconciliation for newStartDate
+            ReconcileSalaryRecordsAfterAdd(records, editedItem);
+        }
+
+        private bool ValidateSalaryRecordsOverlap(System.Collections.Generic.ICollection<SalaryRecord> records)
+        {
+            var sorted = records
+                .Where(r => r.StartDate.HasValue)
+                .OrderBy(r => r.StartDate!.Value)
+                .ToList();
+
+            for (int i = 0; i < sorted.Count - 1; i++)
+            {
+                var current = sorted[i];
+                var next = sorted[i + 1];
+
+                if (current.StartDate!.Value == next.StartDate!.Value)
+                {
+                    return false; // Trùng ngày bắt đầu
+                }
+
+                if (current.EndDate.HasValue && current.EndDate!.Value >= next.StartDate!.Value)
+                {
+                    return false; // Trùng lặp/chồng chéo khoảng thời gian
+                }
+            }
+
+            return true;
+        }
+
+        private void btnAddSalaryHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (dpSalaryHistStart.SelectedDate == null)
+            {
+                new WarningWindow("Vui lòng nhập ngày bắt đầu!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            if (_personnel == null) _personnel = new Personnel();
+            if (_personnel.SalaryRecords == null) _personnel.SalaryRecords = new System.Collections.Generic.List<SalaryRecord>();
+
+            // 1. Create a clone list for dry-run
+            var tempRecords = new System.Collections.Generic.List<SalaryRecord>();
+            foreach (var r in _personnel.SalaryRecords)
+            {
+                tempRecords.Add(new SalaryRecord
+                {
+                    Id = r.Id,
+                    PersonnelId = r.PersonnelId,
+                    StartDate = r.StartDate,
+                    EndDate = r.EndDate,
+                    SalaryCalculationDate = r.SalaryCalculationDate,
+                    RankCode = r.RankCode,
+                    SalaryStep = r.SalaryStep,
+                    Coefficient = r.Coefficient,
+                    Percentage = r.Percentage,
+                    ExceedFramePercent = r.ExceedFramePercent,
+                    DecisionNumber = r.DecisionNumber,
+                    DecisionDate = r.DecisionDate,
+                    Note = r.Note
+                });
+            }
+
+            if (_editingSalaryRecord != null)
+            {
+                // Find matching record in tempRecords
+                var tempEdit = tempRecords.FirstOrDefault(r => r.Id == _editingSalaryRecord.Id && r.StartDate == _editingSalaryRecord.StartDate && r.RankCode == _editingSalaryRecord.RankCode && r.SalaryStep == _editingSalaryRecord.SalaryStep);
+                if (tempEdit == null)
+                {
+                    // Fallback to match by reference index if Id is 0
+                    int idx = _personnel.SalaryRecords.ToList().IndexOf(_editingSalaryRecord);
+                    if (idx >= 0 && idx < tempRecords.Count)
+                    {
+                        tempEdit = tempRecords[idx];
+                    }
+                }
+
+                if (tempEdit != null)
+                {
+                    DateTime? oldStartDate = tempEdit.StartDate;
+                    tempEdit.StartDate = dpSalaryHistStart.SelectedDate;
+                    tempEdit.EndDate = dpSalaryHistEnd.SelectedDate;
+                    tempEdit.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
+                    tempEdit.RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "";
+                    tempEdit.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
+                    tempEdit.Coefficient = txtSalaryHistCoeff.Text;
+                    tempEdit.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
+                    tempEdit.ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0;
+                    tempEdit.DecisionNumber = txtSalaryHistDecisionNo.Text;
+                    tempEdit.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
+
+                    ReconcileSalaryRecordsAfterUpdate(tempRecords, tempEdit, oldStartDate);
+                }
+            }
+            else
+            {
+                var tempNew = new SalaryRecord
+                {
+                    StartDate = dpSalaryHistStart.SelectedDate,
+                    EndDate = dpSalaryHistEnd.SelectedDate,
+                    SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
+                    RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "",
+                    SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
+                    Coefficient = txtSalaryHistCoeff.Text,
+                    Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                    ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0,
+                    DecisionNumber = txtSalaryHistDecisionNo.Text,
+                    DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
+                    PersonnelId = _personnel.Id
+                };
+                tempRecords.Add(tempNew);
+                ReconcileSalaryRecordsAfterAdd(tempRecords, tempNew);
+            }
+
+            // 2. Validate overlaps in tempRecords
+            if (!ValidateSalaryRecordsOverlap(tempRecords))
+            {
+                new WarningWindow("Khoảng thời gian quá trình lương bị trùng hoặc ngày bắt đầu đã tồn tại!", "Trùng lặp thời gian").ShowDialog();
+                return;
+            }
+
+            // 3. Nếu hợp lệ, lưu vào danh sách quá trình lương
+            if (_editingSalaryRecord != null)
+            {
+                DateTime? oldStartDate = _editingSalaryRecord.StartDate;
+                _editingSalaryRecord.StartDate = dpSalaryHistStart.SelectedDate;
+                _editingSalaryRecord.EndDate = dpSalaryHistEnd.SelectedDate;
+                _editingSalaryRecord.SalaryCalculationDate = dpSalaryHistCalc.SelectedDate;
+                _editingSalaryRecord.RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "";
+                _editingSalaryRecord.SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "";
+                _editingSalaryRecord.Coefficient = txtSalaryHistCoeff.Text;
+                _editingSalaryRecord.Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100;
+                _editingSalaryRecord.ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0;
+                _editingSalaryRecord.DecisionNumber = txtSalaryHistDecisionNo.Text;
+                _editingSalaryRecord.DecisionDate = dpSalaryHistDecisionDate.SelectedDate;
+
+                ReconcileSalaryRecordsAfterUpdate(_personnel.SalaryRecords, _editingSalaryRecord, oldStartDate);
+                _editingSalaryRecord = null; // Clear editing state
+            }
+            else
+            {
+                var newItem = new SalaryRecord
+                {
+                    StartDate = dpSalaryHistStart.SelectedDate,
+                    EndDate = dpSalaryHistEnd.SelectedDate,
+                    SalaryCalculationDate = dpSalaryHistCalc.SelectedDate,
+                    RankCode = cboSalaryHistRankCode.SelectedValue?.ToString() ?? "",
+                    SalaryStep = cboSalaryHistStep.SelectedValue?.ToString() ?? "",
+                    Coefficient = txtSalaryHistCoeff.Text,
+                    Percentage = double.TryParse(txtSalaryHistPercent.Text, out double p) ? p : 100,
+                    ExceedFramePercent = double.TryParse(txtSalaryHistExceedPercent.Text, out double ef) ? ef : 0,
+                    DecisionNumber = txtSalaryHistDecisionNo.Text,
+                    DecisionDate = dpSalaryHistDecisionDate.SelectedDate,
+                    PersonnelId = _personnel.Id
+                };
+                _personnel.SalaryRecords.Add(newItem);
+                ReconcileSalaryRecordsAfterAdd(_personnel.SalaryRecords, newItem);
+            }
+
+            RefreshSalaryHistoryGrid();
+
+            // Xóa trắng các ô nhập liệu
+            dpSalaryHistStart.SelectedDate = null;
+            dpSalaryHistEnd.SelectedDate = null;
+            dpSalaryHistCalc.SelectedDate = null;
+            cboSalaryHistRankCode.SelectedIndex = -1;
+            cboSalaryHistStep.ItemsSource = null;
+            txtSalaryHistCoeff.Clear();
+            txtSalaryHistPercent.Text = "100";
+            txtSalaryHistExceedPercent.Text = "0";
+            txtSalaryHistDecisionNo.Clear();
+            dpSalaryHistDecisionDate.SelectedDate = null;
+        }
+
+        private void dgSalaryHistory_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var dep = (DependencyObject)e.OriginalSource;
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep is DataGridRow row)
+            {
+                var item = row.DataContext as SalaryRecord;
+                if (item == null) return;
+
+                // Nạp lại dữ liệu lên form để chỉnh sửa
+                dpSalaryHistStart.SelectedDate = item.StartDate;
+                dpSalaryHistEnd.SelectedDate = item.EndDate;
+                dpSalaryHistCalc.SelectedDate = item.SalaryCalculationDate;
+                cboSalaryHistRankCode.SelectedValue = item.RankCode;
+                if (!string.IsNullOrEmpty(item.RankCode))
+                {
+                    LoadSalaryHistSteps(item.RankCode);
+                    cboSalaryHistStep.SelectedValue = item.SalaryStep;
+                }
+                txtSalaryHistCoeff.Text = item.Coefficient;
+                txtSalaryHistPercent.Text = item.Percentage.ToString();
+                txtSalaryHistExceedPercent.Text = item.ExceedFramePercent.ToString();
+                txtSalaryHistDecisionNo.Text = item.DecisionNumber;
+                dpSalaryHistDecisionDate.SelectedDate = item.DecisionDate;
+
+                // Đánh dấu đang sửa để không bị tạo trùng bản ghi khi lưu
+                _editingSalaryRecord = item;
+            }
+        }
+
+        private void btnDeleteSalaryHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as FrameworkElement)?.DataContext as SalaryRecord;
+            if (item != null && _personnel?.SalaryRecords != null)
+            {
+                var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng quá trình lương này không?");
+                if (confirm.ShowDialog() == true)
+                {
+                    DateTime? deletedStartDate = item.StartDate;
+                    _personnel.SalaryRecords.Remove(item);
+                    ReconcileSalaryRecordsAfterDelete(_personnel.SalaryRecords, deletedStartDate);
+                    RefreshSalaryHistoryGrid();
+                }
+            }
+        }
+
+        private void btnAddLeave_Click(object? sender, RoutedEventArgs e)
+        {
+            // Validate input
+            if (cboLeaveType.SelectedIndex == -1)
+            {
+                new WarningWindow("Vui lòng chọn loại nghỉ phép!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+
+            // Validate dates
+            if (dpLeaveStartDate.SelectedDate == null)
+            {
+                new WarningWindow("Vui lòng nhập ngày bắt đầu!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            // End date is mandatory for Annual Leave ("Phép năm")
+            if (type == "Phép năm" && dpLeaveEndDate.SelectedDate == null)
+            {
+                new WarningWindow("Vui lòng nhập ngày kết thúc cho Phép năm!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            if (dpLeaveEndDate.SelectedDate != null && dpLeaveEndDate.SelectedDate < dpLeaveStartDate.SelectedDate)
+            {
+                new WarningWindow("Ngày kết thúc không thể nhỏ hơn ngày bắt đầu!", "Lỗi thời gian").ShowDialog();
+                return;
+            }
+
+
+            var start = dpLeaveStartDate.SelectedDate.Value;
+            DateTime? end = dpLeaveEndDate.SelectedDate;
+
+
+            // Kiểm tra trùng lặp khoảng thời gian
+            if (_personnel != null && _personnel.LeaveHistories != null)
+            {
+                foreach (var history in _personnel.LeaveHistories)
+                {
+                    // Skip self if editing
+                    if (_editingLeaveHistory != null && history == _editingLeaveHistory) continue;
+
+                    // Handle overlap with ongoing or closed leaves
+                    bool isOverlap = false;
+
+                    if (history.EndDate.HasValue)
+                    {
+                        if (end.HasValue)
+                        {
+                            // Case: Both have end dates
+                            isOverlap = (start <= history.EndDate.Value && end.Value >= history.StartDate);
+                        }
+                        else
+                        {
+                            // Case: New is ongoing
+                            isOverlap = (start <= history.EndDate.Value);
+                        }
+                    }
+                    else
+                    {
+                        // Existing is ongoing
+                        if (end.HasValue)
+                        {
+                            isOverlap = (end.Value >= history.StartDate);
+                        }
+                        else
+                        {
+                            // Both ongoing
+                            isOverlap = true;
+                        }
+                    }
+
+                    if (isOverlap)
+                    {
+                        string historyEndStr = history.EndDate.HasValue ? history.EndDate.Value.ToString("dd/MM/yyyy") : "Đang nghỉ";
+                        var msg = $"Khoảng thời gian này đã trùng với đợt nghỉ phép: {history.LeaveType} \n(Từ {history.StartDate:dd/MM/yyyy} đến {historyEndStr}).\nVui lòng kiểm tra lại!";
+                        new WarningWindow(msg, "Trùng lịch nghỉ").ShowDialog();
+                        return;
+                    }
+
+                }
+            }
+
+            double duration = 0;
+            if (double.TryParse(txtLeaveDuration.Text, out double manualDuration))
+            {
+                duration = manualDuration;
+            }
+            else
+            {
+                // Fallback if empty or invalid, though UpdateLeaveDuration should handle this
+                if (type == "Phép năm")
+                {
+                    // end is guaranteed non-null here due to validation above
+                    duration = CalculateWorkingDays(start, end!.Value);
+                }
+                else
+                {
+                    if (end.HasValue)
+                        duration = (end.Value - start).TotalDays + 1;
+                    else
+                        duration = 0; // Unknown duration for ongoing leave
+                }
+
+            }
+
+            // --- KIỂM TRA HỢP LỆ: Kiểm tra số ngày phép còn lại ---
+            if (type == "Phép năm")
+            {
+                int currentYear = DateTime.Now.Year;
+                int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? currentYear;
+                double totalAvailable = 0;
+
+                // Scenario 1: Adding New Record for Current Year (Eligible for Split/Carry-over)
+                if (_editingLeaveHistory == null && selectedYear == currentYear)
+                {
+                    double remainingCurrent = GetRemainingAnnualLeaveDays(currentYear);
+                    double remainingOld = GetRemainingAnnualLeaveDays(currentYear - 1);
+
+                    if (chkPrioritizeOldYear.IsChecked == true)
+                        totalAvailable = remainingCurrent + (remainingOld > 0 ? remainingOld : 0);
+                    else
+                        totalAvailable = remainingCurrent;
+                }
+                // Scenario 2: Editing OR Specific Past Year (Strict Limit)
+                else
+                {
+                    totalAvailable = GetRemainingAnnualLeaveDays(selectedYear);
+
+                    // If editing, add back the *original* duration to the available pool
+                    if (_editingLeaveHistory != null &&
+                        _editingLeaveHistory.LeaveType == "Phép năm" &&
+                        (_editingLeaveHistory.LeaveYear ?? _editingLeaveHistory.StartDate.Year) == selectedYear)
+                    {
+                        totalAvailable += _editingLeaveHistory.DurationDays;
+                    }
+                }
+
+                if (duration > totalAvailable)
+                {
+                    new WarningWindow($"Số ngày nghỉ ({duration}) vượt quá số ngày phép còn lại ({totalAvailable})!", "Lỗi quá hạn mức").ShowDialog();
+                    return;
+                }
+            }
+            // --- VALIDATION END ---
+
+            var reason = txtLeaveReason.Text;
+
+            if (_editingLeaveHistory != null)
+            {
+                // Cập nhật bản ghi hiện có
+                _editingLeaveHistory.LeaveType = type;
+                _editingLeaveHistory.StartDate = start;
+                _editingLeaveHistory.EndDate = end;
+                _editingLeaveHistory.DurationDays = duration;
+                _editingLeaveHistory.DurationDays = duration;
+                _editingLeaveHistory.Reason = reason;
+
+                if (type == "Phép năm")
+                {
+                    _editingLeaveHistory.LeaveYear = (int?)cboLeaveYear.SelectedItem;
+                }
+                else
+                {
+                    _editingLeaveHistory.LeaveYear = null;
+                }
+
+                // Lưu ghi chú hệ thống
+                _editingLeaveHistory.SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim();
+
+
+
+                // Reset Edit Mode
+                _editingLeaveHistory = null;
+                dgLeaveHistory.SelectedItem = null;
+
+                // Reset Button Text
+                // Find TextBlock inside button
+                if (btnAddLeave.Content is StackPanel sp)
+                {
+                    foreach (var child in sp.Children)
+                    {
+                        if (child is TextBlock tb)
+                        {
+                            tb.Text = "Thêm vào bảng";
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+
+            {
+                // Logic tự động trừ phép: Tách bản ghi nếu lấy từ phép năm cũ
+                // NEW LOGIC: Smart Consumption (Prioritize Previous Year)
+                if (type == "Phép năm")
+                {
+                    int currentYear = DateTime.Now.Year;
+                    int previousYear = currentYear - 1;
+
+                    // Kiểm tra nếu còn phép năm trước và ưu tiên trừ phép năm trước
+                    double remainingOld = GetRemainingAnnualLeaveDays(previousYear);
+                    int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? currentYear;
+
+                    if (chkPrioritizeOldYear.IsChecked == true && selectedYear == currentYear && remainingOld > 0)
+                    {
+                        // 1. Take from Previous Year first
+                        double takenFromOld = Math.Min(duration, remainingOld);
+                        double takenFromCurrent = duration - takenFromOld;
+
+                        // Generate Link ID
+                        string linkId = Guid.NewGuid().ToString();
+
+                        // Create Old Year Record
+                        if (takenFromOld > 0)
+                        {
+                            var itemOld = new LeaveHistory
+                            {
+                                LeaveType = type,
+                                StartDate = start,
+                                EndDate = start.AddDays(takenFromOld - 1),
+                                DurationDays = takenFromOld,
+                                Reason = reason + $"|SYS:Ưu tiên trừ phép tồn năm {previousYear}|LINK:{linkId}",
+                                PersonnelId = _personnel != null ? _personnel.Id : 0,
+                                LeaveYear = previousYear,
+                                SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
+                            };
+
+
+                            if (_personnel == null) _personnel = new Personnel();
+                            if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
+                            _personnel.LeaveHistories.Add(itemOld);
+                        }
+
+                        // Create Current Year Record (if overflow)
+                        if (takenFromCurrent > 0)
+                        {
+                            var itemCurrent = new LeaveHistory
+                            {
+                                LeaveType = type,
+                                StartDate = start, // Simplified date logic as per user request for auto-deduct
+                                EndDate = end,
+                                DurationDays = takenFromCurrent,
+                                Reason = reason + $"|SYS:Trừ tiếp vào phép tồn năm {currentYear}|LINK:{linkId}",
+                                PersonnelId = _personnel != null ? _personnel.Id : 0,
+                                LeaveYear = currentYear,
+                                SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
+                            };
+
+
+                            if (_personnel == null) _personnel = new Personnel();
+                            if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
+                            _personnel.LeaveHistories.Add(itemCurrent);
+                        }
+
+                        CalculateAnnualLeave(DateTime.Now); // Refresh totals
+                        RefreshLeaveHistoryGrid();
+                        UpdateLeaveStatistics(); // Show stats
+
+                        string msg = $"Đã ưu tiên trừ {takenFromOld} ngày từ phép tồn năm {previousYear}.";
+                        if (takenFromCurrent > 0)
+                        {
+                            msg += $"\nHệ thống tự động chuyển {takenFromCurrent} ngày còn lại vào phép năm {currentYear}.";
+                        }
+
+                        new NotificationWindow(msg, "Thông báo tự động").ShowDialog();
+
+                        // Cleanup UI
+                        cboLeaveType.SelectedIndex = -1;
+                        cboLeaveYear.IsEnabled = false;
+                        cboLeaveYear.SelectedItem = DateTime.Now.Year;
+                        dpLeaveStartDate.SelectedDate = null;
+                        dpLeaveEndDate.SelectedDate = null;
+                        txtLeaveDuration.Clear();
+                        txtLeaveReason.Clear();
+                        txtSystemNote.Clear();
+                        return; // EXIT FUNCTION
+                    }
+                }
+
+                // Standard Logic (No split)
+                var newItem = new LeaveHistory
+                {
+                    LeaveType = type,
+                    StartDate = start,
+                    EndDate = end,
+                    DurationDays = duration,
+                    Reason = reason,
+                    PersonnelId = _personnel != null ? _personnel.Id : 0,
+                    LeaveYear = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() == "Phép năm" ? (int?)cboLeaveYear.SelectedItem : null,
+                    SystemNote = string.IsNullOrWhiteSpace(txtSystemNote.Text) ? null : txtSystemNote.Text.Trim()
+                };
+
+
+
+                if (_personnel == null) _personnel = new Personnel();
+                if (_personnel.LeaveHistories == null) _personnel.LeaveHistories = new System.Collections.Generic.List<LeaveHistory>();
+
+                _personnel.LeaveHistories.Add(newItem);
+            }
+
+            _isRefreshing = false;
+            // Làm mới bảng danh sách
+            RefreshLeaveHistoryGrid();
+
+            UpdateLeaveStatistics();
+            CalculateExpectedSalaryDate();
+
+            // Xóa trắng các ô nhập liệu
+            cboLeaveType.SelectedIndex = -1;
+            cboLeaveYear.IsEnabled = false;
+            cboLeaveYear.SelectedItem = DateTime.Now.Year;
+            dpLeaveStartDate.SelectedDate = null;
+            dpLeaveEndDate.SelectedDate = null;
+            txtLeaveDuration.Clear();
+            txtLeaveReason.Clear();
+            txtSystemNote.Clear();
+        }
+
+        private void OnLeaveDateChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (sender != dpLeaveEndDate)
+            {
+                CalculateMaternityEndDate();
+            }
+            UpdateLeaveDuration();
+
+            // Enable Year Selection if "Phép năm"
+            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            if (type == "Phép năm")
+            {
+                cboLeaveYear.IsEnabled = true;
+                if (!_isRefreshing) LoadLeaveYears(); // Don't reload if we are already in selection changed from LoadLeaveYears
+
+                int selectedYear = (cboLeaveYear.SelectedItem as int?) ?? DateTime.Now.Year;
+                if (selectedYear == DateTime.Now.Year)
+                {
+                    chkPrioritizeOldYear.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    chkPrioritizeOldYear.Visibility = Visibility.Collapsed;
+                    chkPrioritizeOldYear.IsChecked = false;
+                }
+            }
+            else
+            {
+                cboLeaveYear.IsEnabled = false;
+                chkPrioritizeOldYear.Visibility = Visibility.Collapsed;
+                chkPrioritizeOldYear.IsChecked = false;
+            }
+
+            // Cập nhật lại thống kê số ngày nghỉ theo năm đã chọn
+            UpdateLeaveStatistics();
+        }
+
+        private void OnLeaveReasonTextChanged(object sender, TextChangedEventArgs e)
+        {
+            CalculateMaternityEndDate();
+            UpdateLeaveDuration();
+        }
+
+        private void SetComboBoxByContent(ComboBox cbo, string? content)
+        {
+            if (string.IsNullOrEmpty(content))
+            {
+                cbo.SelectedIndex = -1;
+                return;
+            }
+
+            foreach (var item in cbo.Items)
+            {
+                if (item is ComboBoxItem cbi && cbi.Content?.ToString() == content)
+                {
+                    cbo.SelectedItem = cbi;
+                    return;
+                }
+                else if (item?.ToString() == content)
+                {
+                    cbo.SelectedItem = item;
+                    return;
+                }
+            }
+
+            // Fallback for non-item list (like strings)
+            cbo.Text = content;
+        }
+
+        private void SetSalaryDelaySelection(string? delayType)
+        {
+            if (string.IsNullOrEmpty(delayType) || delayType == "-- Không lùi --" || delayType == "-- Không lương --" || delayType.StartsWith("Nghỉ không lương (", StringComparison.OrdinalIgnoreCase))
+            {
+                if (cboSalaryDelay.Items.Count > 0)
+                {
+                    cboSalaryDelay.SelectedIndex = 0;
+                }
+                else
+                {
+                    cboSalaryDelay.Text = "-- Không lùi --";
+                }
+            }
+            else
+            {
+                SetComboBoxByContent(cboSalaryDelay, delayType);
+            }
+        }
+
+        private void CalculateMaternityEndDate()
+        {
+            if (_isRefreshing) return;
+
+            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            if (type != "Thai sản") return;
+
+            if (dpLeaveStartDate.SelectedDate == null) return;
+
+            DateTime start = dpLeaveStartDate.SelectedDate.Value;
+            DateTime cutoff = new DateTime(2026, 7, 1);
+            
+            // Base maternity leave duration: 7 months from 1/7/2026 onwards, otherwise 6 months
+            int months = (start < cutoff) ? 6 : 7;
+
+            // Plus 1 month if "sinh đôi" is in the reason
+            string reason = txtLeaveReason?.Text ?? "";
+            if (reason.ToLower().Contains("sinh đôi"))
+            {
+                months += 1;
+            }
+
+            DateTime end = start.AddMonths(months).AddDays(-1);
+
+            if (dpLeaveEndDate.SelectedDate != end)
+            {
+                dpLeaveEndDate.SelectedDate = end;
+            }
+        }
+
+        private void UpdateLeaveDuration()
+        {
+            // Debug logging
+
+            if (_isRefreshing) return;
+
+            if (dpLeaveStartDate.SelectedDate == null || dpLeaveEndDate.SelectedDate == null)
+            {
+                txtLeaveDuration.Text = "";
+                txtSystemNote.Text = "";
+                return;
+            }
+
+            var start = dpLeaveStartDate.SelectedDate.Value;
+            var end = dpLeaveEndDate.SelectedDate.Value;
+
+            if (end < start)
+            {
+                txtLeaveDuration.Text = "";
+                txtSystemNote.Text = "";
+                return;
+            }
+
+            var type = (cboLeaveType.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
+            double duration = 0;
+
+            if (type == "Phép năm")
+            {
+                duration = CalculateWorkingDays(start, end);
+            }
+            else
+            {
+                duration = (end - start).TotalDays + 1;
+            }
+
+            txtLeaveDuration.Text = duration.ToString();
+
+            // Tự động tính ghi chú hệ thống
+            txtSystemNote.Text = GetLeaveBreakdownNote(start, end, type);
+        }
+
+        private double CalculateWorkingDays(DateTime start, DateTime end)
+        {
+            double days = 0;
+            using (var context = new AppDbContext())
+            {
+                var holidays = context.PublicHolidays
+                                      .Where(h => h.Date >= start.Date && h.Date <= end.Date)
+                                      .Select(h => h.Date.Date)
+                                      .ToList();
+
+                for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
+                {
+                    // Exclude weekends
+                    if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                        continue;
+
+                    // Exclude public holidays
+                    if (holidays.Contains(date))
+                        continue;
+
+                    days++;
+                }
+            }
+            return days;
+        }
+
+        private string GetLeaveBreakdownNote(DateTime start, DateTime end, string leaveType)
+        {
+            int totalDays = (int)(end.Date - start.Date).TotalDays + 1;
+            int weekends = 0;
+            int holidaysCount = 0;
+            int workDays = 0;
+
+            using (var context = new AppDbContext())
+            {
+                var holidaysList = context.PublicHolidays
+                                          .Where(h => h.Date >= start.Date && h.Date <= end.Date)
+                                          .Select(h => h.Date.Date)
+                                          .ToList();
+
+                for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
+                {
+                    bool isWeekend = (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday);
+                    bool isHoliday = holidaysList.Contains(date);
+
+                    if (isWeekend)
+                    {
+                        weekends++;
+                    }
+                    else if (isHoliday)
+                    {
+                        holidaysCount++;
+                    }
+                    else
+                    {
+                        workDays++;
+                    }
+                }
+            }
+
+            string typeName = leaveType == "Phép năm" ? "nghỉ phép năm" : "ngày nghỉ";
+            return $"Nghỉ {totalDays:00} ngày, trong đó: {weekends:00} ngày thứ 7, chủ nhật; {holidaysCount:00} ngày nghỉ lễ; {workDays:00} {typeName}";
+        }
+
+
+
+        private LeaveHistory? _editingLeaveHistory = null;
+
+        private void dgLeaveHistory_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            if (dgLeaveHistory.SelectedItem is LeaveHistory item)
+            {
+                _isRefreshing = true;
+                _editingLeaveHistory = item;
+
+                // Populate fields
+                foreach (ComboBoxItem cbi in cboLeaveType.Items)
+                {
+                    if (cbi.Content?.ToString() == item.LeaveType)
+                    {
+                        cboLeaveType.SelectedItem = cbi;
+                        break;
+                    }
+                }
+
+                dpLeaveStartDate.SelectedDate = item.StartDate;
+                dpLeaveEndDate.SelectedDate = item.EndDate;
+                txtLeaveDuration.Text = item.DurationDays.ToString();
+                txtLeaveReason.Text = item.UserReasonDisplay; // Only show user part
+                txtSystemNote.Text = item.SystemNote ?? "";
+
+                if (item.LeaveType == "Phép năm")
+                {
+                    if (item.LeaveYear.HasValue)
+                    {
+                        LoadLeaveYears(item.LeaveYear.Value); // Ensure the edited year is visible
+                        cboLeaveYear.SelectedItem = item.LeaveYear.Value;
+                        cboLeaveYear.IsEnabled = true;
+                    }
+                    else
+                    {
+                        // Fallback to start date year if LeaveYear is missing
+                        int startYear = item.StartDate.Year;
+                        LoadLeaveYears(startYear);
+                        cboLeaveYear.SelectedItem = startYear;
+                        cboLeaveYear.IsEnabled = true;
+                    }
+
+                    // NEW: Detect Priority from Reason
+                    bool isPriority = !string.IsNullOrEmpty(item.Reason) &&
+                                     (item.Reason.Contains("|SYS:Ưu tiên trừ phép tồn năm") ||
+                                      item.Reason.Contains("|SYS:Trừ tiếp vào phép tồn năm"));
+
+                    if (isPriority)
+                    {
+                        chkPrioritizeOldYear.Visibility = Visibility.Visible;
+                        chkPrioritizeOldYear.IsChecked = true;
+                    }
+                }
+                else
+                {
+                    cboLeaveYear.IsEnabled = false;
+                }
+
+                _isRefreshing = false;
+
+                // Change Button Text
+                // Find TextBlock inside button
+                if (btnAddLeave.Content is StackPanel sp)
+                {
+                    foreach (var child in sp.Children)
+                    {
+                        if (child is TextBlock tb)
+                        {
+                            tb.Text = "Cập nhật ngày nghỉ";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void btnDeleteLeave_Click(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is int id)
+            {
+                // Note: If ID is 0 (newly added), we need to find by object reference logic or assume last one? 
+                // Or simply find by object in list matching the bounded item?
+                // The Tag binding binds to Id, which might be 0 for new items. 
+                // Lấy DataContext của dòng được chọn
+                var item = btn.DataContext as LeaveHistory;
+                if (item != null && _personnel?.LeaveHistories != null)
+                {
+                    // Kiểm tra các bản ghi liên kết
+                    var linkedItems = new List<LeaveHistory>();
+                    if (!string.IsNullOrEmpty(item.LinkId))
+                    {
+                        linkedItems = _personnel.LeaveHistories
+                            .Where(x => x.LinkId == item.LinkId && x != item)
+                            .ToList();
+                    }
+
+                    if (linkedItems.Any())
+                    {
+                        // Simplified Logic: Always delete ALL linked records
+                        var confirm = new ConfirmWindow(
+                            $"Bản ghi này thuộc về một đợt nghỉ phép bị tách ({linkedItems.Count + 1} phần).\n" +
+                            "Hệ thống sẽ xóa TẤT CẢ các bản ghi liên quan để đảm bảo đồng bộ.\n" +
+                            "Bạn có chắc chắn muốn xóa không?",
+                            "Xác nhận xóa liên kết");
+
+                        if (confirm.ShowDialog() == true)
+                        {
+                            _personnel.LeaveHistories.Remove(item);
+                            foreach (var link in linkedItems)
+                            {
+                                _personnel.LeaveHistories.Remove(link);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Standard delete
+                        var confirm = new ConfirmWindow($"Bạn có chắc muốn xóa lịch sử nghỉ: {item.LeaveType}?", "Xác nhận xóa");
+                        if (confirm.ShowDialog() == true)
+                        {
+                            _personnel.LeaveHistories.Remove(item);
+                        }
+                    }
+
+                    // Làm mới bảng danh sách
+                    RefreshLeaveHistoryGrid();
+                    UpdateLeaveStatistics();
+                    CalculateExpectedSalaryDate();
+                }
+            }
+        }
+
+
+
+        private void UpdateLeaveStatistics(int? yearOverride = null)
+        {
+            if (_personnel != null && _personnel.LeaveHistories == null) _personnel.LeaveHistories = new List<LeaveHistory>();
+
+            var histories = _personnel?.LeaveHistories ?? new List<LeaveHistory>();
+
+            double annualTakenCurrentYear = 0;
+            double annualTakenOldYear = 0;
+            double sickTaken = 0;
+            double convalescenceTaken = 0;
+
+            // Maternity Logic
+            string maternityDisplay = "0";
+            // Find ALL Maternity records, sort by StartDate descending
+            var maternityLeaves = histories
+                                    .Where(x => x.LeaveType == "Thai sản")
+                                    .OrderByDescending(x => x.StartDate)
+                                    .ToList();
+
+            if (maternityLeaves.Any())
+            {
+                // Display the range of the LATEST maternity leave
+                var latest = maternityLeaves.First();
+                // Since LeaveHistory properties are likely non-nullable DateTime based on the error
+                maternityDisplay = $"{latest.StartDate:dd/MM/yyyy} - {latest.EndDate:dd/MM/yyyy}";
+            }
+
+            // Xác định năm cần tính toán
+            int yearToCalculate = yearOverride ?? DateTime.Now.Year;
+
+            // If user selected a year in ComboBox, we might want to prioritize that for display
+            if (yearOverride == null && cboLeaveYear.SelectedItem is int selectedYear)
+            {
+                yearToCalculate = selectedYear;
+            }
+
+            double totalUnpaidTakenAllYears = 0; // NEW: Track unpaid leave across ALL years for salary delay
+
+            foreach (var item in histories)
+            {
+                // Cộng dồn toàn bộ ngày nghỉ không lương qua các năm để tính lùi nâng lương
+                if (item.LeaveType == "Không lương")
+                {
+                    totalUnpaidTakenAllYears += item.DurationDays;
+                }
+
+                // We want to process all leaves that were TAKEN in this year
+                if (item.StartDate.Year == yearToCalculate)
+                {
+                    if (item.LeaveType == "Phép năm")
+                    {
+                        // Kiểm tra xem có thuộc hạn mức phép năm cũ không
+                        // Được coi là năm cũ nếu LeaveYear nhỏ hơn năm đang tính
+                        if (item.LeaveYear.HasValue && item.LeaveYear.Value < yearToCalculate)
+                        {
+                            annualTakenOldYear += item.DurationDays;
+                        }
+                        else
+                        {
+                            annualTakenCurrentYear += item.DurationDays;
+                        }
+                    }
+                    else if (item.LeaveType == "Nghỉ ốm") sickTaken += item.DurationDays;
+                    else if (item.LeaveType == "Dưỡng sức") convalescenceTaken += item.DurationDays;
+                }
+            }
+
+            // Hiển thị lên giao diện
+            // Mặc định 12 ngày phép nếu chưa thiết lập
+            int totalAnnual = 12;
+
+            // Ưu tiên lấy từ Model hơn là lấy từ TextBox
+            if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
+            {
+                totalAnnual = _personnel.TotalAnnualLeaveDays;
+            }
+            else
+            {
+                int.TryParse(txtTotalAnnualLeave.Text, out totalAnnual);
+            }
+
+            // Gán dữ liệu lên giao diện
+            txtAnnualLeaveTaken.Text = (annualTakenCurrentYear + annualTakenOldYear).ToString();
+            txtAnnualLeaveRemaining.Text = (totalAnnual - annualTakenCurrentYear).ToString();
+            txtSickLeaveTaken.Text = sickTaken.ToString();
+            txtUnpaidLeaveTaken.Text = totalUnpaidTakenAllYears.ToString();
+            txtMaternityLeaveTaken.Text = maternityDisplay;
+            txtConvalescenceLeaveTaken.Text = convalescenceTaken.ToString();
+
+            CalculateExpectedSalaryDate();
+        }
+
+        private double GetRemainingAnnualLeaveDays(int year)
+        {
+            // Mặc định 12 ngày phép nếu nhân sự chưa có dữ liệu
+            int total = 12;
+
+            if (_personnel != null && _personnel.TotalAnnualLeaveDays > 0)
+            {
+                total = _personnel.TotalAnnualLeaveDays;
+            }
+            else
+            {
+                // Lấy từ giao diện nếu tạo mới nhân sự
+                if (int.TryParse(txtTotalAnnualLeave.Text, out int uiTotal))
+                {
+                    total = uiTotal;
+                }
+            }
+
+            double taken = 0;
+            if (_personnel != null && _personnel.LeaveHistories != null)
+            {
+                taken = _personnel.LeaveHistories
+                     .Where(x => x.LeaveType == "Phép năm" && (x.LeaveYear ?? x.StartDate.Year) == year)
+                     .Sum(x => x.DurationDays);
+            }
+
+            return total - taken;
+        }
+
+        private void RefreshLeaveHistoryGrid()
+        {
+            if (_personnel == null || _personnel.LeaveHistories == null) return;
+
+            // _personnel.LeaveHistories.RemoveAll(x => x.EndDate.Year < currentYear);
+
+            // Sort by StartDate Descending, then by Id Descending (newest leaves/recently added ones are placed on top)
+            var sortedList = _personnel.LeaveHistories
+                                .OrderByDescending(x => x.StartDate)
+                                .ThenByDescending(x => x.Id)
+                                .ToList();
+
+            // Do not group anymore - show delete button for every individual item
+            foreach (var item in sortedList)
+            {
+                item.ShowDeleteButton = true;
+                item.IsLinkedGroupHead = false;
+            }
+
+            _personnel.LeaveHistories = sortedList;
+
+            int stt = 1;
+            foreach (var item in _personnel.LeaveHistories)
+            {
+                item.STT = stt++;
+            }
+
+            dgLeaveHistory.ItemsSource = null;
+            dgLeaveHistory.ItemsSource = _personnel.LeaveHistories;
+        }
+        private void OnSalaryStructureChanged(object? sender, RoutedEventArgs e)
+        {
+            CalculateExpectedSalaryDate();
+        }
+
+        private void OnSalaryStructureChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            CalculateExpectedSalaryDate();
+        }
+
+        /// <summary>
+        /// Quy đổi số ngày nghỉ lẻ thành số tháng lùi thời hạn nâng lương theo Điều 2 Thông tư 03/2021/TT-BNV:
+        /// - Mỗi 30 ngày = 1 tháng.
+        /// - Số ngày lẻ còn lại: nếu từ đủ 11 ngày trở lên (>= 11 ngày) thì làm tròn thành 1 tháng; nếu dưới 11 ngày thì không tính.
+        /// </summary>
+        public static int ConvertDaysToDelayMonths(double days)
+        {
+            return SalaryHelper.ConvertDaysToDelayMonths(days);
+        }
+
+        private void CalculateExpectedSalaryDate()
+        {
+            if (_isRefreshing) return;
+
+            DateTime? baseDate = dpNextSalaryStepDate.SelectedDate;
+            if (!baseDate.HasValue)
+            {
+                dpExpectedSalaryIncrease.SelectedDate = null;
+                return;
+            }
+
+            double exceedFrame = 0;
+            double.TryParse(txtExceedFrame.Text, out exceedFrame);
+
+            string rankCode = "";
+            if (cboRankCode.SelectedItem is Rank r) rankCode = r.Code;
+            else if (cboRankCode.SelectedValue != null) rankCode = cboRankCode.SelectedValue.ToString() ?? "";
+            else rankCode = cboRankCode.Text;
+            rankCode = rankCode.Trim();
+
+            string currentDelayReason = "";
+            if (cboSalaryDelay.SelectedItem is ComboBoxItem cbi)
+                currentDelayReason = cbi.Content?.ToString() ?? "";
+            else if (cboSalaryDelay.SelectedItem != null)
+                currentDelayReason = cboSalaryDelay.SelectedItem.ToString() ?? "";
+            else
+                currentDelayReason = cboSalaryDelay.Text;
+
+            // Sử dụng SalaryHelper để tính toán chuẩn TT 03/2021/TT-BNV
+            var res = SalaryHelper.CalculateSalaryIncrease(
+                _personnel,
+                baseDateOverride: baseDate,
+                rankCodeOverride: rankCode,
+                exceedFrameOverride: exceedFrame,
+                delayReasonOverride: currentDelayReason);
+
+            double unpaidDays = res.UnpaidDays;
+            int unpaidDelayMonths = res.UnpaidDelayMonths;
+            bool hasUnpaidLeave = unpaidDays > 0;
+
+            // 1. Quản lý mục "Nghỉ không lương (X ngày - Lùi Y tháng)" trong cboSalaryDelay
+            if (cboSalaryDelay.Items.Count > 0)
+            {
+                // Ensure the first item is always "-- Không lùi --"
+                var firstItemObj = cboSalaryDelay.Items[0];
+                string firstItemText = firstItemObj is ComboBoxItem cbi0 ? cbi0.Content?.ToString() ?? "" : firstItemObj.ToString() ?? "";
+                if (firstItemText != "-- Không lùi --")
+                {
+                    bool wasRefreshing = _isRefreshing;
+                    _isRefreshing = true;
+                    try
+                    {
+                        if (firstItemObj is ComboBoxItem cbiUpdate)
+                            cbiUpdate.Content = "-- Không lùi --";
+                        else
+                            cboSalaryDelay.Items[0] = "-- Không lùi --";
+                    }
+                    finally { _isRefreshing = wasRefreshing; }
+                }
+
+                int unpaidItemIndex = -1;
+                string currentUnpaidTextInList = "";
+                for (int i = 0; i < cboSalaryDelay.Items.Count; i++)
+                {
+                    var itemObj = cboSalaryDelay.Items[i];
+                    string itemText = itemObj is ComboBoxItem cbiItem ? cbiItem.Content?.ToString() ?? "" : itemObj.ToString() ?? "";
+                    if (itemText.StartsWith("Nghỉ không lương (", StringComparison.OrdinalIgnoreCase))
+                    {
+                        unpaidItemIndex = i;
+                        currentUnpaidTextInList = itemText;
+                        break;
+                    }
+                }
+
+                string expectedUnpaidText = unpaidDelayMonths > 0
+                    ? $"Nghỉ không lương ({(int)Math.Round(unpaidDays)} ngày - Lùi {unpaidDelayMonths} tháng)"
+                    : $"Nghỉ không lương ({(int)Math.Round(unpaidDays)} ngày)";
+
+                if (hasUnpaidLeave)
+                {
+                    if (unpaidItemIndex == -1)
+                    {
+                        bool wasRefreshing = _isRefreshing;
+                        _isRefreshing = true;
+                        try
+                        {
+                            cboSalaryDelay.Items.Insert(1, expectedUnpaidText);
+                            int selectedIndex = cboSalaryDelay.SelectedIndex;
+                            string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
+                            if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
+                            {
+                                cboSalaryDelay.SelectedIndex = 1;
+                            }
+                        }
+                        finally { _isRefreshing = wasRefreshing; }
+                    }
+                    else
+                    {
+                        int selectedIndex = cboSalaryDelay.SelectedIndex;
+                        string selectedText = cboSalaryDelay.SelectedItem is ComboBoxItem cbiSel ? cbiSel.Content?.ToString() ?? "" : cboSalaryDelay.SelectedItem?.ToString() ?? "";
+                        if (selectedIndex == 0 || selectedIndex == -1 || selectedText == "-- Không lương --" || selectedText == "-- Không lùi --")
+                        {
+                            bool wasRefreshing = _isRefreshing;
+                            _isRefreshing = true;
+                            try { cboSalaryDelay.SelectedIndex = unpaidItemIndex; }
+                            finally { _isRefreshing = wasRefreshing; }
+                        }
+
+                        if (currentUnpaidTextInList != expectedUnpaidText)
+                        {
+                            bool wasRefreshing = _isRefreshing;
+                            _isRefreshing = true;
+                            try
+                            {
+                                var existingItem = cboSalaryDelay.Items[unpaidItemIndex];
+                                if (existingItem is ComboBoxItem cbiUpdate) cbiUpdate.Content = expectedUnpaidText;
+                                else cboSalaryDelay.Items[unpaidItemIndex] = expectedUnpaidText;
+
+                                if (cboSalaryDelay.SelectedIndex == unpaidItemIndex)
+                                {
+                                    cboSalaryDelay.SelectedIndex = -1;
+                                    cboSalaryDelay.SelectedIndex = unpaidItemIndex;
+                                }
+                            }
+                            finally { _isRefreshing = wasRefreshing; }
+                        }
+                    }
+                }
+                else if (unpaidItemIndex != -1)
+                {
+                    bool wasRefreshing = _isRefreshing;
+                    _isRefreshing = true;
+                    try
+                    {
+                        int selectedIndex = cboSalaryDelay.SelectedIndex;
+                        cboSalaryDelay.Items.RemoveAt(unpaidItemIndex);
+                        if (selectedIndex == unpaidItemIndex) cboSalaryDelay.SelectedIndex = 0;
+                    }
+                    finally { _isRefreshing = wasRefreshing; }
+                }
+            }
+
+            // 2. Hiển thị/ẩn cảnh báo tạm tính nghỉ ốm
+            if (txtSickLeaveProvisionalWarning != null)
+            {
+                txtSickLeaveProvisionalWarning.Visibility = res.HasOngoingSickLeave
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+                if (res.HasOngoingSickLeave)
+                {
+                    txtSickLeaveProvisionalWarning.ToolTip = "Đang có đợt nghỉ ốm chưa xác định ngày kết thúc nên hệ thống tạm tính đến hôm nay. Khi cán bộ đi làm lại và nhập Ngày kết thúc, hệ thống sẽ chốt số tháng lùi chính xác.";
+                }
+            }
+
+            // 3. Tự động thêm/xoá mục "Nghỉ ốm quá hạn X ngày (Lùi Y tháng)" trong cboSalaryDelay
+            if (cboSalaryDelay.Items.Count > 0)
+            {
+                int sickItemIndex = -1;
+                for (int i = 0; i < cboSalaryDelay.Items.Count; i++)
+                {
+                    var itemObj = cboSalaryDelay.Items[i];
+                    string itemText = itemObj is ComboBoxItem cbiSickCheck
+                        ? cbiSickCheck.Content?.ToString() ?? ""
+                        : itemObj.ToString() ?? "";
+                    if (itemText.StartsWith("Nghỉ ốm quá hạn", StringComparison.OrdinalIgnoreCase))
+                    {
+                        sickItemIndex = i;
+                        break;
+                    }
+                }
+
+                if (res.SickDelayMonths > 0)
+                {
+                    string sickLabel = $"Nghỉ ốm quá hạn {(int)Math.Round(res.SickExcessDays)} ngày (Lùi {res.SickDelayMonths} tháng)";
+                    bool wasRefreshing2 = _isRefreshing;
+                    _isRefreshing = true;
+                    try
+                    {
+                        int newSickIndex;
+                        if (sickItemIndex == -1)
+                        {
+                            cboSalaryDelay.Items.Insert(cboSalaryDelay.Items.Count, sickLabel);
+                            newSickIndex = cboSalaryDelay.Items.Count - 1;
+                        }
+                        else
+                        {
+                            newSickIndex = sickItemIndex;
+                            var existing = cboSalaryDelay.Items[sickItemIndex];
+                            string existingText = existing is ComboBoxItem cbiEx ? cbiEx.Content?.ToString() ?? "" : existing.ToString() ?? "";
+                            if (existingText != sickLabel)
+                            {
+                                if (existing is ComboBoxItem cbiUpdate2) cbiUpdate2.Content = sickLabel;
+                                else cboSalaryDelay.Items[sickItemIndex] = sickLabel;
+                            }
+                        }
+
+                        // Tự động chọn mục này nếu người dùng chưa chọn lý do kỷ luật nào khác
+                        string currentSel = cboSalaryDelay.SelectedItem is ComboBoxItem cbiCur
+                            ? cbiCur.Content?.ToString() ?? ""
+                            : cboSalaryDelay.SelectedItem?.ToString() ?? "";
+
+                        bool hasDisciplinary = currentSel.Contains("Khiển trách") ||
+                                               currentSel.Contains("Cảnh cáo") ||
+                                               currentSel.Contains("Giáng chức") ||
+                                               currentSel.Contains("Cách chức");
+
+                        if (!hasDisciplinary)
+                        {
+                            cboSalaryDelay.SelectedIndex = newSickIndex;
+                        }
+
+                        cboSalaryDelay.ToolTip = $"Theo TT 03/2021/TT-BNV: Tổng nghỉ ốm {(int)Math.Round(res.TotalSickDaysInPeriod)} ngày - 180 ngày BHXH = {(int)Math.Round(res.SickExcessDays)} ngày vượt hạn => Quy đổi lùi {res.SickDelayMonths} tháng.";
+                    }
+                    finally { _isRefreshing = wasRefreshing2; }
+                }
+                else if (sickItemIndex != -1)
+                {
+                    bool wasRefreshing2 = _isRefreshing;
+                    _isRefreshing = true;
+                    try
+                    {
+                        cboSalaryDelay.Items.RemoveAt(sickItemIndex);
+                        cboSalaryDelay.ToolTip = null;
+                    }
+                    finally { _isRefreshing = wasRefreshing2; }
+                }
+            }
+
+            // 4. Cập nhật kết quả ngày dự kiến lên lương
+            if (dpExpectedSalaryIncrease.SelectedDate != res.ExpectedDate)
+            {
+                dpExpectedSalaryIncrease.SelectedDate = res.ExpectedDate;
+            }
+        }
+
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void txtPhone_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isRefreshing || _isFormatting) return;
+
+            _isFormatting = true;
+            try
+            {
+                int caretIndex = txtPhone.CaretIndex;
+                string originalText = txtPhone.Text;
+                string digits = new string(originalText.Where(char.IsDigit).ToArray());
+
+                // Limit to 10 digits
+                if (digits.Length > 10) digits = digits.Substring(0, 10);
+
+                string formatted = FormatPhoneNumber(digits);
+
+                if (txtPhone.Text != formatted)
+                {
+                    txtPhone.Text = formatted;
+
+                    // Restore caret position
+                    int digitsBefore = originalText.Substring(0, Math.Min(caretIndex, originalText.Length)).Count(char.IsDigit);
+                    int newCaretIndex = 0;
+                    int digitCount = 0;
+                    while (newCaretIndex < formatted.Length && digitCount < digitsBefore)
+                    {
+                        if (char.IsDigit(formatted[newCaretIndex])) digitCount++;
+                        newCaretIndex++;
+                    }
+
+                    if (newCaretIndex < formatted.Length && formatted[newCaretIndex] == '.')
+                    {
+                        if (e.Changes.Any(c => c.AddedLength > 0))
+                            newCaretIndex++;
+                    }
+
+                    txtPhone.CaretIndex = Math.Min(newCaretIndex, formatted.Length);
+                }
+
+                // Error validation logic
+                if (digits.Length > 0 && !digits.StartsWith("0"))
+                {
+                    lblPhoneError.Text = "SĐT phải bắt đầu bằng số 0";
+                    lblPhoneError.Visibility = Visibility.Visible;
+                }
+                else if (digits.Length > 0 && digits.Length < 10)
+                {
+                    lblPhoneError.Text = "SĐT phải có 10 chữ số";
+                    lblPhoneError.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    lblPhoneError.Visibility = Visibility.Collapsed;
+                }
+            }
+            finally
+            {
+                _isFormatting = false;
+            }
+        }
+
+        private string FormatPhoneNumber(string? digits)
+        {
+            if (string.IsNullOrEmpty(digits)) return "";
+
+            // Clean non-digits first
+            digits = new string(digits.Where(char.IsDigit).ToArray());
+
+            if (digits.Length == 0) return "";
+
+            string formatted = digits.Substring(0, Math.Min(4, digits.Length));
+            if (digits.Length > 4)
+            {
+                formatted += "." + digits.Substring(4, Math.Min(3, digits.Length - 4));
+                if (digits.Length > 7)
+                {
+                    formatted += "." + digits.Substring(7, Math.Min(3, digits.Length - 7));
+                }
+            }
+            return formatted;
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void LoadEvaluationYears()
+        {
+            var years = new List<string> { "" };
+            int currentYear = DateTime.Now.Year;
+            for (int y = currentYear; y >= 1980; y--)
+            {
+                years.Add(y.ToString());
+            }
+            cboEvaluationYear.ItemsSource = years;
+            cboEvaluationYear.SelectedIndex = 0;
+        }
+
+        private void RefreshEvaluationHistoryGrid()
+        {
+            if (_personnel == null) return;
+            if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new List<EvaluationRecord>();
+            var sortedList = _personnel.EvaluationRecords.OrderByDescending(e => e.Year).ToList();
+            dgEvaluationHistory.ItemsSource = null;
+            dgEvaluationHistory.ItemsSource = sortedList;
+        }
+
+        private void btnAddEvaluation_Click(object sender, RoutedEventArgs e)
+        {
+            var yearStr = cboEvaluationYear.SelectedItem?.ToString() ?? "";
+            if (string.IsNullOrEmpty(yearStr))
+            {
+                new WarningWindow("Vui lòng chọn năm xếp loại!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+            if (!int.TryParse(yearStr, out int year))
+            {
+                new WarningWindow("Năm xếp loại không hợp lệ!", "Lỗi dữ liệu").ShowDialog();
+                return;
+            }
+
+            var rating = cboEvaluationRating.SelectedItem is ComboBoxItem cbi ? cbi.Content?.ToString() ?? "" : cboEvaluationRating.Text;
+            if (string.IsNullOrEmpty(rating))
+            {
+                new WarningWindow("Vui lòng chọn xếp loại năm!", "Thiếu thông tin").ShowDialog();
+                return;
+            }
+
+            var decisionNo = txtEvaluationDecisionNo.Text;
+            var decisionDate = dpEvaluationDecisionDate.SelectedDate;
+            var decisionAgency = txtEvaluationDecisionAgency.Text;
+
+            if (_personnel != null && _personnel.EvaluationRecords != null)
+            {
+                foreach (var ev in _personnel.EvaluationRecords)
+                {
+                    if (_editingEvaluationRecord != ev && ev.Year == year)
+                    {
+                        new WarningWindow($"Đã tồn tại xếp loại cho năm {year}!", "Trùng thông tin").ShowDialog();
+                        return;
+                    }
+                }
+            }
+
+            if (_editingEvaluationRecord != null)
+            {
+                _editingEvaluationRecord.Year = year;
+                _editingEvaluationRecord.Rating = rating;
+                _editingEvaluationRecord.DecisionNumber = decisionNo;
+                _editingEvaluationRecord.DecisionDate = decisionDate;
+                _editingEvaluationRecord.DecisionAgency = decisionAgency;
+
+                _editingEvaluationRecord = null;
+                dgEvaluationHistory.SelectedItem = null;
+            }
+            else
+            {
+                var newItem = new EvaluationRecord
+                {
+                    Year = year,
+                    Rating = rating,
+                    DecisionNumber = decisionNo,
+                    DecisionDate = decisionDate,
+                    DecisionAgency = decisionAgency,
+                    PersonnelId = _personnel != null ? _personnel.Id : 0
+                };
+                if (_personnel == null) _personnel = new Personnel();
+                if (_personnel.EvaluationRecords == null) _personnel.EvaluationRecords = new List<EvaluationRecord>();
+                _personnel.EvaluationRecords.Add(newItem);
+            }
+
+            RefreshEvaluationHistoryGrid();
+
+            cboEvaluationYear.SelectedIndex = 0;
+            cboEvaluationRating.SelectedIndex = 0;
+            txtEvaluationDecisionNo.Clear();
+            dpEvaluationDecisionDate.SelectedDate = null;
+            txtEvaluationDecisionAgency.Clear();
+        }
+
+        private void dgEvaluationHistory_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var dep = (DependencyObject)e.OriginalSource;
+            while ((dep != null) && !(dep is DataGridRow))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep is DataGridRow row)
+            {
+                var item = row.DataContext as EvaluationRecord;
+                if (item == null) return;
+
+                cboEvaluationYear.SelectedItem = item.Year.ToString();
+                
+                cboEvaluationRating.SelectedIndex = 0;
+                foreach (var obj in cboEvaluationRating.Items)
+                {
+                    if (obj is ComboBoxItem cbi && cbi.Content?.ToString() == item.Rating)
+                    {
+                        cboEvaluationRating.SelectedItem = cbi;
+                        break;
+                    }
+                }
+
+                txtEvaluationDecisionNo.Text = item.DecisionNumber;
+                dpEvaluationDecisionDate.SelectedDate = item.DecisionDate;
+                txtEvaluationDecisionAgency.Text = item.DecisionAgency;
+
+                _editingEvaluationRecord = item;
+            }
+        }
+
+        private void btnDeleteEvaluation_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as FrameworkElement)?.DataContext as EvaluationRecord;
+            if (item != null && _personnel?.EvaluationRecords != null)
+            {
+                var confirm = new ConfirmDialog("Bạn có chắc chắn muốn xóa dòng xếp loại này không?");
+                if (confirm.ShowDialog() == true)
+                {
+                    _personnel.EvaluationRecords.Remove(item);
+                    RefreshEvaluationHistoryGrid();
+
+                    if (_editingEvaluationRecord == item)
+                    {
+                        _editingEvaluationRecord = null;
+                        cboEvaluationYear.SelectedIndex = 0;
+                        cboEvaluationRating.SelectedIndex = 0;
+                        txtEvaluationDecisionNo.Clear();
+                        dpEvaluationDecisionDate.SelectedDate = null;
+                        txtEvaluationDecisionAgency.Clear();
+                    }
+                }
+            }
+        }
+
+        #region Quản lý văn bằng & chứng chỉ
+        private void UpdateDegreeBadges()
+        {
+            // Các nút xem bằng riêng lẻ đã được lược bỏ theo yêu cầu, chỉ dùng nút Quản lý danh sách ở header
+        }
+
+        private void OpenDegreesDialog(string? initialTab = null)
+        {
+            if (_personnel == null)
+            {
+                _personnel = new Personnel
+                {
+                    FullName = txtName.Text?.Trim() ?? "Cán bộ mới",
+                    Department = cboDepartment.Text,
+                    Position = cboPosition.Text,
+                    ITSkillLevel = txtITSkill.Text,
+                    LanguageSkillLevel = txtLanguageSkill.Text,
+                    EducationLevel = cboEducationLevel.Text,
+                    Major = txtMajor.Text,
+                    University = txtUniversity.Text,
+                    StateManagementLevel = cboStateManagement.Text,
+                    PoliticalTheoryLevel = cboPoliticalTheory.Text
+                };
+            }
+            else if (_personnel.Id <= 0)
+            {
+                if (!string.IsNullOrWhiteSpace(txtName.Text))
+                    _personnel.FullName = txtName.Text.Trim();
+                if (!string.IsNullOrWhiteSpace(cboDepartment.Text))
+                    _personnel.Department = cboDepartment.Text;
+                if (!string.IsNullOrWhiteSpace(cboPosition.Text))
+                    _personnel.Position = cboPosition.Text;
+            }
+
+            var dialog = new PersonnelDegreesDialog(_personnel, initialTab)
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            dialog.ShowDialog();
+
+            if (dialog.HasChanges)
+            {
+                // Đồng bộ lại các ô trên form
+                txtITSkill.Text = _personnel.ITSkillLevel ?? "";
+                txtLanguageSkill.Text = _personnel.LanguageSkillLevel ?? "";
+                SetComboBoxByContent(cboEducationLevel, _personnel.EducationLevel);
+                txtMajor.Text = _personnel.Major ?? "";
+                txtUniversity.Text = _personnel.University ?? "";
+                SetComboBoxByContent(cboStateManagement, _personnel.StateManagementLevel);
+                SetComboBoxByContent(cboPoliticalTheory, _personnel.PoliticalTheoryLevel);
+            }
+        }
+
+        private void btnManageAllDegrees_Click(object sender, RoutedEventArgs e)
+        {
+            OpenDegreesDialog("All");
+        }
+        #endregion
+
+        #region Work History Timeline Management (Như hình 2)
+        private void LoadWorkHistoriesForPersonnel()
+        {
+            _workHistories.Clear();
+
+            if (_personnel != null && _personnel.Id > 0)
+            {
+                using (var context = new AppDbContext())
+                {
+                    var list = context.WorkHistoryRecords
+                                      .Where(w => w.PersonnelId == _personnel.Id)
+                                      .OrderBy(w => w.OrderIndex)
+                                      .ToList();
+
+                    if (list.Count > 0)
+                    {
+                        foreach (var item in list)
+                        {
+                            NormalizeWorkHistoryRecord(item);
+                            _workHistories.Add(item);
+                        }
+                    }
+                    else if (!string.IsNullOrWhiteSpace(_personnel.DetailedWorkHistory))
+                    {
+                        // Tự động phân tích các dòng văn bản cũ sang danh sách có cấu trúc
+                        var parsed = ParseWorkHistoryTextToRecords(_personnel.DetailedWorkHistory);
+                        foreach (var item in parsed)
+                        {
+                            _workHistories.Add(item);
+                        }
+                    }
+                }
+            }
+            else if (_personnel != null && !string.IsNullOrWhiteSpace(_personnel.DetailedWorkHistory))
+            {
+                var parsed = ParseWorkHistoryTextToRecords(_personnel.DetailedWorkHistory);
+                foreach (var item in parsed)
+                {
+                    _workHistories.Add(item);
+                }
+            }
+
+            ApplyWorkHistoryFilterAndSort();
+        }
+
+        private void ApplyWorkHistoryFilterAndSort()
+        {
+            if (dgWorkHistory == null) return;
+
+            string query = txtSearchWorkHistory?.Text?.Trim().ToLower() ?? "";
+            var list = _workHistories.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(query))
+            {
+                list = list.Where(w =>
+                    (w.Position != null && w.Position.ToLower().Contains(query)) ||
+                    (w.Department != null && w.Department.ToLower().Contains(query)) ||
+                    (w.OrganizationUnit != null && w.OrganizationUnit.ToLower().Contains(query)) ||
+                    (w.DepartmentOrUnit != null && w.DepartmentOrUnit.ToLower().Contains(query)) ||
+                    (w.PartyPosition != null && w.PartyPosition.ToLower().Contains(query)) ||
+                    (w.FromDate != null && w.FromDate.ToLower().Contains(query)) ||
+                    (w.ToDate != null && w.ToDate.ToLower().Contains(query)));
+            }
+
+            // Sắp xếp
+            if (cboSortWorkHistory != null && cboSortWorkHistory.SelectedIndex == 1)
+            {
+                // Mới nhất trước: đảo ngược thứ tự
+                list = list.Reverse();
+            }
+
+            var result = list.ToList();
+            dgWorkHistory.ItemsSource = result;
+
+            if (txtWorkHistoryCount != null)
+            {
+                txtWorkHistoryCount.Text = $"{result.Count} giai đoạn";
+            }
+
+            if (lblEmptyWorkHistory != null)
+            {
+                lblEmptyWorkHistory.Visibility = result.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public static void NormalizeWorkHistoryRecord(WorkHistoryRecord r)
+        {
+            if (r == null) return;
+            string pos = r.Position?.Trim() ?? "";
+
+            // 1. Phân tách nếu Position dính chức vụ Đảng qua dấu chấm phẩy ";"
+            // Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp"
+            if (pos.Contains(";"))
+            {
+                var parts = pos.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+                if (parts.Count >= 2)
+                {
+                    if (WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
+                    {
+                        if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                        {
+                            r.IsPartyConcurrent = true;
+                            r.PartyPosition = parts[0];
+                        }
+                        r.Position = string.Join("; ", parts.Skip(1));
+                    }
+                    else if (WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
+                    {
+                        if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                        {
+                            r.IsPartyConcurrent = true;
+                            r.PartyPosition = parts[1];
+                        }
+                        r.Position = parts[0];
+                    }
+                }
+            }
+            // 2. Phân tách nếu bắt đầu bằng "Phó Bí thư, Đội trưởng..."
+            else if (pos.Contains(","))
+            {
+                int cIdx = pos.IndexOf(',');
+                string prefix = pos.Substring(0, cIdx).Trim();
+                string suffix = pos.Substring(cIdx + 1).Trim();
+                if (WorkHistoryRecord.IsPartyRoleText(prefix))
+                {
+                    if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                    {
+                        r.IsPartyConcurrent = true;
+                        r.PartyPosition = prefix;
+                    }
+                    r.Position = suffix;
+                }
+            }
+
+            // 3. Phân tách (Kiêm: ...) hoặc (Chức vụ Đảng) nếu dính trong Position
+            var partyMatch = System.Text.RegularExpressions.Regex.Match(r.Position ?? "",
+                @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (partyMatch.Success)
+            {
+                if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                {
+                    r.IsPartyConcurrent = true;
+                    r.PartyPosition = partyMatch.Groups["party"].Value.Trim();
+                }
+                r.Position = (r.Position!.Substring(0, partyMatch.Index) + " " + r.Position.Substring(partyMatch.Index + partyMatch.Length)).Trim();
+            }
+            else
+            {
+                var parenMatch = System.Text.RegularExpressions.Regex.Match(r.Position ?? "", @"\s*\((?<party>[^)]+)\)\s*");
+                if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                {
+                    if (!r.IsPartyConcurrent || string.IsNullOrWhiteSpace(r.PartyPosition))
+                    {
+                        r.IsPartyConcurrent = true;
+                        r.PartyPosition = parenMatch.Groups["party"].Value.Trim();
+                    }
+                    r.Position = (r.Position!.Substring(0, parenMatch.Index) + " " + r.Position.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                }
+            }
+
+            // 3b. Làm sạch chữ "Kiêm: " nếu lỡ dính trong PartyPosition
+            if (!string.IsNullOrWhiteSpace(r.PartyPosition))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(r.PartyPosition, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    r.PartyPosition = m.Groups[1].Value.Trim();
+                }
+            }
+
+            // 4. Chuẩn hóa Department và OrganizationUnit từ DepartmentOrUnit nếu đang trống
+            if (string.IsNullOrEmpty(r.Department) && string.IsNullOrEmpty(r.OrganizationUnit) && !string.IsNullOrWhiteSpace(r.DepartmentOrUnit))
+            {
+                string u = r.DepartmentOrUnit.Trim();
+                if (u.Contains(" - "))
+                {
+                    int dIdx = u.IndexOf(" - ");
+                    r.Department = u.Substring(0, dIdx).Trim();
+                    r.OrganizationUnit = u.Substring(dIdx + 3).Trim();
+                }
+                else if (u.Contains(","))
+                {
+                    int cIdx = u.IndexOf(',');
+                    r.Department = u.Substring(0, cIdx).Trim();
+                    r.OrganizationUnit = u.Substring(cIdx + 1).Trim();
+                }
+                else
+                {
+                    r.Department = u;
+                }
+            }
+        }
+
+        public static void ParsePositionUnitAndParty(
+            string rawRest,
+            out string position,
+            out string unit,
+            out string dept,
+            out string org,
+            out bool isParty,
+            out string partyPosition)
+        {
+            isParty = false;
+            partyPosition = "";
+            position = "";
+            unit = "";
+            dept = "";
+            org = "";
+
+            string rest = rawRest?.Trim().TrimEnd('.') ?? "";
+            if (string.IsNullOrWhiteSpace(rest)) return;
+
+            // 1. Tách (Kiêm: ...) hoặc (Chức vụ Đảng) trong ngoặc đơn nếu có ở bất kỳ vị trí nào
+            var partyMatch = System.Text.RegularExpressions.Regex.Match(rest,
+                @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (partyMatch.Success)
+            {
+                isParty = true;
+                partyPosition = partyMatch.Groups["party"].Value.Trim();
+                rest = (rest.Substring(0, partyMatch.Index) + " " + rest.Substring(partyMatch.Index + partyMatch.Length)).Trim();
+            }
+            else
+            {
+                var parenMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?<party>[^)]+)\)\s*");
+                if (parenMatch.Success && WorkHistoryRecord.IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                {
+                    isParty = true;
+                    partyPosition = parenMatch.Groups["party"].Value.Trim();
+                    rest = (rest.Substring(0, parenMatch.Index) + " " + rest.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                }
+            }
+
+            // Làm sạch chữ "Kiêm: " nếu có trong partyPosition
+            if (!string.IsNullOrWhiteSpace(partyPosition))
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(partyPosition, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    partyPosition = m.Groups[1].Value.Trim();
+                }
+            }
+
+            // 2. Tách nếu có dấu chấm phẩy ";" phân cách giữa Đảng và Chuyên môn
+            // Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp - Đội Thuế TP Hạ Long"
+            if (rest.Contains(";"))
+            {
+                var parts = rest.Split(';').Select(p => p.Trim()).Where(p => !string.IsNullOrEmpty(p)).ToList();
+                if (parts.Count >= 2)
+                {
+                    if (WorkHistoryRecord.IsPartyRoleText(parts[0]) && !WorkHistoryRecord.IsPartyRoleText(parts[1]))
+                    {
+                        isParty = true;
+                        partyPosition = parts[0];
+                        rest = string.Join("; ", parts.Skip(1));
+                    }
+                    else if (WorkHistoryRecord.IsPartyRoleText(parts[1]) && !WorkHistoryRecord.IsPartyRoleText(parts[0]))
+                    {
+                        isParty = true;
+                        partyPosition = parts[1];
+                        rest = parts[0];
+                    }
+                }
+            }
+
+            // 3. Tách nếu bắt đầu bằng Chức vụ Đảng + dấu phẩy: "Phó Bí thư, Đội trưởng..."
+            if (!isParty && rest.Contains(","))
+            {
+                int cIdx = rest.IndexOf(',');
+                string prefix = rest.Substring(0, cIdx).Trim();
+                string suffix = rest.Substring(cIdx + 1).Trim();
+                if (WorkHistoryRecord.IsPartyRoleText(prefix))
+                {
+                    isParty = true;
+                    partyPosition = prefix;
+                    rest = suffix;
+                }
+            }
+
+            // 4. Phân tách Chức vụ chuyên môn và Đơn vị công tác
+            if (rest.Contains(" - "))
+            {
+                int dashIdx = rest.IndexOf(" - ");
+                position = rest.Substring(0, dashIdx).Trim();
+                unit = rest.Substring(dashIdx + 3).Trim();
+            }
+            else if (rest.IndexOf(" tại ", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                int taiIdx = rest.IndexOf(" tại ", StringComparison.OrdinalIgnoreCase);
+                position = rest.Substring(0, taiIdx).Trim();
+                unit = rest.Substring(taiIdx + 5).Trim();
+            }
+            else
+            {
+                string[] markers = new[] { " Chi cục ", " Cục ", " Ban ", " UBND ", " Đội ", " Phòng ", " Tổ " };
+                bool found = false;
+                foreach (var m in markers)
+                {
+                    int mIdx = rest.IndexOf(m, StringComparison.OrdinalIgnoreCase);
+                    if (mIdx > 0)
+                    {
+                        position = rest.Substring(0, mIdx).Trim();
+                        unit = rest.Substring(mIdx).Trim();
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    int commaIdx = rest.IndexOf(',');
+                    if (commaIdx >= 0)
+                    {
+                        position = rest.Substring(0, commaIdx).Trim();
+                        unit = rest.Substring(commaIdx + 1).Trim();
+                    }
+                    else
+                    {
+                        position = rest;
+                        unit = "";
+                    }
+                }
+            }
+
+            // 5. Phân tách unit thành dept và org nếu có
+            dept = unit;
+            org = "";
+            if (unit.Contains(" - "))
+            {
+                int uDash = unit.IndexOf(" - ");
+                dept = unit.Substring(0, uDash).Trim();
+                org = unit.Substring(uDash + 3).Trim();
+            }
+            else if (unit.Contains(","))
+            {
+                int uComma = unit.IndexOf(',');
+                dept = unit.Substring(0, uComma).Trim();
+                org = unit.Substring(uComma + 1).Trim();
+            }
+        }
+
+        public static string GenerateDetailedWorkHistoryText(IEnumerable<WorkHistoryRecord> items)
+        {
+            if (items == null) return "";
+            var sb = new System.Text.StringBuilder();
+
+            foreach (var r in items.OrderBy(i => i.OrderIndex))
+            {
+                NormalizeWorkHistoryRecord(r);
+
+                string from = string.IsNullOrWhiteSpace(r.FromDate) ? "" : r.FromDate.Trim();
+                if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
+
+                string to = string.IsNullOrWhiteSpace(r.ToDate) ? "nay" : r.ToDate.Trim();
+                if (to.StartsWith("↓")) to = to.TrimStart('↓', ' ');
+
+                string timePart = "";
+                if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+                {
+                    if (to.Equals("Hiện nay", StringComparison.OrdinalIgnoreCase) ||
+                        to.Equals("Đến nay", StringComparison.OrdinalIgnoreCase) ||
+                        to.Equals("nay", StringComparison.OrdinalIgnoreCase))
+                    {
+                        timePart = $"Từ {from} đến nay";
+                    }
+                    else
+                    {
+                        timePart = $"Từ {from} đến {to}";
+                    }
+                }
+                else if (!string.IsNullOrEmpty(from))
+                {
+                    timePart = $"Từ {from}";
+                }
+
+                // Chức vụ chuyên môn
+                string posPart = r.Position?.Trim() ?? "";
+
+                // Chức vụ Đảng: loại bỏ hoàn toàn chữ "Kiêm"
+                string cleanParty = r.PartyPosition?.Trim() ?? "";
+                if (!string.IsNullOrWhiteSpace(cleanParty))
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(cleanParty, @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (m.Success) cleanParty = m.Groups[1].Value.Trim();
+                }
+
+                // Quy tắc hiển thị quá trình công tác:
+                // Bên Đảng hiện TRƯỚC bên chuyên môn bằng dấu "; " (Ví dụ: "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp")
+                // Tuyệt đối không để trong ngoặc đơn "()", không để chữ "Kiêm".
+                string rolePart = "";
+                bool hasParty = r.IsPartyConcurrent && !string.IsNullOrWhiteSpace(cleanParty);
+                bool hasPos = !string.IsNullOrWhiteSpace(posPart);
+
+                if (hasParty && hasPos)
+                {
+                    if (posPart.Equals(cleanParty, StringComparison.OrdinalIgnoreCase))
+                    {
+                        rolePart = posPart;
+                    }
+                    else if (posPart.StartsWith(cleanParty + ";", StringComparison.OrdinalIgnoreCase) ||
+                             posPart.StartsWith(cleanParty + ",", StringComparison.OrdinalIgnoreCase))
+                    {
+                        rolePart = posPart;
+                    }
+                    else
+                    {
+                        rolePart = $"{cleanParty}; {posPart}";
+                    }
+                }
+                else if (hasParty)
+                {
+                    rolePart = cleanParty;
+                }
+                else if (hasPos)
+                {
+                    rolePart = posPart;
+                }
+
+                // Đơn vị công tác
+                string rawUnit = !string.IsNullOrWhiteSpace(r.DepartmentOrUnit) ? r.DepartmentOrUnit.Trim() : "";
+                if (string.IsNullOrWhiteSpace(rawUnit))
+                {
+                    if (!string.IsNullOrWhiteSpace(r.Department) && !string.IsNullOrWhiteSpace(r.OrganizationUnit))
+                        rawUnit = $"{r.Department.Trim()} - {r.OrganizationUnit.Trim()}";
+                    else if (!string.IsNullOrWhiteSpace(r.Department))
+                        rawUnit = r.Department.Trim();
+                    else if (!string.IsNullOrWhiteSpace(r.OrganizationUnit))
+                        rawUnit = r.OrganizationUnit.Trim();
+                }
+
+                string unitPart = "";
+                if (!string.IsNullOrWhiteSpace(rawUnit))
+                {
+                    string u = rawUnit.TrimStart('-', ',', ' ').Trim();
+                    if (!string.IsNullOrEmpty(u))
+                    {
+                        if (posPart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase) ||
+                            rolePart.EndsWith($" {u}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            unitPart = "";
+                        }
+                        else
+                        {
+                            unitPart = $" - {u}";
+                        }
+                    }
+                }
+
+                string notePart = !string.IsNullOrWhiteSpace(r.Note) ? $" ({r.Note.Trim()})" : "";
+
+                string lineContent = $"{rolePart}{unitPart}{notePart}".Trim().TrimEnd('.');
+                if (!string.IsNullOrEmpty(timePart))
+                {
+                    sb.AppendLine($"- {timePart}: {lineContent}");
+                }
+                else if (!string.IsNullOrEmpty(lineContent))
+                {
+                    sb.AppendLine($"- {lineContent}");
+                }
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public static List<WorkHistoryRecord> ParseWorkHistoryTextToRecords(string text)
+        {
+            var result = new List<WorkHistoryRecord>();
+            if (string.IsNullOrWhiteSpace(text)) return result;
+
+            var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var pattern = new System.Text.RegularExpressions.Regex(
+                @"^(?:[-*•]\s*)?(?:Từ\s+)?(?:tháng\s+|ngày\s+)?(?<from>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4})\s*(?:đến|–|-|tới)\s*(?:tháng\s+|ngày\s+)?(?<to>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4}|nay|hiện nay|đến nay)[\s:–-]+(?<rest>.*)$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            int idx = 0;
+            foreach (var rawLine in lines)
+            {
+                string line = rawLine.Trim();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var match = pattern.Match(line);
+                if (match.Success)
+                {
+                    string from = match.Groups["from"].Value.Trim();
+                    string to = match.Groups["to"].Value.Trim();
+                    if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase)) 
+                        to = "Hiện nay";
+
+                    string rest = match.Groups["rest"].Value.Trim().TrimEnd('.');
+                    string note = "";
+                    var noteMatch = System.Text.RegularExpressions.Regex.Match(rest, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
+                    if (noteMatch.Success)
+                    {
+                        string candidateNote = noteMatch.Groups["note"].Value.Trim();
+                        if (!WorkHistoryRecord.IsPartyRoleText(candidateNote) && !candidateNote.StartsWith("Kiêm", StringComparison.OrdinalIgnoreCase))
+                        {
+                            note = candidateNote;
+                            rest = rest.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
+                        }
+                    }
+
+                    ParsePositionUnitAndParty(rest, out string pos, out string unit, out string whDept, out string whOrg, out bool isParty, out string partyPos);
+
+                    result.Add(new WorkHistoryRecord
+                    {
+                        FromDate = from,
+                        ToDate = to,
+                        Position = pos,
+                        Department = whDept,
+                        OrganizationUnit = whOrg,
+                        DepartmentOrUnit = unit,
+                        IsPartyConcurrent = isParty,
+                        PartyPosition = partyPos,
+                        Note = note,
+                        OrderIndex = idx++
+                    });
+                }
+                else
+                {
+                    int colonIdx = line.IndexOf(':');
+                    if (colonIdx > 0)
+                    {
+                        string timePart = line.Substring(0, colonIdx).Trim().TrimStart('-', '*', '•', ' ').Trim();
+                        string restPart = line.Substring(colonIdx + 1).Trim().TrimEnd('.');
+
+                        string note = "";
+                        var noteMatch = System.Text.RegularExpressions.Regex.Match(restPart, @"\s*\((?:Ghi chú:\s*)?(?<note>[^)]+)\)\s*$");
+                        if (noteMatch.Success)
+                        {
+                            string candidateNote = noteMatch.Groups["note"].Value.Trim();
+                            if (!WorkHistoryRecord.IsPartyRoleText(candidateNote) && !candidateNote.StartsWith("Kiêm", StringComparison.OrdinalIgnoreCase))
+                            {
+                                note = candidateNote;
+                                restPart = restPart.Substring(0, noteMatch.Index).Trim().TrimEnd('.');
+                            }
+                        }
+
+                        ParsePositionUnitAndParty(restPart, out string pos, out string unit, out string whDept2, out string whOrg2, out bool isParty2, out string partyPos2);
+
+                        string from = timePart;
+                        string to = "Hiện nay";
+
+                        var tm = System.Text.RegularExpressions.Regex.Match(
+                            timePart,
+                            @"^(?:Từ\s+)?(?:tháng\s+|ngày\s+)?(?<from>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4})(?:\s*(?:đến|–|-|tới)\s*(?:tháng\s+|ngày\s+)?(?<to>\d{1,2}/\d{1,2}/\d{4}|\d{1,2}-\d{1,2}-\d{4}|\d{1,2}/\d{4}|\d{4}|nay|hiện nay|đến nay))?",
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                        if (tm.Success)
+                        {
+                            from = tm.Groups["from"].Value.Trim();
+                            if (tm.Groups["to"].Success && !string.IsNullOrWhiteSpace(tm.Groups["to"].Value))
+                            {
+                                to = tm.Groups["to"].Value.Trim();
+                                if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                                    to = "Hiện nay";
+                            }
+                            else
+                            {
+                                to = "Hiện nay";
+                            }
+                        }
+                        else
+                        {
+                            if (from.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) from = from.Substring(3).Trim();
+                            int denIndex = from.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
+                            if (denIndex > 0)
+                            {
+                                to = from.Substring(denIndex + 5).Trim();
+                                from = from.Substring(0, denIndex).Trim();
+                                if (to.Equals("nay", StringComparison.OrdinalIgnoreCase) || to.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                                    to = "Hiện nay";
+                            }
+                        }
+
+                        result.Add(new WorkHistoryRecord
+                        {
+                            FromDate = from,
+                            ToDate = to,
+                            Position = pos,
+                            Department = whDept2,
+                            OrganizationUnit = whOrg2,
+                            DepartmentOrUnit = unit,
+                            IsPartyConcurrent = isParty2,
+                            PartyPosition = partyPos2,
+                            Note = note,
+                            OrderIndex = idx++
+                        });
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private void WorkHistoryMode_Changed(object sender, RoutedEventArgs e)
+        {
+            if (pnlWorkHistoryListMode == null || pnlWorkHistorySummaryMode == null || btnAddWorkHistory == null) return;
+
+            if (rbWorkHistoryList?.IsChecked == true)
+            {
+                pnlWorkHistoryListMode.Visibility = Visibility.Visible;
+                pnlWorkHistorySummaryMode.Visibility = Visibility.Collapsed;
+                btnAddWorkHistory.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                pnlWorkHistoryListMode.Visibility = Visibility.Collapsed;
+                pnlWorkHistorySummaryMode.Visibility = Visibility.Visible;
+                btnAddWorkHistory.Visibility = Visibility.Collapsed;
+
+                txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+            }
+        }
+
+        private void txtSearchWorkHistory_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyWorkHistoryFilterAndSort();
+        }
+
+        private void cboSortWorkHistory_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyWorkHistoryFilterAndSort();
+        }
+
+        private void btnAddWorkHistory_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new WorkHistoryDialog
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                dlg.WorkHistory.OrderIndex = _workHistories.Count;
+                _workHistories.Add(dlg.WorkHistory);
+                txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+                ApplyWorkHistoryFilterAndSort();
+            }
+        }
+
+        private void btnEditWorkHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is WorkHistoryRecord item)
+            {
+                var dlg = new WorkHistoryDialog(item)
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (dlg.ShowDialog() == true)
+                {
+                    txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+                    ApplyWorkHistoryFilterAndSort();
+                }
+            }
+        }
+
+        private void btnDeleteWorkHistory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.Tag is WorkHistoryRecord item)
+            {
+                var confirm = new ConfirmWindow(
+                    $"Bạn có chắc chắn muốn xóa giai đoạn công tác:\n\"{item.Position}\" ({item.FromDate} - {item.ToDate})?",
+                    "Xác nhận xóa")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+
+                if (confirm.ShowDialog() == true)
+                {
+                    _workHistories.Remove(item);
+                    for (int i = 0; i < _workHistories.Count; i++)
+                    {
+                        _workHistories[i].OrderIndex = i;
+                    }
+                    txtDetailedWorkHistory.Text = GenerateDetailedWorkHistoryText(_workHistories);
+                    ApplyWorkHistoryFilterAndSort();
+                }
+            }
+        }
+
+        private void btnCopyWorkHistorySummary_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(txtDetailedWorkHistory.Text))
+            {
+                Clipboard.SetText(txtDetailedWorkHistory.Text);
+                var success = new SuccessWindow("Sao chép thành công!", "Nội dung quá trình công tác đã được lưu vào bộ nhớ tạm.")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                success.ShowDialog();
+            }
+        }
+
+        private void btnSyncFromSummaryToPeriods_Click(object sender, RoutedEventArgs e)
+        {
+            string text = txtDetailedWorkHistory.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                var warn = new WarningWindow("Ô văn bản tổng hợp đang trống!", "Chưa có nội dung")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                warn.ShowDialog();
+                return;
+            }
+
+            var parsed = ParseWorkHistoryTextToRecords(text);
+            if (parsed.Count == 0)
+            {
+                var warn = new WarningWindow(
+                    "Không tìm thấy các dòng giai đoạn phù hợp trong văn bản.\n(Gợi ý: Mỗi dòng bắt đầu bằng dấu gạch ngang '-', ví dụ: '- Từ 11/1994 đến 09/1997: Kiểm thu viên thuế, Chi cục Thuế huyện Hoành Bồ.')",
+                    "Không tìm thấy dữ liệu")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                warn.ShowDialog();
+                return;
+            }
+
+            var confirm = new ConfirmWindow(
+                $"Tìm thấy {parsed.Count} giai đoạn công tác từ văn bản.\nBạn có muốn thay thế danh sách các giai đoạn hiện tại bằng {parsed.Count} giai đoạn này không?",
+                "Xác nhận chuyển đổi")
+            {
+                Owner = Window.GetWindow(this)
+            };
+
+            if (confirm.ShowDialog() == true)
+            {
+                _workHistories.Clear();
+                foreach (var p in parsed)
+                {
+                    _workHistories.Add(p);
+                }
+                ApplyWorkHistoryFilterAndSort();
+                rbWorkHistoryList.IsChecked = true;
+
+                var success = new SuccessWindow("Chuyển đổi thành công!", $"Đã cập nhật {parsed.Count} giai đoạn công tác vào danh sách.")
+                {
+                    Owner = Window.GetWindow(this)
+                };
+                success.ShowDialog();
+            }
+        }
+        #endregion
+
+        #region Mouse Wheel Forwarding
+        private void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Handled) return;
+
+            // Kiểm tra xem DataGrid này có ScrollViewer nội bộ đang cuộn được không
+            if (sender is DependencyObject dep)
+            {
+                var innerSv = FindVisualChild<ScrollViewer>(dep);
+                if (innerSv != null && innerSv.ScrollableHeight > 0)
+                {
+                    bool atTop = e.Delta > 0 && innerSv.VerticalOffset <= 0;
+                    bool atBottom = e.Delta < 0 && innerSv.VerticalOffset >= innerSv.ScrollableHeight;
+                    if (!atTop && !atBottom)
+                    {
+                        // ScrollViewer nội bộ vẫn cuộn được nội dung bảng -> để DataGrid tự cuộn
+                        return;
+                    }
+                }
+            }
+
+            // Chặn sự kiện tunneling để ScrollViewer nội bộ của DataGrid không nuốt mất sự kiện
+            e.Handled = true;
+
+            // Tạo sự kiện bubbling MouseWheel mới để gửi lên ScrollViewer cha
+            var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+            {
+                RoutedEvent = UIElement.MouseWheelEvent,
+                Source = sender
+            };
+
+            var parent = ((FrameworkElement)sender).Parent as UIElement 
+                         ?? VisualTreeHelper.GetParent((DependencyObject)sender) as UIElement;
+            parent?.RaiseEvent(eventArg);
+
+            // Dự phòng: Nếu sự kiện không được xử lý qua bubbling, cuộn trực tiếp ScrollViewer tổ tiên
+            if (!eventArg.Handled)
+            {
+                DependencyObject? curr = VisualTreeHelper.GetParent((DependencyObject)sender);
+                while (curr != null)
+                {
+                    if (curr is ScrollViewer sv)
+                    {
+                        if (e.Delta > 0)
+                            sv.LineUp();
+                        else
+                            sv.LineDown();
+                        break;
+                    }
+                    curr = VisualTreeHelper.GetParent(curr);
+                }
+            }
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject? obj) where T : DependencyObject
+        {
+            if (obj == null) return null;
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T t)
+                    return t;
+                T? childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
+        }
+        #endregion
+    }
+}

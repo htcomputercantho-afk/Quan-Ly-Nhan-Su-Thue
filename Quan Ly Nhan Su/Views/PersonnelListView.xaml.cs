@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -86,11 +87,9 @@ namespace TaxPersonnelManagement.Views
 
         private void ApplyAuthorization()
         {
-            if (App.CurrentUser?.Role == UserRole.Staff)
-            {
-                btnAdd.Visibility = Visibility.Collapsed;
-                btnImportExcel.Visibility = Visibility.Collapsed;
-            }
+            btnAdd.Visibility = PermissionService.HasPermission(PermissionRegistry.Personnel_AddEdit) ? Visibility.Visible : Visibility.Collapsed;
+            btnImportExcel.Visibility = PermissionService.HasPermission(PermissionRegistry.Personnel_ImportExport) ? Visibility.Visible : Visibility.Collapsed;
+            btnExportExcel.Visibility = PermissionService.HasPermission(PermissionRegistry.Personnel_ImportExport) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /// <summary>
@@ -552,6 +551,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Personnel_AddEdit, "Thêm mới hồ sơ cán bộ")) return;
             if (Application.Current.MainWindow is MainWindow mw)
             {
                 _savedScrollOffset = null; // Thêm mới thì không khôi phục cuộn
@@ -598,6 +598,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Personnel_Delete, "Xóa hồ sơ cán bộ")) return;
             int? id = sender is Button btn ? btn.Tag as int?
                      : sender is MenuItem mi ? mi.Tag as int? : null;
             if (id == null) return;

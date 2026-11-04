@@ -1,94 +1,107 @@
-using Microsoft.EntityFrameworkCore;
-using TaxPersonnelManagement.Models;
-using System.IO;
-
-namespace TaxPersonnelManagement.Data
-{
-    /// <summary>
-    /// Lớp ngữ cảnh cơ sở dữ liệu chính của ứng dụng.
-    /// Kế thừa từ DbContext của Entity Framework Core để quản lý kết nối và ánh xạ các model (lớp) với các bảng trong cơ sở dữ liệu SQLite.
-    /// </summary>
-    public class AppDbContext : DbContext
-    {
-        // Danh sách các bảng (DbSet) trong Cơ sở dữ liệu
-        public DbSet<User> Users { get; set; }                           // Bảng người dùng hệ thống (tài khoản đăng nhập)
-        public DbSet<Personnel> Personnel { get; set; }                  // Bảng hồ sơ công chức/viên chức
-        public DbSet<Department> Departments { get; set; }               // Bảng danh mục phòng ban
-        public DbSet<Position> Positions { get; set; }                   // Bảng danh mục chức vụ
-        public DbSet<Rank> Ranks { get; set; }                           // Bảng danh mục ngạch (ví dụ: Chuyên viên chính)
-        public DbSet<SalaryRecord> SalaryRecords { get; set; }           // Bảng lịch sử quá trình lương
-        public DbSet<LeaveHistory> LeaveHistories { get; set; }          // Bảng lịch sử nghỉ phép/công tác
-        public DbSet<RankSalarySpec> RankSalarySpecs { get; set; }       // Bảng cấu hình hệ số lương theo ngạch/bậc
-        public DbSet<SalaryDelayReason> SalaryDelayReasons { get; set; } // Bảng danh mục lý do chậm nâng lương
-        public DbSet<DisciplineType> DisciplineTypes { get; set; }       // Bảng danh mục các loại kỷ luật
-        public DbSet<IncomeRecord> IncomeRecords { get; set; }           // Bảng ghi nhận tổng thu nhập hàng tháng/năm
-        public DbSet<PublicHoliday> PublicHolidays { get; set; }         // Bảng danh mục ngày nghỉ lễ
-        public DbSet<EvaluationRecord> EvaluationRecords { get; set; }   // Bảng ghi nhận xếp loại năm
-        public DbSet<TrainingClass> TrainingClasses { get; set; }        // Bảng danh mục lớp học/hội nghị đào tạo bồi dưỡng
-        public DbSet<PersonnelTraining> PersonnelTrainings { get; set; }  // Bảng học viên tham gia lớp đào tạo bồi dưỡng
-        public DbSet<PlanningRecord> PlanningRecords { get; set; }        // Bảng lưu thông tin quy hoạch cán bộ
-        public DbSet<PlanningTerm> PlanningTerms { get; set; }            // Bảng lưu danh mục nhiệm kỳ quy hoạch
-        public DbSet<PlanningPosition> PlanningPositions { get; set; }    // Bảng danh mục chức danh quy hoạch (tách biệt với Positions)
-        public DbSet<PersonnelDegree> PersonnelDegrees { get; set; }      // Bảng lưu danh sách văn bằng, chứng chỉ của cán bộ
-        public DbSet<RotationRecord> RotationRecords { get; set; }         // Bảng lưu thông tin luân chuyển, điều động cán bộ
-        public DbSet<DutyAssignmentRecord> DutyAssignmentRecords { get; set; } // Bảng lưu file PDF phân công nhiệm vụ theo Tổ và tháng
-        public DbSet<WorkHistoryRecord> WorkHistoryRecords { get; set; }       // Bảng quá trình công tác chi tiết theo giai đoạn
-        public DbSet<WorkHistorySuggestion> WorkHistorySuggestions { get; set; } // Bảng gợi ý độc lập cho quá trình công tác (Bộ phận, Cơ quan)
-
-
-        /// <summary>
-        /// Phương thức cấu hình cơ sở dữ liệu khi ứng dụng khởi chạy.
-        /// Sử dụng cơ sở dữ liệu SQLite cục bộ được lưu trong file 'tax_personnel.db' cùng thư mục chạy ứng dụng.
-        /// </summary>
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            // Thiết lập đường dẫn tới file SQLite cục bộ
-            string dbPath = Path.Combine(System.AppContext.BaseDirectory, "tax_personnel.db");
-            optionsBuilder.UseSqlite($"Data Source={dbPath}");
-        }
-
-        /// <summary>
-        /// Phương thức cấu hình Model khi khởi tạo CSDL lần đầu, dùng để Seed (khởi tạo) dữ liệu mặc định.
-        /// </summary>
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Khởi tạo tài khoản Quản trị viên (Admin) mặc định khi tạo CSDL mới
-            modelBuilder.Entity<User>().HasData(new User
-            {
-                Id = 1,
-                Username = "admin",
-                PasswordHash = "admin", // Trong thực tế, mật khẩu cần được băm (hash) để bảo mật!
-                FullName = "Administrator",
-                Role = UserRole.Admin   // Quyền Quản trị viên có toàn quyền truy cập
-            });
-        }
-
-        /// <summary>
-        /// Tự động đánh dấu CSDL đã có thay đổi (IsDataDirty = true) khi có dữ liệu được thêm/sửa/xóa thành công.
-        /// </summary>
-        public override int SaveChanges()
-        {
-            int result = base.SaveChanges();
-            if (result > 0)
-            {
-                App.IsDataDirty = true;
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Tự động đánh dấu CSDL đã có thay đổi (IsDataDirty = true) khi có dữ liệu được thêm/sửa/xóa bất đồng bộ thành công.
-        /// </summary>
-        public override async System.Threading.Tasks.Task<int> SaveChangesAsync(System.Threading.CancellationToken cancellationToken = default)
-        {
-            int result = await base.SaveChangesAsync(cancellationToken);
-            if (result > 0)
-            {
-                App.IsDataDirty = true;
-            }
-            return result;
-        }
-    }
-}
+using Microsoft.EntityFrameworkCore;
+using TaxPersonnelManagement.Models;
+using System.IO;
+
+namespace TaxPersonnelManagement.Data
+{
+    /// <summary>
+    /// Lớp ngữ cảnh cơ sở dữ liệu chính của ứng dụng.
+    /// Kế thừa từ DbContext của Entity Framework Core để quản lý kết nối và ánh xạ các model (lớp) với các bảng trong cơ sở dữ liệu SQLite.
+    /// </summary>
+    public class AppDbContext : DbContext
+    {
+        // Danh sách các bảng (DbSet) trong Cơ sở dữ liệu
+        public DbSet<Role> Roles { get; set; }                           // Bảng vai trò và phân quyền (RBAC)
+        public DbSet<User> Users { get; set; }                           // Bảng người dùng hệ thống (tài khoản đăng nhập)
+        public DbSet<Personnel> Personnel { get; set; }                  // Bảng hồ sơ công chức/viên chức
+        public DbSet<Department> Departments { get; set; }               // Bảng danh mục phòng ban
+        public DbSet<Position> Positions { get; set; }                   // Bảng danh mục chức vụ
+        public DbSet<Rank> Ranks { get; set; }                           // Bảng danh mục ngạch (ví dụ: Chuyên viên chính)
+        public DbSet<SalaryRecord> SalaryRecords { get; set; }           // Bảng lịch sử quá trình lương
+        public DbSet<LeaveHistory> LeaveHistories { get; set; }          // Bảng lịch sử nghỉ phép/công tác
+        public DbSet<RankSalarySpec> RankSalarySpecs { get; set; }       // Bảng cấu hình hệ số lương theo ngạch/bậc
+        public DbSet<SalaryDelayReason> SalaryDelayReasons { get; set; } // Bảng danh mục lý do chậm nâng lương
+        public DbSet<DisciplineType> DisciplineTypes { get; set; }       // Bảng danh mục các loại kỷ luật
+        public DbSet<IncomeRecord> IncomeRecords { get; set; }           // Bảng ghi nhận tổng thu nhập hàng tháng/năm
+        public DbSet<PublicHoliday> PublicHolidays { get; set; }         // Bảng danh mục ngày nghỉ lễ
+        public DbSet<EvaluationRecord> EvaluationRecords { get; set; }   // Bảng ghi nhận xếp loại năm
+        public DbSet<TrainingClass> TrainingClasses { get; set; }        // Bảng danh mục lớp học/hội nghị đào tạo bồi dưỡng
+        public DbSet<PersonnelTraining> PersonnelTrainings { get; set; }  // Bảng học viên tham gia lớp đào tạo bồi dưỡng
+        public DbSet<PlanningRecord> PlanningRecords { get; set; }        // Bảng lưu thông tin quy hoạch cán bộ
+        public DbSet<PlanningTerm> PlanningTerms { get; set; }            // Bảng lưu danh mục nhiệm kỳ quy hoạch
+        public DbSet<PlanningPosition> PlanningPositions { get; set; }    // Bảng danh mục chức danh quy hoạch (tách biệt với Positions)
+        public DbSet<PersonnelDegree> PersonnelDegrees { get; set; }      // Bảng lưu danh sách văn bằng, chứng chỉ của cán bộ
+        public DbSet<RotationRecord> RotationRecords { get; set; }         // Bảng lưu thông tin luân chuyển, điều động cán bộ
+        public DbSet<DutyAssignmentRecord> DutyAssignmentRecords { get; set; } // Bảng lưu file PDF phân công nhiệm vụ theo Tổ và tháng
+        public DbSet<WorkHistoryRecord> WorkHistoryRecords { get; set; }       // Bảng quá trình công tác chi tiết theo giai đoạn
+        public DbSet<WorkHistorySuggestion> WorkHistorySuggestions { get; set; } // Bảng gợi ý độc lập cho quá trình công tác (Bộ phận, Cơ quan)
+
+
+        /// <summary>
+        /// Phương thức cấu hình cơ sở dữ liệu khi ứng dụng khởi chạy.
+        /// Sử dụng cơ sở dữ liệu SQLite cục bộ được lưu trong file 'tax_personnel.db' cùng thư mục chạy ứng dụng.
+        /// </summary>
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            // Thiết lập đường dẫn tới file SQLite cục bộ
+            string dbPath = Path.Combine(System.AppContext.BaseDirectory, "tax_personnel.db");
+            optionsBuilder.UseSqlite($"Data Source={dbPath}");
+        }
+
+        /// <summary>
+        /// Phương thức cấu hình Model khi khởi tạo CSDL lần đầu, dùng để Seed (khởi tạo) dữ liệu mặc định.
+        /// </summary>
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Khởi tạo vai trò Quản trị viên mặc định
+            modelBuilder.Entity<Role>().HasData(new Role
+            {
+                Id = 1,
+                Name = "Quản trị viên",
+                Description = "Toàn quyền quản trị hệ thống và tất cả các phân hệ",
+                PermissionsJson = "[\"*\"]",
+                IsSystem = true,
+                CreatedAt = new DateTime(2026, 1, 1)
+            });
+
+            // Khởi tạo tài khoản Quản trị viên (Admin) mặc định khi tạo CSDL mới
+            modelBuilder.Entity<User>().HasData(new User
+            {
+                Id = 1,
+                Username = "admin",
+                PasswordHash = "admin", // Trong thực tế, mật khẩu cần được băm (hash) để bảo mật!
+                FullName = "Administrator",
+                Role = UserRole.Admin,   // Quyền Quản trị viên có toàn quyền truy cập
+                RoleId = 1
+            });
+        }
+
+        /// <summary>
+        /// Tự động đánh dấu CSDL đã có thay đổi (IsDataDirty = true) khi có dữ liệu được thêm/sửa/xóa thành công.
+        /// </summary>
+        public override int SaveChanges()
+        {
+            int result = base.SaveChanges();
+            if (result > 0)
+            {
+                App.IsDataDirty = true;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Tự động đánh dấu CSDL đã có thay đổi (IsDataDirty = true) khi có dữ liệu được thêm/sửa/xóa bất đồng bộ thành công.
+        /// </summary>
+        public override async System.Threading.Tasks.Task<int> SaveChangesAsync(System.Threading.CancellationToken cancellationToken = default)
+        {
+            int result = await base.SaveChangesAsync(cancellationToken);
+            if (result > 0)
+            {
+                App.IsDataDirty = true;
+            }
+            return result;
+        }
+    }
+}

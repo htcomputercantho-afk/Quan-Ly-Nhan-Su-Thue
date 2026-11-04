@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -18,6 +19,14 @@ namespace TaxPersonnelManagement.Views
         public PlanningTermManagementDialog()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_PlanningTerm)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền quản lý Nhiệm kỳ quy hoạch.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             LoadTerms();
             txtFromYear.Focus();
         }

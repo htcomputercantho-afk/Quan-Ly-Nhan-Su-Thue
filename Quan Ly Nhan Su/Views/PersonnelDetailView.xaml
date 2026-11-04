@@ -2017,7 +2017,7 @@
                                             Background="{DynamicResource PrimaryHueMidBrush}"
                                             BorderBrush="{DynamicResource PrimaryHueMidBrush}"
                                             ToolTip="Cấu hình bảng lương" 
-                                            Click="btnConfigSalary_Click">
+                                            x:Name="btnConfigSalary" Click="btnConfigSalary_Click">
                                         <materialDesign:PackIcon Kind="Cog" Width="18" Height="18" Foreground="White"/>
                                     </Button>
                                 </Grid>
@@ -2084,7 +2084,7 @@
                                         <ComboBoxItem Content="Lùi 6 tháng (Cảnh cáo)"/>
                                         <ComboBoxItem Content="Lùi 12 tháng (Giáng chức/Cách chức)"/>
                                     </ComboBox>
-                                    <Button Grid.Column="1" Click="btnSalaryDelayConfig_Click" Margin="5 0 0 0" Width="32" Height="32" Padding="0"
+                                    <Button Grid.Column="1" x:Name="btnSalaryDelayConfig" Click="btnSalaryDelayConfig_Click" Margin="5 0 0 0" Width="32" Height="32" Padding="0"
                                             Style="{DynamicResource MaterialDesignFloatingActionMiniButton}" 
                                             Background="{DynamicResource PrimaryHueMidBrush}" 
                                             BorderBrush="{DynamicResource PrimaryHueMidBrush}"
@@ -2436,7 +2436,7 @@
                                             </Grid.ColumnDefinitions>
                                             <ComboBox x:Name="cboDisciplineType" Style="{StaticResource ModernComboBox}" 
                                                       materialDesign:HintAssist.Hint="-- Không có --" Foreground="#D32F2F" FontWeight="Bold"/>
-                                            <Button Grid.Column="1" Click="btnAddDisciplineType_Click" Margin="5 0 0 0" Width="30" Height="30" Padding="0"
+                                            <Button Grid.Column="1" x:Name="btnAddDisciplineType" Click="btnAddDisciplineType_Click" Margin="5 0 0 0" Width="30" Height="30" Padding="0"
                                                     Style="{DynamicResource MaterialDesignToolButton}" Background="Transparent" BorderThickness="0"
                                                     Foreground="{DynamicResource PrimaryHueMidBrush}"
                                                     ToolTip="Quản lý Hình thức kỷ luật">

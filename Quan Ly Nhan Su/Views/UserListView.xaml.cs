@@ -25,7 +25,7 @@ namespace TaxPersonnelManagement.Views
             {
                 using (var context = new AppDbContext())
                 {
-                    _allUsers = context.Users.AsNoTracking().ToList();
+                    _allUsers = context.Users.Include(u => u.UserRoleEntity).AsNoTracking().ToList();
                     dgUsers.ItemsSource = _allUsers;
                 }
             }

@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,7 @@ namespace TaxPersonnelManagement.Views
 
             // Load danh sách nhiệm kỳ quy hoạch
             LoadPlanningTerms();
+            ApplyPermissions();
             // Load danh sách chức vụ
             LoadPositions();
             _isInitializing = false;
@@ -60,6 +62,7 @@ namespace TaxPersonnelManagement.Views
             // Bind các trường nhập liệu
             SetComboBoxValue(cboStatus, record.Status);
             LoadPlanningTerms(record.PlanningTerm);
+            ApplyPermissions();
             LoadPositions(record.PlannedPosition, record.PlannedTransitionPosition);
             
             // Hiển thị trình độ lưu trong bản ghi, nếu trống thì lấy từ Personnel
@@ -120,6 +123,13 @@ namespace TaxPersonnelManagement.Views
             }
         }
 
+                private void ApplyPermissions()
+        {
+            bool canManageTerms = PermissionService.HasPermission(PermissionRegistry.Catalog_PlanningTerm);
+            btnAddPlanningTerm.Visibility = canManageTerms ? Visibility.Visible : Visibility.Collapsed;
+            btnAddPlannedPosition.Visibility = canManageTerms ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         private void LoadPlanningTerms(string? selectedTerm = null)
         {
             try
@@ -157,6 +167,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddPlanningTerm_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Catalog_PlanningTerm, "Quản lý nhiệm kỳ quy hoạch")) return;
             try
             {
                 var termDialog = new PlanningTermManagementDialog();
@@ -286,6 +297,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddPlannedPosition_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Catalog_PlanningTerm, "Quản lý chức danh quy hoạch")) return;
             try
             {
                 var dialog = new AddPositionDialog(_planningType == "Đảng", _planningType != "Đảng");

@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Linq;
 using System.Windows;
@@ -17,6 +18,14 @@ namespace TaxPersonnelManagement.Views
         public SalaryConfigDialog()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_SalaryConfig)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền cấu hình Bảng lương & Lương cơ sở.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             LoadRanks();
             lstSalarySpecs.ItemsSource = _specs;
         }

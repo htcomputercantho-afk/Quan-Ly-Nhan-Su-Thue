@@ -1,3 +1,38 @@
+## v1.6.6.0 — 2026-11-04
+- [Phân hệ Mới: Quản lý Vai trò & Phân quyền Chi tiết (Granular Dynamic RBAC)]:
+    + Bổ sung Menu mới "Vai trò" (ShieldAccount) trên thanh điều hướng bên trái dành cho Quản trị viên hệ thống.
+    + Xây dựng màn hình Quản lý Vai trò (RoleManagementView):
+        * Hiển thị danh sách các vai trò trong hệ thống, mô tả chức trách, số lượng tài khoản đang sử dụng và tóm tắt quyền hạn được cấp.
+        * Hỗ trợ đầy đủ Thêm mới, Chỉnh sửa và Xóa vai trò (khóa bảo vệ vai trò Quản trị viên hệ thống gốc, ngăn xóa vai trò đang có tài khoản sử dụng).
+    + Thiết kế Hộp thoại Cấu hình Phân quyền Động (RoleEditDialog):
+        * Nhóm 1: Quản trị Danh mục & Popup Select (Nút '+', '⚙️'): Phân quyền chặt chẽ các popup thêm data select gồm Bộ phận/Phòng ban (AddDepartmentDialog), Chức vụ (AddPositionDialog), Ngạch công chức (AddRankDialog), Cấu hình lương (SalaryConfigDialog), Kéo dài nâng bậc (SalaryDelayConfigDialog), Hình thức kỷ luật (DisciplineConfigDialog), Nhiệm kỳ quy hoạch (PlanningTermManagementDialog), Thêm lớp đào tạo (AddTrainingClassDialog).
+        * Nhóm 2 - 8: Phân quyền theo từng Phân hệ nghiệp vụ (Tổng quan, Thống kê, Hồ sơ Nhân sự, Nâng lương, Tổng thu nhập năm, Chi tiết nghỉ, Thời gian công tác, Thi đua khen thưởng, Đánh giá xếp loại, Đào tạo bồi dưỡng, Quy hoạch cán bộ, Luân chuyển điều động, Phân công nhiệm vụ).
+        * Nhóm 9: Quản trị Hệ thống (Vai trò, Tài khoản, Sao lưu phục hồi).
+    + Phân định Rõ ràng & Tối ưu Trải nghiệm UX giữa "Toàn quyền (SuperAdmin)" và "Chọn tất cả":
+        * Khi bật "Toàn quyền (SuperAdmin)": Tự động khóa mờ (Disable mức 45%) danh sách 40 ô phân quyền bên dưới, ẩn 2 nút "Chọn tất cả" / "Bỏ chọn tất cả" để tránh thao tác dư thừa và nhầm lẫn; hiển thị huy hiệu vương miện nổi bật.
+        * Khi bỏ chọn "Toàn quyền (SuperAdmin)": Danh sách quyền mở sáng trở lại để người dùng linh hoạt tích chọn phân quyền chi tiết (Custom RBAC); hiển thị đầy đủ 2 nút thao tác nhanh.
+        * Chuyển đổi thanh công cụ sang bố cục Grid 2 cột tự co giãn (Width="Auto" cho cột chứa nút), loại bỏ hoàn toàn hiện tượng tràn viền và lỗi mất chữ 'n)' ở nút Toàn quyền (SuperAdmin).
+    + Cơ chế Tự động sinh quyền hạn (Dynamic Permission Registry):
+        * Cho phép hệ thống tự động nhận diện và sinh các ô tích phân quyền khi lập trình viên bổ sung Menu/Chức năng mới mà không cần chỉnh sửa giao diện RoleEditDialog.xaml.
+        * Quản trị viên (Admin) luôn tự động hưởng toàn quyền 100% đối với mọi tính năng mới sinh ra trong tương lai.
+        * Quyền lưu trữ linh hoạt dưới dạng JSON trong CSDL, không phải sửa cấu trúc bảng khi mở rộng.
+    + Cơ chế Bảo vệ Hai Lớp (Double-Layer Security):
+        * Lớp 1 (Giao diện): Tự động ẩn các Menu không được cấp quyền trên Sidebar; tự động ẩn các nút nhỏ '+' và '⚙️' cạnh ô select nếu không có quyền quản lý danh mục (chỉ được chọn danh mục có sẵn).
+        * Lớp 2 (Hộp thoại & Nghiệp vụ): Kiểm tra quyền trực tiếp tại tầng xử lý của từng Popup Dialog, lập tức từ chối và đóng hộp thoại nếu tài khoản không đủ thẩm quyền.
+    + Cập nhật Quản lý Tài khoản người dùng (UserListView & UserEditDialog):
+        * Nạp danh sách Vai trò động từ CSDL vào ô chọn Vai trò/Phân quyền khi tạo hoặc cập nhật tài khoản nhân viên.
+        * Hiển thị chính xác tên Vai trò phân quyền trên bảng danh sách tài khoản.
+        * Tự động đồng bộ và nạp lại quyền hạn ngay khi tài khoản đăng nhập hoặc được cập nhật.
+- [Nâng cấp Toàn diện & Sửa Triệt để Hộp thoại Thông báo / Cảnh báo (WarningWindow)]:
+    + Khắc phục hoàn toàn lỗi đảo ngược Tiêu đề và Nội dung thông báo; loại bỏ hiện tượng chữ dài bị tràn viền và cắt cụt chữ.
+    + Bổ sung Bộ phân giải thông minh (Smart Resolver): Tự động nhận diện chính xác chuỗi nào là Tiêu đề, chuỗi nào là Nội dung chi tiết dù truyền theo bất kỳ thứ tự nào.
+    + Mở rộng chiều rộng cửa sổ lên 460px, kích hoạt tự động xuống dòng (TextWrapping="Wrap"), bo góc thẻ 22px và đổ bóng sâu mượt mà.
+    + Tự động nhận diện màu sắc theo ngữ cảnh: Đỏ Ruby (Lỗi, Từ chối truy cập, Chặn xóa), Vàng Hổ Phách Amber (Cảnh báo, Nhắc nhở nhập liệu, Trùng tên), Xanh Dương Indigo (Thông tin chung).
+- [Khắc phục Triệt để Hiện tượng Logo Ngành Thuế Bị Vỡ Mờ & Răng Cưa]:
+    + Khôi phục và nâng cấp file logo.png lên phiên bản vector render độ phân giải cao 512 × 512 px, tỷ lệ vuông 1:1 chuẩn xác, viền tròn hoàn hảo, trong suốt 100% (loại bỏ hoàn toàn viền răng cưa và vệt xám bẩn của file 386px cũ).
+    + Tối ưu kích thước logo trên thanh Tiêu đề (Title Bar) từ 20px lên 26 × 26 px, cân đối hoàn hảo với chiều cao 36px của thanh tiêu đề.
+    + Kích hoạt RenderOptions.BitmapScalingMode="HighQuality", UseLayoutRounding="True" và SnapsToDevicePixels="True", đảm bảo logo luôn tròn trịa, sắc nét từng chi tiết chữ và ngôi sao vàng trên mọi màn hình máy tính có tỉ lệ scale DPI cao (125%, 150%).
+
 ## v1.6.5.4 — 2026-11-02
 - [Tối ưu hóa Điều hướng Menu Siêu Tốc (Zero-Latency Switching - 0ms)]:
     + Loại bỏ hoàn toàn độ trễ 200–400ms và hiện tượng khựng/giật khi chuyển đổi qua lại giữa các menu bên trái (đặc biệt là các menu tải dữ liệu lớn như *Tổng thu nhập năm*, *Chi tiết Nghỉ*, *Nâng lương*, *Thống kê*...):

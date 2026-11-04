@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Linq;
 using System.Windows;
@@ -17,6 +18,14 @@ namespace TaxPersonnelManagement.Views
         public DisciplineConfigDialog()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_Discipline)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền cấu hình Hình thức kỷ luật.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             LoadData();
             lstItems.ItemsSource = _items;
         }

@@ -1,3 +1,4 @@
+using TaxPersonnelManagement.Services;
 using System;
 using System.Linq;
 using System.Windows;
@@ -15,6 +16,14 @@ namespace TaxPersonnelManagement.Views
         public AddRankDialog()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => {
+                if (!PermissionService.HasPermission(PermissionRegistry.Catalog_Rank)) {
+                    var w = new WarningWindow("Từ chối truy cập", "Bạn không có quyền quản lý danh mục Ngạch công chức.");
+                    w.Owner = this;
+                    w.ShowDialog();
+                    this.Close();
+                }
+            };
             LoadRanks();
         }
 

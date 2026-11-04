@@ -1,1047 +1,1081 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-
-namespace TaxPersonnelManagement.Models
-{
-    /// <summary>
-    /// Các vai trò (quyền hạn) của người dùng trong hệ thống.
-    /// Quyết định xem người dùng có thể xem/thêm/sửa/xóa dữ liệu nào.
-    /// </summary>
-    public enum UserRole
-    {
-        Admin,      // Quản trị viên (Toàn quyền)
-        Manager,    // Lãnh đạo (Xem và phê duyệt báo cáo)
-        Staff       // Nhân viên (Chỉ xem dữ liệu, không được chỉnh sửa)
-    }
-
-    /// <summary>
-    /// Model lưu trữ thông tin tài khoản dùng để đăng nhập vào phần mềm.
-    /// </summary>
-    public class User
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Username { get; set; } = string.Empty; // Tên đăng nhập
-        [Required]
-        public string PasswordHash { get; set; } = string.Empty; // Mật khẩu (bản rõ hoặc mã hóa)
-        public string FullName { get; set; } = string.Empty; // Họ và tên người dùng
-        public UserRole Role { get; set; } // Phân quyền
-    }
-
-    /// <summary>
-    /// Model cốt lõi lưu trữ toàn bộ hồ sơ chi tiết của một Cán bộ / Công chức.
-    /// Bao gồm các thông tin cá nhân, công tác, lương, đảng phí, v.v.
-    /// </summary>
-    public class Personnel
-    {
-        [Key]
-        public int Id { get; set; }
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public int STT { get; set; }
-        public string? StaffId { get; set; } // Số hiệu cán bộ
-        [Required]
-        public string FullName { get; set; } = string.Empty;
-        public DateTime? DateOfBirth { get; set; }
-        public string? Gender { get; set; } // Nam/Nữ
-        public string? PhoneNumber { get; set; } // Số điện thoại
-        public string? IdentityCardNumber { get; set; } // CCCD/CMND
-        public string? IdentityCardPlace { get; set; } // Nơi cấp
-        public string? SocialSecurityNumber { get; set; } // Mã BHXH
-        public string? Email { get; set; }
-        public string? BirthPlace { get; set; } // Nơi sinh
-        public string? Hometown { get; set; } // Quê quán
-        public string? CurrentResidence { get; set; } // Nơi ở hiện nay
-        public string? Ethnicity { get; set; } // Dân tộc
-        public string? Religion { get; set; } // Tôn giáo
-
-        // Work Info
-        public string? Department { get; set; } // Phòng ban/Bộ phận
-        public string? Position { get; set; } // Chức vụ
-        public string? RankCode { get; set; } // Mã ngạch
-        public string? RankName { get; set; } // Tên ngạch
-        public DateTime? TaxAuthorityStartDate { get; set; } // Thời gian công tác tại Cơ quan Thuế
-        public DateTime? StartDate { get; set; } // Ngày bắt đầu (General)
-        public string? Status { get; set; } // Trạng thái (Đang công tác, Nghỉ việc...)
-        public string? StatusDecisionNumber { get; set; } // Số quyết định trạng thái (luân chuyển/điều động/nghỉ việc/nghỉ hưu...)
-        public DateTime? StatusDecisionDate { get; set; } // Ngày ra quyết định trạng thái
-        public DateTime? StatusEffectiveDate { get; set; } // Ngày thực hiện trạng thái
-        public string? StatusDecisionUnit { get; set; } // Đơn vị ra quyết định trạng thái
-
-        // Tab 2: Position History Info
-        public DateTime? PositionDecisionDate { get; set; } // Thời gian công tác tính theo QĐ gần nhất
-        public DateTime? PositionCalculationDate { get; set; } // Thời điểm tính thời gian công tác
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public DateTime DisplayPositionCalculationDate
-        {
-            get
-            {
-                bool isNonWorking = !string.IsNullOrEmpty(Status) && !Status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
-                if (isNonWorking && StatusEffectiveDate.HasValue)
-                    return StatusEffectiveDate.Value;
-
-                if (PositionCalculationDate.HasValue)
-                    return PositionCalculationDate.Value;
-
-                return DateTime.Now;
-            }
-        }
-
-        public string? PositionYear { get; set; } // Năm giữ vị trí công tác
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string CalculatedPositionYear
-        {
-            get
-            {
-                if (!PositionDecisionDate.HasValue) return PositionYear ?? "";
-
-                DateTime startDate = PositionDecisionDate.Value;
-                DateTime endDate = DisplayPositionCalculationDate;
-
-                if (endDate < startDate) return "0 năm 0 tháng";
-
-                int years = endDate.Year - startDate.Year;
-                if (startDate.Date > endDate.AddYears(-years)) years--;
-
-                DateTime tmpDate = startDate.AddYears(years);
-                int months = 0;
-                while (tmpDate.AddMonths(1) <= endDate)
-                {
-                    months++;
-                    tmpDate = tmpDate.AddMonths(1);
-                }
-
-                return $"{years} năm {months} tháng";
-            }
-        }
-
-        public string? DetailedWorkHistory { get; set; } // Quá trình công tác chi tiết (dạng văn bản tổng hợp)
-        public virtual ICollection<WorkHistoryRecord> WorkHistoryRecords { get; set; } = new List<WorkHistoryRecord>(); // Danh sách các giai đoạn công tác chi tiết
-
-        // Tab 3: Retirement Info
-        public DateTime? RetirementDate { get; set; } // Ngày về hưu
-
-        // Tab 5: Leave Info
-        public int TotalAnnualLeaveDays { get; set; } = 12; // Mặc định 12 ngày
-        public DateTime? LeaveCalculationDate { get; set; } // Ngày tính thâm niên công tác (nhập tay)
-        public List<LeaveHistory> LeaveHistories { get; set; } = new List<LeaveHistory>();
-
-        // Tab 4: Party Info
-        public DateTime? PartyEntryDate { get; set; } // Ngày vào Đảng
-        public DateTime? PartyOfficialDate { get; set; } // Ngày chính thức
-        public string? PartyCell { get; set; } // Tại chi bộ
-        public string? PartyIntroducer1Name { get; set; } // Người giới thiệu 1 - Họ và tên
-        public string? PartyIntroducer1Position { get; set; } // Người giới thiệu 1 - Chức vụ
-        public string? PartyIntroducer1Workplace { get; set; } // Người giới thiệu 1 - Đơn vị công tác
-        public string? PartyIntroducer2Name { get; set; } // Người giới thiệu 2 - Họ và tên
-        public string? PartyIntroducer2Position { get; set; } // Người giới thiệu 2 - Chức vụ
-        public string? PartyIntroducer2Workplace { get; set; } // Người giới thiệu 2 - Đơn vị công tác
-        public string? PartyIntroducingOrganization { get; set; } // Tổ chức giới thiệu
-        public DateTime? PartyDecisionDate { get; set; } // Ngày cấp có thẩm quyền ra quyết định kết nạp
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string CalculatedPartyAge
-        {
-            get
-            {
-                if (!PartyEntryDate.HasValue) return "";
-
-                DateTime startDate = PartyEntryDate.Value;
-                DateTime endDate = DateTime.Now;
-
-                if (endDate < startDate) return "0 năm 0 tháng";
-
-                int years = endDate.Year - startDate.Year;
-                if (startDate.Date > endDate.AddYears(-years)) years--;
-
-                DateTime tmpDate = startDate.AddYears(years);
-                int months = 0;
-                while (tmpDate.AddMonths(1) <= endDate)
-                {
-                    months++;
-                    tmpDate = tmpDate.AddMonths(1);
-                }
-
-                return $"{years} năm {months} tháng";
-            }
-        }
-
-        // Education
-        public string? EducationLevel { get; set; } // Trình độ văn hóa (12/12)
-        public string? Major { get; set; } // Chuyên ngành
-        public string? University { get; set; } // Trường tốt nghiệp
-        public string? StateManagementLevel { get; set; } // QLNN
-        public string? PoliticalTheoryLevel { get; set; } // LLCT
-        public string? ITSkillLevel { get; set; } // Tin học
-        public string? LanguageSkillLevel { get; set; } // Ngoại ngữ
-
-        // Avatar
-        public string? AvatarBase64 { get; set; } // Ảnh đại diện (Base64 string)
-
-        // Tab 6: Salary Info
-        public string? CurrentSalaryStep { get; set; } // Bậc lương
-        public double CurrentSalaryCoefficient { get; set; } // Hệ số lương
-        public double ExceedFramePercent { get; set; } // % Vượt khung
-        public string? PositionAllowance { get; set; } // PC Chức vụ
-        public DateTime? SalaryReservationDeadline { get; set; } // Thời hạn bảo lưu
-        public DateTime? NextSalaryStepDate { get; set; } // Thời điểm tính bậc lương lần sau
-        public string? SalaryIncreaseDelayType { get; set; } // Lùi thời gian nâng lương
-        public DateTime? ExpectedSalaryIncreaseDate { get; set; } // Dự kiến lên lương
-        public string? SalaryHistoryLog { get; set; }
-        public virtual ICollection<SalaryRecord>? SalaryRecords { get; set; }
-        public virtual ICollection<EvaluationRecord>? EvaluationRecords { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string RankDisplayName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(RankCode)) return "---";
-                if (string.IsNullOrEmpty(RankName)) return RankCode;
-                return $"{RankCode} - {RankName}";
-            }
-        }
-
-        // Tab 7: Reward Info
-        public string? EmulationTitles { get; set; } // Danh hiệu thi đua
-        public string? RewardForms { get; set; } // Hình thức khen thưởng
-
-        // Tab 8: Discipline Info
-        public string? DisciplineType { get; set; } // Hình thức kỷ luật (Configurable)
-        public string? DisciplineDecisionNumber { get; set; } // Số quyết định
-        public DateTime? DisciplineDecisionDate { get; set; } // Ngày ký QĐ
-        public string? DisciplineReason { get; set; } // Nội dung / Lý do kỷ luật
-
-        // Navigation
-        public virtual ICollection<PersonnelDegree> PersonnelDegrees { get; set; } = new List<PersonnelDegree>();
-
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string SalaryIncreaseStatus
-        {
-            get
-            {
-                if (!ExpectedSalaryIncreaseDate.HasValue)
-                    return string.Empty;
-
-                var days = (ExpectedSalaryIncreaseDate.Value.Date - DateTime.Now.Date).TotalDays;
-                if (days > 0)
-                    return $"Còn {days} ngày";
-                else if (days == 0)
-                    return "Đến hạn hôm nay";
-                else
-                    return $"Quá hạn {Math.Abs(days)} ngày";
-            }
-        }
-    }
-
-    /// <summary>
-    /// Bảng danh mục Phòng ban / Đội quản lý.
-    /// </summary>
-    public class Department
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; } = string.Empty; // Tên phòng ban
-    }
-
-    /// <summary>
-    /// Bảng danh mục Chức vụ (Ví dụ: Chi cục trưởng, Phó phòng...).
-    /// </summary>
-    public class Position
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; } = string.Empty; // Tên chức vụ
-        public string? DepartmentName { get; set; }       // Bộ phận cụ thể (nullable, dùng cho Đảng)
-
-        /// <summary>
-        /// Nhóm bộ phận áp dụng cho chức vụ này.
-        /// null  = áp dụng cho tất cả bộ phận
-        /// "Ban lãnh đạo" = chỉ hiện khi bộ phận là Ban lãnh đạo
-        /// "Các Tổ"       = chỉ hiện khi bộ phận là các Tổ/Phòng chuyên môn
-        /// "__ĐẢNG__"     = chức danh Đảng (không dùng nhóm này)
-        /// </summary>
-        public string? GroupType { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string GroupTypeDisplay => GroupType switch
-        {
-            "Ban lãnh đạo" => "Ban lãnh đạo",
-            "Các Tổ"       => "Các Tổ",
-            _              => "Tất cả"
-        };
-    }
-
-    public static class DepartmentSorter
-    {
-        public static (int Order, int Number, string Name) GetSortKey(string? deptName)
-        {
-            if (string.IsNullOrWhiteSpace(deptName))
-                return (999, 0, "");
-
-            string name = deptName.Trim();
-
-            if (name.Equals("Ban lãnh đạo", System.StringComparison.OrdinalIgnoreCase) || 
-                name.Contains("lãnh đạo", System.StringComparison.OrdinalIgnoreCase))
-                return (0, 0, name);
-
-            int number = 0;
-            var match = System.Text.RegularExpressions.Regex.Match(name, @"\b(số\s*)?(\d+)\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (match.Success && int.TryParse(match.Groups[2].Value, out int num))
-            {
-                number = num;
-            }
-
-            int categoryOrder = 100;
-            if (name.Contains("Hành chính", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 10;
-            else if (name.Contains("Kiểm tra", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 20;
-            else if (name.Contains("Nghiệp vụ", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 30;
-            else if (name.Contains("thu khác", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 40;
-            else if (name.Contains("hộ kinh doanh", System.StringComparison.OrdinalIgnoreCase) || 
-                     name.Contains("cá nhân", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 50;
-            else if (name.Contains("doanh nghiệp", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 60;
-
-            return (categoryOrder, number, name);
-        }
-    }
-
-    /// <summary>
-    /// Bảng danh mục Chức danh Quy hoạch — hoàn toàn tách biệt với bảng Chức vụ công tác.
-    /// Dùng cho màn hình Quy hoạch cán bộ.
-    /// </summary>
-    public class PlanningPosition
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; } = string.Empty; // Tên chức danh quy hoạch
-    }
-
-    /// <summary>
-    /// Bảng danh mục Ngạch lương (Ví dụ: Chuyên viên chính, Kiểm tra viên thuế...).
-    /// </summary>
-    public class Rank
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Code { get; set; } = string.Empty; // Mã ngạch (VD: 01.003)
-        [Required]
-        public string Name { get; set; } = string.Empty; // Tên ngạch (VD: Chuyên viên chính)
-    }
-
-    /// <summary>
-    /// Bảng thiết lập Hệ số lương chuẩn theo từng Ngạch và Bậc.
-    /// Dùng để tra cứu hệ số tự động khi người dùng chọn Ngạch và Bậc.
-    /// </summary>
-    public class RankSalarySpec
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string RankCode { get; set; } = string.Empty; // Liên kết với Rank.Code
-        [Required]
-        public string SalaryStep { get; set; } = string.Empty; // Bậc lương (VD: "1/9")
-        public double Coefficient { get; set; } // Hệ số lương tương ứng (VD: 2.34)
-    }
-
-    /// <summary>
-    /// Lịch sử quá trình lương của Cán bộ.
-    /// Lưu trữ các quyết định nâng lương, thâm niên.
-    /// </summary>
-    public class SalaryRecord
-    {
-        [Key]
-        public int Id { get; set; }
-        public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
-        public virtual Personnel? Personnel { get; set; }
-
-        public DateTime? StartDate { get; set; } // Thời gian bắt đầu
-        public DateTime? EndDate { get; set; } // Thời gian kết thúc
-        public DateTime? SalaryCalculationDate { get; set; } // Mốc xét lương từ
-        public string? RankCode { get; set; } // Mã ngạch
-        public string? SalaryStep { get; set; } // Bậc lương
-        public string? Coefficient { get; set; } // Hệ số
-        public double Percentage { get; set; } = 100; // Phần trăm được hưởng (Default 100%)
-        public double ExceedFramePercent { get; set; } // % Vượt khung
-        public string? DecisionNumber { get; set; } // Số VB/QĐ
-        public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
-
-        public string? Note { get; set; } // Ghi chú thêm (Legacy/Extra)
-    }
-
-    public class LeaveHistory
-    {
-        [Key]
-        public int Id { get; set; }
-        public int PersonnelId { get; set; }
-        public Personnel? Personnel { get; set; }
-
-        [Required]
-        public string LeaveType { get; set; } = string.Empty; // Nghỉ phép, Ốm, Thai sản...
-        public int? LeaveYear { get; set; } // Năm nghỉ phép (cho Phép năm)
-        public DateTime StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
-
-        public double DurationDays { get; set; }
-        public string? Reason { get; set; }
-        public string? SystemNote { get; set; } // Ghi chú hệ thống (chi tiết ngày nghỉ)
-
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public int STT { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string UserReasonDisplay
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(Reason)) return "";
-                // Split by |SYS: OR |LINK:
-                var parts = Reason.Split(new[] { "|SYS:", "|LINK:" }, StringSplitOptions.None);
-                return parts[0].Trim();
-            }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string SystemMessageDisplay
-        {
-            get
-            {
-                // First, try to extract specific SYS message
-                string sysMsg = "";
-                if (!string.IsNullOrEmpty(Reason))
-                {
-                    var parts = Reason.Split(new[] { "|SYS:" }, StringSplitOptions.None);
-                    if (parts.Length > 1)
-                    {
-                        var sysPart = parts[1];
-                        var linkParts = sysPart.Split(new[] { "|LINK:" }, StringSplitOptions.None);
-                        sysMsg = linkParts[0].Trim();
-                    }
-                }
-
-                // If a sys message exists (e.g. "Ưu tiên trừ phép tồn"), combine it with SystemNote if available
-                if (!string.IsNullOrEmpty(sysMsg))
-                {
-                    if (!string.IsNullOrEmpty(SystemNote))
-                    {
-                        return $"{sysMsg}\n{SystemNote}";
-                    }
-                    return sysMsg;
-                }
-
-                // If it's Annual Leave, check for year prefix
-                if (LeaveType == "Phép năm")
-                {
-                    string yearPrefix = "";
-                    if (LeaveYear.HasValue && LeaveYear.Value < StartDate.Year)
-                    {
-                        yearPrefix = $"Phép năm {LeaveYear.Value}: ";
-                    }
-
-                    // Combine with sysMsg (if any from Split) and SystemNote
-                    string finalMsg = yearPrefix;
-                    // If we have a sysMsg from the Split (like "Ưu tiên trừ phép tồn"), 
-                    // and it's NOT just the year prefix we already handled:
-                    if (!string.IsNullOrEmpty(sysMsg) && !sysMsg.Contains("năm"))
-                    {
-                        finalMsg += sysMsg + "\n";
-                    }
-
-                    if (!string.IsNullOrEmpty(SystemNote))
-                    {
-                        return $"{finalMsg}{SystemNote}";
-                    }
-                    return finalMsg.Trim();
-                }
-
-                DateTime start = StartDate.Date;
-
-                if (!EndDate.HasValue)
-                {
-                    return "Đang nghỉ (Chưa xác định ngày kết thúc)";
-                }
-
-                DateTime end = EndDate.Value.Date;
-                if (start <= end)
-                {
-                    int months = 0;
-                    DateTime tempDate = start;
-                    DateTime targetDate = end.AddDays(1);
-                    while (tempDate.AddMonths(1) <= targetDate)
-                    {
-                        months++;
-                        tempDate = tempDate.AddMonths(1);
-                    }
-                    int days = 0;
-                    if (tempDate < targetDate)
-                    {
-                        days = (targetDate - tempDate).Days;
-                    }
-
-                    string basic = "";
-                    if (months > 0 && days > 0) basic = $"{months} tháng {days} ngày";
-                    else if (months > 0) basic = $"{months} tháng";
-                    else if (days > 0) basic = $"{days} ngày";
-
-                    if (!string.IsNullOrEmpty(SystemNote))
-                    {
-                        return string.IsNullOrEmpty(basic) ? SystemNote : $"{basic} - {SystemNote}";
-                    }
-                    return basic;
-                }
-
-
-                return ""; // Default empty
-            }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string? LinkId
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(Reason)) return null;
-                var parts = Reason.Split(new[] { "|LINK:" }, StringSplitOptions.None);
-                if (parts.Length > 1)
-                {
-                    return parts[1].Trim();
-                }
-                return null;
-            }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public bool ShowDeleteButton { get; set; } = true; // Default true so existing records show link
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public bool IsLinkedGroupHead { get; set; } = false; // True only if it's the first of a MULTI-record group
-    }
-    public class SalaryDelayReason
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; } = string.Empty; // e.g. "Lùi 3 tháng (Khiển trách)"
-    }
-
-    public class DisciplineType
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Name { get; set; } = string.Empty; // e.g. "Khiển trách", "Cảnh cáo"
-    }
-
-    public class IncomeRecord
-    {
-        [Key]
-        public int Id { get; set; }
-        public int PersonnelId { get; set; } // Foreign key to Personnel table
-        public int Year { get; set; }
-        public int Month { get; set; }
-        public string IncomeType { get; set; } = string.Empty; // "Lương", "Làm thêm giờ", "Thu nhập khác"
-        public decimal Amount { get; set; }
-        public string? Note { get; set; }
-    }
-
-    /// <summary>
-
-    /// Lớp lưu trữ thông tin ngày nghỉ lễ, Tết.
-    /// Dùng để loại trừ khi tính số ngày nghỉ phép.
-    /// </summary>
-    public class PublicHoliday
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
-        public string? Note { get; set; }
-    }
-
-    public class EvaluationRecord
-    {
-        [Key]
-        public int Id { get; set; }
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public int STT { get; set; }
-        public int PersonnelId { get; set; }
-        public virtual Personnel? Personnel { get; set; }
-        public int Year { get; set; }
-        public string Rating { get; set; } = string.Empty;
-        public string? DecisionNumber { get; set; }
-        public DateTime? DecisionDate { get; set; }
-        public string? DecisionAgency { get; set; }
-    }
-
-    public class TrainingClass
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string ClassName { get; set; } = string.Empty; // Tên các lớp, hội nghị
-        public DateTime? ParticipationDate { get; set; } // Ngày tham gia
-        public string? DecisionNumber { get; set; } // Số QĐ
-        public DateTime? DecisionDate { get; set; } // Ngày ra QĐ
-        public string? DecisionUnit { get; set; } // Đơn vị ra QĐ
-        
-        public virtual ICollection<PersonnelTraining> PersonnelTrainings { get; set; } = new List<PersonnelTraining>();
-    }
-
-    public class PersonnelTraining
-    {
-        [Key]
-        public int Id { get; set; }
-        public int PersonnelId { get; set; }
-        public virtual Personnel Personnel { get; set; } = null!;
-        public int TrainingClassId { get; set; }
-        public virtual TrainingClass TrainingClass { get; set; } = null!;
-    }
-
-    /// <summary>
-    /// Lưu trữ thông tin quy hoạch cán bộ (bao gồm quy hoạch Chuyên môn và quy hoạch Đảng)
-    /// </summary>
-    public class PlanningRecord
-    {
-        [Key]
-        public int Id { get; set; }
-        
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public int STT { get; set; }
-
-        public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
-        public virtual Personnel? Personnel { get; set; }
-
-        public string PlanningType { get; set; } = "Chuyên môn"; // "Chuyên môn" hoặc "Đảng"
-        public string Status { get; set; } = "Tiếp tục quy hoạch"; // "Tiếp tục quy hoạch", "Đưa ra khỏi quy hoạch", "Bổ sung quy hoạch"
-        
-        public string? CurrentPosition { get; set; } // Chức vụ hiện tại
-        public string? PlannedPosition { get; set; } // Chức danh đã được quy hoạch
-        public string? PlannedTransitionPosition { get; set; } // Chức danh chuyển tiếp quy hoạch
-        
-        public string? TrainingLevel { get; set; } // Trình độ chuyên môn
-        public string? PoliticalTheoryLevel { get; set; } // Lý luận chính trị
-        
-        public string? PlanningTerm { get; set; } // Nhiệm kỳ quy hoạch
-        public string? DecisionNumber { get; set; } // Số QĐ
-        public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
-        public string? DecisionUnit { get; set; } // Đơn vị ra QĐ
-        
-        public string? Evaluation3Years { get; set; } // Kết quả phân loại công chức 03 năm gần nhất
-        public string? Note { get; set; } // Ghi chú
-    }
-
-    /// <summary>
-    /// Lưu trữ danh mục nhiệm kỳ quy hoạch
-    /// </summary>
-    public class PlanningTerm
-    {
-        [Key]
-        public int Id { get; set; }
-        
-        [Required]
-        public string TermName { get; set; } = string.Empty; // Tên nhiệm kỳ (VD: 2021-2026, 2026-2031)
-    }
-
-    /// <summary>
-    /// Lưu trữ danh sách các văn bằng, chứng chỉ của cán bộ (Tin học, Ngoại ngữ, Chuyên môn, QLNN, LLCT...)
-    /// </summary>
-    public class PersonnelDegree
-    {
-        [Key]
-        public int Id { get; set; }
-
-        public int PersonnelId { get; set; }
-        public virtual Personnel? Personnel { get; set; }
-
-        /// <summary>
-        /// Phân loại: "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị", "Chứng chỉ khác"
-        /// </summary>
-        [Required]
-        public string DegreeType { get; set; } = "Tin học";
-
-        /// <summary>
-        /// Tên bằng/chứng chỉ (VD: "Bằng A", "Bằng B", "Bằng C", "Aptis B2", "IELTS 6.5", "Cử nhân", "Thạc sĩ"...)
-        /// </summary>
-        [Required]
-        public string DegreeName { get; set; } = string.Empty;
-
-        /// <summary>Chuyên ngành / Lĩnh vực đào tạo</summary>
-        public string? Major { get; set; }
-
-        /// <summary>Cơ sở đào tạo / Đơn vị cấp</summary>
-        public string? Institution { get; set; }
-
-        /// <summary>Xếp loại / Điểm số / Trình độ</summary>
-        public string? Classification { get; set; }
-
-        /// <summary>Năm tốt nghiệp / Cấp bằng</summary>
-        public string? GraduationYear { get; set; }
-
-        /// <summary>Ngày cấp</summary>
-        public DateTime? IssueDate { get; set; }
-
-        /// <summary>Hình thức đào tạo (Chính quy, Vừa học vừa làm, Từ xa...)</summary>
-        public string? TrainingForm { get; set; }
-
-        /// <summary>Đánh dấu là bằng cao nhất / bằng chính hiển thị ra màn hình chính</summary>
-        public bool IsPrimary { get; set; } = false;
-
-        /// <summary>Ghi chú</summary>
-        public string? Note { get; set; }
-    }
-
-    /// <summary>
-    /// Lưu trữ thông tin luân chuyển, điều động cán bộ.
-    /// Bao gồm cả điều động trong kế hoạch và ngoài kế hoạch.
-    /// </summary>
-    public class RotationRecord
-    {
-        [Key]
-        public int Id { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public int STT { get; set; }
-
-        public int PersonnelId { get; set; }
-        public virtual Personnel? Personnel { get; set; }
-
-        /// <summary>Bộ phận đang công tác (trước khi điều động)</summary>
-        public string? FromDepartment { get; set; }
-
-        /// <summary>Bộ phận dự kiến điều động đến</summary>
-        public string? ToDepartment { get; set; }
-
-        /// <summary>Loại: "Luân chuyển" hoặc "Điều động"</summary>
-        public string RotationType { get; set; } = "Điều động";
-
-        /// <summary>Phân loại kế hoạch: "Trong kế hoạch" hoặc "Ngoài kế hoạch"</summary>
-        public string PlanType { get; set; } = "Trong kế hoạch";
-
-        /// <summary>Đã thực hiện điều động/luân chuyển hay chưa</summary>
-        public bool IsCompleted { get; set; } = false;
-
-        /// <summary>Số quyết định điều động/luân chuyển</summary>
-        public string? DecisionNumber { get; set; }
-
-        /// <summary>Ngày ra quyết định điều động/luân chuyển</summary>
-        public DateTime? DecisionDate { get; set; }
-
-        /// <summary>Ngày hiệu lực (ngày bắt đầu điều động)</summary>
-        public DateTime? EffectiveDate { get; set; }
-
-        /// <summary>Ghi chú thêm</summary>
-        public string? Note { get; set; }
-    }
-
-    /// <summary>
-    /// Một phiên bản (lần thay đổi) phân công nhiệm vụ của một Tổ, kèm file PDF quyết định/bảng phân công.
-    /// Chỉ lưu khi có thay đổi: các tháng không có bản ghi nghĩa là giữ nguyên phân công của lần gần nhất trước đó.
-    /// </summary>
-    public class DutyAssignmentRecord
-    {
-        [Key]
-        public int Id { get; set; }
-
-        /// <summary>Tên Tổ / bộ phận</summary>
-        public string Department { get; set; } = string.Empty;
-
-        /// <summary>Năm của tháng thay đổi</summary>
-        public int Year { get; set; }
-
-        /// <summary>Tháng thay đổi (1-12)</summary>
-        public int Month { get; set; }
-
-        /// <summary>Ngày bắt đầu có hiệu lực</summary>
-        public DateTime EffectiveDate { get; set; }
-
-        /// <summary>Tiêu đề / nội dung thay đổi (VD: QĐ số 12/QĐ-CCT, bổ sung nhân sự...)</summary>
-        public string? Title { get; set; }
-
-        /// <summary>Ghi chú thêm</summary>
-        public string? Note { get; set; }
-
-        /// <summary>Tên file PDF gốc</summary>
-        public string FileName { get; set; } = string.Empty;
-
-        /// <summary>Dung lượng file (byte)</summary>
-        public long FileSize { get; set; }
-
-        /// <summary>Nội dung file PDF (lưu trực tiếp trong CSDL để sao lưu/đồng bộ cùng dữ liệu)</summary>
-        public byte[] FileData { get; set; } = Array.Empty<byte>();
-
-        public DateTime UploadedAt { get; set; } = DateTime.Now;
-
-        public string? UploadedBy { get; set; }
-    }
-
-    /// <summary>
-    /// Giai đoạn quá trình công tác chi tiết của Cán bộ (Từ ngày - Đến ngày - Chức vụ - Đơn vị công tác).
-    /// </summary>
-    public class WorkHistoryRecord : System.ComponentModel.INotifyPropertyChanged
-    {
-        [Key]
-        public int Id { get; set; }
-        public int PersonnelId { get; set; }
-        public virtual Personnel? Personnel { get; set; }
-
-        public string? FromDate { get; set; }        // e.g. "11/1994" hoặc "1994"
-        public string? ToDate { get; set; }          // e.g. "09/1997" hoặc "Hiện nay"
-        public string Position { get; set; } = string.Empty; // Chức vụ
-        public string? Department { get; set; }      // Bộ phận (Tổ / Đội / Phòng ban)
-        public string? OrganizationUnit { get; set; } // Cơ quan / Đơn vị công tác (Chi cục / Cục / Thuế cơ sở...)
-        public string? DepartmentOrUnit { get; set; } // Đơn vị công tác tổng hợp
-        public bool IsPartyConcurrent { get; set; }   // Kiêm nhiệm chức vụ Đảng
-        public string? PartyPosition { get; set; }    // Chức vụ Đảng kiêm nhiệm (ví dụ: Bí thư Chi bộ)
-        public string? Note { get; set; }            // Ghi chú
-        public int OrderIndex { get; set; }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string FromDateDisplay
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(FromDate)) return "---";
-                string f = FromDate.Trim();
-                int denIdx = f.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
-                if (denIdx > 0) f = f.Substring(0, denIdx).Trim();
-                if (f.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) f = f.Substring(3).Trim();
-                return string.IsNullOrWhiteSpace(f) ? "---" : f;
-            }
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string ToDateCleanDisplay
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(ToDate))
-                {
-                    if (!string.IsNullOrWhiteSpace(FromDate))
-                    {
-                        int denIdx = FromDate.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
-                        if (denIdx > 0)
-                        {
-                            string afterDen = FromDate.Substring(denIdx + 5).Trim();
-                            if (!string.IsNullOrWhiteSpace(afterDen))
-                            {
-                                if (afterDen.Equals("nay", StringComparison.OrdinalIgnoreCase) || afterDen.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
-                                    return "Hiện nay";
-                                return afterDen;
-                            }
-                        }
-                    }
-                    return "Hiện nay";
-                }
-                string t = ToDate.Trim();
-                if (t.StartsWith("↓")) t = t.TrimStart('↓', ' ');
-                if (t.Equals("nay", StringComparison.OrdinalIgnoreCase) || t.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "Hiện nay";
-                }
-                return t;
-            }
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string ToDateDisplay
-        {
-            get => ToDateCleanDisplay;
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string PeriodDisplay
-        {
-            get => $"{FromDateDisplay} – {ToDateCleanDisplay}";
-            set { }
-        }
-
-        public static bool IsPartyRoleText(string? text)
-        {
-            if (string.IsNullOrWhiteSpace(text)) return false;
-            string t = text.Trim().ToLowerInvariant();
-            return t.Contains("bí thư") || t.Contains("chi ủy") || t.Contains("đảng ủy") ||
-                   t.Contains("chi bộ") || t.Contains("đảng bộ") || t.Contains("ban thường vụ") ||
-                   t.Contains("ban chấp hành") || t.Contains("phụ trách chi bộ") ||
-                   t.Contains("tổ đảng") || t.Contains("đảng viên");
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string PositionDisplay
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Position)) return "(Chưa nhập chức vụ)";
-                string p = Position.Trim();
-
-                // Lọc bỏ (Kiêm: ...) hoặc (Chức vụ Đảng) nếu còn dính trong chuỗi Position
-                var kiemMatch = System.Text.RegularExpressions.Regex.Match(p, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*[^)]+\)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                if (kiemMatch.Success)
-                {
-                    p = (p.Substring(0, kiemMatch.Index) + " " + p.Substring(kiemMatch.Index + kiemMatch.Length)).Trim();
-                }
-                else
-                {
-                    var parenMatch = System.Text.RegularExpressions.Regex.Match(p, @"\s*\((?<party>[^)]+)\)\s*");
-                    if (parenMatch.Success && IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
-                    {
-                        p = (p.Substring(0, parenMatch.Index) + " " + p.Substring(parenMatch.Index + parenMatch.Length)).Trim();
-                    }
-                }
-
-                // Nếu Position dính chức vụ Đảng ở trước: "Bí thư Chi bộ; Tổ trưởng..."
-                if (p.Contains(";"))
-                {
-                    var parts = p.Split(';').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
-                    if (parts.Count >= 2 && IsPartyRoleText(parts[0]) && !IsPartyRoleText(parts[1]))
-                    {
-                        return string.Join("; ", parts.Skip(1));
-                    }
-                }
-                else if (p.Contains(","))
-                {
-                    int cIdx = p.IndexOf(',');
-                    string prefix = p.Substring(0, cIdx).Trim();
-                    string suffix = p.Substring(cIdx + 1).Trim();
-                    if (IsPartyRoleText(prefix))
-                    {
-                        return suffix;
-                    }
-                }
-                return string.IsNullOrWhiteSpace(p) ? "(Chưa nhập chức vụ)" : p;
-            }
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string PartyPositionDisplay
-        {
-            get
-            {
-                string cleanParty(string val)
-                {
-                    if (string.IsNullOrWhiteSpace(val)) return "";
-                    var m = System.Text.RegularExpressions.Regex.Match(val.Trim(), @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                    return m.Success ? m.Groups[1].Value.Trim() : val.Trim();
-                }
-
-                if (IsPartyConcurrent && !string.IsNullOrWhiteSpace(PartyPosition))
-                    return cleanParty(PartyPosition);
-
-                if (!string.IsNullOrWhiteSpace(Position))
-                {
-                    var kiemMatch = System.Text.RegularExpressions.Regex.Match(Position, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-                    if (kiemMatch.Success)
-                        return cleanParty(kiemMatch.Groups["party"].Value);
-
-                    var parenMatch = System.Text.RegularExpressions.Regex.Match(Position, @"\s*\((?<party>[^)]+)\)\s*");
-                    if (parenMatch.Success && IsPartyRoleText(parenMatch.Groups["party"].Value))
-                        return cleanParty(parenMatch.Groups["party"].Value);
-
-                    if (Position.Contains(";"))
-                    {
-                        var parts = Position.Split(';').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
-                        if (parts.Count >= 2 && IsPartyRoleText(parts[0]) && !IsPartyRoleText(parts[1]))
-                            return cleanParty(parts[0]);
-                    }
-                    else if (Position.Contains(","))
-                    {
-                        int cIdx = Position.IndexOf(',');
-                        string prefix = Position.Substring(0, cIdx).Trim();
-                        if (IsPartyRoleText(prefix))
-                            return cleanParty(prefix);
-                    }
-                }
-
-                return "";
-            }
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public System.Windows.Visibility PartyBadgeVisibility
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace(PartyPositionDisplay)
-                    ? System.Windows.Visibility.Visible
-                    : System.Windows.Visibility.Collapsed;
-            }
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string DepartmentDisplay
-        {
-            get => string.IsNullOrWhiteSpace(Department) ? "" : Department.Trim();
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string OrganizationUnitDisplay
-        {
-            get => string.IsNullOrWhiteSpace(OrganizationUnit) ? "" : OrganizationUnit.Trim();
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string UnitDisplay
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(Department) && !string.IsNullOrWhiteSpace(OrganizationUnit))
-                    return $"{Department.Trim()}, {OrganizationUnit.Trim()}";
-                if (!string.IsNullOrWhiteSpace(Department))
-                    return Department.Trim();
-                if (!string.IsNullOrWhiteSpace(OrganizationUnit))
-                    return OrganizationUnit.Trim();
-                return string.IsNullOrWhiteSpace(DepartmentOrUnit) ? "" : DepartmentOrUnit.Trim();
-            }
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public string NoteDisplay
-        {
-            get => string.IsNullOrWhiteSpace(Note) ? "" : Note.Trim();
-            set { }
-        }
-
-        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
-        public System.Windows.Visibility NoteVisibility
-        {
-            get => string.IsNullOrWhiteSpace(Note) ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
-            set { }
-        }
-
-        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
-        public void NotifyChanged()
-        {
-            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(string.Empty));
-        }
-    }
-
-    /// <summary>
-    /// Danh mục gợi ý độc lập cho Quá trình công tác (Bộ phận, Cơ quan/Đơn vị công tác).
-    /// Hoàn toàn tách biệt với bảng Departments chính của cơ quan hiện tại.
-    /// </summary>
-    public class WorkHistorySuggestion
-    {
-        [Key]
-        public int Id { get; set; }
-        [Required]
-        public string Category { get; set; } = string.Empty; // "Department" hoặc "OrganizationUnit"
-        [Required]
-        public string Name { get; set; } = string.Empty;     // Tên gợi ý
-    }
-}
-
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace TaxPersonnelManagement.Models
+{
+    /// <summary>
+    /// Các vai trò (quyền hạn) của người dùng trong hệ thống.
+    /// Quyết định xem người dùng có thể xem/thêm/sửa/xóa dữ liệu nào.
+    /// </summary>
+    public enum UserRole
+    {
+        Admin,      // Quản trị viên (Toàn quyền)
+        Manager,    // Lãnh đạo (Xem và phê duyệt báo cáo)
+        Staff       // Nhân viên (Chỉ xem dữ liệu, không được chỉnh sửa)
+    }
+
+    /// <summary>
+    /// Model lưu trữ thông tin Vai trò người dùng và danh sách quyền hạn (RBAC).
+    /// </summary>
+    public class Role
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; } = string.Empty; // Tên vai trò (vd: Quản trị viên, Văn thư...)
+
+        public string Description { get; set; } = string.Empty; // Mô tả vai trò
+
+        /// <summary>
+        /// Danh sách mã quyền đã cấp dưới dạng JSON array (vd: ["*"] hoặc ["Catalog_Department", ...])
+        /// </summary>
+        public string PermissionsJson { get; set; } = "[]";
+
+        public bool IsSystem { get; set; } = false; // Vai trò hệ thống không được xóa
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public virtual ICollection<User> Users { get; set; } = new List<User>();
+    }
+
+    /// <summary>
+    /// Model lưu trữ thông tin tài khoản dùng để đăng nhập vào phần mềm.
+    /// </summary>
+    public class User
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Username { get; set; } = string.Empty; // Tên đăng nhập
+        [Required]
+        public string PasswordHash { get; set; } = string.Empty; // Mật khẩu (bản rõ hoặc mã hóa)
+        public string FullName { get; set; } = string.Empty; // Họ và tên người dùng
+        public UserRole Role { get; set; } // Phân quyền cũ (backward compatibility)
+
+        public int? RoleId { get; set; } // Khóa ngoại liên kết bảng Role
+
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("RoleId")]
+        public virtual Role? UserRoleEntity { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string RoleDisplayName => UserRoleEntity?.Name ?? (Role == UserRole.Admin ? "Quản trị viên" : (Role == UserRole.Manager ? "Quản lý" : "Nhân viên"));
+    }
+
+    /// <summary>
+    /// Model cốt lõi lưu trữ toàn bộ hồ sơ chi tiết của một Cán bộ / Công chức.
+    /// Bao gồm các thông tin cá nhân, công tác, lương, đảng phí, v.v.
+    /// </summary>
+    public class Personnel
+    {
+        [Key]
+        public int Id { get; set; }
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+        public string? StaffId { get; set; } // Số hiệu cán bộ
+        [Required]
+        public string FullName { get; set; } = string.Empty;
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; } // Nam/Nữ
+        public string? PhoneNumber { get; set; } // Số điện thoại
+        public string? IdentityCardNumber { get; set; } // CCCD/CMND
+        public string? IdentityCardPlace { get; set; } // Nơi cấp
+        public string? SocialSecurityNumber { get; set; } // Mã BHXH
+        public string? Email { get; set; }
+        public string? BirthPlace { get; set; } // Nơi sinh
+        public string? Hometown { get; set; } // Quê quán
+        public string? CurrentResidence { get; set; } // Nơi ở hiện nay
+        public string? Ethnicity { get; set; } // Dân tộc
+        public string? Religion { get; set; } // Tôn giáo
+
+        // Work Info
+        public string? Department { get; set; } // Phòng ban/Bộ phận
+        public string? Position { get; set; } // Chức vụ
+        public string? RankCode { get; set; } // Mã ngạch
+        public string? RankName { get; set; } // Tên ngạch
+        public DateTime? TaxAuthorityStartDate { get; set; } // Thời gian công tác tại Cơ quan Thuế
+        public DateTime? StartDate { get; set; } // Ngày bắt đầu (General)
+        public string? Status { get; set; } // Trạng thái (Đang công tác, Nghỉ việc...)
+        public string? StatusDecisionNumber { get; set; } // Số quyết định trạng thái (luân chuyển/điều động/nghỉ việc/nghỉ hưu...)
+        public DateTime? StatusDecisionDate { get; set; } // Ngày ra quyết định trạng thái
+        public DateTime? StatusEffectiveDate { get; set; } // Ngày thực hiện trạng thái
+        public string? StatusDecisionUnit { get; set; } // Đơn vị ra quyết định trạng thái
+
+        // Tab 2: Position History Info
+        public DateTime? PositionDecisionDate { get; set; } // Thời gian công tác tính theo QĐ gần nhất
+        public DateTime? PositionCalculationDate { get; set; } // Thời điểm tính thời gian công tác
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public DateTime DisplayPositionCalculationDate
+        {
+            get
+            {
+                bool isNonWorking = !string.IsNullOrEmpty(Status) && !Status.Trim().Equals("Đang công tác", StringComparison.OrdinalIgnoreCase);
+                if (isNonWorking && StatusEffectiveDate.HasValue)
+                    return StatusEffectiveDate.Value;
+
+                if (PositionCalculationDate.HasValue)
+                    return PositionCalculationDate.Value;
+
+                return DateTime.Now;
+            }
+        }
+
+        public string? PositionYear { get; set; } // Năm giữ vị trí công tác
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string CalculatedPositionYear
+        {
+            get
+            {
+                if (!PositionDecisionDate.HasValue) return PositionYear ?? "";
+
+                DateTime startDate = PositionDecisionDate.Value;
+                DateTime endDate = DisplayPositionCalculationDate;
+
+                if (endDate < startDate) return "0 năm 0 tháng";
+
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+
+                return $"{years} năm {months} tháng";
+            }
+        }
+
+        public string? DetailedWorkHistory { get; set; } // Quá trình công tác chi tiết (dạng văn bản tổng hợp)
+        public virtual ICollection<WorkHistoryRecord> WorkHistoryRecords { get; set; } = new List<WorkHistoryRecord>(); // Danh sách các giai đoạn công tác chi tiết
+
+        // Tab 3: Retirement Info
+        public DateTime? RetirementDate { get; set; } // Ngày về hưu
+
+        // Tab 5: Leave Info
+        public int TotalAnnualLeaveDays { get; set; } = 12; // Mặc định 12 ngày
+        public DateTime? LeaveCalculationDate { get; set; } // Ngày tính thâm niên công tác (nhập tay)
+        public List<LeaveHistory> LeaveHistories { get; set; } = new List<LeaveHistory>();
+
+        // Tab 4: Party Info
+        public DateTime? PartyEntryDate { get; set; } // Ngày vào Đảng
+        public DateTime? PartyOfficialDate { get; set; } // Ngày chính thức
+        public string? PartyCell { get; set; } // Tại chi bộ
+        public string? PartyIntroducer1Name { get; set; } // Người giới thiệu 1 - Họ và tên
+        public string? PartyIntroducer1Position { get; set; } // Người giới thiệu 1 - Chức vụ
+        public string? PartyIntroducer1Workplace { get; set; } // Người giới thiệu 1 - Đơn vị công tác
+        public string? PartyIntroducer2Name { get; set; } // Người giới thiệu 2 - Họ và tên
+        public string? PartyIntroducer2Position { get; set; } // Người giới thiệu 2 - Chức vụ
+        public string? PartyIntroducer2Workplace { get; set; } // Người giới thiệu 2 - Đơn vị công tác
+        public string? PartyIntroducingOrganization { get; set; } // Tổ chức giới thiệu
+        public DateTime? PartyDecisionDate { get; set; } // Ngày cấp có thẩm quyền ra quyết định kết nạp
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string CalculatedPartyAge
+        {
+            get
+            {
+                if (!PartyEntryDate.HasValue) return "";
+
+                DateTime startDate = PartyEntryDate.Value;
+                DateTime endDate = DateTime.Now;
+
+                if (endDate < startDate) return "0 năm 0 tháng";
+
+                int years = endDate.Year - startDate.Year;
+                if (startDate.Date > endDate.AddYears(-years)) years--;
+
+                DateTime tmpDate = startDate.AddYears(years);
+                int months = 0;
+                while (tmpDate.AddMonths(1) <= endDate)
+                {
+                    months++;
+                    tmpDate = tmpDate.AddMonths(1);
+                }
+
+                return $"{years} năm {months} tháng";
+            }
+        }
+
+        // Education
+        public string? EducationLevel { get; set; } // Trình độ văn hóa (12/12)
+        public string? Major { get; set; } // Chuyên ngành
+        public string? University { get; set; } // Trường tốt nghiệp
+        public string? StateManagementLevel { get; set; } // QLNN
+        public string? PoliticalTheoryLevel { get; set; } // LLCT
+        public string? ITSkillLevel { get; set; } // Tin học
+        public string? LanguageSkillLevel { get; set; } // Ngoại ngữ
+
+        // Avatar
+        public string? AvatarBase64 { get; set; } // Ảnh đại diện (Base64 string)
+
+        // Tab 6: Salary Info
+        public string? CurrentSalaryStep { get; set; } // Bậc lương
+        public double CurrentSalaryCoefficient { get; set; } // Hệ số lương
+        public double ExceedFramePercent { get; set; } // % Vượt khung
+        public string? PositionAllowance { get; set; } // PC Chức vụ
+        public DateTime? SalaryReservationDeadline { get; set; } // Thời hạn bảo lưu
+        public DateTime? NextSalaryStepDate { get; set; } // Thời điểm tính bậc lương lần sau
+        public string? SalaryIncreaseDelayType { get; set; } // Lùi thời gian nâng lương
+        public DateTime? ExpectedSalaryIncreaseDate { get; set; } // Dự kiến lên lương
+        public string? SalaryHistoryLog { get; set; }
+        public virtual ICollection<SalaryRecord>? SalaryRecords { get; set; }
+        public virtual ICollection<EvaluationRecord>? EvaluationRecords { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string RankDisplayName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(RankCode)) return "---";
+                if (string.IsNullOrEmpty(RankName)) return RankCode;
+                return $"{RankCode} - {RankName}";
+            }
+        }
+
+        // Tab 7: Reward Info
+        public string? EmulationTitles { get; set; } // Danh hiệu thi đua
+        public string? RewardForms { get; set; } // Hình thức khen thưởng
+
+        // Tab 8: Discipline Info
+        public string? DisciplineType { get; set; } // Hình thức kỷ luật (Configurable)
+        public string? DisciplineDecisionNumber { get; set; } // Số quyết định
+        public DateTime? DisciplineDecisionDate { get; set; } // Ngày ký QĐ
+        public string? DisciplineReason { get; set; } // Nội dung / Lý do kỷ luật
+
+        // Navigation
+        public virtual ICollection<PersonnelDegree> PersonnelDegrees { get; set; } = new List<PersonnelDegree>();
+
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string SalaryIncreaseStatus
+        {
+            get
+            {
+                if (!ExpectedSalaryIncreaseDate.HasValue)
+                    return string.Empty;
+
+                var days = (ExpectedSalaryIncreaseDate.Value.Date - DateTime.Now.Date).TotalDays;
+                if (days > 0)
+                    return $"Còn {days} ngày";
+                else if (days == 0)
+                    return "Đến hạn hôm nay";
+                else
+                    return $"Quá hạn {Math.Abs(days)} ngày";
+            }
+        }
+    }
+
+    /// <summary>
+    /// Bảng danh mục Phòng ban / Đội quản lý.
+    /// </summary>
+    public class Department
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty; // Tên phòng ban
+    }
+
+    /// <summary>
+    /// Bảng danh mục Chức vụ (Ví dụ: Chi cục trưởng, Phó phòng...).
+    /// </summary>
+    public class Position
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty; // Tên chức vụ
+        public string? DepartmentName { get; set; }       // Bộ phận cụ thể (nullable, dùng cho Đảng)
+
+        /// <summary>
+        /// Nhóm bộ phận áp dụng cho chức vụ này.
+        /// null  = áp dụng cho tất cả bộ phận
+        /// "Ban lãnh đạo" = chỉ hiện khi bộ phận là Ban lãnh đạo
+        /// "Các Tổ"       = chỉ hiện khi bộ phận là các Tổ/Phòng chuyên môn
+        /// "__ĐẢNG__"     = chức danh Đảng (không dùng nhóm này)
+        /// </summary>
+        public string? GroupType { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string GroupTypeDisplay => GroupType switch
+        {
+            "Ban lãnh đạo" => "Ban lãnh đạo",
+            "Các Tổ"       => "Các Tổ",
+            _              => "Tất cả"
+        };
+    }
+
+    public static class DepartmentSorter
+    {
+        public static (int Order, int Number, string Name) GetSortKey(string? deptName)
+        {
+            if (string.IsNullOrWhiteSpace(deptName))
+                return (999, 0, "");
+
+            string name = deptName.Trim();
+
+            if (name.Equals("Ban lãnh đạo", System.StringComparison.OrdinalIgnoreCase) || 
+                name.Contains("lãnh đạo", System.StringComparison.OrdinalIgnoreCase))
+                return (0, 0, name);
+
+            int number = 0;
+            var match = System.Text.RegularExpressions.Regex.Match(name, @"\b(số\s*)?(\d+)\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success && int.TryParse(match.Groups[2].Value, out int num))
+            {
+                number = num;
+            }
+
+            int categoryOrder = 100;
+            if (name.Contains("Hành chính", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 10;
+            else if (name.Contains("Kiểm tra", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 20;
+            else if (name.Contains("Nghiệp vụ", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 30;
+            else if (name.Contains("thu khác", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 40;
+            else if (name.Contains("hộ kinh doanh", System.StringComparison.OrdinalIgnoreCase) || 
+                     name.Contains("cá nhân", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 50;
+            else if (name.Contains("doanh nghiệp", System.StringComparison.OrdinalIgnoreCase)) categoryOrder = 60;
+
+            return (categoryOrder, number, name);
+        }
+    }
+
+    /// <summary>
+    /// Bảng danh mục Chức danh Quy hoạch — hoàn toàn tách biệt với bảng Chức vụ công tác.
+    /// Dùng cho màn hình Quy hoạch cán bộ.
+    /// </summary>
+    public class PlanningPosition
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty; // Tên chức danh quy hoạch
+    }
+
+    /// <summary>
+    /// Bảng danh mục Ngạch lương (Ví dụ: Chuyên viên chính, Kiểm tra viên thuế...).
+    /// </summary>
+    public class Rank
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Code { get; set; } = string.Empty; // Mã ngạch (VD: 01.003)
+        [Required]
+        public string Name { get; set; } = string.Empty; // Tên ngạch (VD: Chuyên viên chính)
+    }
+
+    /// <summary>
+    /// Bảng thiết lập Hệ số lương chuẩn theo từng Ngạch và Bậc.
+    /// Dùng để tra cứu hệ số tự động khi người dùng chọn Ngạch và Bậc.
+    /// </summary>
+    public class RankSalarySpec
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string RankCode { get; set; } = string.Empty; // Liên kết với Rank.Code
+        [Required]
+        public string SalaryStep { get; set; } = string.Empty; // Bậc lương (VD: "1/9")
+        public double Coefficient { get; set; } // Hệ số lương tương ứng (VD: 2.34)
+    }
+
+    /// <summary>
+    /// Lịch sử quá trình lương của Cán bộ.
+    /// Lưu trữ các quyết định nâng lương, thâm niên.
+    /// </summary>
+    public class SalaryRecord
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
+        public virtual Personnel? Personnel { get; set; }
+
+        public DateTime? StartDate { get; set; } // Thời gian bắt đầu
+        public DateTime? EndDate { get; set; } // Thời gian kết thúc
+        public DateTime? SalaryCalculationDate { get; set; } // Mốc xét lương từ
+        public string? RankCode { get; set; } // Mã ngạch
+        public string? SalaryStep { get; set; } // Bậc lương
+        public string? Coefficient { get; set; } // Hệ số
+        public double Percentage { get; set; } = 100; // Phần trăm được hưởng (Default 100%)
+        public double ExceedFramePercent { get; set; } // % Vượt khung
+        public string? DecisionNumber { get; set; } // Số VB/QĐ
+        public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
+
+        public string? Note { get; set; } // Ghi chú thêm (Legacy/Extra)
+    }
+
+    public class LeaveHistory
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; }
+        public Personnel? Personnel { get; set; }
+
+        [Required]
+        public string LeaveType { get; set; } = string.Empty; // Nghỉ phép, Ốm, Thai sản...
+        public int? LeaveYear { get; set; } // Năm nghỉ phép (cho Phép năm)
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+
+        public double DurationDays { get; set; }
+        public string? Reason { get; set; }
+        public string? SystemNote { get; set; } // Ghi chú hệ thống (chi tiết ngày nghỉ)
+
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string UserReasonDisplay
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Reason)) return "";
+                // Split by |SYS: OR |LINK:
+                var parts = Reason.Split(new[] { "|SYS:", "|LINK:" }, StringSplitOptions.None);
+                return parts[0].Trim();
+            }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string SystemMessageDisplay
+        {
+            get
+            {
+                // First, try to extract specific SYS message
+                string sysMsg = "";
+                if (!string.IsNullOrEmpty(Reason))
+                {
+                    var parts = Reason.Split(new[] { "|SYS:" }, StringSplitOptions.None);
+                    if (parts.Length > 1)
+                    {
+                        var sysPart = parts[1];
+                        var linkParts = sysPart.Split(new[] { "|LINK:" }, StringSplitOptions.None);
+                        sysMsg = linkParts[0].Trim();
+                    }
+                }
+
+                // If a sys message exists (e.g. "Ưu tiên trừ phép tồn"), combine it with SystemNote if available
+                if (!string.IsNullOrEmpty(sysMsg))
+                {
+                    if (!string.IsNullOrEmpty(SystemNote))
+                    {
+                        return $"{sysMsg}\n{SystemNote}";
+                    }
+                    return sysMsg;
+                }
+
+                // If it's Annual Leave, check for year prefix
+                if (LeaveType == "Phép năm")
+                {
+                    string yearPrefix = "";
+                    if (LeaveYear.HasValue && LeaveYear.Value < StartDate.Year)
+                    {
+                        yearPrefix = $"Phép năm {LeaveYear.Value}: ";
+                    }
+
+                    // Combine with sysMsg (if any from Split) and SystemNote
+                    string finalMsg = yearPrefix;
+                    // If we have a sysMsg from the Split (like "Ưu tiên trừ phép tồn"), 
+                    // and it's NOT just the year prefix we already handled:
+                    if (!string.IsNullOrEmpty(sysMsg) && !sysMsg.Contains("năm"))
+                    {
+                        finalMsg += sysMsg + "\n";
+                    }
+
+                    if (!string.IsNullOrEmpty(SystemNote))
+                    {
+                        return $"{finalMsg}{SystemNote}";
+                    }
+                    return finalMsg.Trim();
+                }
+
+                DateTime start = StartDate.Date;
+
+                if (!EndDate.HasValue)
+                {
+                    return "Đang nghỉ (Chưa xác định ngày kết thúc)";
+                }
+
+                DateTime end = EndDate.Value.Date;
+                if (start <= end)
+                {
+                    int months = 0;
+                    DateTime tempDate = start;
+                    DateTime targetDate = end.AddDays(1);
+                    while (tempDate.AddMonths(1) <= targetDate)
+                    {
+                        months++;
+                        tempDate = tempDate.AddMonths(1);
+                    }
+                    int days = 0;
+                    if (tempDate < targetDate)
+                    {
+                        days = (targetDate - tempDate).Days;
+                    }
+
+                    string basic = "";
+                    if (months > 0 && days > 0) basic = $"{months} tháng {days} ngày";
+                    else if (months > 0) basic = $"{months} tháng";
+                    else if (days > 0) basic = $"{days} ngày";
+
+                    if (!string.IsNullOrEmpty(SystemNote))
+                    {
+                        return string.IsNullOrEmpty(basic) ? SystemNote : $"{basic} - {SystemNote}";
+                    }
+                    return basic;
+                }
+
+
+                return ""; // Default empty
+            }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string? LinkId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(Reason)) return null;
+                var parts = Reason.Split(new[] { "|LINK:" }, StringSplitOptions.None);
+                if (parts.Length > 1)
+                {
+                    return parts[1].Trim();
+                }
+                return null;
+            }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public bool ShowDeleteButton { get; set; } = true; // Default true so existing records show link
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public bool IsLinkedGroupHead { get; set; } = false; // True only if it's the first of a MULTI-record group
+    }
+    public class SalaryDelayReason
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty; // e.g. "Lùi 3 tháng (Khiển trách)"
+    }
+
+    public class DisciplineType
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty; // e.g. "Khiển trách", "Cảnh cáo"
+    }
+
+    public class IncomeRecord
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; } // Foreign key to Personnel table
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public string IncomeType { get; set; } = string.Empty; // "Lương", "Làm thêm giờ", "Thu nhập khác"
+        public decimal Amount { get; set; }
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+
+    /// Lớp lưu trữ thông tin ngày nghỉ lễ, Tết.
+    /// Dùng để loại trừ khi tính số ngày nghỉ phép.
+    /// </summary>
+    public class PublicHoliday
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string? Note { get; set; }
+    }
+
+    public class EvaluationRecord
+    {
+        [Key]
+        public int Id { get; set; }
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+        public int Year { get; set; }
+        public string Rating { get; set; } = string.Empty;
+        public string? DecisionNumber { get; set; }
+        public DateTime? DecisionDate { get; set; }
+        public string? DecisionAgency { get; set; }
+    }
+
+    public class TrainingClass
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string ClassName { get; set; } = string.Empty; // Tên các lớp, hội nghị
+        public DateTime? ParticipationDate { get; set; } // Ngày tham gia
+        public string? DecisionNumber { get; set; } // Số QĐ
+        public DateTime? DecisionDate { get; set; } // Ngày ra QĐ
+        public string? DecisionUnit { get; set; } // Đơn vị ra QĐ
+        
+        public virtual ICollection<PersonnelTraining> PersonnelTrainings { get; set; } = new List<PersonnelTraining>();
+    }
+
+    public class PersonnelTraining
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; }
+        public virtual Personnel Personnel { get; set; } = null!;
+        public int TrainingClassId { get; set; }
+        public virtual TrainingClass TrainingClass { get; set; } = null!;
+    }
+
+    /// <summary>
+    /// Lưu trữ thông tin quy hoạch cán bộ (bao gồm quy hoạch Chuyên môn và quy hoạch Đảng)
+    /// </summary>
+    public class PlanningRecord
+    {
+        [Key]
+        public int Id { get; set; }
+        
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+
+        public int PersonnelId { get; set; } // Khóa ngoại liên kết tới Cán bộ
+        public virtual Personnel? Personnel { get; set; }
+
+        public string PlanningType { get; set; } = "Chuyên môn"; // "Chuyên môn" hoặc "Đảng"
+        public string Status { get; set; } = "Tiếp tục quy hoạch"; // "Tiếp tục quy hoạch", "Đưa ra khỏi quy hoạch", "Bổ sung quy hoạch"
+        
+        public string? CurrentPosition { get; set; } // Chức vụ hiện tại
+        public string? PlannedPosition { get; set; } // Chức danh đã được quy hoạch
+        public string? PlannedTransitionPosition { get; set; } // Chức danh chuyển tiếp quy hoạch
+        
+        public string? TrainingLevel { get; set; } // Trình độ chuyên môn
+        public string? PoliticalTheoryLevel { get; set; } // Lý luận chính trị
+        
+        public string? PlanningTerm { get; set; } // Nhiệm kỳ quy hoạch
+        public string? DecisionNumber { get; set; } // Số QĐ
+        public DateTime? DecisionDate { get; set; } // Ngày ký QĐ
+        public string? DecisionUnit { get; set; } // Đơn vị ra QĐ
+        
+        public string? Evaluation3Years { get; set; } // Kết quả phân loại công chức 03 năm gần nhất
+        public string? Note { get; set; } // Ghi chú
+    }
+
+    /// <summary>
+    /// Lưu trữ danh mục nhiệm kỳ quy hoạch
+    /// </summary>
+    public class PlanningTerm
+    {
+        [Key]
+        public int Id { get; set; }
+        
+        [Required]
+        public string TermName { get; set; } = string.Empty; // Tên nhiệm kỳ (VD: 2021-2026, 2026-2031)
+    }
+
+    /// <summary>
+    /// Lưu trữ danh sách các văn bằng, chứng chỉ của cán bộ (Tin học, Ngoại ngữ, Chuyên môn, QLNN, LLCT...)
+    /// </summary>
+    public class PersonnelDegree
+    {
+        [Key]
+        public int Id { get; set; }
+
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+
+        /// <summary>
+        /// Phân loại: "Tin học", "Ngoại ngữ", "Chuyên môn", "Quản lý Nhà nước", "Lý luận chính trị", "Chứng chỉ khác"
+        /// </summary>
+        [Required]
+        public string DegreeType { get; set; } = "Tin học";
+
+        /// <summary>
+        /// Tên bằng/chứng chỉ (VD: "Bằng A", "Bằng B", "Bằng C", "Aptis B2", "IELTS 6.5", "Cử nhân", "Thạc sĩ"...)
+        /// </summary>
+        [Required]
+        public string DegreeName { get; set; } = string.Empty;
+
+        /// <summary>Chuyên ngành / Lĩnh vực đào tạo</summary>
+        public string? Major { get; set; }
+
+        /// <summary>Cơ sở đào tạo / Đơn vị cấp</summary>
+        public string? Institution { get; set; }
+
+        /// <summary>Xếp loại / Điểm số / Trình độ</summary>
+        public string? Classification { get; set; }
+
+        /// <summary>Năm tốt nghiệp / Cấp bằng</summary>
+        public string? GraduationYear { get; set; }
+
+        /// <summary>Ngày cấp</summary>
+        public DateTime? IssueDate { get; set; }
+
+        /// <summary>Hình thức đào tạo (Chính quy, Vừa học vừa làm, Từ xa...)</summary>
+        public string? TrainingForm { get; set; }
+
+        /// <summary>Đánh dấu là bằng cao nhất / bằng chính hiển thị ra màn hình chính</summary>
+        public bool IsPrimary { get; set; } = false;
+
+        /// <summary>Ghi chú</summary>
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+    /// Lưu trữ thông tin luân chuyển, điều động cán bộ.
+    /// Bao gồm cả điều động trong kế hoạch và ngoài kế hoạch.
+    /// </summary>
+    public class RotationRecord
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public int STT { get; set; }
+
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+
+        /// <summary>Bộ phận đang công tác (trước khi điều động)</summary>
+        public string? FromDepartment { get; set; }
+
+        /// <summary>Bộ phận dự kiến điều động đến</summary>
+        public string? ToDepartment { get; set; }
+
+        /// <summary>Loại: "Luân chuyển" hoặc "Điều động"</summary>
+        public string RotationType { get; set; } = "Điều động";
+
+        /// <summary>Phân loại kế hoạch: "Trong kế hoạch" hoặc "Ngoài kế hoạch"</summary>
+        public string PlanType { get; set; } = "Trong kế hoạch";
+
+        /// <summary>Đã thực hiện điều động/luân chuyển hay chưa</summary>
+        public bool IsCompleted { get; set; } = false;
+
+        /// <summary>Số quyết định điều động/luân chuyển</summary>
+        public string? DecisionNumber { get; set; }
+
+        /// <summary>Ngày ra quyết định điều động/luân chuyển</summary>
+        public DateTime? DecisionDate { get; set; }
+
+        /// <summary>Ngày hiệu lực (ngày bắt đầu điều động)</summary>
+        public DateTime? EffectiveDate { get; set; }
+
+        /// <summary>Ghi chú thêm</summary>
+        public string? Note { get; set; }
+    }
+
+    /// <summary>
+    /// Một phiên bản (lần thay đổi) phân công nhiệm vụ của một Tổ, kèm file PDF quyết định/bảng phân công.
+    /// Chỉ lưu khi có thay đổi: các tháng không có bản ghi nghĩa là giữ nguyên phân công của lần gần nhất trước đó.
+    /// </summary>
+    public class DutyAssignmentRecord
+    {
+        [Key]
+        public int Id { get; set; }
+
+        /// <summary>Tên Tổ / bộ phận</summary>
+        public string Department { get; set; } = string.Empty;
+
+        /// <summary>Năm của tháng thay đổi</summary>
+        public int Year { get; set; }
+
+        /// <summary>Tháng thay đổi (1-12)</summary>
+        public int Month { get; set; }
+
+        /// <summary>Ngày bắt đầu có hiệu lực</summary>
+        public DateTime EffectiveDate { get; set; }
+
+        /// <summary>Tiêu đề / nội dung thay đổi (VD: QĐ số 12/QĐ-CCT, bổ sung nhân sự...)</summary>
+        public string? Title { get; set; }
+
+        /// <summary>Ghi chú thêm</summary>
+        public string? Note { get; set; }
+
+        /// <summary>Tên file PDF gốc</summary>
+        public string FileName { get; set; } = string.Empty;
+
+        /// <summary>Dung lượng file (byte)</summary>
+        public long FileSize { get; set; }
+
+        /// <summary>Nội dung file PDF (lưu trực tiếp trong CSDL để sao lưu/đồng bộ cùng dữ liệu)</summary>
+        public byte[] FileData { get; set; } = Array.Empty<byte>();
+
+        public DateTime UploadedAt { get; set; } = DateTime.Now;
+
+        public string? UploadedBy { get; set; }
+    }
+
+    /// <summary>
+    /// Giai đoạn quá trình công tác chi tiết của Cán bộ (Từ ngày - Đến ngày - Chức vụ - Đơn vị công tác).
+    /// </summary>
+    public class WorkHistoryRecord : System.ComponentModel.INotifyPropertyChanged
+    {
+        [Key]
+        public int Id { get; set; }
+        public int PersonnelId { get; set; }
+        public virtual Personnel? Personnel { get; set; }
+
+        public string? FromDate { get; set; }        // e.g. "11/1994" hoặc "1994"
+        public string? ToDate { get; set; }          // e.g. "09/1997" hoặc "Hiện nay"
+        public string Position { get; set; } = string.Empty; // Chức vụ
+        public string? Department { get; set; }      // Bộ phận (Tổ / Đội / Phòng ban)
+        public string? OrganizationUnit { get; set; } // Cơ quan / Đơn vị công tác (Chi cục / Cục / Thuế cơ sở...)
+        public string? DepartmentOrUnit { get; set; } // Đơn vị công tác tổng hợp
+        public bool IsPartyConcurrent { get; set; }   // Kiêm nhiệm chức vụ Đảng
+        public string? PartyPosition { get; set; }    // Chức vụ Đảng kiêm nhiệm (ví dụ: Bí thư Chi bộ)
+        public string? Note { get; set; }            // Ghi chú
+        public int OrderIndex { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string FromDateDisplay
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(FromDate)) return "---";
+                string f = FromDate.Trim();
+                int denIdx = f.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
+                if (denIdx > 0) f = f.Substring(0, denIdx).Trim();
+                if (f.StartsWith("Từ ", StringComparison.OrdinalIgnoreCase)) f = f.Substring(3).Trim();
+                return string.IsNullOrWhiteSpace(f) ? "---" : f;
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string ToDateCleanDisplay
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(ToDate))
+                {
+                    if (!string.IsNullOrWhiteSpace(FromDate))
+                    {
+                        int denIdx = FromDate.IndexOf(" đến ", StringComparison.OrdinalIgnoreCase);
+                        if (denIdx > 0)
+                        {
+                            string afterDen = FromDate.Substring(denIdx + 5).Trim();
+                            if (!string.IsNullOrWhiteSpace(afterDen))
+                            {
+                                if (afterDen.Equals("nay", StringComparison.OrdinalIgnoreCase) || afterDen.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                                    return "Hiện nay";
+                                return afterDen;
+                            }
+                        }
+                    }
+                    return "Hiện nay";
+                }
+                string t = ToDate.Trim();
+                if (t.StartsWith("↓")) t = t.TrimStart('↓', ' ');
+                if (t.Equals("nay", StringComparison.OrdinalIgnoreCase) || t.Equals("đến nay", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Hiện nay";
+                }
+                return t;
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string ToDateDisplay
+        {
+            get => ToDateCleanDisplay;
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string PeriodDisplay
+        {
+            get => $"{FromDateDisplay} – {ToDateCleanDisplay}";
+            set { }
+        }
+
+        public static bool IsPartyRoleText(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            string t = text.Trim().ToLowerInvariant();
+            return t.Contains("bí thư") || t.Contains("chi ủy") || t.Contains("đảng ủy") ||
+                   t.Contains("chi bộ") || t.Contains("đảng bộ") || t.Contains("ban thường vụ") ||
+                   t.Contains("ban chấp hành") || t.Contains("phụ trách chi bộ") ||
+                   t.Contains("tổ đảng") || t.Contains("đảng viên");
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string PositionDisplay
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(Position)) return "(Chưa nhập chức vụ)";
+                string p = Position.Trim();
+
+                // Lọc bỏ (Kiêm: ...) hoặc (Chức vụ Đảng) nếu còn dính trong chuỗi Position
+                var kiemMatch = System.Text.RegularExpressions.Regex.Match(p, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*[^)]+\)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                if (kiemMatch.Success)
+                {
+                    p = (p.Substring(0, kiemMatch.Index) + " " + p.Substring(kiemMatch.Index + kiemMatch.Length)).Trim();
+                }
+                else
+                {
+                    var parenMatch = System.Text.RegularExpressions.Regex.Match(p, @"\s*\((?<party>[^)]+)\)\s*");
+                    if (parenMatch.Success && IsPartyRoleText(parenMatch.Groups["party"].Value.Trim()))
+                    {
+                        p = (p.Substring(0, parenMatch.Index) + " " + p.Substring(parenMatch.Index + parenMatch.Length)).Trim();
+                    }
+                }
+
+                // Nếu Position dính chức vụ Đảng ở trước: "Bí thư Chi bộ; Tổ trưởng..."
+                if (p.Contains(";"))
+                {
+                    var parts = p.Split(';').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
+                    if (parts.Count >= 2 && IsPartyRoleText(parts[0]) && !IsPartyRoleText(parts[1]))
+                    {
+                        return string.Join("; ", parts.Skip(1));
+                    }
+                }
+                else if (p.Contains(","))
+                {
+                    int cIdx = p.IndexOf(',');
+                    string prefix = p.Substring(0, cIdx).Trim();
+                    string suffix = p.Substring(cIdx + 1).Trim();
+                    if (IsPartyRoleText(prefix))
+                    {
+                        return suffix;
+                    }
+                }
+                return string.IsNullOrWhiteSpace(p) ? "(Chưa nhập chức vụ)" : p;
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string PartyPositionDisplay
+        {
+            get
+            {
+                string cleanParty(string val)
+                {
+                    if (string.IsNullOrWhiteSpace(val)) return "";
+                    var m = System.Text.RegularExpressions.Regex.Match(val.Trim(), @"^(?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(.*)$", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    return m.Success ? m.Groups[1].Value.Trim() : val.Trim();
+                }
+
+                if (IsPartyConcurrent && !string.IsNullOrWhiteSpace(PartyPosition))
+                    return cleanParty(PartyPosition);
+
+                if (!string.IsNullOrWhiteSpace(Position))
+                {
+                    var kiemMatch = System.Text.RegularExpressions.Regex.Match(Position, @"\s*\((?:Kiêm|Kiêm nhiệm|Kiêm chức vụ Đảng|Kiêm nhiệm chức vụ Đảng):\s*(?<party>[^)]+)\)\s*", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (kiemMatch.Success)
+                        return cleanParty(kiemMatch.Groups["party"].Value);
+
+                    var parenMatch = System.Text.RegularExpressions.Regex.Match(Position, @"\s*\((?<party>[^)]+)\)\s*");
+                    if (parenMatch.Success && IsPartyRoleText(parenMatch.Groups["party"].Value))
+                        return cleanParty(parenMatch.Groups["party"].Value);
+
+                    if (Position.Contains(";"))
+                    {
+                        var parts = Position.Split(';').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToList();
+                        if (parts.Count >= 2 && IsPartyRoleText(parts[0]) && !IsPartyRoleText(parts[1]))
+                            return cleanParty(parts[0]);
+                    }
+                    else if (Position.Contains(","))
+                    {
+                        int cIdx = Position.IndexOf(',');
+                        string prefix = Position.Substring(0, cIdx).Trim();
+                        if (IsPartyRoleText(prefix))
+                            return cleanParty(prefix);
+                    }
+                }
+
+                return "";
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public System.Windows.Visibility PartyBadgeVisibility
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(PartyPositionDisplay)
+                    ? System.Windows.Visibility.Visible
+                    : System.Windows.Visibility.Collapsed;
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string DepartmentDisplay
+        {
+            get => string.IsNullOrWhiteSpace(Department) ? "" : Department.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string OrganizationUnitDisplay
+        {
+            get => string.IsNullOrWhiteSpace(OrganizationUnit) ? "" : OrganizationUnit.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string UnitDisplay
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(Department) && !string.IsNullOrWhiteSpace(OrganizationUnit))
+                    return $"{Department.Trim()}, {OrganizationUnit.Trim()}";
+                if (!string.IsNullOrWhiteSpace(Department))
+                    return Department.Trim();
+                if (!string.IsNullOrWhiteSpace(OrganizationUnit))
+                    return OrganizationUnit.Trim();
+                return string.IsNullOrWhiteSpace(DepartmentOrUnit) ? "" : DepartmentOrUnit.Trim();
+            }
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string NoteDisplay
+        {
+            get => string.IsNullOrWhiteSpace(Note) ? "" : Note.Trim();
+            set { }
+        }
+
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public System.Windows.Visibility NoteVisibility
+        {
+            get => string.IsNullOrWhiteSpace(Note) ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+            set { }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        public void NotifyChanged()
+        {
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(string.Empty));
+        }
+    }
+
+    /// <summary>
+    /// Danh mục gợi ý độc lập cho Quá trình công tác (Bộ phận, Cơ quan/Đơn vị công tác).
+    /// Hoàn toàn tách biệt với bảng Departments chính của cơ quan hiện tại.
+    /// </summary>
+    public class WorkHistorySuggestion
+    {
+        [Key]
+        public int Id { get; set; }
+        [Required]
+        public string Category { get; set; } = string.Empty; // "Department" hoặc "OrganizationUnit"
+        [Required]
+        public string Name { get; set; } = string.Empty;     // Tên gợi ý
+    }
+}
+
