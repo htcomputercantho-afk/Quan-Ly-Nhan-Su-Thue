@@ -1,3 +1,41 @@
+## v1.6.7.0 — 2026-11-05
+- [Hoàn thiện & Áp dụng Triệt để Phân quyền RBAC trên Toàn bộ Phân hệ Nghiệp vụ]:
+    + Tách quyền Xuất Excel độc lập cho từng phân hệ & Hỗ trợ tương thích ngược 100%:
+        * Bổ sung 4 mã quyền xuất báo cáo chuyên biệt: Evaluation_Export (Xuất Excel xếp loại cán bộ), Training_Export (Xuất danh sách học viên đào tạo), Planning_Export (Xuất danh sách cán bộ quy hoạch), Rotation_Export (Xuất danh sách luân chuyển điều động).
+        * Cập nhật danh mục PermissionDefinitions với mô tả rõ ràng, trực quan trong hộp thoại Phân quyền vai trò (RoleEditDialog).
+        * Cơ chế Fallback an toàn trong PermissionService: Tài khoản cũ chưa cập nhật các quyền mới tự động kế thừa từ quyền Quản lý (_Manage) tương ứng, đảm bảo vận hành liên tục và ổn định.
+    + Phân hệ Tổng thu nhập năm (AnnualIncomeView & EditMonthlyIncomeDialog):
+        * Khi tài khoản không có quyền Income_Edit (chỉ có quyền xem): Khóa bảng thu nhập 12 tháng (dgMonthlyIncome.IsReadOnly = true); ẩn hoàn toàn các nút thao tác 'Lưu dữ liệu' (btnSave), 'Thêm nhiều khoản' (btnBulkAdd), 'Xóa dữ liệu' (btnClearData).
+        * Tối ưu Hộp thoại Chi tiết thu nhập khác (EditMonthlyIncomeDialog): Tự động chuyển sang chế độ Xem an toàn, ẩn nút '+ Thêm khoản mới', ẩn nút 'Xác nhận', ẩn icon Thùng rác xóa; khóa chỉnh sửa (IsReadOnly = true) tất cả các ô nhập số tiền và nội dung; đổi nút 'Hủy bỏ' thành 'Đóng'.
+    + Phân hệ Đánh giá Xếp loại công chức (EvaluationListView):
+        * Ẩn các nút 'Nhập Excel' (btnImport) và 'Quyết định hàng loạt' (btnBulkDecision) khi không có quyền Evaluation_Manage; chỉ hiển thị nút 'Xuất Excel' khi có quyền Evaluation_Export. Khóa chỉnh sửa bảng dữ liệu xếp loại (dgEvaluation.IsReadOnly = true).
+        * Tinh chỉnh thanh công cụ tìm kiếm và bộ lọc với bố cục WrapPanel chống tràn, ngăn hiện tượng các nút đè lấn lên ô nhập Họ tên/CCCD.
+    + Phân hệ Đào tạo, Bồi dưỡng (TrainingListView & TrainingClassDetailDialog):
+        * Chuyển quyền nút 'Thêm lớp đào tạo' sang kiểm tra quyền Training_Manage chuẩn xác.
+        * Trong hộp thoại Chi tiết lớp đào tạo (TrainingClassDetailDialog): Tự động ẩn các nút Sửa thông tin lớp (btnEditClass), Xóa lớp (btnDeleteClass), Thêm học viên (btnAddMember), Xóa học viên (btnRemoveMember) khi tài khoản chỉ có quyền xem.
+    + Phân hệ Quy hoạch cán bộ (PlanningManagementView):
+        * Tự động ẩn nút 'Thêm quy hoạch' của cả Quy hoạch chức danh chuyên môn (btnAddProf) và Chức danh Đảng (btnAddParty) khi không có quyền Planning_Manage.
+        * Ẩn toàn bộ cột Hành động (Sửa/Xóa) trên cả 2 bảng dữ liệu quy hoạch chuyên môn và quy hoạch Đảng đối với tài khoản chỉ xem.
+        * Kiểm soát quyền nút 'Xuất Excel' độc lập theo Planning_Export.
+    + Phân hệ Luân chuyển, Điều động (RotationManagementView & RotationRecordDialog):
+        * Tự động ẩn nút 'Thêm quyết định' (btnAddRotation) trên thanh tiêu đề; ẩn các icon Bút chì (Sửa) và Thùng rác (Xóa) trên từng dòng của bảng luân chuyển khi không có quyền Rotation_Manage.
+        * Trong hộp thoại Hồ sơ luân chuyển (RotationRecordDialog): Tự động kích hoạt chế độ chỉ xem (View Mode) và ẩn nút 'Sửa thông tin' (btnEditMode).
+        * Phân quyền độc lập nút 'Xuất Excel' theo Rotation_Export.
+    + Phân hệ Theo dõi Nâng lương (SalaryListView):
+        * Ẩn cột thao tác nâng lương (Thực hiện nâng lương định kỳ / nâng lương trước hạn) khi tài khoản không có quyền Salary_Update.
+        * Phân quyền độc lập nút 'Xuất Excel' theo Salary_Export.
+    + Phân hệ Phân công nhiệm vụ (DutyAssignmentView & DutyAssignmentViewerDialog):
+        * Chuẩn hóa kiểm tra phân quyền DutyAssignment_Upload thay cho ràng buộc vai trò cũ; tự động ẩn nút 'Tải lên tài liệu' ở thanh công cụ chính và ẩn nút dấu '+' trên từng thẻ Tổ công tác.
+        * Trong hộp thoại xem tài liệu PDF (DutyAssignmentViewerDialog): Ẩn các nút Cập nhật và Xóa file đối với tài khoản không có quyền tải lên.
+- [Sửa Lỗi Giao Diện & Tối Ưu Bố Cục Nút Bấm]:
+    + Sửa lỗi tràn viền và mất chữ 'n' trên nút 'Thêm tài khoản' (UserListView): Loại bỏ chiều rộng cố định (Width='150'), chuyển sang dùng Padding='20 0', bo tròn mềm mại CornerRadius='20', hiển thị chuẩn xác 100% nội dung chữ và icon AccountPlus đồng bộ thiết kế.
+- [Nâng Cấp Trải Nghiệm Đăng Nhập (UX Smart Focus & Auto-Clear)]:
+    + Tự động bôi đen toàn bộ (Select All): Khi bấm phím Tab hoặc click chuột chuyển giữa ô Tên đăng nhập và Mật khẩu, toàn bộ chuỗi ký tự sẽ tự động được chọn, cho phép người dùng gõ phím đè ngay tài khoản/mật khẩu mới mà không cần xóa tay.
+    + Tự động dọn dẹp mật khẩu khi đổi tài khoản (Auto Reset Password): Khi người dùng chỉnh sửa thay đổi Tên đăng nhập, ô Mật khẩu đã lưu trước đó sẽ tự động được xóa trống, loại bỏ phiền toái phải xóa thủ công mật khẩu cũ khi chuyển tài khoản.
+- [Tối Ưu Mã Nguồn & Ổn Định Hệ Thống]:
+    + Kiểm tra biên dịch đạt chuẩn 0 Error, 0 Warning.
+    + Đảm bảo đồng bộ thông tin phiên bản v1.6.7.0 trên toàn hệ thống (Csproj, Assembly, LoginView, Update.xml).
+
 ## v1.6.6.0 — 2026-11-04
 - [Phân hệ Mới: Quản lý Vai trò & Phân quyền Chi tiết (Granular Dynamic RBAC)]:
     + Bổ sung Menu mới "Vai trò" (ShieldAccount) trên thanh điều hướng bên trái dành cho Quản trị viên hệ thống.

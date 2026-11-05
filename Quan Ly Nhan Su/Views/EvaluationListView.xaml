@@ -211,7 +211,7 @@
         <materialDesign:Card Grid.Row="2" Margin="0 0 0 12" Padding="20 14" UniformCornerRadius="12" Background="White" Effect="{DynamicResource MaterialDesignShadowDepth1}">
             <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Search Box -->
-                <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Width="230" Height="40" Margin="0 0 14 0">
+                <Border Background="White" CornerRadius="20" BorderBrush="#CBD5E1" BorderThickness="1.5" Width="230" Height="40" Margin="0 4 14 4">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -230,24 +230,24 @@
                     </Border>
 
                 <!-- Department Filter -->
-                <ComboBox x:Name="cbDepartment" HorizontalContentAlignment="Left" Width="350" Margin="0 0 14 0"
+                <ComboBox x:Name="cbDepartment" HorizontalContentAlignment="Left" Width="320" Margin="0 4 14 4"
                           Style="{StaticResource FilterPillComboBox}"
                           SelectionChanged="cbFilter_SelectionChanged"/>
 
                 <!-- Year Filter -->
-                <ComboBox x:Name="cbYear" Width="160" Margin="0 0 14 0"
+                <ComboBox x:Name="cbYear" Width="150" Margin="0 4 14 4"
                           Style="{StaticResource FilterPillComboBox}"
                           SelectionChanged="cbFilter_SelectionChanged"/>
 
                 <!-- Rating Filter -->
-                <ComboBox x:Name="cbRating" HorizontalContentAlignment="Left" Width="285" Margin="0 0 18 0"
+                <ComboBox x:Name="cbRating" HorizontalContentAlignment="Left" Width="240" Margin="0 4 18 4"
                           Style="{StaticResource FilterPillComboBox}"
                           SelectionChanged="cbFilter_SelectionChanged"/>
 
                 <!-- Group 2: Actions -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0 0 0 0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 4 0 4">
                     <!-- Import Button -->
-                    <Button Height="40" Margin="0 0 8 0" Padding="16 0"
+                    <Button x:Name="btnImport" Height="40" Margin="0 0 8 0" Padding="16 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="20"
                             Background="#2563EB" BorderBrush="#2563EB" Foreground="White"
@@ -261,7 +261,7 @@
                     </Button>
 
                     <!-- Bulk Decision Button -->
-                    <Button Height="40" Margin="0 0 8 0" Padding="16 0"
+                    <Button x:Name="btnBulkDecision" Height="40" Margin="0 0 8 0" Padding="16 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="20"
                             Background="#7B1FA2" BorderBrush="#7B1FA2" Foreground="White"
@@ -275,7 +275,7 @@
                     </Button>
 
                     <!-- Export Button -->
-                    <Button Height="40" Margin="0 0 0 0" Padding="16 0"
+                    <Button x:Name="btnExport" Height="40" Margin="0 0 0 0" Padding="16 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="20"
                             Background="#15803D" BorderBrush="#15803D" Foreground="White"

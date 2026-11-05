@@ -11,6 +11,7 @@ using Microsoft.Win32;
 using ClosedXML.Excel;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using TaxPersonnelManagement.Services;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -54,6 +55,7 @@ namespace TaxPersonnelManagement.Views
             {
                 IsCompact = this.ActualWidth < 1400;
                 ApplyCompactMode();
+                ApplyPermissions();
             };
             this.SizeChanged += (s, e) =>
             {
@@ -61,7 +63,24 @@ namespace TaxPersonnelManagement.Views
                 ApplyCompactMode();
             };
 
+            ApplyPermissions();
             LoadData();
+        }
+
+        private void ApplyPermissions()
+        {
+            bool canManage = PermissionService.HasPermission(PermissionRegistry.Evaluation_Manage);
+            bool canExport = PermissionService.HasPermission(PermissionRegistry.Evaluation_Export);
+
+            if (btnImport != null)
+                btnImport.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            if (btnBulkDecision != null)
+                btnBulkDecision.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            if (btnExport != null)
+                btnExport.Visibility = canExport ? Visibility.Visible : Visibility.Collapsed;
+
+            if (dgEvaluation != null)
+                dgEvaluation.IsReadOnly = !canManage;
         }
 
         public class FilterItem
@@ -523,6 +542,12 @@ namespace TaxPersonnelManagement.Views
             if (e.EditAction == DataGridEditAction.Cancel)
                 return;
 
+            if (!PermissionService.HasPermission(PermissionRegistry.Evaluation_Manage))
+            {
+                e.Cancel = true;
+                return;
+            }
+
             var record = e.Row.Item as EvaluationRecord;
             if (record == null)
                 return;
@@ -719,6 +744,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Evaluation_Export, "Xuất danh sách xếp loại ra Excel")) return;
+
             try
             {
                 var data = _fullEvaluationList;
@@ -945,6 +972,8 @@ namespace TaxPersonnelManagement.Views
 
         private async void btnImport_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Evaluation_Manage, "Nhập danh sách xếp loại từ file Excel")) return;
+
             var dlg = new OpenFileDialog();
             dlg.DefaultExt = ".xlsx";
             dlg.Filter = "Excel Documents (.xlsx)|*.xlsx";
@@ -1102,6 +1131,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnBulkDecision_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Evaluation_Manage, "Cập nhật quyết định khen thưởng xếp loại hàng loạt")) return;
+
             var dialog = new BulkDecisionDialog();
             dialog.Owner = Window.GetWindow(this);
             if (dialog.ShowDialog() == true)

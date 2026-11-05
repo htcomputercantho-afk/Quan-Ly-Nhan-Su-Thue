@@ -369,7 +369,7 @@
                                 <DataGridTextColumn Header="ĐÁNH GIÁ 3 NĂM GẦN NHẤT" Binding="{Binding Evaluation3Years}" Width="160" ElementStyle="{StaticResource PlanningCellLeft}"/>
                                 <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Note}" Width="150" ElementStyle="{StaticResource PlanningCellLeft}"/>
 
-                                <DataGridTemplateColumn Header="THAO TÁC" Width="120">
+                                <DataGridTemplateColumn x:Name="colActionProf" Header="THAO TÁC" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -615,7 +615,7 @@
                                 <DataGridTextColumn Header="ĐÁNH GIÁ 3 NĂM GẦN NHẤT" Binding="{Binding Evaluation3Years}" Width="160" ElementStyle="{StaticResource PlanningCellLeft2}"/>
                                 <DataGridTextColumn Header="GHI CHÚ" Binding="{Binding Note}" Width="150" ElementStyle="{StaticResource PlanningCellLeft2}"/>
 
-                                <DataGridTemplateColumn Header="THAO TÁC" Width="120">
+                                <DataGridTemplateColumn x:Name="colActionParty" Header="THAO TÁC" Width="120">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">

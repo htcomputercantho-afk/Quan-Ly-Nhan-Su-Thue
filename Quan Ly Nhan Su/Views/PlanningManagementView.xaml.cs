@@ -24,9 +24,24 @@ namespace TaxPersonnelManagement.Views
         public PlanningManagementView()
         {
             InitializeComponent();
+            ApplyPermissions();
+            this.Loaded += (s, e) => ApplyPermissions();
             LoadFilterData();
             LoadData();
             _isLoaded = true;
+        }
+
+        private void ApplyPermissions()
+        {
+            bool canManage = PermissionService.HasPermission(PermissionRegistry.Planning_Manage);
+            bool canExport = PermissionService.HasPermission(PermissionRegistry.Planning_Export);
+
+            if (btnAddProf != null) btnAddProf.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            if (btnAddParty != null) btnAddParty.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            if (btnExportProf != null) btnExportProf.Visibility = canExport ? Visibility.Visible : Visibility.Collapsed;
+            if (btnExportParty != null) btnExportParty.Visibility = canExport ? Visibility.Visible : Visibility.Collapsed;
+            if (colActionProf != null) colActionProf.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            if (colActionParty != null) colActionParty.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
         }
 
         /// <summary>
@@ -216,11 +231,13 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddProf_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Planning_Manage, "Thêm mới quy hoạch")) return;
             OpenPlanningDialog("Chuyên môn");
         }
 
         private void btnExportProf_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Planning_Export, "Xuất Excel quy hoạch")) return;
             ExportToExcel("Chuyên môn");
         }
 
@@ -292,11 +309,13 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddParty_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Planning_Manage, "Thêm mới quy hoạch")) return;
             OpenPlanningDialog("Đảng");
         }
 
         private void btnExportParty_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Planning_Export, "Xuất Excel quy hoạch")) return;
             ExportToExcel("Đảng");
         }
 
@@ -353,6 +372,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnEdit_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Planning_Manage, "Chỉnh sửa quy hoạch")) return;
             try
             {
                 if (sender is Button btn && btn.DataContext is PlanningRecord record)
@@ -413,6 +433,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Planning_Manage, "Xóa quy hoạch")) return;
             try
             {
                 if (sender is Button btn && btn.DataContext is PlanningRecord record)

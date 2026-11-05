@@ -174,7 +174,19 @@ namespace TaxPersonnelManagement.Services
             // Quyền wildcard toàn quyền
             if (_cachedCurrentUserPermissions.Contains("*")) return true;
 
-            return _cachedCurrentUserPermissions.Contains(permissionCode);
+            if (_cachedCurrentUserPermissions.Contains(permissionCode)) return true;
+
+            // Tương thích ngược: Nếu kiểm tra quyền Xuất Excel mà vai trò đã có quyền Quản lý/Chỉnh sửa trước đó thì vẫn cấp phép
+            if (permissionCode == PermissionRegistry.Evaluation_Export && _cachedCurrentUserPermissions.Contains(PermissionRegistry.Evaluation_Manage))
+                return true;
+            if (permissionCode == PermissionRegistry.Planning_Export && _cachedCurrentUserPermissions.Contains(PermissionRegistry.Planning_Manage))
+                return true;
+            if (permissionCode == PermissionRegistry.Rotation_Export && _cachedCurrentUserPermissions.Contains(PermissionRegistry.Rotation_Manage))
+                return true;
+            if (permissionCode == PermissionRegistry.Training_Export && _cachedCurrentUserPermissions.Contains(PermissionRegistry.Training_Manage))
+                return true;
+
+            return false;
         }
 
         /// <summary>

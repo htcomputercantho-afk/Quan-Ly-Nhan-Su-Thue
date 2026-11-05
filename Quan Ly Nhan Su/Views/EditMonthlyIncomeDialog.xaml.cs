@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using TaxPersonnelManagement.Models;
+using TaxPersonnelManagement.Services;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -16,11 +17,15 @@ namespace TaxPersonnelManagement.Views
     {
         public ObservableCollection<IncomeItemViewModel> IncomeItems { get; set; } = new ObservableCollection<IncomeItemViewModel>();
         public string ResultNote { get; private set; } = "";
+        public bool IsReadOnly { get; set; }
 
         public EditMonthlyIncomeDialog(string incomeType, int month, string currentNote)
         {
             InitializeComponent();
             txtHeaderTitle.Text = $"CHI TIẾT {incomeType.ToUpper()} - THÁNG {month}";
+
+            bool canEdit = PermissionService.HasPermission(PermissionRegistry.Income_Edit);
+            IsReadOnly = !canEdit;
 
             // Parse existing note
             var parsedItems = AnnualIncomeRowViewModel.ParseBreakdown(currentNote);
@@ -29,14 +34,22 @@ namespace TaxPersonnelManagement.Views
                 IncomeItems.Add(new IncomeItemViewModel
                 {
                     Amount = item.Amount,
-                    Reason = item.Reason
+                    Reason = item.Reason,
+                    CanEdit = canEdit
                 });
             }
 
-            // If empty, add a default empty item for user convenience
-            if (IncomeItems.Count == 0)
+            // If empty and editable, add a default empty item for user convenience
+            if (IncomeItems.Count == 0 && canEdit)
             {
-                IncomeItems.Add(new IncomeItemViewModel());
+                IncomeItems.Add(new IncomeItemViewModel { CanEdit = true });
+            }
+
+            if (!canEdit)
+            {
+                btnAddItem.Visibility = Visibility.Collapsed;
+                btnConfirm.Visibility = Visibility.Collapsed;
+                txtCancel.Text = "Đóng";
             }
 
             lstIncomeItems.ItemsSource = IncomeItems;
@@ -44,11 +57,13 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddItem_Click(object sender, RoutedEventArgs e)
         {
+            if (IsReadOnly) return;
             IncomeItems.Add(new IncomeItemViewModel());
         }
 
         private void btnDeleteItem_Click(object sender, RoutedEventArgs e)
         {
+            if (IsReadOnly) return;
             if (sender is FrameworkElement element && element.DataContext is IncomeItemViewModel item)
             {
                 IncomeItems.Remove(item);
@@ -158,6 +173,23 @@ namespace TaxPersonnelManagement.Views
 
     public class IncomeItemViewModel : INotifyPropertyChanged
     {
+        private bool _canEdit = true;
+        public bool CanEdit
+        {
+            get => _canEdit;
+            set
+            {
+                if (_canEdit != value)
+                {
+                    _canEdit = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(DeleteVisibility));
+                }
+            }
+        }
+
+        public Visibility DeleteVisibility => CanEdit ? Visibility.Visible : Visibility.Collapsed;
+
         private decimal _amount;
         public decimal Amount
         {

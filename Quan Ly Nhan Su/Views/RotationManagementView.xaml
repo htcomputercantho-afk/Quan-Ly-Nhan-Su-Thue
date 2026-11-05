@@ -871,12 +871,14 @@
                                                     </Button>
                                                     <!-- Chỉnh sửa -->
                                                     <Button Click="BtnEditRow_Click"
+                                                            Visibility="{Binding ManageVisibility}"
                                                             Style="{StaticResource ActionBtnView}"
                                                             ToolTip="Chỉnh sửa luân chuyển">
                                                         <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18" Foreground="#3949AB"/>
                                                     </Button>
                                                     <!-- Xóa -->
                                                     <Button Click="BtnDeleteRow_Click"
+                                                            Visibility="{Binding ManageVisibility}"
                                                             Style="{StaticResource ActionBtnView}"
                                                             ToolTip="Xóa bản ghi">
                                                         <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Foreground="#E53935"/>
@@ -1211,12 +1213,14 @@
                                                     </Button>
                                                     <!-- Chỉnh sửa -->
                                                     <Button Click="BtnEditRow_Click"
+                                                            Visibility="{Binding ManageVisibility}"
                                                             Style="{StaticResource ActionBtnView}"
                                                             ToolTip="Chỉnh sửa luân chuyển">
                                                         <materialDesign:PackIcon Kind="Pencil" Width="18" Height="18" Foreground="#3949AB"/>
                                                     </Button>
                                                     <!-- Xóa -->
                                                     <Button Click="BtnDeleteRow_Click"
+                                                            Visibility="{Binding ManageVisibility}"
                                                             Style="{StaticResource ActionBtnView}"
                                                             ToolTip="Xóa bản ghi">
                                                         <materialDesign:PackIcon Kind="Delete" Width="18" Height="18" Foreground="#E53935"/>

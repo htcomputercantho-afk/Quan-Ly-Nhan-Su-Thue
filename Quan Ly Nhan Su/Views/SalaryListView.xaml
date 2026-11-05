@@ -98,7 +98,7 @@
 
                 <!-- Export Button -->
                 <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
-                    <Button Height="40" Padding="18 0"
+                    <Button x:Name="btnExport" Height="40" Padding="18 0"
                             Style="{DynamicResource MaterialDesignRaisedButton}"
                             materialDesign:ButtonAssist.CornerRadius="20"
                             Background="#15803D" BorderBrush="#15803D" Foreground="White"
@@ -381,7 +381,7 @@
                     </DataGridTemplateColumn>
                     
                     <!-- Actions -->
-                    <DataGridTemplateColumn Header="THAO TÁC" Width="100" HeaderStyle="{StaticResource WrappedHeaderStyle}">
+                    <DataGridTemplateColumn x:Name="colSalaryAction" Header="THAO TÁC" Width="100" HeaderStyle="{StaticResource WrappedHeaderStyle}">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Tag="{Binding Id}"

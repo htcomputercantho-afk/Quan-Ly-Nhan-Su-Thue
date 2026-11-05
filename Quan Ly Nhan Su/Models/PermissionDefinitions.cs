@@ -243,17 +243,21 @@ namespace TaxPersonnelManagement.Models
         public const string EmulationReward_Manage = "EmulationReward_Manage";
         public const string Menu_Evaluation = "Menu_Evaluation";
         public const string Evaluation_Manage = "Evaluation_Manage";
+        public const string Evaluation_Export = "Evaluation_Export";
 
         // 7. Đào tạo, bồi dưỡng
         public const string Menu_Training = "Menu_Training";
         public const string Training_Manage = "Training_Manage";
         public const string Training_DeleteClass = "Training_DeleteClass";
+        public const string Training_Export = "Training_Export";
 
         // 8. Quy hoạch, Luân chuyển & Phân công nhiệm vụ
         public const string Menu_Planning = "Menu_Planning";
         public const string Planning_Manage = "Planning_Manage";
+        public const string Planning_Export = "Planning_Export";
         public const string Menu_Rotation = "Menu_Rotation";
         public const string Rotation_Manage = "Rotation_Manage";
+        public const string Rotation_Export = "Rotation_Export";
         public const string Menu_DutyAssignment = "Menu_DutyAssignment";
         public const string DutyAssignment_Upload = "DutyAssignment_Upload";
 
@@ -349,7 +353,8 @@ namespace TaxPersonnelManagement.Models
             groupReward.Permissions.Add(new(Menu_EmulationReward, "Xem Menu Thi đua khen thưởng", "Xem danh sách quyết định khen thưởng"));
             groupReward.Permissions.Add(new(EmulationReward_Manage, "Thêm, sửa, xóa khen thưởng", "Cập nhật danh hiệu thi đua và quyết định khen thưởng"));
             groupReward.Permissions.Add(new(Menu_Evaluation, "Xem Menu Đánh giá xếp loại chất lượng", "Xem lịch sử xếp loại chất lượng công chức"));
-            groupReward.Permissions.Add(new(Evaluation_Manage, "Cập nhật xếp loại & Nhập/Xuất Excel", "Lưu kết quả xếp loại và thao tác Excel dữ liệu xếp loại"));
+            groupReward.Permissions.Add(new(Evaluation_Manage, "Cập nhật xếp loại & Nhập Excel", "Lưu kết quả xếp loại, sửa trực tiếp, quyết định hàng loạt và nhập Excel"));
+            groupReward.Permissions.Add(new(Evaluation_Export, "Xuất Excel danh sách xếp loại", "Xuất file báo cáo danh sách xếp loại ra Excel"));
             groupReward.HookItemEvents();
             _registeredGroups.Add(groupReward);
 
@@ -362,8 +367,9 @@ namespace TaxPersonnelManagement.Models
                 Description = "Theo dõi lớp tập huấn, bồi dưỡng chuyên môn và phân bổ học viên"
             };
             groupTraining.Permissions.Add(new(Menu_Training, "Xem Menu Đào tạo bồi dưỡng", "Xem danh sách lớp đào tạo và học viên tham gia"));
-            groupTraining.Permissions.Add(new(Training_Manage, "Phân công học viên & Cập nhật đào tạo", "Chọn cán bộ vào lớp đào tạo và cập nhật trạng thái hoàn thành"));
+            groupTraining.Permissions.Add(new(Training_Manage, "Quản lý lớp & Phân công học viên", "Thêm mới, sửa thông tin lớp và phân công cán bộ đào tạo"));
             groupTraining.Permissions.Add(new(Training_DeleteClass, "Xóa lớp đào tạo", "Xóa lớp đào tạo ra khỏi hệ thống"));
+            groupTraining.Permissions.Add(new(Training_Export, "Xuất Excel danh sách đào tạo", "Xuất file danh sách lớp và học viên ra Excel"));
             groupTraining.HookItemEvents();
             _registeredGroups.Add(groupTraining);
 
@@ -376,9 +382,11 @@ namespace TaxPersonnelManagement.Models
                 Description = "Quy hoạch cán bộ, luân chuyển điều động và tài liệu phân công nhiệm vụ"
             };
             groupPlanning.Permissions.Add(new(Menu_Planning, "Xem Menu Quy hoạch", "Xem danh sách cán bộ quy hoạch các nhiệm kỳ"));
-            groupPlanning.Permissions.Add(new(Planning_Manage, "Thêm, sửa, xóa quy hoạch & Xuất Excel", "Quản lý dữ liệu quy hoạch cán bộ"));
+            groupPlanning.Permissions.Add(new(Planning_Manage, "Thêm, sửa, xóa quy hoạch", "Quản lý dữ liệu quy hoạch cán bộ"));
+            groupPlanning.Permissions.Add(new(Planning_Export, "Xuất Excel dữ liệu quy hoạch", "Xuất file báo cáo quy hoạch cán bộ ra Excel"));
             groupPlanning.Permissions.Add(new(Menu_Rotation, "Xem Menu Luân chuyển, Điều động", "Xem danh sách luân chuyển theo kế hoạch và ngoài kế hoạch"));
             groupPlanning.Permissions.Add(new(Rotation_Manage, "Thêm, sửa, xóa luân chuyển điều động", "Quản lý hồ sơ luân chuyển cán bộ"));
+            groupPlanning.Permissions.Add(new(Rotation_Export, "Xuất Excel danh sách luân chuyển", "Xuất file Excel danh sách cán bộ luân chuyển"));
             groupPlanning.Permissions.Add(new(Menu_DutyAssignment, "Xem Menu Phân công nhiệm vụ", "Xem tài liệu phân công nhiệm vụ theo Tổ hàng tháng"));
             groupPlanning.Permissions.Add(new(DutyAssignment_Upload, "Tải lên & Xóa file phân công", "Tải file PDF phân công nhiệm vụ lên hệ thống"));
             groupPlanning.HookItemEvents();

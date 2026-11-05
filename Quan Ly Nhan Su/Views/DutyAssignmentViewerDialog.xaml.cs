@@ -35,7 +35,7 @@ namespace TaxPersonnelManagement.Views
             InitializeComponent();
             _department = department;
             _pendingSelectId = selectId;
-            _canEdit = App.CurrentUser?.Role != UserRole.Staff;
+            _canEdit = PermissionService.HasPermission(PermissionRegistry.DutyAssignment_Upload);
             _tempDir = Path.Combine(Path.GetTempPath(), "QLNS_PhanCong_" + Guid.NewGuid().ToString("N"));
 
             txtDepartment.Text = department;
@@ -211,6 +211,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnAddVersion_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.DutyAssignment_Upload, "Tải file phân công nhiệm vụ")) return;
+
             var dlg = new DutyAssignmentUploadDialog(_department, DateTime.Today.Year) { Owner = this };
             if (dlg.ShowDialog() == true)
             {
@@ -223,6 +225,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnEdit_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.DutyAssignment_Upload, "Chỉnh sửa file phân công nhiệm vụ")) return;
+
             if (_current == null) return;
             int id = _current.Id;
             var dlg = new DutyAssignmentUploadDialog(_current.Department, _current.Year, _current.Month, id) { Owner = this };
@@ -237,6 +241,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnDelete_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.DutyAssignment_Upload, "Xóa file phân công nhiệm vụ")) return;
+
             if (_current == null) return;
 
             bool agreed = DutyAssignmentNotificationDialog.ShowConfirm(

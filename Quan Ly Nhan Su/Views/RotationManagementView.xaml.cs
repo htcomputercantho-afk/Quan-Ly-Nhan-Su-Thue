@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using ClosedXML.Excel;
+using TaxPersonnelManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
@@ -565,6 +566,7 @@ namespace TaxPersonnelManagement.Views
         /// <summary>Mở dialog thêm mới bản ghi luân chuyển/điều động</summary>
         private void BtnAddRotation_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Rotation_Manage, "Thêm mới luân chuyển điều động")) return;
             // Xác định loại kế hoạch theo tab đang chọn hoặc nút click
             string defaultPlanType = (sender == btnAddRotationOutPlan || tabMain?.SelectedItem == tabOutPlan)
                 ? "Ngoài kế hoạch"
@@ -642,6 +644,7 @@ namespace TaxPersonnelManagement.Views
         /// <summary>Nút Sửa trên từng dòng</summary>
         private void BtnEditRow_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Rotation_Manage, "Chỉnh sửa luân chuyển điều động")) return;
             if (sender is Button btn && btn.DataContext is RotationRowViewModel row)
             {
                 var dialog = new RotationRecordDialog(row.Source, row.PlanType);
@@ -656,6 +659,7 @@ namespace TaxPersonnelManagement.Views
         /// <summary>Nút Xóa trên từng dòng</summary>
         private void BtnDeleteRow_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Rotation_Manage, "Xóa luân chuyển điều động")) return;
             if (sender is Button btn && btn.DataContext is RotationRowViewModel row)
             {
                 var confirm = new ConfirmWindow(
@@ -688,6 +692,7 @@ namespace TaxPersonnelManagement.Views
         /// <summary>Xuất báo cáo Excel tổng hợp và chi tiết theo kế hoạch / ngoài kế hoạch</summary>
         private async void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Rotation_Export, "Xuất Excel danh sách luân chuyển")) return;
             try
             {
                 // Lấy toàn bộ danh sách Trong kế hoạch và Ngoài kế hoạch (tôn trọng bộ lọc nếu đang áp dụng)

@@ -1,0 +1,1040 @@
+# Nhật ký thay đổi (CHANGELOG)
+
+## v1.6.7.0 — 2026-11-05
+- [Hoàn thiện & Áp dụng Triệt để Phân quyền RBAC trên Toàn bộ Phân hệ Nghiệp vụ]:
+    + Tách quyền Xuất Excel độc lập cho từng phân hệ & Hỗ trợ tương thích ngược 100%:
+        * Bổ sung 4 mã quyền xuất báo cáo chuyên biệt: Evaluation_Export (Xuất Excel xếp loại cán bộ), Training_Export (Xuất danh sách học viên đào tạo), Planning_Export (Xuất danh sách cán bộ quy hoạch), Rotation_Export (Xuất danh sách luân chuyển điều động).
+        * Cập nhật danh mục PermissionDefinitions với mô tả rõ ràng, trực quan trong hộp thoại Phân quyền vai trò (RoleEditDialog).
+        * Cơ chế Fallback an toàn trong PermissionService: Tài khoản cũ chưa cập nhật các quyền mới tự động kế thừa từ quyền Quản lý (_Manage) tương ứng, đảm bảo vận hành liên tục và ổn định.
+    + Phân hệ Tổng thu nhập năm (AnnualIncomeView & EditMonthlyIncomeDialog):
+        * Khi tài khoản không có quyền Income_Edit (chỉ có quyền xem): Khóa bảng thu nhập 12 tháng (dgMonthlyIncome.IsReadOnly = true); ẩn hoàn toàn các nút thao tác 'Lưu dữ liệu' (btnSave), 'Thêm nhiều khoản' (btnBulkAdd), 'Xóa dữ liệu' (btnClearData).
+        * Tối ưu Hộp thoại Chi tiết thu nhập khác (EditMonthlyIncomeDialog): Tự động chuyển sang chế độ Xem an toàn, ẩn nút '+ Thêm khoản mới', ẩn nút 'Xác nhận', ẩn icon Thùng rác xóa; khóa chỉnh sửa (IsReadOnly = true) tất cả các ô nhập số tiền và nội dung; đổi nút 'Hủy bỏ' thành 'Đóng'.
+    + Phân hệ Đánh giá Xếp loại công chức (EvaluationListView):
+        * Ẩn các nút 'Nhập Excel' (btnImport) và 'Quyết định hàng loạt' (btnBulkDecision) khi không có quyền Evaluation_Manage; chỉ hiển thị nút 'Xuất Excel' khi có quyền Evaluation_Export. Khóa chỉnh sửa bảng dữ liệu xếp loại (dgEvaluation.IsReadOnly = true).
+        * Tinh chỉnh thanh công cụ tìm kiếm và bộ lọc với bố cục WrapPanel chống tràn, ngăn hiện tượng các nút đè lấn lên ô nhập Họ tên/CCCD.
+    + Phân hệ Đào tạo, Bồi dưỡng (TrainingListView & TrainingClassDetailDialog):
+        * Chuyển quyền nút 'Thêm lớp đào tạo' sang kiểm tra quyền Training_Manage chuẩn xác.
+        * Trong hộp thoại Chi tiết lớp đào tạo (TrainingClassDetailDialog): Tự động ẩn các nút Sửa thông tin lớp (btnEditClass), Xóa lớp (btnDeleteClass), Thêm học viên (btnAddMember), Xóa học viên (btnRemoveMember) khi tài khoản chỉ có quyền xem.
+    + Phân hệ Quy hoạch cán bộ (PlanningManagementView):
+        * Tự động ẩn nút 'Thêm quy hoạch' của cả Quy hoạch chức danh chuyên môn (btnAddProf) và Chức danh Đảng (btnAddParty) khi không có quyền Planning_Manage.
+        * Ẩn toàn bộ cột Hành động (Sửa/Xóa) trên cả 2 bảng dữ liệu quy hoạch chuyên môn và quy hoạch Đảng đối với tài khoản chỉ xem.
+        * Kiểm soát quyền nút 'Xuất Excel' độc lập theo Planning_Export.
+    + Phân hệ Luân chuyển, Điều động (RotationManagementView & RotationRecordDialog):
+        * Tự động ẩn nút 'Thêm quyết định' (btnAddRotation) trên thanh tiêu đề; ẩn các icon Bút chì (Sửa) và Thùng rác (Xóa) trên từng dòng của bảng luân chuyển khi không có quyền Rotation_Manage.
+        * Trong hộp thoại Hồ sơ luân chuyển (RotationRecordDialog): Tự động kích hoạt chế độ chỉ xem (View Mode) và ẩn nút 'Sửa thông tin' (btnEditMode).
+        * Phân quyền độc lập nút 'Xuất Excel' theo Rotation_Export.
+    + Phân hệ Theo dõi Nâng lương (SalaryListView):
+        * Ẩn cột thao tác nâng lương (Thực hiện nâng lương định kỳ / nâng lương trước hạn) khi tài khoản không có quyền Salary_Update.
+        * Phân quyền độc lập nút 'Xuất Excel' theo Salary_Export.
+    + Phân hệ Phân công nhiệm vụ (DutyAssignmentView & DutyAssignmentViewerDialog):
+        * Chuẩn hóa kiểm tra phân quyền DutyAssignment_Upload thay cho ràng buộc vai trò cũ; tự động ẩn nút 'Tải lên tài liệu' ở thanh công cụ chính và ẩn nút dấu '+' trên từng thẻ Tổ công tác.
+        * Trong hộp thoại xem tài liệu PDF (DutyAssignmentViewerDialog): Ẩn các nút Cập nhật và Xóa file đối với tài khoản không có quyền tải lên.
+- [Sửa Lỗi Giao Diện & Tối Ưu Bố Cục Nút Bấm]:
+    + Sửa lỗi tràn viền và mất chữ 'n' trên nút 'Thêm tài khoản' (UserListView): Loại bỏ chiều rộng cố định (Width='150'), chuyển sang dùng Padding='20 0', bo tròn mềm mại CornerRadius='20', hiển thị chuẩn xác 100% nội dung chữ và icon AccountPlus đồng bộ thiết kế.
+- [Nâng Cấp Trải Nghiệm Đăng Nhập (UX Smart Focus & Auto-Clear)]:
+    + Tự động bôi đen toàn bộ (Select All): Khi bấm phím Tab hoặc click chuột chuyển giữa ô Tên đăng nhập và Mật khẩu, toàn bộ chuỗi ký tự sẽ tự động được chọn, cho phép người dùng gõ phím đè ngay tài khoản/mật khẩu mới mà không cần xóa tay.
+    + Tự động dọn dẹp mật khẩu khi đổi tài khoản (Auto Reset Password): Khi người dùng chỉnh sửa thay đổi Tên đăng nhập, ô Mật khẩu đã lưu trước đó sẽ tự động được xóa trống, loại bỏ phiền toái phải xóa thủ công mật khẩu cũ khi chuyển tài khoản.
+- [Tối Ưu Mã Nguồn & Ổn Định Hệ Thống]:
+    + Kiểm tra biên dịch đạt chuẩn 0 Error, 0 Warning.
+    + Đảm bảo đồng bộ thông tin phiên bản v1.6.7.0 trên toàn hệ thống (Csproj, Assembly, LoginView, Update.xml).
+
+## v1.6.6.0 — 2026-11-04
+- [Phân hệ Mới: Quản lý Vai trò & Phân quyền Chi tiết (Granular Dynamic RBAC)]:
+    + Bổ sung Menu mới "Vai trò" (ShieldAccount) trên thanh điều hướng bên trái dành cho Quản trị viên hệ thống.
+    + Xây dựng màn hình Quản lý Vai trò (RoleManagementView):
+        * Hiển thị danh sách các vai trò trong hệ thống, mô tả chức trách, số lượng tài khoản đang sử dụng và tóm tắt quyền hạn được cấp.
+        * Hỗ trợ đầy đủ Thêm mới, Chỉnh sửa và Xóa vai trò (khóa bảo vệ vai trò Quản trị viên hệ thống gốc, ngăn xóa vai trò đang có tài khoản sử dụng).
+    + Thiết kế Hộp thoại Cấu hình Phân quyền Động (RoleEditDialog):
+        * Nhóm 1: Quản trị Danh mục & Popup Select (Nút '+', '⚙️'): Phân quyền chặt chẽ các popup thêm data select gồm Bộ phận/Phòng ban (AddDepartmentDialog), Chức vụ (AddPositionDialog), Ngạch công chức (AddRankDialog), Cấu hình lương (SalaryConfigDialog), Kéo dài nâng bậc (SalaryDelayConfigDialog), Hình thức kỷ luật (DisciplineConfigDialog), Nhiệm kỳ quy hoạch (PlanningTermManagementDialog), Thêm lớp đào tạo (AddTrainingClassDialog).
+        * Nhóm 2 - 8: Phân quyền theo từng Phân hệ nghiệp vụ (Tổng quan, Thống kê, Hồ sơ Nhân sự, Nâng lương, Tổng thu nhập năm, Chi tiết nghỉ, Thời gian công tác, Thi đua khen thưởng, Đánh giá xếp loại, Đào tạo bồi dưỡng, Quy hoạch cán bộ, Luân chuyển điều động, Phân công nhiệm vụ).
+        * Nhóm 9: Quản trị Hệ thống (Vai trò, Tài khoản, Sao lưu phục hồi).
+    + Phân định Rõ ràng & Tối ưu Trải nghiệm UX giữa "Toàn quyền (SuperAdmin)" và "Chọn tất cả":
+        * Khi bật "Toàn quyền (SuperAdmin)": Tự động khóa mờ (Disable mức 45%) danh sách 40 ô phân quyền bên dưới, ẩn 2 nút "Chọn tất cả" / "Bỏ chọn tất cả" để tránh thao tác dư thừa và nhầm lẫn; hiển thị huy hiệu vương miện nổi bật.
+        * Khi bỏ chọn "Toàn quyền (SuperAdmin)": Danh sách quyền mở sáng trở lại để người dùng linh hoạt tích chọn phân quyền chi tiết (Custom RBAC); hiển thị đầy đủ 2 nút thao tác nhanh.
+        * Chuyển đổi thanh công cụ sang bố cục Grid 2 cột tự co giãn (Width="Auto" cho cột chứa nút), loại bỏ hoàn toàn hiện tượng tràn viền và lỗi mất chữ 'n)' ở nút Toàn quyền (SuperAdmin).
+    + Cơ chế Tự động sinh quyền hạn (Dynamic Permission Registry):
+        * Cho phép hệ thống tự động nhận diện và sinh các ô tích phân quyền khi lập trình viên bổ sung Menu/Chức năng mới mà không cần chỉnh sửa giao diện RoleEditDialog.xaml.
+        * Quản trị viên (Admin) luôn tự động hưởng toàn quyền 100% đối với mọi tính năng mới sinh ra trong tương lai.
+        * Quyền lưu trữ linh hoạt dưới dạng JSON trong CSDL, không phải sửa cấu trúc bảng khi mở rộng.
+    + Cơ chế Bảo vệ Hai Lớp (Double-Layer Security):
+        * Lớp 1 (Giao diện): Tự động ẩn các Menu không được cấp quyền trên Sidebar; tự động ẩn các nút nhỏ '+' và '⚙️' cạnh ô select nếu không có quyền quản lý danh mục (chỉ được chọn danh mục có sẵn).
+        * Lớp 2 (Hộp thoại & Nghiệp vụ): Kiểm tra quyền trực tiếp tại tầng xử lý của từng Popup Dialog, lập tức từ chối và đóng hộp thoại nếu tài khoản không đủ thẩm quyền.
+    + Cập nhật Quản lý Tài khoản người dùng (UserListView & UserEditDialog):
+        * Nạp danh sách Vai trò động từ CSDL vào ô chọn Vai trò/Phân quyền khi tạo hoặc cập nhật tài khoản nhân viên.
+        * Hiển thị chính xác tên Vai trò phân quyền trên bảng danh sách tài khoản.
+        * Tự động đồng bộ và nạp lại quyền hạn ngay khi tài khoản đăng nhập hoặc được cập nhật.
+- [Nâng cấp Toàn diện & Sửa Triệt để Hộp thoại Thông báo / Cảnh báo (WarningWindow)]:
+    + Khắc phục hoàn toàn lỗi đảo ngược Tiêu đề và Nội dung thông báo; loại bỏ hiện tượng chữ dài bị tràn viền và cắt cụt chữ.
+    + Bổ sung Bộ phân giải thông minh (Smart Resolver): Tự động nhận diện chính xác chuỗi nào là Tiêu đề, chuỗi nào là Nội dung chi tiết dù truyền theo bất kỳ thứ tự nào.
+    + Mở rộng chiều rộng cửa sổ lên 460px, kích hoạt tự động xuống dòng (TextWrapping="Wrap"), bo góc thẻ 22px và đổ bóng sâu mượt mà.
+    + Tự động nhận diện màu sắc theo ngữ cảnh: Đỏ Ruby (Lỗi, Từ chối truy cập, Chặn xóa), Vàng Hổ Phách Amber (Cảnh báo, Nhắc nhở nhập liệu, Trùng tên), Xanh Dương Indigo (Thông tin chung).
+- [Khắc phục Triệt để Hiện tượng Logo Ngành Thuế Bị Vỡ Mờ & Răng Cưa]:
+    + Khôi phục và nâng cấp file logo.png lên phiên bản vector render độ phân giải cao 512 × 512 px, tỷ lệ vuông 1:1 chuẩn xác, viền tròn hoàn hảo, trong suốt 100% (loại bỏ hoàn toàn viền răng cưa và vệt xám bẩn của file 386px cũ).
+    + Tối ưu kích thước logo trên thanh Tiêu đề (Title Bar) từ 20px lên 26 × 26 px, cân đối hoàn hảo với chiều cao 36px của thanh tiêu đề.
+    + Kích hoạt RenderOptions.BitmapScalingMode="HighQuality", UseLayoutRounding="True" và SnapsToDevicePixels="True", đảm bảo logo luôn tròn trịa, sắc nét từng chi tiết chữ và ngôi sao vàng trên mọi màn hình máy tính có tỉ lệ scale DPI cao (125%, 150%).
+
+## v1.6.5.4 — 2026-11-02
+- [Tối ưu hóa Điều hướng Menu Siêu Tốc (Zero-Latency Switching - 0ms)]:
+    + Loại bỏ hoàn toàn độ trễ 200–400ms và hiện tượng khựng/giật khi chuyển đổi qua lại giữa các menu bên trái (đặc biệt là các menu tải dữ liệu lớn như *Tổng thu nhập năm*, *Chi tiết Nghỉ*, *Nâng lương*, *Thống kê*...):
+        * Thay thế Frame bằng MainContentGrid trong MainWindow.xaml và triển khai cơ chế điều khiển hiển thị Visibility (Visible / Collapsed).
+        * Giữ nguyên vẹn Visual Tree của các View đã khởi tạo trong bộ nhớ đồ họa, không hủy (unmount) và không phải tính toán lại Layout (Measure & Arrange).
+        * Bảo lưu chính xác 100% vị trí cuộn chuột (scroll position), trạng thái bộ lọc, các tab con và dữ liệu đang xem trên từng màn hình.
+        * Bổ sung cơ chế khởi tạo ngầm trước (PrewarmViewsInBackground) khi ứng dụng rảnh rỗi (ApplicationIdle), giúp ngay từ lần bấm đầu tiên vào bất kỳ menu nào cũng chuyển đổi tức thì (0ms).
+    + Bổ sung TabControlCacheHelper.cs và kích hoạt KeepAlive="True" cho toàn bộ các Page/TabControl trong ứng dụng.
+- [Chuẩn hóa Căn Giữa (Center Align) Bộ Lọc]:
+    + Căn giữa toàn diện nội dung hiển thị trong ô chọn (Selection Text) và các mục trong danh sách xổ xuống (ComboBoxItem):
+        * Đồng bộ thuộc tính HorizontalContentAlignment="Center" và template căn giữa cho style viên thuốc FilterPillComboBox.
+        * Tự động căn giữa danh sách các năm (2023, 2024, 2025, 2026...), trạng thái, kỳ lọc trên toàn bộ các màn hình (*Phân công nhiệm vụ, Luân chuyển điều động, Đào tạo bồi dưỡng, Chi tiết nghỉ, Tổng thu nhập năm, Thống kê, Xếp loại, Lương*).
+        * Bảo toàn căn lề trái chuẩn (HorizontalContentAlignment="Left") cho các ô chọn Tên Bộ phận / Đơn vị để đảm bảo tính thẩm mỹ và dễ đọc khi xem danh sách dài.
+- [Khắc phục Triệt để Lỗi Tràn Chữ & Mất Chữ (...)]:
+    + Màn hình Đánh giá xếp loại chất lượng công chức (EvaluationListView):
+        * Mở rộng chiều rộng ô chọn Xếp loại (cbRating) từ 230px lên 285px, căn lề trái chuẩn (HorizontalContentAlignment="Left").
+        * Cân đối lại ô Năm (cbYear 160px) và ô Bộ phận (cbDepartment 350px).
+        * Hiển thị đầy đủ 100% các cụm từ dài nhất như *"Hoàn thành xuất sắc nhiệm vụ"*, *"Không hoàn thành nhiệm vụ"*, loại bỏ hoàn toàn dấu 3 chấm (...).
+    + Rà soát và mở rộng chiều rộng ô phân loại tại màn hình Quy hoạch nhân sự (cboStatusProf, cboStatusParty lên 255px), hiển thị trọn vẹn *"2. Đưa ra khỏi quy hoạch"*.
+- [Khắc phục Lỗi Chọn Năm trên Giao diện Lịch (DatePicker)]:
+    + Bổ sung đầy đủ các DataTrigger theo dõi Calendar.DisplayMode (Year và Decade) vào mẫu giao diện lịch ModernCalendarItemStyle trong App.xaml.
+    + Khắc phục triệt để lỗi khi bấm vào tiêu đề tháng/năm trên lịch để chọn năm (ví dụ 1970-1979), lưới ngày tháng cũ không chịu ẩn đi:
+        * Khi bấm tiêu đề Tháng/Năm: Tự động chuyển mượt mà sang lưới 12 tháng (YearView).
+        * Khi bấm tiếp tiêu đề Năm: Tự động chuyển sang lưới 10 năm trong thập kỷ (DecadeView).
+        * Người dùng có thể chọn Năm -> chọn Tháng -> chọn Ngày nhanh chóng, trực quan và chính xác.
+- [Nâng cấp Chất lượng Hình ảnh & Chống Nhòe Chữ]:
+    + Cập nhật Logo ngành Thuế chất lượng cao gốc từ Wikipedia (chuẩn RGBA sắc nét, không vỡ hạt, không mờ viền).
+    + Kích hoạt cấu hình khử nhòe toàn cục trong App.xaml, MainWindow.xaml và LoginView.xaml:
+        * RenderOptions.BitmapScalingMode="HighQuality" cho hình ảnh, logo và ảnh đại diện công chức.
+        * TextOptions.TextFormattingMode="Display" và TextOptions.TextRenderingMode="ClearType" (ClearTypeHint="Enabled"), chữ nét căng trên mọi độ phân giải và mức DPI Scaling.
+        * UseLayoutRounding="True" và SnapsToDevicePixels="True" khử nhòe viền và đường kẻ bảng.
+- [Tối ưu Build & Sửa Cảnh báo NuGet]:
+    + Cấu hình `<NuGetAudit>false</NuGetAudit>` và `<NoWarn>$(NoWarn);NU1900</NoWarn>` trong file dự án để triệt tiêu cảnh báo NU1900 khi build hoặc chạy trong môi trường mạng nội bộ/offline.
+    + Biên dịch dự án sạch sẽ tuyệt đối: **0 Warning, 0 Error**.
+
+## v1.6.5.3 — 2026-10-31
+- [Tối ưu hóa Source Code & Dọn dẹp File Rác]:
+    + Loại bỏ toàn bộ các file Database rỗng (0 bytes) phát sinh trước đây ở thư mục gốc và thư mục dự án:
+        * `quanlynhansu.db`, `TaxPersonnelDb.db` ở thư mục gốc.
+        * `quanlynhansu.db`, `TaxPersonnel.db` ở thư mục dự án `Quan Ly Nhan Su`.
+        * `TaxPersonnelDb.db`, `personnel.db`, `quanlynhansu.db` ở thư mục `bin\Debug\`.
+        * Bảo toàn nguyên vẹn 100% CSDL hoạt động chính thức `tax_personnel.db` (chứa toàn bộ 54 nhân sự và 25 bảng dữ liệu thực tế).
+    + Dọn dẹp các file log debug phát sinh trong quá trình chạy thử nghiệm (`debug.log` ở root, project và thư mục output).
+    + Rà soát và loại bỏ các file View/Dialog mồ côi (Dead Code - 0 reference) không còn sử dụng:
+        * `InputDialog.xaml` / `InputDialog.xaml.cs`: Hộp thoại thêm nhiệm kỳ cũ (đã được thay thế hoàn toàn bởi `PlanningTermManagementDialog`).
+        * `AddDisciplineTypeDialog.xaml` / `AddDisciplineTypeDialog.xaml.cs`: Hộp thoại thêm hình thức kỷ luật đơn giản cũ (đã được thay thế hoàn toàn bởi `DisciplineConfigDialog` đầy đủ CRUD và lùi thời gian nâng lương).
+    + Kiểm tra toàn bộ 52 View, 11 Converter, 5 Helper, 6 Service và Model: Đảm bảo 100% tệp tin đều được liên kết chuẩn xác, không còn mã rác, biên dịch sạch sẽ tuyệt đối (**0 Warning, 0 Error**).
+
+## v1.6.5.2 — 2026-10-31
+- [Đào tạo bồi dưỡng - Loại bỏ công chức đã luân chuyển / nghỉ việc khỏi danh sách chọn học viên]:
+    + Khắc phục triệt để lỗi công chức đã luân chuyển, điều động, thôi việc, nghỉ hưu vẫn hiển thị trong ô chọn "Thêm học viên":
+        * Tại hộp thoại chi tiết lớp học (`TrainingClassDetailDialog`), hàm `LoadPersonnelComboBox()` trước đây lấy toàn bộ `db.Personnel` mà không kiểm tra trạng thái công tác, khiến các cán bộ không còn công tác vẫn xuất hiện trong danh sách sổ xuống.
+        * Đã bổ sung điều kiện lọc chỉ lấy cán bộ đang công tác (`string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác"`).
+        * Đồng thời loại trừ luôn các cán bộ đã có tên trong lớp học hiện tại, giúp danh sách chọn lọc sạch sẽ, không bị trùng lặp.
+        * Tự động làm mới lại danh mục cán bộ khi thêm đơn lẻ, thêm hàng loạt hoặc xóa bớt học viên.
+        * Chuẩn hóa bộ lọc tương tự tại hộp thoại chọn nhiều cán bộ (`PersonnelSelectorDialog`).
+- [Chi tiết Nghỉ - Bổ sung danh mục và bảng theo dõi "Dưỡng sức"]:
+    + Bổ sung Tab "Dưỡng sức" (`rbTabConvalescence`):
+        * Thêm tab thứ 5 "Dưỡng sức" vào cụm Tab chọn nhanh trên thanh điều hướng ("Tổng hợp", "Nghỉ phép", "Nghỉ ốm", "Dưỡng sức", "Không lương").
+        * Đầy đủ chức năng chuyển tab, cập nhật tiêu đề bảng động theo Tháng/Năm (`BẢNG CHI TIẾT NGHỈ DƯỠNG SỨC NĂM ... / THÁNG ...`).
+    + Bổ sung cột "DƯỠNG SỨC" trên Bảng Tổng Hợp (`dgGeneralSummary`):
+        * Nằm giữa cột "Ốm" và "Không lương" với giao diện Badge bo góc viên thuốc màu xanh ngọc trang nhã (Nền `#E0F2F1`, chữ `#00796B`).
+        * Tự động cộng dồn số ngày nghỉ Dưỡng sức vào cột "TỔNG" số ngày nghỉ của cán bộ.
+    + Xây dựng Bảng chi tiết nghỉ Dưỡng sức (`dgConvalescenceLeave`):
+        * Hiển thị danh sách đầy đủ: STT, Họ và tên (kèm ảnh đại diện, có thể nhấp chuột hoặc bấm đúp để chuyển nhanh sang chi tiết hồ sơ cán bộ), Bộ phận công tác, Số ngày nghỉ dưỡng sức, Nội dung chi tiết (số lần, từ ngày đến ngày, lý do cụ thể).
+        * Tích hợp tìm kiếm từ khóa không dấu, lọc theo phòng ban, lọc theo tháng/năm và tùy chọn "Chỉ hiện cán bộ có ngày nghỉ".
+        * Đồng bộ đầy đủ hệ thống phân trang 20 dòng/trang.
+    + Nâng cấp Xuất Báo Cáo Excel:
+        * Bổ sung tính năng xuất file Excel chuyên biệt cho Tab Dưỡng sức (`BaoCao_DuongSuc_...xlsx`) với đầy đủ tiêu đề, định dạng viền, màu sắc và tự động ngắt dòng nội dung chi tiết.
+        * Cập nhật file Excel "Tổng hợp ngày nghỉ" (`BaoCao_TongHopNgayNghi_...xlsx`) bổ sung thêm cột "DƯỠNG SỨC (NGÀY)".
+
+## v1.6.5.1 — 2026-10-30
+- [Đồng bộ Giao diện Thanh công cụ Màn hình Phân công nhiệm vụ]:
+    + Chuẩn hóa ô chọn Năm (`cboYear`):
+        * Chuyển hoàn toàn sang Style viên thuốc toàn cục `FilterPillComboBox` (`Height="40" Width="120" CornerRadius="20"`): Chỉ hiển thị mỗi số năm (ví dụ: `2026`) căn giữa thanh lịch, loại bỏ tiền tố chữ "Năm: " và icon lịch rườm rà, đồng bộ 100% với các màn hình khác (*Thống kê, Tổng thu nhập năm, Chi tiết nghỉ...*).
+    + Đồng bộ bo tròn 20px toàn bộ các ô điều khiển trên thanh lọc:
+        * Ô tìm kiếm bộ phận (`txtSearch`): Bo góc capsule `CornerRadius="20"`, `Height="40"`, viền chuẩn `BorderThickness="1.5" BorderBrush="#CBD5E1"`, `FontSize="13.5"`.
+        * Cụm Tab chuyển trạng thái ("Tất cả", "Ổn định", "Nhiều thay đổi", "Chưa có file"): Khung bao ngoài bo tròn `CornerRadius="20"`, các nút con bên trong bo tròn capsule `CornerRadius="16" Height="32"` với hiệu ứng nổi bật khi chọn cực kỳ hiện đại.
+        * Khung chứa hàng lọc: Mở rộng bo góc mềm mại `CornerRadius="16"` kèm padding `14 10`.
+        * Nút "Làm mới" và "Tải PDF lên" trên thanh tiêu đề: Nâng cấp bo góc mềm `CornerRadius="19"` (ButtonAssist.CornerRadius="19") đồng điệu phong cách chung.
+- [Cải tiến Bộ Lọc Màn hình Thời gian giữ vị trí công tác]:
+    + Giữ lại các nhãn chữ rõ ràng bên trên các ô lọc ("Tìm kiếm", "Thời điểm tính", "Thâm niên giữ vị trí", "Thời gian công tác trong ngành") giúp người dùng dễ dàng phân biệt các tiêu chí khoảng năm ("Từ ... đến dưới ... năm").
+    + Chuẩn hóa và phân tách chính xác 2 bộ lọc thâm niên độc lập:
+        * Sửa ô lọc trước đây thành "Thời gian công tác trong ngành" (`txtFromTaxYears`, `txtToTaxYears`): Lọc chính xác theo cột "TỔNG THỜI GIAN CÔNG TÁC TRONG NGÀNH THUẾ" (tính từ ngày vào ngành thuế `TaxAuthorityStartDate` đến ngày tính toán).
+        * Bổ sung ô lọc mới "Thâm niên giữ vị trí" (`txtFromPositionYears`, `txtToPositionYears`): Lọc chính xác theo cột "NĂM GIỮ VỊ TRÍ CÔNG TÁC" (tính từ ngày quyết định chức vụ gần nhất `PositionDecisionDate` đến ngày tính toán / mốc tính của cán bộ).
+        * Cả hai bộ lọc đều hỗ trợ linh hoạt các khoảng năm (ví dụ: "Từ 1 đến dưới 3 năm", "Từ 5 năm trở lên", "Dưới 2 năm"...).
+    + Tối ưu hóa xuất Excel: File Excel xuất ra tự động ghi chú chi tiết cả hai tiêu chí lọc (nếu áp dụng) trong phần tiêu đề phụ báo cáo.
+- [Khắc phục Triệt để Lỗi Mất chữ / Tràn viền Ô Lọc Bộ phận]:
+    + Mở rộng chiều rộng ô chọn lọc Bộ phận (`cbDepartmentFilter` / `cbDepartment`) từ 280px lên 380px:
+        * Nguyên nhân: Tên các bộ phận, tổ/đội ngành thuế có độ dài rất lớn (ví dụ: "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1" có độ rộng thực tế lên tới ~284 DIPs). Khi đặt độ rộng cố định 280px kèm lề hai bên, vùng hiển thị chữ chỉ còn ~216px khiến tên bộ phận bị cắt cụt thành "Tổ Quản lý, hỗ trợ cá nhân, hộ ki...".
+        * Đã mở rộng chiều rộng ô lọc bộ phận lên 380px đồng bộ trên toàn bộ các màn hình: Danh sách nhân sự (`PersonnelListView`), Báo cáo thống kê (`StatisticsView`), Đánh giá xếp loại (`EvaluationListView`), Chi tiết nghỉ (`LeaveDetailView`), Quy hoạch nhân sự (`PlanningManagementView`), Luân chuyển điều động (`RotationManagementView`).
+    + Tối ưu không gian hiển thị văn bản trong `FilterPillComboBox` (`App.xaml`):
+        * Tinh chỉnh lề trái vùng văn bản từ 32px xuống 16px (vẫn đảm bảo an toàn tuyệt đối bên trong góc bo cong 20px), lề phải 34px (tránh icon mũi tên), tăng không gian thực tế hiển thị chữ lên tới ~330px.
+        * Đảm bảo mọi tên bộ phận dài nhất đều hiển thị trọn vẹn 100% không bị mất chữ hay xuất hiện dấu ba chấm `...`.
+    + Bổ sung ToolTip thông minh: Tự động hiển thị toàn bộ tên bộ phận khi người dùng rê chuột vào ô chọn.
+- [Tối ưu hóa Hệ thống Bộ lọc & Chuẩn hóa Trình bày Toolbar Toàn diện]:
+    + Loại bỏ hoàn toàn dấu gạch ngang (`-- ... --`) ở tất cả các lựa chọn mặc định:
+        * Đồng bộ chuẩn hóa thống nhất: "Tất cả bộ phận", "Tất cả các năm", "Cả năm", "Tất cả xếp loại", "Tất cả nhiệm kỳ", "Tất cả trạng thái", không còn tình trạng nơi có dấu gạch nơi không có.
+        * Áp dụng tại toàn bộ các màn hình: Danh sách nhân sự, Đánh giá xếp loại, Theo dõi nâng lương, Đào tạo bồi dưỡng, Thêm chức vụ...
+    + Căn giữa cân đối văn bản trong các ô chọn dạng Pill (`FilterPillComboBox`):
+        * Đặt mặc định `HorizontalContentAlignment="Center"` và cân đối khoảng cách đều 32px hai bên đối xứng với icon mũi tên Chevron sát mép phải.
+        * Văn bản ("Tất cả bộ phận", "2026", "Cả năm", "Tất cả trạng thái", "Tất cả nhiệm kỳ", "Tất cả xếp loại" cũng như tên bộ phận khi được chọn) hiển thị căn giữa hoàn hảo, đẹp mắt và không bị che khuất icon.
+    + Tinh gọn thanh công cụ: Loại bỏ toàn bộ các nhãn chữ nhỏ bên trên ô lọc:
+        * Loại bỏ các nhãn dư thừa ("Tìm kiếm", "Bộ phận", "Năm", "Tháng", "Xếp loại", "Nhiệm kỳ", "Trạng thái", "Thời điểm tính", "Thâm niên...") bên trên các ô nhập.
+        * Giúp thanh công cụ thu gọn chiều cao, toàn bộ các ô tìm kiếm, ô chọn ngày, ô ComboBox và nút xuất Excel thẳng hàng hoàn hảo trên cùng 1 dòng duy nhất theo phong cách Dashboard hiện đại.
+        * Áp dụng đồng bộ trên tất cả 9 màn hình: Tổng quan (`PersonnelListView`), Báo cáo thống kê (`StatisticsView`), Nâng lương (`SalaryListView`), Đào tạo bồi dưỡng (`TrainingListView`), Chi tiết nghỉ (`LeaveDetailView`), Đánh giá xếp loại (`EvaluationListView`), Thời gian giữ vị trí (`PositionDurationView`), Quy hoạch nhân sự (`PlanningManagementView`), Luân chuyển điều động (`RotationManagementView`).
+- [Sửa lỗi Hiển thị Nút "Thêm" bị mất chữ]:
+    + Khắc phục triệt để lỗi chữ "Thêm" bị mất chữ cái "m" (bị cắt cụt viền phải) tại hộp thoại "DANH MỤC LÙI THỜI GIAN / LÝ DO" và "DANH MỤC HÌNH THỨC KỶ LUẬT":
+        * Nguyên nhân: Cột chứa nút bấm được cố định độ rộng quá hẹp (`ColumnDefinition Width="90"`), trong khi nút chứa biểu tượng Floppy, khoảng cách và chữ đậm "Thêm" kèm padding của MaterialDesign đòi hỏi tối thiểu hơn 100px, dẫn đến phần đuôi chữ "m" bị tràn và cắt mất.
+        * Đã chuyển cột sang chế độ co giãn tự động (`Width="Auto"`), mở rộng `MinWidth="105"` và căn chỉnh `Padding="14 0"`, `Margin="0 0 6 0"` cho icon, giúp nút bấm tự động vừa vặn hoàn hảo, hiển thị trọn vẹn chữ "Thêm" cũng như khi chuyển sang chế độ "Lưu".
+- [Sửa lỗi Giao diện ComboBox & Ô nhập liệu Chi tiết Nhân sự]:
+    + Khắc phục triệt để lỗi mũi tên sổ xuống (ChevronDown) bị trôi lơ lửng ở giữa ô ComboBox trên các màn hình chi tiết hồ sơ:
+        * Nguyên nhân: ToggleButton bên trong ControlTemplate của ModernComboBox thiếu thuộc tính HorizontalAlignment="Stretch" và Style="{x:Null}". Do đó, WPF tự động áp dụng Style mặc định từ thư viện MaterialDesign, ép ToggleButton căn giữa (HorizontalAlignment="Center") và co lại chỉ còn ~20px ở trung tâm ô, khiến icon mũi tên bị đẩy vào giữa và người dùng chỉ bấm được ở khu vực trung tâm.
+        * Đã bổ sung HorizontalAlignment="Stretch", VerticalAlignment="Stretch", Style="{x:Null}" và ghim icon chevron sang sát mép phải (HorizontalAlignment="Right" Margin="0,0,8,0") cho ModernComboBox (PersonnelDetailView.xaml, App.xaml), DialogComboBox (AddPositionDialog.xaml), ModernSelectComboBox/ModernEditableComboBox (PersonnelDegreesDialog.xaml, WorkHistoryDialog.xaml).
+        * Đồng thời tinh chỉnh Padding="10,0,28,0" để nội dung chữ được chọn không bị đè lên biểu tượng mũi tên.
+        * Khắc phục đồng bộ trên tất cả các điều khiển: Bậc lương, Lùi thời gian nâng lương, Mã ngạch & Bậc lương quá trình lương, Hình thức kỷ luật, Năm (*), Xếp loại năm (*)...
+    + Khắc phục lỗi ô "Số quyết định" tại mục QUYẾT ĐỊNH KỶ LUẬT (txtDisciplineNumber):
+        * Đã gán Style chuẩn ModernTextBox (chiều cao 35px, bo góc 4px, viền xám trang nhã), thay thế cho kiểu gạch chân mặc định, đồng bộ 100% với ô "Ngày ký QĐ" và các ô nhập liệu khác trong form.
+- [Đồng bộ Hệ thống Lịch / DatePicker Giao diện Mới Toàn Ứng dụng]:
+    + Khắc phục triệt để lỗi khi mở popup chọn ngày ở phần Nhân sự và các hộp thoại vẫn hiển thị lịch cổ điển màu xám của Windows 7:
+        * Nguyên nhân: Điều khiển DatePicker trong WPF gán cứng thuộc tính Style của Calendar bên trong bằng thuộc tính `DatePicker.CalendarStyle`. Nếu DatePicker không được thiết lập `CalendarStyle`, nó sẽ gán `Calendar.Style = null`, ngăn không cho Calendar kế thừa Style toàn cục (`App.xaml TargetType="Calendar"`).
+        * Đã bổ sung thuộc tính `<Setter Property="CalendarStyle" Value="{DynamicResource ModernCalendarStyle}"/>` cho toàn bộ các Style DatePicker trong hệ thống: `ModernDatePicker` (`PersonnelDetailView.xaml`), `FormStyles.xaml`, `BulkDecisionDialog.xaml`, `AddTrainingClassDialog.xaml`, `PlanningRecordDialog.xaml`, `RotationRecordDialog.xaml`.
+        * Bổ sung Style toàn cục `TargetType="{x:Type DatePicker}"` trong `App.xaml` tự động gán `ModernCalendarStyle` cho mọi DatePicker chưa có style riêng.
+        * Nâng cấp hiệu ứng mở popup lịch mềm mại: `VerticalOffset="4"`, hiệu ứng chuyển cảnh mượt `PopupAnimation="Fade"`.
+        * Đồng bộ icon lịch sang kiểu hiện đại: Biểu tượng `CalendarMonthOutline` thanh mảnh màu xám slate `#64748B`, con trỏ bàn tay (`Cursor="Hand"`) và chú thích ToolTip trực quan.
+        * Toàn bộ các ô chọn ngày trong Chi tiết Nhân sự (Ngày sinh, Ngày vào cơ quan Thuế, QĐ công tác, Ngày vào Đảng, Ngày về hưu, Nghỉ phép, Lương, Kỷ luật...) và các form nhập liệu đều mở bảng lịch Windows 11 Fluent hiện đại (thẻ bo tròn 14px, đổ bóng mềm, nút bấm mượt mà).
+- [Thời gian công tác & Hệ thống Lịch / DatePicker]:
+    + Căn giữa ngày tháng năm (`29/10/2026`) đối xứng hoàn hảo trong ô nhập dạng Pill (`FilterPillDatePicker`) thay vì bị lệch dính sát mép trái bo tròn như trước. Bổ sung `TextAlignment="Center"`, `HorizontalContentAlignment="Center"` và cân đối khoảng cách đều 34px hai bên đối xứng với nút icon lịch.
+    + Thiết kế lại toàn bộ giao diện bảng lịch chọn ngày (`Calendar` / `DatePickerPopup`) theo phong cách Windows 11 Fluent hiện đại:
+        * Thay thế hoàn toàn khung popup cổ điển xám vuông vức của Windows 7/WPF bằng Card trắng sang trọng bo góc 14px mềm mại (`CornerRadius="14"`) kèm hiệu ứng đổ bóng mượt (`DropShadowEffect`).
+        * Thanh điều hướng tháng/năm tinh tế với icon Chevron tròn (`ChevronLeft` / `ChevronRight`) hover mượt mà và nút tiêu đề tháng/năm dạng Pill tương tác chuyển nhanh xem 12 tháng hoặc các năm.
+        * Tiêu đề thứ trong tuần (CN, T2..T7) chữ sắc nét thanh lịch (`#64748B`), kết hợp hoàn hảo cùng bộ xử lý hiển thị chuẩn tiếng Việt.
+        * Các ô ngày được bo tròn 8px, hiệu ứng hover nhẹ nhàng (`#F1F5F9`), ngày hiện tại có viền xanh `#0078D4`, ngày được chọn nổi bật với nền xanh Windows Blue chữ trắng đậm.
+- [Giao diện Đăng nhập mới] Chuyển thể thiết kế đăng nhập từ bản WinUI 3 (Test-giao-dien-moi) sang WPF (`Views/LoginView.xaml`):
+    + Ảnh nền toàn màn hình `login_bg.jpg`, khẩu hiệu "HIỆN ĐẠI – MINH BẠCH – HIỆU QUẢ" bên trái, thẻ đăng nhập kính mờ bo 22px ở giữa (mô phỏng Acrylic bằng VisualBrush + BlurEffect).
+    + Ô nhập có icon, placeholder, viền xanh khi focus; nút con mắt hiện/ẩn mật khẩu; thông báo lỗi/cảnh báo hiển thị nội tuyến trong thẻ thay cho MessageBox; nút Đăng nhập có trạng thái "ĐANG XÁC THỰC...".
+    + Cửa sổ 1060x660 co giãn tự do, kéo thả bằng vùng tiêu đề, nút thu nhỏ góc phải, bố cục responsive theo chiều rộng/chiều cao.
+    + Giữ nguyên toàn bộ logic: xác thực CSDL, ghi nhớ đăng nhập (`user.config`), hiển thị phiên bản, mở MainWindow.
+- [Sửa lỗi khởi động & Nạp tài nguyên XAML]:
+    + Khắc phục triệt để lỗi ngoại lệ khởi động: `'Provide value on 'System.Windows.StaticResourceExtension' threw an exception.' Cannot find resource named 'FilterPillComboBox'`.
+    + Nguyên nhân: Tồn tại 2 định nghĩa trùng lặp Style Button không gán key (`TargetType="{x:Type Button}"`) trong `App.xaml`, khiến bộ nạp XAML của WPF ném ngoại lệ trùng khóa `System.Windows.Controls.Button`, làm `Application.Current.Resources` bị gián đoạn nạp tài nguyên toàn cục.
+    + Đã loại bỏ Style Button trùng lặp trong `App.xaml` và chuyển ComboBox lọc tại `PersonnelListView.xaml` sang `{DynamicResource FilterPillComboBox}` để đảm bảo ứng dụng luôn nạp mượt mà 100% không gặp lỗi runtime.
+- [Giao diện] Khắc phục triệt để khoảng trắng & đồng bộ bo tròn 12px viền bảng dữ liệu:
+    + Nâng cấp `Helpers/ClipHelper.cs`: Tự động tìm/chèn ô đệm nền xanh `HeaderCornerFiller` tại ô (Row 0, Column 2) phía trên thanh cuộn dọc `VerticalScrollBar`, kéo dài `DataGridColumnHeadersPresenter` phủ tràn cả 2 cột (`Grid.SetColumnSpan = 2`), loại bỏ hoàn toàn khoảng trắng thừa và bo tròn 12px mượt mà cả góc trên trái và góc trên phải của dải tiêu đề xanh.
+    + Thêm `<Setter Property="helpers:ClipHelper.CornerRadius" Value="12" />` vào `TableCardStyle` (`App.xaml`) để mọi bảng sử dụng thẻ card đều tự động clip mượt mà theo góc bo tròn chuẩn 12px.
+    + Áp dụng `TableCardStyle` và `ClipHelper` cho tất cả các menu: Tổng quan (`PersonnelListView`), Nâng lương (`SalaryListView`), Thời gian công tác (`PositionDurationView`), Đánh giá xếp loại (`EvaluationListView`), Đào tạo bồi dưỡng (`TrainingListView`), Quy hoạch (`PlanningManagementView`), Luân chuyển điều động (`RotationManagementView`), Chi tiết nghỉ (`LeaveDetailView`), Tổng thu nhập năm (`AnnualIncomeView`), Phân công nhiệm vụ (`DutyAssignmentView`), Quản lý tài khoản (`UserListView`).
+- [Chuẩn hóa Nút Bấm Toàn diện — Khắc phục Nút Bị Vuông & Tối ưu Hiệu ứng Hover/Focus]:
+    + Khắc phục triệt để lỗi khi hover/focus vào nút bị biến thành khối xanh đen kèm bóng đổ đen xì thô ráp (`Dp6`):
+        * Tối ưu hóa `PremiumButtonStyle` (`App.xaml`) theo chuẩn Fluent Design: Sử dụng bóng đổ nhẹ sang trọng (`Elevation="Dp1"`), khi hover chuyển màu xanh sáng `#106EBE` với độ nổi nhẹ (`Dp2`), loại bỏ bóng đổ nặng `Dp6`.
+        * Xây dựng lại `PremiumOutlineButtonStyle` hoàn toàn độc lập (không kế thừa trigger của nút chính): Thiết lập `Elevation="Dp0"` (không bóng đổ), hiệu ứng hover nhẹ nhàng đổi màu nền sang `#F1F5F9`, chữ xám đen `#0F172A`, viền `#94A3B8`, không còn bị biến đổi sang màu tối hay đổ bóng đen mờ.
+        * Loại bỏ viền nét đứt mặc định của WPF khi click/focus (`FocusVisualStyle="{x:Null}"`) trên toàn bộ hệ thống nút bấm.
+        * Tinh chỉnh nút "THOÁT" trên màn hình Đăng nhập (`LoginView.xaml`) sang nút thứ cấp thanh lịch (`BorderThickness="1" BorderBrush="#E2E8F0" Foreground="#64748B" CornerRadius="8"`).
+    + Tích hợp toàn diện `MaterialDesignTheme.Button.xaml`, `Shadows.xaml`, `Defaults.xaml` trực tiếp vào `App.xaml`, `LeaveDetailView.xaml` và `AnnualIncomeView.xaml`, giải quyết triệt để lỗi nút bấm bị rơi về style mặc định hình vuông của WPF và đảm bảo `materialDesign:ButtonAssist.CornerRadius="20"` hoạt động chính xác 100% trên toàn ứng dụng.
+    + Đổi tên nhãn nút: Rút gọn "Xuất báo cáo Excel" thành **"Xuất Excel"** đồng nhất trên cả màn hình Chi tiết nghỉ (`LeaveDetailView`) và Tổng thu nhập năm (`AnnualIncomeView`).
+    + Phân biệt màu sắc trực quan tại thanh công cụ Tổng thu nhập năm (`AnnualIncomeView`):
+        * Loại bỏ chữ "Cập nhật năm:" trùng lặp, chỉ giữ lại nhãn "Năm:".
+        * Đồng bộ ô chọn năm (`cboYear`) sang Style `FilterPillComboBox`: Chiều cao 40px, bo góc viên nhộng `CornerRadius="20"`, viền mảnh trang nhã, đồng nhất hoàn toàn với các ô lọc năm ở các màn hình khác.
+        * Nút **Xuất Excel**: Màu xanh lá cây thương hiệu `#15803D`, chiều cao 40px, bo tròn dạng Pill (`CornerRadius="20"`).
+        * Nút **Lưu dữ liệu**: Chuyển từ màu xanh lá sang màu xanh dương Windows Blue `#0078D4`, chiều cao 40px, bo tròn dạng Pill (`CornerRadius="20"`), tách biệt hoàn toàn và không còn bị trùng màu với nút Xuất Excel.
+        * Nút **Nhập hàng loạt & Excel**: Tím `#7B1FA2`, chiều cao chuẩn 40px, bo tròn dạng Pill (`CornerRadius="20"`).
+        * Nút **Xóa dữ liệu năm**: Đỏ Crimson `#DC2626`, chiều cao chuẩn 40px, bo tròn dạng Pill (`CornerRadius="20"`).
+- [Đồng bộ Thẻ Card Màn hình Chi tiết Nghỉ & Tổng thu nhập năm]:
+    + Chuyển khung chứa bảng của **Chi tiết nghỉ** (`LeaveDetailView`) và **Tổng thu nhập năm** (`AnnualIncomeView`) sang thẻ card đồng bộ `TableCardStyle` với viền `#E2E8F0`, đổ bóng mềm `Dp1`, bo góc 12px chuẩn mực như các màn hình khác trong hệ thống.
+
+## v1.6.5.0 — 2026-10-29
+- [Nâng cấp Giao diện] Đồng bộ Hệ thống Bộ lọc Viên nhộng (Pill Filter Toolbar System) Toàn diện:
+    + Thiết kế lại thanh công cụ bộ lọc trên thẻ Card nổi bo tròn góc mềm mại (`CornerRadius="12"`), đổ bóng nhẹ sang trọng (`MaterialDesignShadowDepth1`), nền trắng trang nhã.
+    + Bổ sung nhãn tiêu đề nhỏ gọn phía trên từng ô lọc (`Tìm kiếm`, `Bộ phận`, `Năm`, `Nhiệm kỳ`, `Trạng thái`...) với tông màu Slate Grey (`#64748B`), font chữ SemiBold rõ ràng, khoa học.
+    + Chuẩn hóa ô tìm kiếm dạng Pill bo cong 20px (`Height="40"`), viền `#CBD5E1`, tích hợp biểu tượng kính lúp và nút xóa nhanh (`HasClearButton="True"`).
+    + Xây dựng Style ComboBox dùng chung `FilterPillComboBox`: Viền bo cong 20px, cố định mũi tên chevron sát lề phải (`Margin="0,0,14,0"`), hỗ trợ bấm vào bất kỳ vị trí nào trên ô để mở dropdown, khắc phục triệt để lỗi mũi tên đè lên chữ hoặc kẹt bấm.
+    + Hiện đại hóa toàn bộ các màn hình chính trong hệ thống:
+        * Quản lý Đào tạo và Bồi dưỡng (`TrainingListView`).
+        * Quản lý Quy hoạch Nhân sự (`PlanningManagementView` - cả 2 tab Quy hoạch Chuyên môn & Quy hoạch Đảng).
+        * Quản lý Luân chuyển, Điều động (`RotationManagementView` - cả 2 tab Trong kế hoạch & Ngoài kế hoạch).
+        * Danh sách Nhân sự & Tổng quan (`PersonnelListView`).
+        * Quản lý Đánh giá, Xếp loại (`EvaluationListView`).
+        * Theo dõi Thời gian Giữ chức vụ (`PositionDurationView`).
+        * Quản lý Nâng lương & Phụ cấp (`SalaryListView`).
+        * Báo cáo Thống kê Nhân sự (`StatisticsView`).
+    + Đồng bộ toàn bộ các nút thao tác nghiệp vụ (`Thêm mới`, `Xuất Excel`, `Thêm quyết định`...) sang kiểu dáng Pill bo cong 20px, chiều cao chuẩn 40px với màu sắc nhận diện trực quan.
+- [Quản lý Nghỉ phép] Phân nhóm Tab & Khắc phục Cắt cụt Tên Bộ phận:
+    + Tối ưu giao diện Quản lý Nghỉ phép (`LeaveDetailView`) thành 3 tab phân loại nghiệp vụ: "TẤT CẢ NGHỈ PHÉP", "NGHỈ ỐM DÀI NGÀY / DƯỠNG SỨC", "NGHỈ KHÔNG HƯỞNG LƯƠNG".
+    + Sửa triệt để lỗi cắt mất chữ ở đầu đối với các tên bộ phận dài (như "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh..."): Căn lề trái nội dung, kích hoạt tự động xuống dòng (`TextWrapping="Wrap"`), mở rộng độ rộng cột bộ phận linh hoạt `Width="*" MinWidth="260"`.
+- [Sửa lỗi Hiển thị Quá trình Công tác] Chuẩn hóa Chức danh Đảng đứng Trước, Chuyên môn đứng Sau:
+    + Khắc phục triệt để lỗi chức vụ Đảng bị bao bọc trong ngoặc đơn "(...)" và đứng sau chức danh chuyên môn (như: "Phó Chánh Văn phòng (Phó Bí thư Chi bộ Văn phòng)").
+    + Chuẩn hóa hiển thị chính xác theo quy chuẩn: Bên Đảng hiện TRƯỚC bên chuyên môn bằng dấu chấm phẩy `; `, không để trong ngoặc đơn và không chứa từ "Kiêm" (Ví dụ: "Phó Bí thư Chi bộ Văn phòng; Phó Chánh Văn phòng - Cục Thuế...", "Bí thư Chi bộ; Tổ trưởng Tổ Hành chính, tổng hợp - Đội Thuế...").
+    + Tự động quét và chuẩn hóa toàn bộ dữ liệu quá trình công tác cũ trong CSDL ngay khi khởi động ứng dụng, đảm bảo đồng bộ hoàn hảo trên Chi tiết hồ sơ cán bộ, Quá trình công tác tổng hợp và file xuất PDF.
+- [Tối ưu Cửa sổ Thông báo & Cảnh báo]:
+    + Thiết kế lại giao diện cửa sổ cảnh báo (`WarningWindow`) với phong cách bo góc hiện đại, nút bấm Pill thân thiện và hiển thị thông tin rõ ràng.
+
+## v1.6.4.9 — 2026-10-27
+- [Chuẩn hóa Quá trình Công tác] Tối ưu Thứ tự Chức danh Đảng & Chuyên môn:
+    + Định dạng hiển thị chức danh Đảng đứng trước chức danh chuyên môn bằng dấu chấm phẩy `;` (Ví dụ: "Bí thư Đảng ủy; Chi cục trưởng").
+    + Loại bỏ hoàn toàn tiền tố "Kiêm" khi hiển thị quá trình công tác trên giao diện, chi tiết hồ sơ cán bộ và file sơ yếu lý lịch PDF.
+    + Tối ưu hóa bộ phân tích và định dạng quá trình công tác chi tiết, đảm bảo lưu trữ và hiển thị nhất quán khi thêm mới hoặc chỉnh sửa.
+- [Tính toán Thời gian Công tác] Dừng Tính Thâm niên theo Ngày Thực hiện Quyết định:
+    + Cập nhật cơ chế tính thời gian công tác và giữ chức vụ đối với các trường hợp "Luân chuyển / Điều động", "Nghỉ thôi việc", "Nghỉ hưu".
+    + Tự động dừng mốc tính thời gian công tác tại "Ngày thực hiện" ghi trên quyết định (hoặc ngày ra quyết định) thay vì tính đến ngày hiện tại.
+    + Đồng bộ thuật toán hiển thị tại Bảng theo dõi thời gian giữ chức vụ (`PositionDurationView`) và bộ chuyển đổi thời gian (`DurationConverter`).
+- [Báo cáo Thống kê Nhân sự] Cố định Cột khi Cuộn & Tự động Co giãn Toàn màn hình:
+    + Cố định cột "STT" và "BỘ PHẬN" ở bên trái bảng "Thống kê lãnh đạo theo bộ phận", giúp theo dõi rõ ràng tên bộ phận khi cuộn ngang xem các cột chức vụ trên màn hình nhỏ.
+    + Căn giữa tiêu đề cột "BỘ PHẬN", căn trái tên các bộ phận trong danh sách theo đúng quy chuẩn thiết kế.
+    + Tự động co giãn 100% trên màn hình lớn: Chuyển các cột chức danh bên phải sang tỉ lệ sao (`*`) kèm `MinWidth`, tự động lấp đầy toàn bộ thẻ và triệt tiêu hoàn toàn khoảng trống thừa sau cột TỔNG.
+    + Mở rộng chiều rộng cột bộ phận lên 430px, đảm bảo các bộ phận tên dài hiển thị trọn vẹn 100%, không bị cắt ngắn `...`.
+
+## v1.6.4.8 — 2026-10-26
+- [Tối ưu Giao diện Màn hình Chính] Tích hợp Thanh Tiêu đề Cửa sổ Phong cách Microsoft Word:
+    + Tích hợp thanh tiêu đề hiện đại vào khung cửa sổ (`WindowChrome`, cao 36px) phủ màu thương hiệu xanh `#0078D4`, liền mạch với menu điều hướng bên trái.
+    + Đưa thông tin tài khoản `Xin chào, [Tên]` và Avatar lên thanh tiêu đề cửa sổ cạnh bộ nút điều khiển thu nhỏ/phóng to/đóng (`_ □ ✕`), theo chuẩn bố cục Microsoft Word/Office.
+    + Xóa bỏ hoàn toàn thanh Header màu trắng 60px bị thừa lặp lại chữ "QUẢN LÝ NHÂN SỰ", giúp tăng thêm 60px chiều cao hiển thị dữ liệu cho các màn hình nhỏ.
+    + Tối ưu các nút điều khiển với hiệu ứng hover Windows mượt mà, tự động chuyển đổi biểu tượng giữa 1 ô vuông (Maximize) và 2 ô vuông lồng nhau (Restore) khi thay đổi kích thước cửa sổ.
+- [Hồ sơ Nhân sự - Thông tin Công tác] Bổ sung 4 Ô Quyết định Trạng thái Công tác:
+    + Bổ sung 4 ô thông tin quyết định trên cùng 1 hàng gọn gàng: "Số QĐ", "Ngày ra QĐ", "Ngày thực hiện", "Đơn vị ra QĐ" trong card THÔNG TIN CÔNG TÁC.
+    + Cơ chế tự động làm mờ và vô hiệu hóa: Khi ở trạng thái "Đang công tác", cả 4 ô sẽ tự động mờ đi (`Opacity = 0.45`, `IsEnabled = false`) để tránh nhầm lẫn.
+    + Khi chuyển sang bất kỳ trạng thái nào khác (Luân chuyển / Điều động, Nghỉ việc, Nghỉ hưu...), cả 4 ô sẽ tự động sáng rõ và kích hoạt cho phép nhập liệu.
+    + Tự động migration CSDL SQLite an toàn và đồng bộ đầy đủ nạp/lưu dữ liệu hồ sơ cán bộ.
+- [Sửa lỗi Quá trình Công tác] Khắc phục Lỗi Nhảy Ngày Tháng khi Chỉnh sửa:
+    + Sửa triệt để lỗi khi bấm chỉnh sửa bản ghi có ngày dạng `dd/MM/yyyy` (ví dụ: `16/01/2024`) bị nhảy sai thành `12/0120`.
+    + Mở rộng độ dài ô nhập lên 10 ký tự, hỗ trợ tự động nhận diện và phân tích linh hoạt các định dạng ngày `dd/MM/yyyy`, `MM/yyyy`, `yyyy`.
+    + So sánh ngày chính xác theo kiểu `DateTime` thay vì so sánh chuỗi, ngăn ngừa lỗi cảnh báo "Ngày kết thúc phải lớn hơn ngày bắt đầu".
+- [Sửa lỗi Luồng Đăng nhập] Khắc phục Popup Cảnh báo Đè lên Màn hình Đăng nhập:
+    + Ẩn ngay lập tức giao diện đăng nhập khi đăng nhập thành công.
+    + Điều phối các popup cảnh báo (công chức sắp đi làm lại, cảnh báo đến hạn, đồng bộ Google Drive) qua Dispatcher Background để màn hình chính hiển thị và vẽ hoàn tất trước khi mở popup.
+
+## v1.6.4.7 — 2026-10-23
+- [Quá trình Công tác] Bổ sung Mục "Đơn vị" & Tích chọn "Kiêm nhiệm chức vụ Đảng":
+    + Mục "Đơn vị": Chuyển đổi thành ComboBox linh hoạt kết hợp gợi ý sẵn có và cho phép gõ tay tự do nội dung tùy biến (giải quyết trường hợp khai lý lịch ở các đơn vị cũ không đồng nhất tên gọi).
+    + Bổ sung trường `Unit` vào CSDL SQLite cho bảng `WorkHistories` với cơ chế tự động migration dữ liệu an toàn.
+    + Bổ sung mục tích chọn "Kiêm nhiệm chức vụ Đảng" (`IsConcurrentPartyRole`) tại form nhập quá trình công tác, hỗ trợ lưu trữ và hiển thị phân biệt rõ ràng các nhiệm vụ kiêm nhiệm trong công tác Đảng.
+- [Giao diện Danh sách Nhân sự] Căn chỉnh 6 Thẻ KPI trên cùng 1 hàng:
+    + Tái cấu trúc bố cục 6 thẻ KPI (Tổng số, Nam, Nữ, Đảng viên, Nghỉ dưỡng sức, Nghỉ không lương) thành hàng ngang 6 cột cân đối (`Grid 6 Columns`).
+    + Tối ưu hóa padding, kích thước icon và font chữ; tích hợp chế độ co giãn thích ứng giúp hiển thị gọn gàng, trực quan và không bị nhảy dòng trên mọi kích thước màn hình.
+- [Xuất Báo cáo PDF & Excel] Sắp xếp Trình độ Chuyên môn / Đào tạo theo Thời gian:
+    + Chuẩn hóa thuật toán sắp xếp tất cả các văn bằng, trình độ đào tạo (`Degrees`) theo thứ tự từ gần nhất đến xa nhất (năm tốt nghiệp giảm dần).
+    + Khắc phục triệt để tình trạng trình độ hiển thị lộn xộn trong file sơ yếu lý lịch PDF và file Excel.
+- [Báo cáo Thống kê Nhân sự] Sửa lỗi Hiển thị Màn hình nhỏ & Khắc phục Kẹt Cuộn chuột:
+    + Khắc phục lỗi vỡ bảng và xuất hiện khoảng trống trắng khổng lồ khi thu nhỏ cửa sổ: Thiết lập `MinWidth="200"` cho cột Bộ phận, chuyển sang `TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"` kèm ToolTip.
+    + Bọc bảng "Thống kê ngạch công chức" (`MinWidth="750"`) và "Thống kê lãnh đạo theo bộ phận" (`MinWidth="900"`) trong `ScrollViewer` cuộn ngang tự động.
+    + Sửa lỗi kẹt cuộn chuột ở giữa trang: Chuyển tiếp sự kiện `PreviewMouseWheel` lên `ScrollViewer` chính của trang, giúp cuộn dọc toàn trang liên tục, mượt mà khi rê chuột qua bảng và hỗ trợ giữ phím `Shift` + lăn chuột để cuộn ngang bảng nhanh chóng.
+
+## v1.6.4.6 — 2026-10-21
+- [Nâng cấp Giao diện & Bộ lọc Tổng quan] Bổ sung Thẻ KPI Nghỉ Không Lương & Icon Bộ Lọc:
+    + Bổ sung thẻ KPI thứ 6 "NGHỈ KHÔNG LƯƠNG" trên màn hình Tổng quan / Danh sách nhân sự với thiết kế gradient Slate Blue-Grey (`#455A64` - `#607D8B`) nổi bật, icon `CashOff` và hiển thị số lượng cán bộ đang nghỉ không lương theo thời gian thực.
+    + Tích hợp tương tác lọc theo thẻ: Bấm vào thẻ "NGHỈ KHÔNG LƯƠNG" để lọc danh sách cán bộ đang nghỉ không lương, tự động sắp xếp cán bộ sắp hết hạn nghỉ lên đầu.
+    + Tự động định danh tên file xuất Excel chuẩn `DanhSach_NghiKhongLuong_YYYYMMDD.xlsx` khi đang áp dụng bộ lọc Nghỉ không lương.
+    + Đồng bộ toàn diện chế độ hiển thị Compact Mode (thu gọn font chữ, ẩn icon khi màn hình nhỏ) đảm bảo không bị tràn giao diện.
+    + Thêm icon nhận diện trực quan cho 2 ô chọn bộ lọc phía trên: Icon `Domain` cho bộ lọc Bộ phận và icon `AccountClockOutline` cho bộ lọc Trạng thái công tác.
+- [Báo cáo Thống kê Nhân sự] Chuẩn hóa Bảng Thống kê & Bổ sung Chức danh:
+    + Bổ sung cột Số thứ tự (`STT`) căn giữa ở vị trí đầu tiên của bảng thống kê và file xuất Excel.
+    + Bổ sung 2 cột chức vụ: "Trưởng Thuế cơ sở" và "Phó Trưởng Thuế cơ sở", bố trí vị trí đứng trước cột "Tổ trưởng".
+    + Bổ sung cột "HĐLĐ" (Hợp đồng lao động) bố trí ngay sau cột "Công chức".
+    + Cập nhật thuật toán tính toán thống kê, tự động tính tổng hàng, tổng cột và dòng Tổng cộng ở chân bảng.
+    + Đồng bộ xuất Excel báo cáo thống kê nhân sự với đầy đủ các cột mới, định dạng khung viền và tiêu đề chuẩn hóa.
+- [Quản lý Phân công Nhiệm vụ] Tinh gọn Danh sách Bộ phận:
+    + Loại bỏ mục "LĐHĐ / HĐLĐ" khỏi danh sách lựa chọn bộ phận trong phân công nhiệm vụ, phù hợp với nghiệp vụ quản lý công chức.
+- [Quá trình Công tác] Tối ưu hóa Nhập liệu Tháng/Năm & Chuẩn hóa Thông báo:
+    + Tích hợp bộ chọn Tháng/Năm trực quan với giao diện popup chọn nhanh tháng (1-12) và điều chỉnh năm linh hoạt cho các trường "Từ tháng/năm" và "Đến tháng/năm".
+    + Kiểm soát chặt chẽ nhập liệu: Tự động chèn ký tự phân cách `/`, chặn nhập ký tự lạ, xác thực tháng hợp lệ (01-12) và năm hợp lệ.
+    + Chuẩn hóa toàn bộ các giao diện thông báo xác nhận, cảnh báo lỗi và xác nhận xóa của Quá trình công tác theo phong cách Material Design.
+- [Sửa lỗi Hiển thị Chi tiết Lớp học & Chọn cán bộ]:
+    + Khắc phục triệt để lỗi bị mất chữ / cắt cụt chữ đối với các bộ phận có tên dài (như "Tổ Quản lý, hỗ trợ cá nhân, hộ kinh doanh số 1/2..."):
+    + Mở rộng chiều rộng hộp thoại "Chi tiết lớp học / Hội nghị" từ 840px lên 980px và hộp thoại "Chọn cán bộ" lên 950px.
+    + Tối ưu lại phân bổ độ rộng các cột trong bảng: Cột "BỘ PHẬN CÔNG TÁC" được tăng độ rộng lên `Width="3*" MinWidth="280"` (chiếm hơn 400px hiển thị), cố định gọn gàng cột Ngày sinh (`145px`) và cột Hành động (`85px`).
+    + Kích hoạt chế độ tự động xuống dòng (`TextWrapping="Wrap"`) và bổ sung ToolTip hiển thị đầy đủ tên bộ phận, đảm bảo hiển thị trọn vẹn 100% nội dung chữ.
+
+## v1.6.4.5 — 2026-10-19
+- [Tính năng mới] Bổ sung đầy đủ các trường Thông tin Đảng viên (Tab 4 - Thông tin Đảng viên):
+    + Bổ sung trường "Tại chi bộ": Ô nhập văn bản kéo dài toàn bộ chiều rộng 1 dòng.
+    + Bổ sung khối "Người giới thiệu thứ 1" gồm 3 trường: "Họ và tên", "Chức vụ", "Đơn vị công tác" với bố cục và tỉ lệ chuẩn thiết kế.
+    + Bổ sung khối "Người giới thiệu thứ 2" gồm 3 trường: "Họ và tên", "Chức vụ", "Đơn vị công tác".
+    + Bổ sung trường "Tổ chức giới thiệu": Ô nhập văn bản kéo dài toàn bộ chiều rộng 1 dòng.
+    + Bổ sung trường "Ngày cấp có thẩm quyền ra quyết định kết nạp": Điều khiển chọn ngày (`DatePicker`) kéo dài toàn bộ 1 dòng, tích hợp nút chọn lịch và xóa nhanh.
+    + Đồng bộ lưu trữ và nạp dữ liệu: Tự động lưu và hiển thị chuẩn xác khi thêm mới hoặc cập nhật hồ sơ cán bộ.
+    + Đồng bộ xem chi tiết hồ sơ: Hiển thị đầy đủ tất cả các trường thông tin Đảng viên mới tại cửa sổ xem chi tiết hồ sơ cán bộ (`PersonnelProfileDialog`).
+    + Tự động cập nhật CSDL (Migration): Tự động bổ sung các cột mới vào bảng `Personnel` trong CSDL SQLite mà không làm ảnh hưởng đến dữ liệu cũ.
+- [Nâng cấp & Kiểm soát Nhập liệu] Chặn tuyệt đối nhập chữ và ký tự lạ vào các ô Ngày tháng (`DatePickerHelper`):
+    + Khắc phục triệt để lỗi người dùng có thể gõ chữ cái (`a-z`, `A-Z`) hoặc chuỗi ký tự lạ vào các ô chọn ngày tháng.
+    + Chặn phím ngay khi gõ (`PreviewTextInput`): Chỉ chấp nhận ký tự số (`0-9`) và dấu gạch chéo (`/`), mọi ký tự khác bị chặn ngay lập tức.
+    + Chặn phím khoảng trắng (`Space`) và chặn dán (`Paste`) chuỗi ký tự chứa chữ vào ô ngày tháng.
+    + Tự động kiểm tra và làm sạch (`LostFocus` & `DateValidationError`): Khôi phục về ngày hợp lệ gần nhất hoặc xóa trắng ô khi nhập dở dang hoặc sai định dạng.
+    + Áp dụng thống nhất cho toàn bộ các ô `DatePicker` trên toàn hệ thống phần mềm.
+- [Thống kê & Quản lý Nghỉ phép] Hoàn thiện Thẻ KPI & Thống kê Nghỉ Dưỡng sức:
+    + Bổ sung thẻ KPI "NGHỈ DƯỠNG SỨC" trên màn hình Danh sách nhân sự với màu sắc nhận diện riêng, hỗ trợ click lọc danh sách và xuất Excel riêng biệt.
+    + Bổ sung ô thống kê tổng số ngày nghỉ "Dưỡng sức" tại màn hình Thông tin nghỉ phép (Tab 5).
+
+## v1.6.4.4 — 2026-10-16
+- [Tính năng mới] Bổ sung loại nghỉ “Dưỡng sức” vào Module Quản lý Nhân sự:
+    + Cập nhật danh sách loại nghỉ phép tại màn hình "Thông tin nghỉ phép" (Tab 5 - Chi tiết cán bộ): Bổ sung lựa chọn "Dưỡng sức" ngay sau "Thai sản", chuẩn hóa giao diện theo thiết kế hệ thống.
+    + Đồng bộ lưu trữ và hiển thị: Lưu trực tiếp giá trị loại nghỉ "Dưỡng sức" vào bảng `LeaveHistories` trong CSDL SQLite và hiển thị chuẩn xác tại Bảng lịch sử các đợt nghỉ chi tiết (`dgLeaveHistory`).
+    + Hỗ trợ xem lại và chỉnh sửa đợt nghỉ: Khi chọn một dòng nghỉ dưỡng sức trong bảng lịch sử, hệ thống tự động nhận diện và khôi phục đúng loại nghỉ "Dưỡng sức" cùng ngày bắt đầu, ngày kết thúc và ghi chú trên form nhập liệu.
+    + Đồng bộ màn hình cảnh báo hết hạn nghỉ (`LeaveReturnAlertWindow`): Bổ sung màu sắc nhãn phân biệt riêng (tone màu xanh ngọc Teal `#ECFDF5` / `#0F766E`) cho đợt nghỉ dưỡng sức khi công chức sắp hết thời gian nghỉ hoặc đi làm lại.
+    + Tương thích toàn diện quy tắc nghiệp vụ: Đảm bảo loại nghỉ mới không ảnh hưởng đến số ngày phép năm còn lại, không làm thay đổi các quy tắc tính toán của Phép năm, Nghỉ ốm, Không lương và Thai sản.
+
+## v1.6.4.3 — 2026-10-16
+- [Sửa lỗi & Tối ưu Xuất Excel Tổng thu nhập năm (Phần 3B)]:
+    + Bổ sung cột Số thứ tự (`STT`) căn giữa tại cột đầu tiên cho cả Sheet báo cáo tổng hợp và toàn bộ các Sheet chi tiết (Lương, Làm thêm giờ, Thu nhập khác).
+    + Khắc phục triệt để lỗi xuất hiện cán bộ đã luân chuyển hoặc đã thôi việc trong file Excel: Đồng bộ điều kiện lọc nhân sự với màn hình hiển thị (`Where(p => string.IsNullOrEmpty(p.Status) || p.Status == "Đang công tác")`), loại bỏ hoàn toàn người đã luân chuyển, thôi việc hoặc nghỉ hưu khỏi file báo cáo.
+    + Tự động căn chỉnh độ rộng cột tối ưu, căn giữa cột CCCD, định dạng số tiền chuẩn (`#,##0`) và cập nhật chuẩn xác công thức hàm SUM cho dòng Tổng cộng ở footer.
+- [Nâng cấp Chức năng Xuất Excel Theo dõi Nâng lương (Phần 3A)]:
+    + Phân chia cấu trúc dữ liệu xuất Excel thành 2 phần rõ rệt khi người dùng chọn lọc theo kỳ (Quý I-IV, 6 tháng đầu/cuối năm, hoặc từng tháng):
+        * Phần A: Nâng bậc lương thường xuyên (áp dụng cho công chức chưa kịch khung).
+        * Phần B: Nâng phụ cấp thâm niên vượt khung (áp dụng cho công chức đã kịch khung bậc lương và đang hưởng phụ cấp vượt khung >= 5%).
+    + Tự động đánh lại số thứ tự từ 1 cho từng phần; tự động ẩn phần không có dữ liệu để tránh xuất bảng trống.
+    + Giữ nguyên 100% cấu trúc, bố cục và thứ tự cột mẫu Excel chuẩn khi chọn bộ lọc "Tất cả" hoặc "Cả năm".
+- [Sửa lỗi Nhập Liệu Tiền Tệ Màn hình Thu nhập năm (Phần 2)]:
+    + Khắc phục triệt để lỗi không nhập được số tiền tại các trường "Làm thêm giờ", "Thu nhập khác" và các ô nhập tiền ở màn hình Tổng thu nhập năm (`AnnualIncomeView`) và hộp thoại `EditMonthlyIncomeDialog`.
+    + Tự động bóc tách và định dạng số tiền chuẩn Việt Nam (`vi-VN`), hỗ trợ dấu phân cách hàng nghìn linh hoạt, tự động tính tổng và đồng bộ dữ liệu vào cơ sở dữ liệu.
+- [Đồng bộ Giao diện & Typography Toàn hệ thống (Phần 1)]:
+    + Đồng bộ typography, màu sắc, font chữ và chiều cao dòng trên tất cả các màn hình (Danh sách nhân sự, Đánh giá xếp loại, Thời gian giữ vị trí, Phân công nhiệm vụ, Quản lý luân chuyển, Thi đua khen thưởng...).
+
+## v1.6.4.2 — 2026-10-14
+- [Sửa lỗi Giao diện & Hiển thị Chọn dòng (Row Selection)]:
+    + Khắc phục triệt để lỗi khi click chọn một dòng trong bảng Đào tạo bồi dưỡng (`TrainingListView`), chữ tên lớp và nút "Chi tiết" bị biến thành màu trắng tàng hình trên nền chọn xanh nhạt (`#E3F2FD`).
+    + Cập nhật màu chữ hiển thị đậm nét, dễ đọc (`#1F2937` / `#0F172A`) khi chọn dòng trên toàn hệ thống (`App.xaml`, `TrainingListView`, `TrainingClassDetailDialog`, `SalaryListView`, `PositionDurationView`, `UserListView`).
+- [Đồng bộ Thống kê]:
+    + Đồng bộ dữ liệu và định dạng 2 mục "Tổng cộng" ở giao diện Thống kê (`StatisticsView`), đảm bảo số liệu tính toán chuẩn xác và trực quan.
+- [Chuẩn hóa Giao diện & Typography]:
+    + Chuẩn hóa độ đậm nhạt của chữ (font-weight: SemiBold / 13px) tại bảng Quy hoạch cán bộ (`PlanningManagementView`), loại bỏ hiện tượng các cột đậm nhạt không đồng nhất.
+    + Khắc phục lỗi thanh cuộn (scrollbar) bị dính sát và che mất khung nhập liệu ở các hộp thoại Thêm/Xem lớp đào tạo bồi dưỡng (`AddTrainingClassDialog`, `TrainingClassDetailDialog`).
+    + Mở rộng khung và điều chỉnh bố cục chọn cán bộ nhiều người (`PersonnelSelectorDialog`), tránh hiện tượng tên đơn vị/bộ phận bị cắt cụt.
+    + Thống nhất danh xưng thuật ngữ: Chuẩn hóa toàn bộ các nơi có "Tổ", "Tổ/Bộ phận" thành "Bộ phận" trên toàn ứng dụng.
+
+## v1.6.4.1 — 2026-10-11
+- [Giao diện & Typography] Nâng cấp Toàn diện Bộ Typography Hiện đại & Thanh lịch (Segoe UI):
+    + Thay thế hoàn toàn font `UTM HelvetIns` (font tiêu đề thô, bẹp dí) và `Times New Roman` (font có chân cũ) bằng chuẩn typography `Segoe UI` hiện đại, thanh thoát của Microsoft Windows.
+    + Áp dụng đồng bộ `Segoe UI` cho 100% ứng dụng: Tiêu đề trang, Header bảng dữ liệu (DataGrid), Menu Sidebar, Ô nhập liệu, Nhãn thông tin và Dòng dữ liệu cán bộ.
+    + Hiển thị tiếng Việt có dấu và các con số (CCCD, hệ số lương, ngày tháng) cực kỳ sắc nét, cân đối, thoáng mắt, tối ưu hiển thị ClearType và chuẩn hóa giao diện Fluent Design cao cấp.
+- [Tối ưu Hiệu năng & Tinh gọn Mã nguồn]:
+    + Áp dụng `AsNoTracking()` trên toàn bộ các câu truy vấn chỉ đọc (Danh sách nhân sự, Đánh giá xếp loại, Quy hoạch cán bộ, Luân chuyển điều động, Nâng lương, Nghỉ phép, Thu nhập năm, Thống kê, Quản lý tài khoản), giúp giảm mạnh tiêu thụ bộ nhớ RAM và tăng tốc tải dữ liệu cho các bảng lớn.
+    + Tối ưu thuật toán tính lịch âm/dương trong `App.xaml.cs`, loại bỏ vòng lặp tính toán thừa khi khởi động ứng dụng.
+    + Dọn dẹp tệp font `UTM HelvetIns.ttf`, làm sạch tệp cấu hình dự án `.csproj` và các dòng trống, using thừa thãi mà không làm thay đổi hay gián đoạn bất kỳ logic nghiệp vụ nào.
+- [Dọn dẹp Cơ sở Dữ liệu]:
+    + Xóa bỏ các tệp cơ sở dữ liệu rác 0 byte (`app.db`, `personnel.db`, `tax_personnel.db` 0 byte ở thư mục code).
+    + Di chuyển an toàn tệp CSDL sao lưu dự phòng vào thư mục `backup/` riêng biệt.
+
+## v1.6.4.0 — 2026-10-11
+- [Chuẩn hóa Giao diện] Rà soát và đồng bộ chữ IN HOA cho toàn bộ hệ thống Tiêu đề & Cửa sổ Popup:
+    + Chuẩn hóa chữ IN HOA cho tất cả các tiêu đề trang, thẻ thống kê (Dashboard, Thống kê, Bổ nhiệm...).
+    + Chuẩn hóa tiêu đề hộp thoại/dialog (Thêm phòng ban, Thêm ngạch, Thêm chức vụ, Thêm lớp đào tạo, Kỷ luật, Thu nhập, Quy hoạch...).
+    + Đảm bảo tính nhất quán và chỉn chu trên toàn bộ giao diện phần mềm.
+- [Tối ưu Trải nghiệm Bảng biểu] Chuẩn hóa Màu sắc Chọn dòng (Row Selection) trên Toàn hệ thống:
+    + Đồng bộ màu nền khi chọn dòng về chuẩn xanh lam dịu mắt `#E3F2FD` (Material Design Light Blue) và hover `#F5F9FF` trên tất cả các bảng dữ liệu (Bảng lương, Đào tạo, Đánh giá, Nghỉ phép, Thu nhập năm, Quản lý tài khoản, Chọn cán bộ...).
+    + Khắc phục hoàn toàn các vị trí bị mất viền hoặc tương phản kém khi chọn dòng.
+
+## v1.6.3.9 — 2026-10-10
+- [Sửa lỗi & Tối ưu hóa Đồng bộ] Nâng cấp Toàn diện Cơ chế Sao lưu & Đồng bộ Google Drive (`GoogleDriveSyncService`, `MainWindow`, `App`):
+    + Tăng tốc độ sao lưu gấp 3 - 5 lần:
+        * Tích hợp bộ nhớ đệm thư mục sao lưu (`_cachedFolderId`), loại bỏ các lượt gửi truy vấn tìm kiếm thư mục lặp đi lặp lại lên Google Drive. Thời gian đẩy CSDL lên Drive giảm từ >10 giây xuống chỉ còn 2 giây.
+        * Chuẩn hóa truy vấn file đồng bộ: Đồng nhất `GetDriveFileIdAsync` và `GetCloudFileInfoAsync` theo thứ tự thời gian sửa đổi mới nhất (`OrderBy = "modifiedTime desc"`), đảm bảo luôn thao tác trên đúng bản ghi sao lưu mới nhất trên đám mây.
+        * Áp dụng `.ConfigureAwait(false)` cho toàn bộ các phương thức async để tránh hiện tượng nghẽn luồng xử lý.
+    + Khắc phục triệt để lỗi mất dữ liệu khi lưu nhiều lần liên tiếp:
+        * Nâng ngưỡng thời gian chờ an toàn khi bấm nút [X] đóng ứng dụng từ 10 giây lên 60 giây, ngăn ngừa hoàn toàn tình trạng ứng dụng tự ngắt ngang tiến trình upload khi mạng bị trễ.
+        * Bổ sung ghi log chi tiết tiến trình upload (`PushAsync started / finished / timed out`), giúp dễ dàng theo dõi và chẩn đoán trạng thái đồng bộ.
+        * Đưa tiến trình sao lưu dự phòng trong `App.OnExit` sang luồng nền (`Task.Run`) với timeout 30 giây để chống treo giao diện UI thread của WPF.
+    + Khắc phục hiện tượng hiển thị cache dữ liệu cũ sau khi đồng bộ trên máy nhận:
+        * Khi người dùng xác nhận kéo dữ liệu mới từ Google Drive về máy, hệ thống tự động giải phóng toàn bộ bộ nhớ đệm view (`_dashboardCache`, `_personnelDetailCache`, `_statisticsCache`, `_planningCache`, `_rotationCache`, `_dutyAssignmentCache`) và nạp lại 100% dữ liệu mới nhất từ CSDL vừa cập nhật.
+    + Khắc phục lỗi đăng xuất (`Logout_Click`):
+        * Ngăn chặn tình trạng chồng lấn nhiều màn hình đăng nhập và cửa sổ chính khi người dùng chọn Đăng xuất trong lúc đang có dữ liệu cần sao lưu.
+
+## v1.6.3.8 — 2026-10-08
+- [Tính năng mới] Phân hệ Quản lý & Theo dõi Phân công Nhiệm vụ theo Tổ và Tháng (`DutyAssignmentView`, `DutyAssignmentService`):
+    + Ma trận timeline trực quan 12 tháng (T1..T12): Theo dõi trực quan lịch sử và tần suất thay đổi phân công nhiệm vụ của từng Tổ/bộ phận trong cả năm.
+    + Trạng thái ô tháng đa dạng & thông minh:
+        * Tháng có văn bản mới: Hiển thị badge ngày/tháng ban hành hoặc số lượng văn bản trong tháng (xN), kèm tooltip chi tiết và nhấp chuột để xem ngay.
+        * Tháng giữ nguyên nhiệm vụ: Tự động kế thừa văn bản có hiệu lực trước đó, hiển thị icon ghim tinh tế.
+        * Tháng chưa có văn bản: Dấu chấm xám tối giản, phân biệt rõ ràng.
+        * Tự động làm nổi bật tháng hiện tại khi xem năm hiện hành.
+    + Xem văn bản PDF tích hợp (`DutyAssignmentViewerDialog`): Hỗ trợ xem trực tiếp văn bản phân công nhiệm vụ bên trong ứng dụng, hoặc mở nhanh bằng phần mềm đọc PDF mặc định của Windows.
+    + Tải lên và lưu trữ an toàn (`DutyAssignmentUploadDialog`): Cho phép chọn Tổ, Năm, Tháng, Ngày hiệu lực, Tiêu đề, Ghi chú và tải tệp PDF lên (lưu trữ trực tiếp dữ liệu nhị phân an toàn trong CSDL SQLite).
+    + Bộ lọc & Thống kê KPI hiện đại:
+        * Ô Select chọn Năm thiết kế mới (`ModernYearSelectBox`): Trực quan, sắc nét, hỗ trợ nhấp chuột ở bất kỳ vị trí nào trên ô để mở danh sách chọn năm.
+        * Ô tìm kiếm nhanh Tổ / bộ phận: Tự động lọc tức thì theo từ khóa.
+        * 4 thẻ KPI tương tác đa năng: Tổng số Tổ, Ổn định trong năm (≤ 1 lần thay đổi), Nhiều thay đổi (≥ 2 lần thay đổi), Chưa có văn bản.
+        * Hiệu ứng Active State trực quan: Bấm trực tiếp vào thẻ KPI để lọc nhanh danh sách với viền đậm nổi bật, đổi màu nền và huy hiệu "ĐANG LỌC", tự động đồng bộ hai chiều với thanh tab trạng thái. Hỗ trợ bấm lại để hủy lọc (Toggle).
+        * Thống kê tự động cập nhật linh hoạt theo năm và theo từ khóa tìm kiếm.
+    + Hộp thoại thông báo thiết kế mới (`DutyAssignmentNotificationDialog`): Chuẩn giao diện Fluent/Material Design hiện đại cho các thông báo Thành công, Lỗi, Cảnh báo.
+- [Sửa lỗi Giao diện] Khắc phục triệt để lỗi mất chữ / cắt cụt chữ trong Sao lưu & Phục hồi CSDL (`BackupRestoreView`):
+    + Thay thế cấu trúc `StackPanel Orientation="Horizontal"` cũ bằng `Grid` 2 cột (icon Auto, văn bản `*`), giúp `TextWrapping="Wrap"` nhận diện chính xác độ rộng khung thẻ và tự động xuống dòng mượt mà cho các thông báo Khuyến nghị sao lưu và Cảnh báo phục hồi.
+    + Tối ưu hiển thị đường dẫn file CSDL hiện tại (`txtDbPath`): Thêm dấu ba chấm `...` (`TextTrimming="CharacterEllipsis"`) và ToolTip xem đầy đủ đường dẫn khi rê chuột.
+
+## v1.6.3.7 — 2026-10-05
+- [Sửa lỗi & Hoàn thiện] Nâng cấp Toàn diện Phân hệ Quản lý Luân chuyển, Điều động (`RotationManagementView`):
+    + Hiển thị Avatar cán bộ: Tích hợp hiển thị ảnh chân dung thật từ Base64 (`ImageHelper.LoadAndOrientImage`) trên bảng kế hoạch luân chuyển và hộp thoại; tự động hiển thị chữ lồng (Initials) thanh lịch khi chưa có ảnh (đã lọc bỏ phần ghi chú ngoặc đơn).
+    + Chuẩn hóa Bộ lọc Năm: Mặc định hiển thị "Tất cả" thay vì cố định năm 2026, cho phép người dùng xem được toàn bộ danh sách luân chuyển/điều động ngay khi mở màn hình.
+    + Thống kê KPI tương tác linh hoạt: 5 thẻ KPI tự động cập nhật số liệu chính xác theo thời gian thực tương ứng với các tiêu chí đang lọc (Bộ phận, Năm, Trạng thái, Tìm kiếm). Chuẩn hóa nhãn chỉ hiển thị "Tổng số: X" (bỏ chữ "Lượt").
+    + Cải tiến Thanh công cụ lọc chống tràn mép / mất chữ: Thay thế `StackPanel` bằng `WrapPanel` tự động xuống dòng khi màn hình thu nhỏ, mở rộng độ rộng ô tìm kiếm (280px) và các hộp chọn lọc; tích hợp `TextTrimming="CharacterEllipsis"` và `ToolTip` hiển thị đầy đủ tên phòng ban dài khi rê chuột.
+    + Bổ sung Cột & Chuẩn hóa Sắp xếp Bảng biểu:
+        * Bổ sung cột "Bộ phận đang công tác" đặt ngay trước cột "Bộ phận dự kiến điều động đến" trên cả 2 bảng Trong kế hoạch và Ngoài kế hoạch.
+        * Quy tắc sắp xếp thông minh: Ưu tiên các bản ghi ĐÃ CÓ QUYẾT ĐỊNH lên đầu danh sách (Số quyết định nhỏ nhất và Ngày quyết định sớm nhất lên trước); tiếp theo mới sắp xếp theo thứ tự Họ và tên cán bộ (A -> Z) cho các bản ghi chưa có quyết định.
+- [Bảo mật dữ liệu & Nghiệp vụ] Nâng cấp Hộp thoại Thêm/Sửa Luân chuyển Điều động (`RotationRecordDialog`):
+    + Ngăn chặn nhập tay tự do (`IsEditable="False"`): Khóa chế độ gõ tự do ở cả 2 trường "Bộ phận đang công tác" và "Bộ phận dự kiến điều động đến", bắt buộc chọn từ danh mục chuẩn phòng ban của hệ thống (`db.Departments`).
+    + Sắp xếp danh mục phòng ban chuẩn thứ bậc (`DepartmentSorter`): Hiển thị danh sách phòng ban theo đúng phân cấp tổ chức (Ban lãnh đạo, Tổ HC-TH, các Đội Kiểm tra...).
+    + Hỗ trợ tìm nhanh bằng bàn phím (`IsTextSearchEnabled="True"`): Cho phép gõ chữ cái đầu để cuộn nhanh đến phòng ban mà không làm sai lệch dữ liệu danh mục.
+    + Tùy chọn để trống bộ phận đến: Bổ sung mục `-- Chưa xác định / Tùy chọn --` cho bộ phận dự kiến chuyển đến, thuận tiện cho các trường hợp mới lập kế hoạch điều động.
+    + Tự động điền theo cán bộ: Tự động cập nhật "Bộ phận đang công tác" tương ứng theo thông tin hồ sơ của cán bộ khi chọn hoặc đổi cán bộ.
+    + Bổ sung trường chọn Năm kế hoạch trực tiếp trên form và loại bỏ khối thông tin trùng lặp phía dưới thẻ hồ sơ cán bộ.
+
+## v1.6.3.6 — 2026-10-03
+- [Thiết kế lại Giao diện Popup] Nâng cấp Toàn diện Hộp thoại Luân chuyển / Điều động (`RotationRecordDialog`):
+    + Phong cách Fluent Design & Windows 11 Blue hiện đại: Bo tròn góc mềm mại (`CornerRadius="16"`), hiệu ứng bóng đổ nổi (`DropShadowEffect`) cao cấp, header chuyển sắc mượt mà (`LinearGradientBrush` `#005A9E` -> `#0078D4` -> `#0284C7`), nút đóng tròn và hỗ trợ giữ chuột di chuyển cửa sổ linh hoạt.
+    + Thẻ hồ sơ cán bộ thông minh (Personnel Profile Card):
+        * Trạng thái chưa chọn: Giao diện thẻ rỗng trực quan, có avatar tìm kiếm, lời nhắc hướng dẫn và nút bấm nổi bật `[+ Chọn cán bộ]`.
+        * Trạng thái đã chọn: Tự động chuyển thành Thẻ hồ sơ chuyên nghiệp với Avatar tròn dập nổi 2 chữ cái viết tắt tên cán bộ, Họ tên in đậm rõ ràng, cùng 3 thẻ pill thông tin gọn gàng kèm icon đại diện: CCCD, Ngày sinh và Đơn vị/Bộ phận công tác; tích hợp nút `[Đổi cán bộ]` tinh tế.
+    + Mô phỏng trực quan luồng điều động bộ phận (Transfer Flow): Đặt "Bộ phận đang công tác" và "Bộ phận dự kiến chuyển đến" vào thẻ điều hướng với biểu tượng mũi tên chuyển tiếp (`ArrowRightBold`) ở vị trí trung tâm, giúp nhận biết ngay hướng luân chuyển.
+    + Thẻ Trạng thái & Quyết định tương tác (Reactive Card): Khi tích chọn "Đã thực hiện điều động / luân chuyển", thẻ tự động chuyển màu sang gam xanh bạc hà tươi sáng (`#F0FDF4`), mở ra khung nhập Số quyết định, Ngày ra quyết định và Ngày bắt đầu hiệu lực (hỗ trợ định dạng chuẩn tiếng Việt `vi-VN`).
+    + Thanh nút bấm chân hộp thoại (Footer): Thiết kế phẳng, nút Lưu thông tin nổi bật với icon kiểm tra, nút Hủy viền thanh lịch và nút Xóa cảnh báo an toàn khi chỉnh sửa.
+- [Giao diện & Trải nghiệm] Hoàn thiện Phân hệ Quản lý Luân chuyển, Điều động (`RotationManagementView`):
+    + Căn chỉnh chuẩn xác 5 thẻ KPI Dashboard: Chuẩn hóa kích thước biểu tượng (15x15 px), phân bố bố cục dạng lưới 2 hàng cân đối, căn giữa theo trục dọc, khắc phục triệt để tình trạng lệch icon và dòng chữ.
+    + Tối ưu hiển thị bảng dữ liệu trên màn hình rộng / siêu rộng: Tự động co giãn theo tỉ lệ (`*`), nền tiêu đề (HeaderPresenter) phủ kín toàn bộ bề rộng bảng, không còn hiện tượng hở viền trắng hoặc đứt đoạn khi phóng to.
+- [Thống kê & Báo cáo] Nâng cấp Bảng Thống kê Lãnh đạo Tổ (`StatisticsView`):
+    + Tự động xuống dòng khi tên bộ phận dài (`TextWrapping="Wrap"`): Chấm dứt hoàn toàn tình trạng tên tổ/bộ phận dài bị cắt chữ hoặc che khuất trên bảng biểu.
+    + Bổ sung dòng Tổng cộng chân bảng: Tổng hợp đầy đủ số lượng Tổ trưởng, Phó tổ trưởng, Công chức/Lao động và Tổng số toàn đơn vị với gam màu nổi bật.
+
+## v1.6.3.5 — 2026-10-02
+- [Tính năng mới] Phân hệ Quản lý Luân chuyển, Điều động Công chức (`RotationManagementView`):
+    + Theo dõi toàn diện danh sách công chức luân chuyển, điều động: Phân loại rạch ròi 2 danh mục "Trong kế hoạch" và "Ngoài kế hoạch" kèm badge số lượng trực quan.
+    + Bảng điều khiển KPI Dashboard: Hiển thị 5 thẻ thống kê trực quan (Tổng số lượt, Trong kế hoạch, Ngoài kế hoạch, Đã thực hiện, Chưa thực hiện), tự động cập nhật theo thời gian thực.
+    + Bộ lọc đa tiêu chí linh hoạt: Lọc theo Bộ phận (custom bo viền chevron xanh), Lọc theo Năm (2026, 2025, 2024...), Lọc theo Trạng thái (Đã thực hiện / Chưa thực hiện) và Ô tìm kiếm tức thì theo Họ tên / Số CCCD.
+    + Bảng dữ liệu hiện đại & Tối ưu hiển thị: Avatar chữ lồng đa sắc màu, tự động xuống dòng (`TextWrapping="Wrap"`) không bị mất chữ, hiển thị đầy đủ thông tin cán bộ, đơn vị chuyển đi, bộ phận đến, số quyết định và ngày quyết định.
+- [Hộp thoại & Nghiệp vụ] Nâng cấp Dialog Thêm/Sửa Luân chuyển Điều động (`RotationRecordDialog`):
+    + Tích hợp chọn nhanh công chức từ danh mục nhân sự hệ thống, tự động điền đơn vị công tác hiện tại.
+    + Phân loại hình thức: Điều động / Luân chuyển và kế hoạch Trong/Ngoài kế hoạch.
+    + Quản lý quyết định: Nhập Số quyết định, Ngày ra quyết định, Ngày có hiệu lực và ghi chú.
+    + Chuẩn hóa thông báo: Thay thế toàn bộ hộp thoại cũ bằng `WarningWindow` và `ConfirmWindow` hiện đại, thông báo rõ ràng khi thiếu thông tin bắt buộc.
+- [Xuất dữ liệu & Báo cáo] Nâng cấp Toàn diện Xuất file Excel Báo cáo Luân chuyển Điều động:
+    + Xuất đa sheet chuyên nghiệp gồm 3 trang tính:
+        * Sheet 1: `Tổng Hợp Báo Cáo` — Chứa khối Thống kê KPI tổng quan tiến độ kế hoạch, cùng 3 bảng chi tiết:
+            - Bảng I: Danh sách công chức trong kế hoạch ĐÃ HOÀN THÀNH luân chuyển, điều động (kèm Số QĐ, Ngày ra QĐ).
+            - Bảng II: Danh sách công chức trong kế hoạch CHƯA THỰC HIỆN luân chuyển, điều động (kèm thời hạn dự kiến).
+            - Bảng III: Danh sách công chức NGOÀI KẾ HOẠCH ĐÃ LUÂN CHUYỂN, ĐIỀU ĐỘNG.
+        * Sheet 2: `Trong Kế Hoạch` — Danh sách chi tiết toàn bộ cán bộ trong kế hoạch, tự động kẻ viền và tích hợp bộ lọc AutoFilter.
+        * Sheet 3: `Ngoài Kế Hoạch` — Danh sách chi tiết toàn bộ cán bộ ngoài kế hoạch, tự động kẻ viền và tích hợp bộ lọc AutoFilter.
+    + Hiệu ứng chờ xuất file hiện đại (`LoadingOverlay`): Lớp phủ mờ với vòng xoay tiến trình Excel màu xanh lá, chạy bất đồng bộ (`Task.Run`) không gây đơ ứng dụng.
+    + Cửa sổ thông báo thành công `SuccessWindow`: Tích hợp các nút thao tác nhanh "Mở tệp" để xem ngay file Excel và "Mở thư mục" chứa file tiện lợi.
+
+## v1.6.3.4 — 2026-09-15
+- [Sửa lỗi Cuộn bảng & Giao diện] Khắc phục triệt để hiện tượng thanh cuộn tự động nhảy lên đầu trong Danh sách Văn bằng (`PersonnelDegreesDialog`):
+    + Nguyên nhân gốc rễ: Khi thiết lập `MinRowHeight="44"` kết hợp tự động xuống dòng (`TextWrapping="Wrap"`), các dòng trong bảng có chiều cao biến thiên không đồng nhất. Chế độ ảo hóa mặc định `CanContentScroll="True"` của WPF tính toán sai lệch kích thước cuộn theo đơn vị phần tử (Item index), dẫn đến xung đột vòng lặp khi kéo thanh cuộn hoặc lăn chuột trên các màn hình có tỉ lệ thu phóng (125%, 150%) hoặc kích thước nhỏ.
+    + Chuyển sang cuộn mượt theo điểm ảnh (`ScrollViewer.CanContentScroll="False"`, `VirtualizingPanel.ScrollUnit="Pixel"`): Tắt chế độ ảo hóa không cần thiết cho danh sách văn bằng cán bộ (dưới 50 bản ghi), chuyển sang cơ chế cuộn theo pixel chuẩn xác 100%.
+    + Bổ sung cơ chế chặn sự kiện `RequestBringIntoView`: Ngăn chặn hoàn toàn việc các thành phần con khi nhận tiêu điểm (focus) hoặc hover tự ý kéo vị trí cuộn quay trở lại đầu danh sách.
+    + Kết quả: Lăn chuột và bấm giữ kéo thanh cuộn diễn ra mượt mà, ổn định tuyệt đối trên mọi cấu hình máy tính và độ phân giải màn hình.
+
+## v1.6.3.3 — 2026-09-14
+- [Sắp xếp & Phân cấp Văn bằng] Chuẩn hóa Thứ tự Hiển thị Danh sách Văn bằng & Chứng chỉ (`PersonnelDegreesDialog`):
+    + Sắp xếp thứ tự ưu tiên nhóm Loại bằng chuẩn mực: **Chuyên môn -> Tin học -> Ngoại ngữ -> Quản lý Nhà nước -> Lý luận chính trị -> Chứng chỉ khác**.
+    + Phân cấp chuyên môn từ cao xuống thấp: Trong nhóm Chuyên môn, các văn bằng được xếp chính xác theo thứ tự học vị từ cao đến thấp: **Tiến sĩ -> Thạc sĩ -> Đại học / Cử nhân / Kỹ sư -> Cao đẳng -> Trung cấp -> Sơ cấp**.
+    + Sắp xếp theo Năm cấp gần nhất: Đối với các văn bằng cùng học vị chuyên môn hoặc thuộc các nhóm loại bằng còn lại (Tin học, Ngoại ngữ, QL Nhà nước, LLCT, Chứng chỉ khác), hệ thống tự động ưu tiên bằng cấp/chứng chỉ có **Năm tốt nghiệp / cấp bằng gần nhất** lên trên đầu.
+    + Đồng bộ thứ tự thanh điều hướng và chọn loại bằng: Sắp xếp lại thứ tự các Tab danh mục và danh sách ComboBox Loại bằng nhất quán với thứ tự hiển thị; cập nhật dòng tổng kết số lượng thống kê theo đúng thứ tự phân nhóm.
+- [Giao diện & Trải nghiệm] Cải tiến hiển thị Danh sách Văn bằng & Chứng chỉ (`PersonnelDegreesDialog`):
+    + Căn lề trái toàn bộ nội dung văn bản ở các cột: "Tên bằng / Chứng chỉ", "Chuyên ngành", "Nơi đào tạo / Cấp", tạo sự ngay ngắn, dễ theo dõi và thẩm mỹ hơn so với căn giữa.
+    + Tự động xuống dòng khi nội dung quá dài: Bật tính năng `TextWrapping="Wrap"` và thay đổi chiều cao dòng linh hoạt (`MinRowHeight="44"`), chấm dứt hoàn toàn tình trạng tên chứng chỉ hay tên trường/cơ sở đào tạo dài bị cắt cụt chữ hoặc mất chữ.
+    + Bổ sung ToolTip hiển thị đầy đủ thông tin khi di chuột vào Tên bằng, Chuyên ngành và Nơi đào tạo.
+    + Tối ưu độ rộng cột co giãn thông minh: Tự động phân bổ không gian tối ưu cho Tên bằng và Nơi đào tạo khi người dùng phóng to/thay đổi kích thước cửa sổ.
+
+## v1.6.3.2 — 2026-09-13
+- [Nghiệp vụ & Đồng bộ Dữ liệu] Đồng bộ nhất quán 100% Thời gian lùi nâng lương và Ngày dự kiến lên lương:
+    + Khắc phục triệt để tình trạng lệch dữ liệu giữa Màn hình Xem hồ sơ (`PersonnelProfileDialog`), Màn hình Sửa nhân sự (`PersonnelDetailView`) và Bản Xuất file PDF (`PdfExporter`).
+    + Tái cấu trúc bộ máy tính toán tập trung (`SalaryHelper`): Thống nhất một đầu mối xử lý duy nhất cho toàn bộ hệ thống về chu kỳ nâng ngạch, lùi do kỷ luật, lùi do nghỉ ốm quá hạn 180 ngày và lùi do nghỉ không lương chuẩn theo Điều 2 Thông tư 03/2021/TT-BNV.
+    + Tự động quét và chuẩn hóa dữ liệu cũ khi khởi động app: Tự động phát hiện và chuyển đổi các bản ghi lưu chuỗi cũ dạng `Nghỉ ốm quá hạn (80 ngày)` hoặc các đợt nghỉ ốm đang tích lũy sang định dạng chuẩn mới `Nghỉ ốm quá hạn X ngày (Lùi Y tháng)` cùng ngày dự kiến chính xác, cập nhật đồng bộ cho cả Danh sách lương (`SalaryListView`) và Cảnh báo nâng lương trên trang chủ.
+    + Phản hồi tức thì khi chỉnh sửa nghỉ phép: Tự động cập nhật lại ngày dự kiến lên lương và lý do lùi lương ngay khi người dùng thêm mới hoặc xóa đợt nghỉ phép ở Tab 5.
+
+## v1.6.3.1 — 2026-09-13
+- [Sửa lỗi Giao diện] Khắc phục triệt để lỗi tràn chữ và đè chữ trong popup Xem chi tiết hồ sơ (`PersonnelProfileDialog`):
+    + Mở rộng không gian hiển thị cột "Lùi thời gian nâng lương", bổ sung tự động ngắt dòng (`TextWrapping="Wrap"`), chấm dứt hoàn toàn tình trạng chữ đè lên cột "Dự kiến lên lương".
+
+## v1.6.3.0 — 2026-09-12
+- [Tính năng & Nghiệp vụ] Chuẩn hóa Quy tắc lùi thời hạn nâng lương theo Điều 2 Thông tư 03/2021/TT-BNV:
+    + Quy đổi ngày lẻ thành tháng bắt buộc: Cứ mỗi 30 ngày nghỉ vượt khung tính là 01 tháng; số ngày dư từ đủ 11 ngày trở lên (>= 11 ngày) làm tròn thành 01 tháng đầy đủ; số ngày dư dưới 11 ngày không tính lùi.
+    + Tự động tính lùi nâng lương theo số tháng chẵn vào ngày đầu tháng chuẩn mực (ví dụ: nghỉ ốm vượt 81 ngày = 2 tháng chẵn + 21 ngày dư >= 11 ngày -> làm tròn lùi 3 tháng, chuyển ngày nâng lương từ 01/01/2027 sang đúng 01/04/2027).
+    + Hiển thị nhãn trực quan, minh bạch lý do: "Nghỉ ốm quá hạn 81 ngày (Lùi 3 tháng)" kèm ToolTip diễn giải chi tiết căn cứ Thông tư 03/2021/TT-BNV, tránh hiểu nhầm giữa tổng số ngày nghỉ và số ngày vượt khung.
+    + Áp dụng đồng bộ quy tắc làm tròn tháng cho cả trường hợp Nghỉ không lương.
+- [Tối ưu & Dọn dẹp mã nguồn] Rà soát và làm sạch toàn diện hệ thống:
+    + Dọn dẹp toàn bộ các file log, file tạm và cơ sở dữ liệu rỗng (debug.log, tax_personnel.db rỗng ở root).
+    + Lược bỏ các đoạn code nháp/debug cũ và comment dư thừa trong `PersonnelDetailView`.
+    + Việt hóa 100% chú thích kỹ thuật sang tiếng Việt trong toàn bộ các file cốt lõi (`PersonnelDetailView`, `EvaluationListView`, `App.xaml.cs`).
+
+## v1.6.2.9 — 2026-09-12
+- [Tính năng & Phân loại] Bổ sung Danh mục "Chứng chỉ khác" trong Quản lý văn bằng (`PersonnelDegreesDialog`):
+    + Bổ sung tab phân loại riêng biệt "📜 Chứng chỉ khác" để quản lý và lọc nhanh các loại chứng chỉ nghề, bồi dưỡng kỹ năng, chứng chỉ ngắn hạn...
+    + Tự động chọn đúng loại bằng "Chứng chỉ khác" trên form thêm mới tương ứng khi nhấp chọn tab.
+    + Gắn nhãn màu xanh ngọc tươi sáng (Teal `#F0FDFA` / viền `#99F6E4`) cùng biểu tượng chứng chỉ riêng biệt, phân biệt rõ nét trên bảng danh sách.
+    + Cập nhật bộ đếm thống kê số lượng văn bằng ở thanh trạng thái (Footer) hiển thị độc lập số lượng chứng chỉ khác.
+
+## v1.6.2.8 — 2026-09-11
+- [Tính năng & Xuất dữ liệu] Nâng cấp Xuất file Excel & PDF đầy đủ Văn bằng Chứng chỉ:
+    + Xuất Excel (`ExcelExporter`): Giữ nguyên chuẩn 1 sheet duy nhất (`DanhSachNhanSu`) với đúng 42 cột chuẩn mực quy định. Toàn bộ văn bằng/chứng chỉ (Tin học, Ngoại ngữ, Chuyên môn, Quản lý Nhà nước, Lý luận chính trị) được hiển thị nhiều dòng trong cùng một ô (`Alt + Enter` / `WrapText` tự động co giãn dòng), không bị sót bằng cấp. Tự động gom các chứng chỉ khác vào cột Ghi chú mà không làm lệch thứ tự các cột quy định.
+    + Xuất PDF (`PdfExporter`): Bổ sung hiển thị đầy đủ danh sách văn bằng/chứng chỉ theo từng chuyên mục trong bảng Trình độ học vấn của file PDF lý lịch trích ngang.
+- [Tính năng & Phân loại] Tách biệt Danh mục Quản lý Nhà nước và Lý luận chính trị:
+    + Tách tab gộp "🏛️ QL Nhà nước & LLCT" thành 2 tab phân loại riêng biệt: 🏛️ Quản lý Nhà nước và 📕 Lý luận chính trị trong popup Quản lý văn bằng.
+    + Tự động chọn đúng loại bằng trên form thêm mới tương ứng khi nhấp vào từng tab.
+    + Tách riêng bộ đếm số lượng văn bằng ở thanh trạng thái (Footer) thành số lượng bằng QLNN và LLCT độc lập.
+- [Giao diện & Trải nghiệm] Nâng cấp Toàn diện Bảng Danh sách Văn bằng (`PersonnelDegreesDialog`):
+    + Gắn nhãn màu (Pill Badge) pastel kèm biểu tượng riêng biệt cho từng danh mục: 💻 Tin học (Xanh biển), 🌐 Ngoại ngữ (Tím), 🎓 Chuyên môn (Xanh lục ngọc), 🏛️ QL Nhà nước (Hổ phách), 📕 Lý luận chính trị (Hồng ngọc).
+    + Căn giữa đối xứng toàn bộ dữ liệu các cột trong bảng, thêm dấu gạch ngang `—` thanh lịch cho các ô trống, loại bỏ khoảng trắng trống trải.
+    + Cố định Tên văn bằng và nhãn ⭐ Bằng chính thẳng hàng trên cùng 1 dòng, chấm dứt tình trạng rớt dòng làm méo lệch chiều cao các hàng.
+    + Loại bỏ hoàn toàn vệt chọn xanh đậm mặc định (`SystemColors.Highlight`) khi nhấp chuột vào dòng, bổ sung màu nền xen kẽ (Zebra Striping) dịu mắt.
+    + Tiêu đề các cột tự động ngắt dòng (`TextWrapping="Wrap"`), mở rộng kích thước popup lên 1160px để không gian hiển thị rộng rãi, không bị cắt cụt chữ.
+    + Thiết kế lại 2 bộ chọn (ComboBox) Loại bằng & Tên bằng phẳng hiện đại, viền bo tròn thanh lịch, icon mũi tên chevron sắc nét.
+    + Tinh gọn bộ nút thao tác thành bộ 3 nút icon vuông bo góc 28x28px cực kỳ tinh tế: [ ⭐ Trạng thái chính ] [ ✏️ Sửa ] [ 🗑️ Xóa ].
+- [Cải tiến Giao diện] Thiết kế lại Nút "Quản lý danh sách văn bằng" (`PersonnelDetailView`):
+    + Nâng cấp từ nút xám tối màu chìm nghỉm thành dạng Pill Capsule màu trắng tinh tế, nổi bật trên thanh tiêu đề xám xanh `#607D8B`.
+    + Bo góc tròn mềm mại (`CornerRadius="15"`), viền thanh lịch, đổ bóng mờ (`DropShadowEffect`) cao cấp cùng hiệu ứng hover xanh êm dịu.
+
+## v1.6.2.7 — 2026-09-10
+- [Cải tiến Giao diện] Tinh gọn Mục 3 (Trình độ - Đào tạo) trong Hồ sơ cán bộ:
+    + Loại bỏ toàn bộ các nút "Xem các bằng" và icon con mắt riêng lẻ tại từng ô (Trình độ, Quản lý Nhà nước, Tin học, Ngoại ngữ).
+    + Tập trung quản lý toàn bộ danh sách văn bằng/chứng chỉ của cán bộ thông qua một nút duy nhất "Quản lý danh sách văn bằng" ở thanh tiêu đề mục.
+
+## v1.6.2.6 — 2026-09-10
+- [Tính năng] Thống kê Cơ cấu Ngạch công chức (`StatisticsView`):
+    + Bổ sung bảng "THỐNG KÊ CƠ CẤU NGẠCH CÔNG CHỨC" trong màn hình Báo cáo Thống kê.
+    + Thống kê chi tiết số lượng và tỷ lệ % cơ cấu công chức theo từng ngạch (Chuyên viên cao cấp, Chuyên viên chính, Chuyên viên, Cán sự, Nhân viên, Kiểm tra viên...).
+    + Tự động đồng bộ và lọc dữ liệu chính xác theo bộ lọc Đơn vị/Tổ phòng ban và Năm công tác.
+- [Tính năng] Quản lý Danh sách Văn bằng & Chứng chỉ chi tiết (`PersonnelDegreesDialog`):
+    + Hỗ trợ quản lý và xem toàn bộ các văn bằng, chứng chỉ hiện có của cán bộ (Tin học, Ngoại ngữ, Trình độ chuyên môn, Quản lý Nhà nước & Lý luận chính trị).
+    + Cho phép đánh dấu "⭐ Bằng chính" để hiển thị đại diện ra hồ sơ bên ngoài form cán bộ.
+    + Cho phép nhập và quản lý văn bằng ngay cả khi đang tạo mới cán bộ (chưa lưu CSDL), tự động lưu đồng bộ khi bấm "Lưu hồ sơ".
+- [Cải tiến & Sửa lỗi] Tối ưu hóa Giao diện & Trải nghiệm người dùng:
+    + Thiết kế lại popup Quản lý văn bằng rộng rãi (1100x720px), sang trọng với thanh tiêu đề Slate Navy, hỗ trợ kéo di chuyển cửa sổ trên màn hình.
+    + Khắc phục triệt để lỗi cắt chữ chức vụ ("Tổ trưởng"), nhãn ⭐ Bằng chính và các tiêu đề cột dữ liệu.
+
+## v1.6.2.5 — 2026-09-08
+- [Sửa lỗi & Cải tiến] Nâng cấp Cơ chế Đồng bộ Thông minh Google Drive (Smart Cloud Sync):
+    + Tích hợp so sánh mã băm MD5 (`Md5Checksum`) giữa file CSDL trên máy tính và bản sao lưu trên Google Drive: Nếu nội dung file giống nhau 100% từng byte, ứng dụng tự động bỏ qua popup thông báo, giải quyết triệt để lỗi hiển thị popup thông báo tải dữ liệu về dù dữ liệu không thay đổi.
+    + Cơ chế lưu vết trạng thái đồng bộ (`sync_state.json`): Tự động ghi nhớ thời gian và mã băm của bản sao lưu gần nhất do máy tính đồng bộ, nhận diện chính xác dữ liệu của chính máy này tải lên thay vì báo trùng lặp.
+    + Tự động cập nhật `LastWriteTime` của file CSDL cục bộ khớp chính xác với mốc thời gian Google Drive sau khi Đẩy (Push) hoặc Tải (Pull) thành công, loại bỏ độ lệch thời gian upload.
+    + Cải tiến kiểm tra xung đột dữ liệu khi đóng app: So sánh mốc thời gian Google Drive với thời điểm lúc mở app (`InitialCloudModifiedTime`), tránh cảnh báo xung đột giả do sai lệch đồng hồ máy tính.
+
+## v1.6.2.4 — 2026-08-26
+- [Tính năng] Cảnh báo Đến hạn Nhân sự thông minh (`DeadlineAlertWindow`):
+    + Tự động quét và hiển thị popup cảnh báo mỗi khi mở ứng dụng đối với 4 loại mốc hành chính quan trọng:
+        * Hết hạn bảo lưu phụ cấp chức vụ (cảnh báo trước 30 ngày).
+        * Đến hạn nâng bậc lương định kỳ (cảnh báo trước 60 ngày).
+        * Đến tuổi nghỉ hưu (cảnh báo trước 90 ngày).
+        * Hết nhiệm kỳ bổ nhiệm / tái cử 5 năm đối với cấp Trưởng/Phó (cảnh báo trước 90 ngày).
+    + Tối ưu giao diện bảng cảnh báo: Căn giữa trực quan các cột STT, Loại cảnh báo, Ngày đến hạn, Thời gian đếm ngược.
+- [Tính năng] Nâng cấp Xuất danh sách nhân sự Excel (`ExcelExporter`):
+    + Bổ sung cột "Thời gian công tác theo QĐ gần nhất" ngay sau cột "Số năm công tác".
+    + Cột "Đảng viên" hiển thị số `1` (căn giữa) thay cho chuỗi ký tự "Đảng viên".
+- [Cải tiến] Tối ưu bộ lọc Năm trong Theo dõi nâng lương (`SalaryListView`):
+    + Tải danh sách năm động từ CSDL: Tự động loại bỏ các năm cũ khi đã hoàn tất nâng lương (không còn bản ghi đến hạn của năm đó).
+- [Cải tiến] Tự động chọn Năm hiện tại trong Quản lý Đào tạo & Bồi dưỡng (`TrainingListView`):
+    + Mặc định chọn năm công tác hiện hành thay vì "-- Tất cả --" khi mở trang.
+- [Cải tiến] Tối ưu hóa giao diện và tinh gọn toàn bộ mã nguồn hệ thống.
+
+## v1.6.2.2 — 2026-08-22
+- [Tính năng] Cảnh báo công chức sắp đi làm lại sau đợt nghỉ (7 ngày):
+    + Tự động quét và hiển thị popup cảnh báo (`LeaveReturnAlertWindow`) khi đăng nhập nếu có công chức đang nghỉ (thai sản, ốm, phép) sắp đi làm lại trong vòng 7 ngày tới.
+    + Thiết kế giao diện hiện đại chuẩn Material Design, gắn badge màu phân cấp theo thời hạn (Hôm nay/Ngày mai, 2–3 ngày, 4–7 ngày), sắp xếp theo thứ tự người đi làm lại sớm nhất.
+- [Tính năng] Sắp xếp danh sách nhân sự đang nghỉ theo ngày đi làm lại:
+    + Khi bấm vào thẻ KPI nhân sự đang nghỉ (Thai sản, Nghỉ ốm, Nghỉ phép), hệ thống tự động sắp xếp danh sách hiển thị người sắp hết đợt nghỉ sớm nhất lên đầu tiên.
+- [Tính năng] Tự động lùi thời hạn nâng lương khi nghỉ ốm vượt 6 tháng (> 180 ngày):
+    + Tự động cộng dồn toàn bộ số ngày nghỉ ốm trong kỳ nâng lương (tính từ mốc Thời điểm tính bậc lương lần sau).
+    + Nếu tổng ngày nghỉ ốm > 180 ngày (6 tháng), hệ thống tự động tính số ngày vượt và cộng dồn vào "Dự kiến lên lương", đồng thời tự động hiển thị mục "Nghỉ ốm quá hạn (X ngày)" trong dropdown "Lùi thời gian nâng lương".
+    + Xử lý trường hợp đợt nghỉ ốm chưa có ngày kết thúc: Tính tạm thời gian nghỉ đến ngày hiện tại và hiển thị dòng lưu ý "⚠ Tạm tính — đang có đợt nghỉ ốm chưa xác định ngày kết thúc".
+- [Tính năng] Bổ sung Bảng Thống kê Lãnh đạo Tổ trong Báo cáo Thống kê:
+    + Bổ sung bảng "THỐNG KÊ LÃNH ĐẠO TỔ" trong màn hình Thống kê nhân sự.
+    + Thống kê chi tiết theo từng Tổ / Phòng / Đơn vị: Số lượng Tổ trưởng (Trưởng phòng/Đội trưởng), Phó Tổ trưởng (Phó phòng/Phó đội trưởng), Công chức và Tổng số nhân sự của tổ.
+    + Tự động đồng bộ và lọc dữ liệu chính xác theo bộ lọc Bộ phận và Năm thống kê.
+- [Tính năng] Cơ chế Đồng bộ Thông minh Google Drive (Smart Cloud Sync) chống ghi đè dữ liệu:
+    + Tự động theo dõi trạng thái thay đổi dữ liệu (`App.IsDataDirty`): Nếu chỉ mở app lên xem mà không chỉnh sửa, hệ thống sẽ bỏ qua bước đẩy dữ liệu khi tắt app, bảo toàn 100% dữ liệu mới trên Google Drive.
+    + Tự động kiểm tra bản sao lưu mới khi mở app: Nếu phát hiện trên Google Drive có dữ liệu mới hơn trên máy tính (ví dụ từ máy cơ quan về máy nhà), app sẽ hỏi người dùng để tải về bản mới nhất chỉ với 1 cú nhấp chuột.
+    + Cảnh báo xung đột khi tắt app: Nếu phát hiện dữ liệu trên Drive đã được máy khác cập nhật trong lúc phiên làm việc đang mở, hệ thống sẽ hiển thị cảnh báo xác nhận trước khi ghi đè.
+- [Tính năng] Nâng cấp Quản lý Đào tạo, Bồi dưỡng & Hội nghị:
+    + Bổ sung bộ lọc theo Năm mở lớp / hội nghị (mặc định "Tất cả các năm").
+    + Cải tiến ô tìm kiếm đa năng: Hỗ trợ tìm kiếm đồng thời theo Tên lớp, Số quyết định, Đơn vị ra quyết định và Năm.
+    + Nâng cấp xuất Excel: Bổ sung cột Năm, tự động gắn tiêu đề theo năm lọc và chuẩn hóa tên file xuất.
+
+## v1.6.2.1 — 2026-08-02
+- [Tính năng] Bổ sung tùy chọn chọn nhiều công chức cụ thể trong Nhập thu nhập hàng loạt:
+    + Thêm mục chọn đối tượng áp dụng "Theo công chức cụ thể" cho phép tích chọn nhiều cán bộ công chức cùng lúc.
+    + Sắp xếp danh sách công chức theo đúng thứ tự ưu tiên Phòng ban (Ban lãnh đạo, các Tổ chuyên môn) và Chức vụ (Trưởng, Phó, Công chức).
+    + Tích hợp ô tìm kiếm tên/phòng ban/chức vụ trực tiếp, nút chọn tất cả / bỏ chọn tất cả và bộ đếm số lượng công chức đã chọn.
+    + Hỗ trợ nút "BỘ CHỌN LỚN" mở cửa sổ tìm kiếm và lọc danh sách cán bộ chuyên sâu.
+- [Sửa lỗi] Sửa lỗi hiển thị bộ lọc "Đang công tác" ở màn hình Tổng quan danh sách nhân sự:
+    + Xử lý hiển thị đầy đủ 100% nhân sự khi lọc "Đang công tác", tự động bao gồm các nhân sự có trường trạng thái rỗng/null hoặc mới import từ Excel.
+    + Tự động gán mặc định trạng thái "Đang công tác" cho tất cả công chức khi import từ file Excel.
+
+## v1.6.2.0 — 2026-07-30
+- [Tính năng & Kiến trúc] Tích hợp đồng bộ cơ sở dữ liệu lên Google Drive (Auto-Sync & Thủ công):
+    + Tự động đồng bộ CSDL SQLite (`tax_personnel.db`) lên Google Drive khi người dùng đóng ứng dụng hoặc đăng xuất.
+    + Thư mục riêng chuyên biệt `Sao Lưu - Quản Lý Nhân Sự Thuế` trên Google Drive giúp quản lý ngăn nắp, tránh xóa nhầm.
+    + Cấu hình OAuth 2.0 chuẩn với phạm vi `drive.file` giúp ứng dụng vận hành lâu dài, an toàn và dễ dàng xác minh.
+    + Tùy chọn đồng bộ thủ công ("Đẩy lên" và "Tải về") linh hoạt trong màn hình Sao lưu & Phục hồi.
+    + Tự động sao lưu bản CSDL cục bộ dự phòng (`.before_sync.bak`) trước khi tải và ghi đè CSDL mới từ Google Drive.
+- [Giao diện & UX] Nâng cấp toàn diện các hộp thoại thông báo đồng bộ:
+    + Cửa sổ thông báo tiến trình đóng app (`SyncOnCloseWindow`) hiệu ứng đám mây xoay mượt mà, trực quan.
+    + Chuyển đổi toàn bộ thông báo lỗi, cảnh báo và thành công sang giao diện `WarningWindow` và `SuccessWindow` chuẩn Material Design cao cấp (bo góc, hiệu ứng mờ shadow), loại bỏ hoàn toàn MessageBox cũ của Windows.
+    + Kiểm tra sự tồn tại của bản sao lưu trên Drive trước khi tải về, đưa ra thông báo hướng dẫn chính xác cho người dùng.
+- [Sửa lỗi & Tối ưu] Tối ưu hóa thứ tự sắp xếp danh mục Tổ / Phòng chuyên môn:
+    + Tự động sắp xếp các Tổ / Phòng theo đúng thứ tự ưu tiên nghiệp vụ (*Tổ Tổng hợp - Kế hoạch - Dự toán*, *Tổ Nghiệp vụ Quản lý thuế*, *Tổ Đội Thuế*, ...) chuẩn quy định.
+
+## v1.6.1.2 — 2026-07-29
+- [Tính năng & Kiến trúc] Phân tách cơ sở dữ liệu Chức vụ và Chức danh Quy hoạch:
+    + Tạo bảng cơ sở dữ liệu SQLite độc lập `PlanningPositions` (`PlanningPosition` entity) chuyên quản lý các Chức danh Quy hoạch cán bộ.
+    + Bổ sung trường `GroupType` vào bảng `Positions` phân loại rõ nhóm áp dụng: *Ban lãnh đạo*, *Các tổ*, hoặc *Tất cả*.
+- [Giao diện & UX] Nâng cấp toàn diện giao diện cửa sổ Quản lý Chức vụ (`AddPositionDialog`):
+    + Mở rộng kích thước cửa sổ lên `600x620px` thoáng đãng.
+    + Thiết kế lại bộ chọn nhóm bộ phận áp dụng theo phong cách Segmented Choice Cards/Pills với Icon trực quan (*Tất cả*, *Ban lãnh đạo*, *Các tổ / Phòng*) và hiệu ứng mờ shadow hiện đại.
+    + Thêm nhãn Badge Tag hiển thị rõ nhóm bộ phận của từng chức vụ trong danh sách.
+    + Tối ưu giao diện Quy hoạch cán bộ: Loại bỏ nút `+` dư thừa cạnh ô Chức danh chuyển tiếp, dùng chung 1 nút quản lý duy nhất.
+- [Sửa lỗi & Tối ưu] Tự động cập nhật CSDL và lọc danh sách minh bạch:
+    + Tự động chạy lệnh SQL Migration (`ALTER TABLE Positions ADD COLUMN GroupType TEXT` và `CREATE TABLE IF NOT EXISTS PlanningPositions`) trong `App.xaml.cs` khi khởi chạy app.
+    + Khắc phục lỗi hiển thị lẫn lộn chức danh (loại bỏ logic ép chèn chức vụ đã xóa vào dropdown).
+    + Loại bỏ cơ chế tự động nạp lại danh sách mặc định khi danh sách bị xóa rỗng, đảm bảo thao tác xóa của người dùng được lưu vết chính xác.
+
+## v1.6.1.1 — 2026-07-28
+- [Tính năng] Phân tách độc lập Chức danh Quy hoạch và Chức vụ chính:
+    + Bổ sung phân loại `__QUY_HOẠCH__` cho danh mục chức danh mục tiêu quy hoạch; tự động phân loại các chức danh quy hoạch cũ đang có sẵn trong CSDL về đúng nhóm.
+    + Tối ưu bộ lọc Chức vụ trong màn hình Thông tin công tác: Ban lãnh đạo chỉ hiển thị các chức danh lãnh đạo chuẩn; các Tổ/Phòng chuyên môn chỉ hiển thị chức danh cấp tổ/phòng chuẩn. Loại bỏ hoàn toàn sự rò rỉ các chức danh quy hoạch mục tiêu vào menu Chức vụ chính.
+    + Khi mở cửa sổ thêm chức danh từ hộp thoại Quy hoạch, hệ thống ở chế độ "Quản lý Chức danh Quy hoạch" và tự động đánh dấu `__QUY_HOẠCH__`.
+- [Tối ưu] Đồng bộ bộ lọc Trạng thái công tác trên các màn hình chức năng:
+    + Áp dụng tự động lọc chỉ hiển thị nhân sự "Đang công tác" (loại trừ cán bộ luân chuyển / điều động, nghỉ việc, nghỉ hưu) trên 5 màn hình: *Thời gian giữ vị trí công tác*, *Nâng lương*, *Báo cáo tổng Thu nhập*, *Quản lý Nghỉ phép*, và *Thi đua - Đánh giá*.
+- [Sửa lỗi] Tối ưu hóa nhập liệu Bảng kê Thu nhập tháng:
+    + Tự động dọn dẹp và xóa dòng ghi chú (diễn giải khoản thu nhập/lương) khi số tiền của tháng được sửa hoặc xóa về 0 đ.
+    + Tối ưu luồng lưu dữ liệu: chỉ lưu các bản ghi có số tiền thu nhập thực tế > 0 đ vào CSDL, loại bỏ hoàn toàn các bản ghi rỗng/bằng 0 đ.
+- [Dọn dẹp CSDL] Quét và tự động xóa sạch các bản ghi chức vụ thử nghiệm rác (`test`) trực tiếp khỏi cơ sở dữ liệu SQLite; loại bỏ các bộ lọc ẩn cứng để đảm bảo hiển thị minh bạch.
+
+## v1.6.1.0 — 2026-07-27
+- [Tính năng] Cải tiến xuất file Excel Báo cáo tổng Thu nhập năm:
+    + Bổ sung 3 phần chi tiết bên dưới bảng tổng hợp của mỗi cán bộ (trên từng sheet riêng biệt): Lương, Làm thêm giờ, và Thu nhập khác.
+    + Bảng chi tiết Lương: Thể hiện chi tiết mức lương được nhận của từng tháng trong năm.
+    + Bảng chi tiết Làm thêm giờ và Thu nhập khác: Thể hiện chi tiết số tiền của từng tháng kèm cột Ghi chú tự động trích xuất nội dung khoản tiền (chỉ ra cụ thể đó là khoản tiền gì).
+- [Tính năng] Bổ sung quản lý Trạng thái công tác cho Cán bộ (thay vì xóa hồ sơ):
+    + Bổ sung trường "Trạng thái công tác" (Đang công tác, Luân chuyển / Điều động, Nghỉ việc, Nghỉ hưu) trong hộp thoại Thêm/Sửa hồ sơ công chức.
+    + Bổ sung bộ lọc "Trạng thái công tác" trên màn hình Danh sách Nhân sự chính, mặc định chỉ hiển thị những người "Đang công tác" giúp giao diện gọn gàng nhưng vẫn giữ nguyên dữ liệu gốc để tra cứu khi cần.
+    + Tối ưu hóa luồng khởi tạo giao diện WPF (thêm cờ _isInitializing) giúp tránh lỗi `NullReferenceException` khi load mặc định.
+
+## v1.6.0.9 — 2026-07-22
+- [Tính năng] Bổ sung bộ chọn mốc năm đánh giá động trong hộp thoại Quy hoạch:
+    + Thêm ComboBox chọn mốc năm đánh giá (Mốc năm) bên cạnh nhãn "Kết quả phân loại công chức 03 năm gần nhất".
+    + Nguồn dữ liệu mốc năm được tải động từ danh sách các năm thực tế đã có kết quả xếp loại trong cơ sở dữ liệu (kèm năm hiện tại, năm tiếp theo, và tự động thêm năm ký quyết định nếu chưa có).
+    + Tự động thay đổi mốc năm đánh giá theo năm ký quyết định (Ngày ký QĐ). Ví dụ: Khi ngày ký quyết định thuộc năm 2025, mốc năm sẽ tự động nhảy về 2025 để hiển thị xếp loại của 3 năm liền kề trước đó là 2022, 2023, 2024.
+    + Cho phép người dùng chủ động chọn lại mốc năm khác từ danh sách để tự động tải lại kết quả xếp loại 3 năm tương ứng từ hồ sơ cán bộ.
+
+## v1.6.0.8 — 2026-07-19
+- [Sửa lỗi] Tối ưu hóa tính thời gian nghỉ thai sản (Tròn 6 tháng):
+    + Cập nhật thuật toán tính toán số tháng và số ngày nghỉ phép/thai sản. Khi khoảng thời gian nghỉ trọn vẹn theo tháng (ví dụ: từ ngày 15/01 đến hết ngày 14/07), hệ thống sẽ hiển thị tròn "6 tháng" thay vì hiển thị "5 tháng 30 ngày" như trước đây.
+- [Sửa lỗi] Lọc danh sách chức danh/chức vụ trong hộp thoại Quy hoạch:
+    + Khắc phục lỗi hiển thị lẫn lộn chức danh Đảng ở tab Quy hoạch Chuyên môn bằng cách lọc loại trừ các chức danh thuộc phòng/ban "__ĐẢNG__" khi hiển thị dropdown.
+    + Đồng bộ danh sách chức danh Đảng: Dropdown chọn chức danh Đảng sẽ tải trực tiếp danh sách từ database (có tên phòng/ban là "__ĐẢNG__") thay vì dùng danh sách tĩnh, giúp hiển thị ngay lập tức các thay đổi khi người dùng bấm dấu cộng (+) để thêm/sửa/xóa chức danh Đảng.
+
+## v1.6.0.7 — 2026-07-17
+- [Tính năng] Phân tách quản lý và phân loại nhóm chức danh Quy hoạch (Chuyên môn vs Đảng):
+    + Mở lại nút thêm/sửa/xóa (+) chức danh quy hoạch bên cạnh ComboBox cho cả hai tab (Chuyên môn và Đảng) trong `PlanningRecordDialog`.
+    + Quản lý độc lập danh sách chức danh Đảng: Khi bấm + tại tab Quy hoạch Đảng, cửa sổ quản lý chức danh sẽ ở chế độ "Quản lý Chức danh Đảng" (chỉ làm việc với các chức danh thuộc phòng/ban "__ĐẢNG__"), tự động khởi tạo danh sách chức danh Đảng mặc định nếu danh sách trống.
+    + Lọc bỏ hoàn toàn các chức danh Đảng ra khỏi ComboBox chọn chức vụ chuyên môn ở phần thông tin nhân sự chính.
+- [Tính năng] Cải tiến báo cáo xuất Excel Quy hoạch (PlanningExcelExporter):
+    + Phân loại nhóm động theo loại quy hoạch: Chuyên môn phân nhóm theo "Trưởng phòng / Phó Trưởng phòng và tương đương"; Đảng phân nhóm theo "Bí thư / Phó Bí thư và tương đương" (bao gồm cả Chi ủy viên, Ủy viên).
+    + Loại bỏ hoàn toàn cụm từ "(trước sắp xếp)" ở các tiêu đề cột F và J của tệp Excel xuất ra.
+- [Tính năng] Bổ sung Ghi chú thai sản vào Excel Thời gian công tác:
+    + Thêm cột "Ghi chú" (cột H) vào tệp Excel xuất ra từ màn hình "Thời gian công tác".
+    + Tự động tính toán và hiển thị thời hạn nghỉ thai sản chưa đủ 36 tháng của công chức tương tự như xuất bên nhân sự.
+- [Tính năng] Nâng cấp Ghi chú hệ thống trong Quản lý Nghỉ phép:
+    + Bổ sung ô TextBox "Ghi chú hệ thống" trực quan vào biểu mẫu nhập thông tin nghỉ phép (chiều cao 40px đồng bộ).
+    + Tự động tính toán (tự nhảy) chi tiết breakdown ngày nghỉ loại trừ thứ 7, chủ nhật và ngày lễ Tết ngay khi chọn ngày/loại nghỉ.
+    + Cho phép người dùng chỉnh sửa thủ công (sửa tay) ghi chú tự động này trước khi thêm/cập nhật vào cơ sở dữ liệu.
+    + Đảm bảo khi chọn chỉnh sửa đợt nghỉ phép, ghi chú cũ sẽ được tải lên đầy đủ mà không bị ghi đè tự động.
+- [Sửa lỗi & Tối ưu]:
+    + Khắc phục lỗi font chữ tiếng Việt bị vỡ trên một số máy trạm bằng cách khai báo thuộc tính `FontFamily="{DynamicResource MaterialDesignFont}"` trực tiếp tại thẻ root `<Page>` của các trang: `PlanningManagementView.xaml`, `TrainingListView.xaml`, `LeaveDetailView.xaml`, `EmulationRewardView.xaml` và `AnnualIncomeView.xaml`.
+    + Khắc phục lỗi giao diện nút bấm (+) trong `PlanningRecordDialog.xaml` chạm sát thanh cuộn bằng cách bổ sung lề phải `Margin="0 0 15 0"`.
+    + Loại bỏ tùy chọn "Tất cả các năm" trong bộ lọc thống kê và mặc định chọn năm mới nhất khi khởi động.
+
+## v1.6.0.6 — 2026-06-26
+- [Tối ưu Code] Refactor phương thức xuất Excel Quy hoạch (ExportToExcel):
+    + Sửa lỗi logic: Tham số `planningType` đã được truyền vào nhưng không được sử dụng, dẫn đến cả 2 tab đều gộp chung toàn bộ dữ liệu Chuyên môn + Đảng khi xuất. Nay mỗi tab chỉ xuất đúng danh sách của mình.
+    + Tên file xuất Excel hiện đính kèm loại quy hoạch rõ ràng: `QuyHoach_ChuyenMon_YYYYMMDD.xlsx` hoặc `QuyHoach_Dang_YYYYMMDD.xlsx`.
+- [Sửa lỗi] Khắc phục ComboBox bộ lọc tại màn hình Quy hoạch không hiển thị chữ sau khi chọn giá trị:
+    + Nguyên nhân: MaterialDesignTheme.ComboBox.xaml override template và foreground của ComboBoxItem, gây mất chữ trong ô chọn khi highlighted.
+    + Giải pháp: Loại bỏ MaterialDesign ComboBox resource khỏi Page.Resources (các ComboBox này đã dùng custom style riêng), thêm `Foreground="Black"` để đảm bảo text luôn hiển thị.
+- [Giao diện] Tăng độ rộng ô ComboBox bộ lọc tại màn hình Quy hoạch:
+    + Ô **Bộ phận**: 180px → 220px để hiển thị đủ tên bộ phận dài.
+    + Ô **Nhiệm kỳ**: 130px → 160px để hiển thị đủ tên nhiệm kỳ.
+    + Áp dụng cho cả Tab Chuyên môn và Tab Đảng.
+- [Giao diện] Đổi tên 3 mục menu trong Sidebar chính:
+    + *TG giữ vị trí công tác* → **Thời gian công tác**
+    + *Xếp loại* → **Đánh giá xếp loại chất lượng công chức** (hỗ trợ xuống dòng tự động)
+    + *Đào tạo và Bồi dưỡng* → **Đào tạo, Bồi dưỡng**
+
+## v1.6.0.5 — 2026-06-25
+- [Tính năng] Bổ sung menu "Quy hoạch" vào Sidebar chính của ứng dụng:
+    + Tích hợp Page "Quản lý Quy hoạch Nhân sự" (PlanningManagementView) với giao diện TabControl phân tách thành hai khu vực chuyên biệt: **Quy hoạch Chuyên môn** và **Quy hoạch Đảng**.
+    + Mỗi khu vực hỗ trợ bộ lọc thông minh: tìm kiếm theo Họ tên/CCCD, lọc theo Tổ/Bộ phận công tác, lọc theo Nhiệm kỳ quy hoạch và lọc theo Trạng thái quy hoạch.
+    + Dữ liệu hiển thị dạng DataGrid và tự động được **nhóm (Grouping)** thành 3 nhóm phân tách trực quan:
+        1. *Tiếp tục quy hoạch*
+        2. *Đưa ra khỏi quy hoạch*
+        3. *Bổ sung quy hoạch*
+- [Tính năng] Dialog Thêm/Sửa Quy hoạch (PlanningRecordDialog):
+    + Hỗ trợ chọn cán bộ nhanh chóng thông qua hộp thoại tìm kiếm cán bộ sẵn có.
+    + Điền tự động các trường thông tin cơ bản: Chức vụ hiện tại, Trình độ chuyên môn, Lý luận chính trị và cho phép tùy biến/chỉnh sửa thông tin lịch sử quy hoạch độc lập với hồ sơ gốc.
+    + Hỗ trợ quản lý đầy đủ thông tin: Chức danh quy hoạch, Chức danh chuyển tiếp, Nhiệm kỳ, Quyết định quy hoạch (Số QĐ, Ngày ký, Đơn vị ban hành), Kết quả đánh giá phân loại 3 năm gần nhất và Ghi chú.
+- [Tính năng] Xuất Excel Báo cáo Quy hoạch (PlanningExcelExporter):
+    + Hỗ trợ xuất trực tiếp bảng danh sách quy hoạch ra tệp Excel (.xlsx) thông qua thư viện ClosedXML.
+    + Giao diện file Excel xuất ra được định dạng chuẩn, chia rõ ràng thành 3 bảng dữ liệu riêng biệt theo nhóm phân loại với STT chạy lại từ 1, tiêu đề cột căn chỉnh chuyên nghiệp, gộp ô đúng biểu mẫu yêu cầu.
+
+## v1.6.0.4 — 2026-06-24
+- [Sửa lỗi] Khắc phục triệt để lỗi hiển thị mờ/khó đọc của số tiền hàng "Tổng cộng (Tháng)" trong màn hình Thu nhập năm khi dòng đó đang được chọn nhưng cửa sổ ứng dụng mất focus (Inactive). Bằng việc binding động Foreground của TextBlock theo Foreground của DataGridCell cha, màu chữ sẽ tự động chuyển sang màu tối/đen khi mất focus để nổi bật rõ ràng trên nền xám nhạt, thay vì bị ép cứng màu trắng như trước.
+- [Giao diện] Sửa lỗi hiển thị mờ ở hàng "Tổng cộng (Tháng)" trong màn hình Thu nhập năm (AnnualIncomeView.xaml), chuyển sang màu xanh lá cây đậm và in đậm để số liệu rõ ràng, dễ đọc hơn khi không được chọn.
+- [Giao diện] Loại bỏ hoàn toàn ô tìm kiếm ở màn hình Báo cáo Thống kê để giao diện gọn gàng, tránh dư thừa và tập trung vào biểu đồ số liệu tổng quan.
+- [Giao diện] Khôi phục tiêu đề cột "TÊN CÁC LỚP, HỘI NGHỊ" và "ĐƠN VỊ RA QĐ" căn giữa theo quy chuẩn hành chính, đồng thời giữ dữ liệu của cột căn lề trái để dễ quan sát và loại bỏ các style dư thừa.
+
+## v1.6.0.3 — 2026-06-24
+- [Tính năng] Chọn học viên hàng loạt theo Tổ hoặc Chọn toàn bộ:
+    + Bổ sung nút "Chọn nhiều..." (icon AccountMultiplePlus) cạnh ô tìm kiếm học viên trong màn hình Chi tiết lớp học / Hội nghị.
+    + Thêm Dialog chuyên dụng "Chọn Cán Bộ Công Chức" (PersonnelSelectorDialog) hỗ trợ lọc theo Tổ/Bộ phận và tìm kiếm nhanh theo Họ tên/Số CCCD.
+    + Hỗ trợ CheckBox ở đầu bảng và CheckBox "Chọn tất cả" tại dòng tiêu đề:
+        * Khi tích chọn "Chọn tất cả" sẽ tự động chọn toàn bộ cán bộ đang hiển thị theo bộ lọc tổ hoặc tìm kiếm hiện tại.
+        * Hiển thị số lượng chọn trực quan dạng "Đã chọn: X / Y cán bộ".
+    + Nhấn "Xác nhận thêm" để ghi nhận hàng loạt học viên được chọn vào cơ sở dữ liệu cùng lúc.
+- [Tính năng] Sắp xếp danh sách nhân sự theo bộ phận:
+    + Cấu hình sắp xếp danh sách cán bộ hiển thị tại ComboBox tìm chọn học viên, DataGrid danh sách học viên tham gia lớp học và bảng danh sách trong hộp thoại chọn nhiều theo thứ tự **Bộ phận/Tổ công tác** trước, sau đó sắp xếp theo **Họ tên** của cán bộ trong cùng bộ phận. Điều này giúp theo dõi và tìm kiếm học viên tập trung, có hệ thống.
+- [Tính năng] Bổ sung cột Đảng viên vào file Excel xuất từ danh sách nhân sự chính (Tổng quát):
+    + Thêm cột "Đảng viên" vào file Excel xuất ra (nằm sau cột Tin học và trước cột Ngày vào Đảng) hiển thị giá trị "Đảng viên" (nếu đã vào Đảng) hoặc để trống (nếu chưa vào Đảng). Điều này giúp người dùng dễ dàng lọc, phân loại và quản lý trạng thái Đảng viên của công chức trực tiếp trên file Excel.
+- [Sửa lỗi] Sửa lỗi gõ nhanh bị mất chữ/nhảy con trỏ ở ComboBox tìm chọn học viên:
+    + Áp dụng kỹ thuật trì hoãn xử lý (Debounce bằng DispatcherTimer 200ms). Khi gõ phím nhanh liên tục, danh sách lọc sẽ không bị làm mới liên tục gây nghẽn UI, mất ký tự hoặc nhảy con trỏ soạn thảo; bộ lọc chỉ thực thi sau khi người dùng dừng gõ 200ms giúp trải nghiệm gõ phím mượt mà tuyệt đối.
+- [Sửa lỗi] Hỗ trợ tìm kiếm nhân sự không dấu:
+    + Cập nhật logic tìm kiếm tại ComboBox tìm chọn học viên và ô tìm kiếm của hộp thoại chọn nhiều cán bộ. Hệ thống tự động chuyển đổi cả từ khóa tìm kiếm và tên cán bộ/bộ phận sang dạng không dấu khi so sánh, giúp người dùng tìm kiếm nhanh mà không cần gõ dấu tiếng Việt (ví dụ: gõ "triet" vẫn tìm được "Triết", "hung" vẫn tìm được "Hùng").
+
+## v1.6.0 — 2026-06-23
+- [Tính năng] Thêm menu "Thống kê" trong Sidebar:
+    + Bổ sung màn hình Báo cáo Thống kê Nhân sự (StatisticsView) chuyên dụng, thiết kế trực quan với bố cục Card hiện đại, tích hợp đầy đủ vào menu điều hướng chính.
+    + Bộ lọc linh hoạt theo Tìm kiếm (Họ tên, Mã cán bộ, CCCD), Bộ phận và Năm thống kê; tự động cập nhật biểu đồ ngay khi thay đổi bộ lọc.
+    + Năm thống kê tự động đưa năm hiện tại lên đầu danh sách; hệ thống tự động phát hiện và bổ sung năm mới theo thời gian thực mỗi khi khởi động.
+- [Thống kê] Biểu đồ và chỉ số thống kê toàn diện:
+    + Thẻ KPI tổng số công chức kèm phân bố giới tính (Nam/Nữ) với tỷ lệ phần trăm hiển thị trực quan.
+    + Biểu đồ tròn Donut Chart vẽ hoàn toàn bằng WPF Path/ArcSegment (không cần thư viện ngoài) cho Trình độ học vấn (Sau Đại học, Đại học, Khác) và Phân bố Đảng viên/Quần chúng.
+    + Biểu đồ cột dọc thể hiện Phân bố Độ tuổi (Dưới 30, 30–40, 41–50, Trên 50) và Thâm niên công tác (Dưới 5 năm, 5–10 năm, 11–20 năm, Trên 20 năm).
+    + Các dòng tóm tắt tự động dưới mỗi biểu đồ giúp đọc nhanh thông tin quan trọng.
+- [Tính năng] Xuất báo cáo Excel thống kê chuyên nghiệp:
+    + Sheet 1 "Thống kê chung": Bảng tổng hợp đầy đủ các chỉ số theo nhóm, header màu xanh, tiêu đề nhóm nổi bật.
+    + Sheet 2 "Danh sách chi tiết": Toàn bộ danh sách nhân sự lọc theo tiêu chí đã chọn, sắp xếp theo Bộ phận và Họ tên, tự động căn chỉnh cột.
+- [Tính năng] Ô "Nghỉ phép hôm nay" trên Dashboard:
+    + Bổ sung thẻ KPI hiển thị số lượng công chức đang nghỉ phép trong ngày hiện tại.
+    + Nhấp vào thẻ sẽ mở cửa sổ popup liệt kê chi tiết danh sách người nghỉ phép hôm đó (Họ tên, Bộ phận, Loại nghỉ).
+- [Giao diện] Màn hình Xếp loại — các thẻ KPI tổng hợp phía trên:
+    + Thêm hàng thẻ thống kê tổng quan (tương tự Dashboard) ngay phía trên danh sách xếp loại, gồm: Tổng số, Hoàn thành xuất sắc, Hoàn thành tốt, Hoàn thành nhiệm vụ, Không hoàn thành.
+- [Tính năng] Tìm kiếm nâng cao theo số CCCD:
+    + Tất cả ô tìm kiếm trong hệ thống (danh sách nhân sự, thống kê, xếp loại,...) đều hỗ trợ tìm kiếm theo số Căn cước công dân để phân biệt người trùng tên.
+- [Tối ưu Code] Dọn dẹp và chuẩn hóa toàn bộ mã nguồn:
+    + Tách logic lọc dữ liệu dùng chung (GetFilteredPersonnel) và phân loại dữ liệu (ClassifyEducation, ClassifyAge, ClassifySeniority) thành các phương thức riêng, loại bỏ hoàn toàn code trùng lặp giữa LoadStatistics() và xuất Excel.
+    + Chuẩn hóa 100% comments trong mã nguồn sang tiếng Việt.
+    + Xóa các file rác (debug.log nội bộ, user.config tạm) khỏi lịch sử commit.
+
+## v1.5.9 — 2026-06-22
+- [Tối ưu] Khắc phục lỗi hiển thị trên màn hình nhỏ tại màn hình "Thời gian giữ vị trí công tác":
+    + Thay đổi bố cục Grid cố định của thanh công cụ lọc sang WrapPanel giúp các bộ lọc tự động xuống dòng linh hoạt, không bị che khuất hay mất thông tin.
+    + Thiết lập kích thước tối thiểu (MinWidth) cho các cột trên DataGrid hiển thị thông tin như Họ và tên, Bộ phận, Thời gian công tác, Thời gian nghỉ hưu,... để ngăn ngừa việc text bị thu hẹp hoặc cắt ngắn (hiển thị dấu ba chấm).
+- [Giao diện] Thay đổi logo ứng dụng sang logo ngành Thuế Nhà nước chất lượng cao:
+    + Tích hợp hình ảnh logo mới (logo.png) làm tài nguyên hệ thống (Resource) có độ phân giải gốc cực nét.
+    + Cấu hình cho ảnh hiển thị trên thanh Sidebar chính và màn hình Đăng nhập sử dụng trực tiếp tệp PNG này, khắc phục triệt để lỗi ảnh bị mờ/nhoè do WPF tự động nén và co dãn tỷ lệ của file .ico cũ.
+    + Tiếp tục cập nhật biểu tượng thanh tiêu đề chính (Window Icon) sang logo mới.
+
+## v1.5.7 — 2026-06-19
+- [Tính năng] Bổ sung thông tin "Số năm tuổi Đảng" vào hồ sơ cán bộ đảng viên:
+    + Tự động tính toán số năm số tháng tuổi Đảng (ví dụ "0 năm 8 tháng") dựa trên Ngày vào Đảng so với ngày hiện tại.
+    + Giao diện nhập liệu hồ sơ chi tiết (PersonnelDetailView) và hộp thoại xem thông tin (PersonnelProfileDialog) hiển thị trực quan thông tin này.
+    + Tích hợp xuất thông tin Số năm tuổi Đảng ra báo cáo PDF và Excel đồng bộ.
+- [Tính năng] Nâng cấp màn hình "Thời gian giữ vị trí công tác":
+    + Bổ sung 2 cột mới: "Tổng thời gian công tác trong ngành Thuế" (tính từ ngày bắt đầu công tác) và "Thời gian còn lại đến khi nghỉ hưu" (tính đến ngày nghỉ hưu dự kiến).
+    + Thêm bộ lọc linh hoạt cho phép người dùng tự do lọc danh sách cán bộ theo khoảng thâm niên (Từ X năm đến dưới Y năm), hoạt động động theo thời điểm tính.
+    + Đồng bộ hóa các cột mới và tiêu đề bộ lọc thâm niên công tác tương ứng vào báo cáo xuất Excel.
+
+## v1.5.6 — 2026-06-18
+- [Tính năng] Bổ sung thông tin "Quê quán" và "Nơi ở hiện nay" vào hồ sơ cán bộ:
+    + Cập nhật CSDL SQLite và Entities model tự động thêm 2 cột mới `Hometown` và `CurrentResidence`.
+    + Giao diện nhập liệu chi tiết cán bộ bổ sung các ô nhập Quê quán và Nơi ở hiện nay.
+    + Giao diện xem chi tiết hồ sơ (Profile Dialog) hiển thị đầy đủ và thẩm mỹ Dân tộc, Tôn giáo, Quê quán, Nơi ở hiện nay.
+    + Hỗ trợ kết xuất thông tin mới này ra file Excel (.xlsx) và file PDF (.pdf).
+- [Tính năng] Liên kết động Chức vụ với Bộ phận áp dụng:
+    + Trong hộp thoại quản lý Chức vụ, cho phép chọn Bộ phận áp dụng khi thêm hoặc sửa chức vụ.
+    + Bộ lọc danh sách chức vụ khi thêm/chỉnh sửa cán bộ tự động lọc động dựa trên Bộ phận được chọn.
+    + Thiết kế lại giao diện hộp thoại ComboBox chọn bộ phận bằng Style tùy chỉnh `DialogComboBox` phẳng, hiện đại, không viền xám thừa.
+
+## v1.5.5 — 2026-06-17
+- [Tính năng] Bổ sung bộ lọc Xếp loại (Rating Filter) tại màn hình Xếp loại:
+    + Thêm ComboBox lọc "XẾP LOẠI" trên thanh công cụ quản lý Xếp loại công chức (`EvaluationListView`).
+    + Hỗ trợ các tiêu chí lọc bao gồm: "-- Tất cả xếp loại --", "Hoàn thành xuất sắc nhiệm vụ", "Hoàn thành tốt nhiệm vụ", "Hoàn thành nhiệm vụ", và "Không hoàn thành nhiệm vụ".
+    + Tích hợp đầy đủ vào cơ chế tải dữ liệu thời gian thực: Tự động cập nhật danh sách ngay khi thay đổi bộ lọc, kết hợp đồng bộ cùng bộ lọc Tìm kiếm, Bộ phận và Năm.
+- [Giao diện] Tối ưu hóa bố cục thanh bộ lọc và các nút thao tác:
+    + Tổ chức các phần tử thành hai nhóm độc lập (Nhóm Bộ lọc & Nhóm Nút hành động) bên trong một WrapPanel chung của Card.
+    + Nhóm Bộ lọc được định cấu hình độ rộng an toàn và tăng lên (Tìm kiếm: 240, Bộ phận: 300, Năm: 200, Xếp loại: 240) để tránh triệt để việc bị cắt bớt hoặc hiển thị dấu ba chấm "..." đối với các nhãn tiếng Việt dài.
+    + Nhóm Nút hành động bao gồm đầy đủ ba nút thao tác ("Nhập Excel", "Quyết định hàng loạt", "Xuất Excel") đi liền nhau. Nhờ cấu trúc WrapPanel thông minh này, khi cửa sổ đủ rộng, tất cả bộ lọc và nút sẽ nằm thẳng hàng trên cùng một dòng; khi thu nhỏ cửa sổ, toàn bộ nhóm nút sẽ tự động ngắt dòng và di chuyển xuống hàng thứ hai dưới dạng một khối thống nhất, tạo nên bố cục cân đối, gọn gàng và sạch đẹp.
+
+## v1.5.4 — 2026-06-17
+- [Tính năng] Cấu hình đối tượng áp dụng cho Quyết định hàng loạt:
+    + Bổ sung mục lựa chọn "ĐỐI TƯỢNG ÁP DỤNG" vào hộp thoại Quyết định hàng loạt (`BulkDecisionDialog`).
+    + Cho phép người dùng lọc cập nhật quyết định theo các nhóm chức vụ: Trưởng Thuế cơ sở (bao gồm cả Quyền Trưởng Thuế), Phó Trưởng Thuế cơ sở, Tổ trưởng, Phó Tổ trưởng, Công chức, hoặc áp dụng cho Toàn bộ công chức, người lao động.
+    + Logic kiểm tra thông minh: Tự động cảnh báo nếu không tìm thấy nhân sự thuộc năm và đối tượng chức vụ đã chọn trước khi áp dụng.
+    + Khắc phục lỗi bảo toàn dữ liệu: Khi cập nhật hàng loạt, các trường bị bỏ trống trên dialog sẽ được giữ nguyên thông tin cũ trong CSDL của cán bộ, không bị ghi đè thành rỗng. Thêm validation cảnh báo chặn lưu nếu bỏ trống tất cả các trường thông tin quyết định.
+- [Giao diện] Bổ sung cột "BỘ PHẬN" hiển thị kết hợp Chức vụ vào bảng Xếp loại:
+    + Hiển thị thông tin phòng ban/tổ công tác (`Personnel.Department`) kết hợp chức vụ (`Personnel.Position`) được xếp dạng 2 dòng chuyên nghiệp ngay trên lưới danh sách xếp loại chất lượng (`EvaluationListView`).
+    + Cột sử dụng màu sắc chủ đạo xanh dịu nhạt (`#E3F2FD`) và chữ đậm (`#1565C0`) cho tên phòng ban để phân tách rõ ràng với thông tin chức vụ.
+
+## v1.5.3 — 2026-06-16
+- [Tính năng] Quyết định xếp loại hàng loạt:
+    + Bổ sung nút "Quyết định hàng loạt" tại màn hình quản lý Xếp loại để cập nhật thông tin Quyết định cho toàn bộ nhân sự xếp loại trong năm được chọn.
+    + Hỗ trợ giao diện cửa sổ nhập liệu BulkDecisionDialog dạng thẻ góc bo tròn và hiệu ứng đổ bóng mờ premium.
+    + Kiểm tra điều kiện thông minh: Tự động cảnh báo nếu chưa có dữ liệu xếp loại cho năm được chọn và xác nhận số lượng cán bộ sẽ được cập nhật.
+- [Tối ưu UX] Ghi nhớ vị trí cuộn thông minh (Scroll Memory):
+    + Lưu chính xác chỉ số `VerticalOffset` của ScrollViewer trên bảng DataGrid danh sách trước khi vào xem/sửa chi tiết.
+    + Phục hồi chính xác vị trí cuộn tuyệt đối khi quay về trang danh sách (ở đầu vẫn ở đầu, ở giữa vẫn ở giữa, ở cuối vẫn ở cuối) bằng cách đồng bộ sự kiện Loaded và phân trang, loại bỏ hiện tượng nhảy vị trí hoặc đẩy xuống đáy viewport.
+    + Khóa cột Năm xếp loại thành chỉ đọc (Read-only) tránh vô tình sửa đổi làm lệch nhóm năm.
+- [Tính năng] Đồng bộ công thức ngày nghỉ phép năm mới:
+    + Cập nhật công thức: `Số năm tính phép = Năm hiện tại - Năm tính phép + 1`, chuẩn hóa số ngày phép tổng cộng = `(Số năm / 5) + 12`.
+    + Đồng bộ thống nhất công thức này giữa màn hình Chi tiết cán bộ và Báo cáo phép năm (LeaveDetailView).
+- [Giao diện] Cải tiến bố cục Tab chuyên nghiệp:
+    + Khắc phục triệt để lỗi hoán đổi/nhảy vị trí của các dòng Tab trên màn hình Chi tiết cán bộ khi thay đổi kích thước cửa sổ thông qua Custom ControlTemplate sử dụng WrapPanel làm Host.
+
+## v1.5.2 — 2026-06-15
+- [Tính năng] Cho phép chỉnh sửa trực tiếp (nhập tay) thông tin Quyết định trên bảng Xếp loại:
+    + Áp dụng cho 3 cột: Số QĐ, Ngày ký QĐ, Đơn vị ra QĐ.
+    + Tự động lưu thay đổi xuống cơ sở dữ liệu ngay khi kết thúc chỉnh sửa hoặc nhấp chuột ra ngoài.
+    + Tự động kiểm tra định dạng ngày tháng hợp lệ đối với cột Ngày ký QĐ và hiển thị cảnh báo nếu nhập sai.
+- [Giao diện] Đồng bộ hóa toàn bộ các thông báo/cảnh báo trên màn hình Xếp loại:
+    + Thay thế hộp thoại MessageBox mặc định bằng WarningWindow tùy chỉnh đẹp mắt, đồng bộ và chuyên nghiệp.
+    + Khi chỉnh sửa năm xếp loại bị trùng hoặc ngày ký quyết định không hợp lệ, hệ thống sẽ hiển thị WarningWindow và tự động hoàn tác (revert) về dữ liệu cũ từ cơ sở dữ liệu cho dòng hiện tại.
+- [Tối ưu UX] Trải nghiệm chỉnh sửa trực tiếp (inline editing) mượt mà:
+    + Tích hợp tính năng chạm một lần để sửa ngay (Single-click Editing) trên bảng dữ liệu, thay thế cho cơ chế double-click phức tạp.
+    + Tự động xổ danh sách lựa chọn của ComboBox NĂM ngay khi kích hoạt sửa.
+    + Tự động di chuyển con trỏ chuột và bôi đen toàn bộ nội dung ô nhập của DatePicker NGÀY KÝ QĐ giúp người dùng gõ đè ngày mới lập tức.
+- [Giao diện] Đổi nhãn "Ngày tính thâm niên công tác" thành "Ngày tính phép" tại màn hình chi tiết cán bộ cho rõ nghĩa hơn.
+
+## v1.5.1 — 2026-06-12
+- [Tối ưu] Loại bỏ bộ lọc theo tháng dư thừa tại màn hình Xếp loại do đánh giá thi đua chỉ thực hiện theo năm.
+- [Tính năng] Cải tiến xuất/nhập Excel xếp loại:
+    + Xuất Excel: Bỏ qua cột Ghi chú (để trống dữ liệu cột Ghi chú) theo đúng mẫu thiết kế.
+    + Nhập Excel: Bỏ qua việc đọc và phân tích cột Ghi chú khi import file mẫu chuẩn.
+
+## v1.5.0 — 2026-06-08
+- [Tính năng] Thêm tab menu trái "Xếp loại":
+    + Hiển thị danh sách kết quả đánh giá, xếp loại chất lượng của công chức.
+    + Thêm các bộ lọc trên đầu trang: Ô tìm kiếm (theo Tên, CCCD), lọc theo bộ phận (phòng ban), lọc theo tháng, lọc theo năm.
+    + Hỗ trợ phân trang 20 dòng/trang chuyên nghiệp.
+- [Tính năng] Xuất báo cáo Excel kết quả xếp loại chất lượng chuẩn mẫu:
+    + Định dạng tiêu đề Cơ quan quản lý, tiêu đề danh sách gộp cột và năm báo cáo tự động.
+    + Tiêu đề bảng gộp 2 hàng phân chia chi tiết các mức xếp loại (Xuất sắc, Tốt, Hoàn thành, Không hoàn thành).
+    + Tự động nhóm danh sách và chèn dòng phân cách in đậm theo từng bộ phận (Tổ/Phòng ban).
+    + Đánh dấu mức xếp loại đạt được bằng số 1 ở cột tương ứng thay vì hiển thị text.
+    + Tự động tổng hợp thông tin Quyết định (số QĐ, ngày ký, cơ quan ban hành) vào cột Ghi chú.
+
+## v1.4.3 — 2026-06-04
+- [Tính năng] Diễn biến quá trình lương:
+    + Bổ sung trường "% vượt khung" vào Diễn biến quá trình lương trong cơ sở dữ liệu, tự động chạy cập nhật cấu trúc bảng dữ liệu khi khởi động app.
+    + Thêm ô nhập liệu và hiển thị cột "% Vượt khung" tại bảng lịch sử trang Chi tiết cán bộ và cửa sổ Xem thẻ thông tin cán bộ.
+- [Tính năng] Quá trình lương thông minh:
+    + Cho phép nhập tay và để trống ngày Kết thúc bậc lương.
+    + Tự động tính toán (tự nhảy) ngày Kết thúc của bậc lương liền trước bằng ngày liền trước ngày Bắt đầu của bậc lương tiếp theo (trừ 1 ngày).
+    + Tự động cập nhật lại ngày Kết thúc khi người dùng sửa đổi ngày Bắt đầu hoặc xóa các bậc lương khác.
+- [Tính năng] Kiểm tra trùng lặp thời gian Quá trình lương:
+    + Bắt buộc điền ngày Bắt đầu khi thêm/sửa quá trình lương.
+    + Tự động kiểm tra trùng lặp ngày bắt đầu hoặc đè khoảng thời gian (overlap), hiển thị thông báo lỗi và ngăn chặn lưu dữ liệu lỗi.
+- [Giao diện] Đồng bộ hóa giao diện Chi tiết thu nhập tháng:
+    + Đồng bộ thiết kế thẻ bo tròn (mini-card) màu xám nhạt (`#F8F9FA`) viền mỏng cho cả dòng Lương giống như dòng Làm thêm giờ và Thu nhập khác.
+    + Khi chọn dòng (Selected Row), các thẻ tự động chuyển sang màu nền trắng, viền xám đậm và chữ màu xanh đậm để tăng tương phản, dễ đọc.
+    + Khi sửa dòng Làm thêm giờ và Thu nhập khác, hệ thống tự động gọi hộp thoại EditMonthlyIncomeDialog chuyên nghiệp thay vì sửa trực tiếp trên bảng.
+    + Tối ưu hóa trình chỉnh sửa trực tiếp của dòng Lương: ẩn ô nhập Ghi chú và hỗ trợ tự động định dạng dấu phân cách phần nghìn (tiền tệ) thời gian thực ngay khi gõ.
+- [Sửa lỗi] Đồng bộ hiển thị Lịch sử nghỉ phép:
+    + Sắp xếp danh sách lịch sử nghỉ phép trong Phiếu thông tin nhân sự (Card View) theo thứ tự ngày bắt đầu mới nhất lên đầu.
+    + Đồng bộ sắp xếp giảm dần theo ngày bắt đầu cho bảng lịch sử nghỉ phép khi xuất báo cáo PDF.
+- [Cập nhật] Định dạng hiển thị ngày tháng chuẩn văn thư hành chính:
+    + Định dạng hiển thị tháng 1 và 2 luôn có số 0 ở trước (ví dụ: 01, 02).
+    + Từ tháng 3 trở đi, tự động ẩn số 0 ở trước khi hiển thị trong các ô nhập ngày tháng (ví dụ: tháng 3 hiển thị là 3 thay vì 03), đồng bộ hiển thị tự động từ cơ sở dữ liệu.
+    + Cập nhật logic gõ nhanh ngày tháng thông minh tương thích với định dạng không có số 0 ở trước (ví dụ: gõ tháng 3 tự động chuyển tiếp thành "3/").
+
+## v1.4.1 — 2026-06-02
+- [Sửa lỗi] Tối ưu hóa nhập liệu ngày tháng thông minh:
+    + Khắc phục triệt để lỗi khi gõ nhanh tháng từ tháng 3 trở đi (3, 4, 5, 6, 7, 8, 9) bị tự động nhảy thêm ký tự "/" không đúng vị trí (do trước đây chỉ mặc định kiểm tra độ dài 5 ký tự và giả định tháng luôn có 2 chữ số).
+    + Tự động nhận diện và điền thêm số `0` ở trước đối với ngày đơn lẻ (từ 4 trở lên) và tháng đơn lẻ (từ 2 trở lên), đồng thời thêm dấu `/` chuyển tiếp thông minh (ví dụ: gõ `4` tự động thành `04/`, gõ tiếp `3` tự động thành `04/03/`).
+    + Nâng cấp bộ lọc/phân tích chuỗi ngày nhập lỗi (DateValidationError) hỗ trợ nhận diện đầy đủ các định dạng ngày bất thường từ 5 đến 7 chữ số (ví dụ: `1232026` tự động phân tách thành `12/03/2026`).
+
+## v1.4.0 — 2026-05-31
+- [Tính năng] Tab Xếp loại nhân sự (Tab 9):
+    + Quản lý lịch sử xếp loại chi tiết theo năm của nhân sự (Năm bắt đầu từ 1980 đến nay, tự động cập nhật năm mới theo thời gian thực).
+    + Cho phép nhập thông tin xếp loại gồm: Năm, Xếp loại năm (Hoàn thành xuất sắc nhiệm vụ, Hoàn thành tốt nhiệm vụ, Hoàn thành nhiệm vụ, Không hoàn thành nhiệm vụ), Số quyết định, Ngày ký quyết định và Đơn vị ra quyết định.
+    + Hỗ trợ thêm/cập nhật nhanh, click chọn dòng để tải ngược dữ liệu lên form sửa, và nút xóa dòng trực tiếp.
+- [Tính năng] Đồng bộ hóa hiển thị hồ sơ & PDF:
+    + Thêm mục "Lịch sử xếp loại" hiển thị danh sách các năm xếp loại dưới dạng bảng trong cửa sổ xem Chi tiết hồ sơ nhân viên.
+    + Tích hợp xuất thông tin xếp loại năm vào tệp xuất PDF nhân sự với tông màu cam nổi bật đồng bộ, các cột được căn giữa theo chuẩn hiển thị chuyên nghiệp.
+- [Tối ưu] Giao diện & Hiệu năng:
+    + Cải tiến layout Tab 9 sử dụng StackPanel thay cho Grid trong ScrollViewer để loại bỏ khoảng trống thừa ở 2 đầu trên dưới của bảng dữ liệu.
+    + Căn giữa toàn bộ nội dung trong bảng lịch sử xếp loại ở cả màn hình xem chi tiết và màn hình chỉnh sửa giúp tăng tính thẩm mỹ.
+    + Giải quyết triệt để cảnh báo trình biên dịch, làm sạch và tối ưu hóa mã nguồn.
+
+## v1.3.0 — 2026-05-26
+- [Tính năng] Bộ lọc báo cáo phép năm và tối ưu hóa hiển thị:
+    + Thêm bộ lọc phòng ban (bộ phận), tháng nghỉ và năm nghỉ động tại màn hình Báo cáo phép năm.
+    + Khi chọn bộ lọc tháng nghỉ, danh sách nhân viên và các đợt nghỉ phép sẽ được lọc chính xác theo tháng tương ứng (vẫn giữ nguyên tổng số phép dư của cả năm để tiện theo dõi).
+    + Tự động thay đổi tiêu đề bảng dữ liệu và đồng bộ tiêu đề, dữ liệu xuất Excel theo các tiêu chí bộ lọc đã chọn.
+- [Tính năng] Tự động lùi thời gian nâng lương do Nghỉ không lương:
+    + Tự động tính toán và hiển thị tùy chọn lùi nâng lương dạng "Nghỉ không lương (X ngày)" làm mặc định khi nhân viên có nghỉ không lương.
+    + Hỗ trợ tùy chọn "-- Không lùi --" để bỏ qua việc lùi thời hạn nâng lương theo ngày nghỉ không lương, đảm bảo tính linh hoạt tối đa.
+    + Hiển thị đồng bộ trường "Lùi thời gian nâng lương" trên giao diện popup chi tiết nhân sự và tệp PDF xuất ra bằng màu đỏ nổi bật.
+- [Tính năng] Tự động tính ngày nghỉ thai sản:
+    + Tự động tính ngày kết thúc nghỉ thai sản (nghỉ từ 1/7 trở đi được nghỉ 7 tháng, trước 1/7 được nghỉ 6 tháng) áp dụng động cho mọi năm.
+    + Cho phép người dùng chỉnh sửa thủ công ngày kết thúc nghỉ thai sản mà không lo bị hệ thống ghi đè lại.
+- [Tối ưu] Loại bỏ độ trễ tìm kiếm:
+    + Tích hợp Debounce Timer 300ms cho ô tìm kiếm danh sách nhân sự giúp gõ phím mượt mà, phản hồi ngay lập tức và loại bỏ hiện tượng giật/lag chữ.
+- [Tính năng] Cải tiến lịch sử nghỉ phép trong chi tiết nhân sự:
+    + Hiển thị độc lập mọi đợt nghỉ phép (không gộp nhóm theo LinkId), sắp xếp đợt nghỉ mới nhất/thêm vào sau lên trên đầu để dễ quản lý.
+
+## v1.2.1 — 2026-05-21
+- [Sửa lỗi] Tự động sửa hướng ảnh đại diện (EXIF Orientation):
+    + Tích hợp bộ giải mã dữ liệu nhị phân (byte parser) tự động bóc tách thông tin thẻ EXIF Orientation từ file ảnh gốc.
+    + Khắc phục triệt để lỗi ảnh đại diện chụp bằng điện thoại (ảnh đứng dọc) bị tự động xoay ngang khi hiển thị trong ứng dụng.
+    + Tự động xoay đứng hình ảnh trước khi nén, mã hóa sang chuỗi Base64 để lưu trữ vào cơ sở dữ liệu, đảm bảo đồng bộ hiển thị thẳng đứng 100% trên tất cả các máy trạm khác.
+
+## v1.2.0 — 2026-05-17
+- [Tính năng] Tìm kiếm Tiếng Việt không dấu thông minh:
+    + Nâng cấp toàn diện bộ lọc tìm kiếm hỗ trợ không dấu (diacritic-insensitive) và không phân biệt chữ hoa chữ thường (case-insensitive) cho toàn bộ ứng dụng.
+    + Người dùng chỉ cần gõ tên đơn giản không dấu (ví dụ: "duc", "thuy", "linh") đều có thể tìm thấy nhân viên tiếng Việt có dấu tương ứng một cách chính xác.
+    + Đồng bộ tính năng tìm kiếm này trên tất cả các màn hình chính: Danh sách nhân sự, Thời gian giữ chức vụ, Thi đua khen thưởng, Tổng hợp thu nhập năm và Danh sách tài khoản.
+- [Tính năng] Xuất Excel tổng quát:
+    + Thêm cột mới "Số năm công tác" vào vị trí số 17 (Cột Q, ngay sau cột "Ngày về hưu (Dự kiến)").
+    + Thời gian công tác được tự động tính toán chính xác và xuất dưới dạng chuỗi chi tiết: "X năm Y tháng Z ngày" (ví dụ: "10 năm 4 tháng 2 ngày") đồng bộ với giao diện hồ sơ.
+- [Tối ưu] Dọn dẹp & Clean Code:
+    + Loại bỏ gói thư viện CommunityToolkit.Mvvm không sử dụng giúp tối ưu dung lượng và tốc độ của ứng dụng.
+    + Xóa bỏ các tệp tin log rác (debug.log) và tệp tin tạm thời trong thư mục dự án.
+    + Định dạng lại toàn bộ mã nguồn, dọn dẹp các import/using dư thừa giúp ứng dụng luôn trong trạng thái chuẩn mực và dễ bảo trì nhất.
+
+## v1.1.0 — 2026-05-11
+- [Giao diện] Tối ưu hóa hiển thị đa độ phân giải: 
+    + Tự động thích ứng tốt trên cả màn hình nhỏ (1366x768) và màn hình Full HD.
+    + Khắc phục triệt để lỗi nhảy dòng (wrap) ở các tiêu đề bảng dữ liệu (STT, Tháng, Ngày sinh...).
+    + Tối ưu cơ chế ghim cột (Frozen Columns) giúp cuộn ngang mượt mà và không bị lệch layout.
+- [Cập nhật] Nâng cấp hệ thống thông báo cập nhật mới:
+    + Thiết kế lại cửa sổ thông báo hiện đại, diện tích hiển thị nội dung thay đổi lớn và dễ đọc hơn.
+    + Tích hợp tính năng tự động sao lưu dữ liệu hệ thống trước khi thực hiện cập nhật để đảm bảo an toàn tuyệt đối.
+- [Sửa lỗi] Bảng dữ liệu: Khắc phục lỗi cột Số thứ tự (STT) bị reset lại từ 1 khi chuyển trang ở màn hình "Theo dõi nâng lương".
+- [Tối ưu] Hiệu suất: Tinh chỉnh lại các Style XAML dùng chung, giúp ứng dụng khởi động và phản hồi nhanh hơn.
+
+## v1.0.3.2 — 2026-05-09
+- [Sửa lỗi] Khắc phục lỗi hiển thị sai font chữ (lỗi encoding) ở màn hình Chi tiết nhân sự.
+
+## v1.0.3.1 — 2026-05-09
+- [Tối ưu] Nhập liệu ngày tháng: Tự động phân tách ngày/tháng/năm (thêm dấu "/") ngay khi đang gõ phím cho tất cả các ô chọn ngày trên hệ thống.
+- [Kỹ thuật] Tinh gọn Code: Chuyển đổi toàn bộ logic xử lý ngày tháng sang DatePickerHelper dùng chung, giúp code sạch và dễ bảo trì hơn.
+
+## v1.0.3.0 — 2026-05-09
+- [Hiệu năng] Xử lý bất đồng bộ (Async): Chuyển đổi các tác vụ nặng (Excel/PDF) sang chạy nền, giúp ứng dụng không bị treo/đơ khi xử lý dữ liệu lớn.
+- [Giao diện] Trạng thái chờ: Tích hợp LoadingOverlay (vòng xoay chuyên nghiệp) cho tất cả thao tác Nhập/Xuất Excel và PDF.
+- [Tối ưu] Cuộn chuột: Xử lý mượt mà (Scroll Bubbling) cho phép lăn chuột xuyên suốt các bảng dữ liệu trong hồ sơ chi tiết.
+- [Tính năng] Xuất Excel: Cập nhật cấu hình 6 cột chuẩn (Họ tên, CCCD, Lương, Làm thêm giờ, Thu nhập khác, Tổng cộng) và căn chỉnh tiêu đề báo cáo.
+- [Sửa lỗi] XAML: Khắc phục lỗi tài nguyên (StaticResource) gây lỗi ứng dụng tại trang Tổng thu nhập.
+- [Kỹ thuật] Clean Code: Xử lý 100% cảnh báo (Warnings) khi build và dọn dẹp mã nguồn dư thừa để đóng gói sản phẩm.
+
+## v1.0.2.3 — 2026-05-06
+- [Sửa lỗi] Việt hóa lịch (CN, T2-T7): Hiển thị đúng tên thứ theo chuẩn Tiếng Việt.
+- [Cải tiến] Xuất Excel: Tên file & tiêu đề báo cáo tự động cập nhật theo "Thời điểm tính".
+- [Giao diện] Thông báo: Dùng SuccessWindow hiện đại thay cho MessageBox cũ.
+- [Tối ưu] Bỏ cột "Chức vụ" trong Excel theo yêu cầu.
+
+## v1.0.2.2 — 2026-05-04
+- [Tính năng] Tìm kiếm thông minh (Google-style) không dấu & không cần đúng thứ tự.
+- [Sửa lỗi] Import Excel: Chức vụ trống mặc định là "Công chức"; Sửa cột Số hiệu cán bộ.
+- [Sửa lỗi] Database: Tự động cập nhật cấu hình cho bản cũ.
+
+## v1.0.2.1 — 2026-05-03
+- [Tính năng] Nhập nhân sự hàng loạt từ Excel; Kiểm tra trùng lặp CCCD.
+- [Tính năng] Tự động định dạng SĐT (0XXX.XXX.XXX) & Nơi cấp CCCD.
+- [Giao diện] Thêm hiệu ứng Loading; Bỏ đường lưới bảng Chi tiết phép.
+- [Sửa lỗi] Ánh xạ cột Excel (F, AJ) & Chuẩn hóa lưu SĐT vào DB.
+
+## v1.x — Trước đó
+- Khôi phục tính năng "X năm Y tháng" cho thâm niên.
+- Tự động nhảy ngày hiện tại cho "Thời điểm tính".

@@ -85,7 +85,7 @@ namespace TaxPersonnelManagement.Views
         public DutyAssignmentView()
         {
             InitializeComponent();
-            _canEdit = App.CurrentUser?.Role != UserRole.Staff;
+            _canEdit = PermissionService.HasPermission(PermissionRegistry.DutyAssignment_Upload);
             if (!_canEdit)
             {
                 btnUploadTop.Visibility = Visibility.Collapsed;
@@ -572,6 +572,8 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         private void BtnUploadTop_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.DutyAssignment_Upload, "Tải file phân công nhiệm vụ")) return;
+
             var dlg = new DutyAssignmentUploadDialog(null, GetSelectedYear())
             {
                 Owner = Window.GetWindow(this)
@@ -589,6 +591,8 @@ namespace TaxPersonnelManagement.Views
         /// </summary>
         private void BtnRowAdd_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.DutyAssignment_Upload, "Tải file phân công nhiệm vụ")) return;
+
             if (sender is Button btn && btn.Tag is string dept)
             {
                 var dlg = new DutyAssignmentUploadDialog(dept, GetSelectedYear())

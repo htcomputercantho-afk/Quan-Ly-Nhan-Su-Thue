@@ -61,14 +61,23 @@ namespace TaxPersonnelManagement.Views
                     var creds = System.Text.Json.JsonSerializer.Deserialize<SavedCredentials>(json);
                     if (creds != null)
                     {
+                        _isLoadingCredentials = true;
                         txtUsername.Text = creds.Username;
+                        _lastLoadedUsername = creds.Username ?? "";
                         // Simple Base64 decode
                         try
                         {
                             byte[] data = Convert.FromBase64String(creds.Password);
-                            txtPassword.Password = System.Text.Encoding.UTF8.GetString(data);
+                            string pass = System.Text.Encoding.UTF8.GetString(data);
+                            txtPassword.Password = pass;
+                            _lastLoadedPassword = pass;
                         }
-                        catch { txtPassword.Password = ""; }
+                        catch 
+                        { 
+                            txtPassword.Password = ""; 
+                            _lastLoadedPassword = "";
+                        }
+                        _isLoadingCredentials = false;
 
                         chkRememberMe.IsChecked = true;
                         App.DebugLog("Credentials loaded.");
@@ -255,10 +264,72 @@ namespace TaxPersonnelManagement.Views
             border.Background = focused ? Brush("#EBFFFFFF") : Brush("#C8FFFFFF");
         }
 
-        private void Username_GotFocus(object sender, KeyboardFocusChangedEventArgs e) => SetFieldFocused(UsernameBorder, true);
+        private string _lastLoadedUsername = "";
+        private string _lastLoadedPassword = "";
+        private bool _isLoadingCredentials = false;
+
+        private void txtUsername_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (_isLoadingCredentials) return;
+
+            // Nếu người dùng thay đổi Tên đăng nhập khác với tài khoản đã nạp sẵn,
+            // tự động xóa mật khẩu cũ để người dùng không cần phải xóa tay
+            if (!string.IsNullOrEmpty(_lastLoadedPassword) && txtPassword.Password == _lastLoadedPassword && txtUsername.Text.Trim() != _lastLoadedUsername)
+            {
+                txtPassword.Password = "";
+                txtVisiblePassword.Text = "";
+                UpdatePasswordPlaceholder();
+            }
+        }
+
+        private void Username_GotFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            SetFieldFocused(UsernameBorder, true);
+            Dispatcher.BeginInvoke(new Action(() => txtUsername.SelectAll()), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
         private void Username_LostFocus(object sender, KeyboardFocusChangedEventArgs e) => SetFieldFocused(UsernameBorder, false);
-        private void Password_GotFocus(object sender, KeyboardFocusChangedEventArgs e) => SetFieldFocused(PasswordBorder, true);
+
+        private void Username_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (!txtUsername.IsKeyboardFocusWithin)
+            {
+                txtUsername.Focus();
+                txtUsername.SelectAll();
+                e.Handled = true;
+            }
+        }
+
+        private void Password_GotFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            SetFieldFocused(PasswordBorder, true);
+            if (sender is PasswordBox pb)
+            {
+                Dispatcher.BeginInvoke(new Action(() => pb.SelectAll()), System.Windows.Threading.DispatcherPriority.Input);
+            }
+            else if (sender is TextBox tb)
+            {
+                Dispatcher.BeginInvoke(new Action(() => tb.SelectAll()), System.Windows.Threading.DispatcherPriority.Input);
+            }
+        }
+
         private void Password_LostFocus(object sender, KeyboardFocusChangedEventArgs e) => SetFieldFocused(PasswordBorder, false);
+
+        private void Password_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is PasswordBox pb && !pb.IsKeyboardFocusWithin)
+            {
+                pb.Focus();
+                pb.SelectAll();
+                e.Handled = true;
+            }
+            else if (sender is TextBox tb && !tb.IsKeyboardFocusWithin)
+            {
+                tb.Focus();
+                tb.SelectAll();
+                e.Handled = true;
+            }
+        }
 
         // ── Ẩn / hiện mật khẩu ────────────────────────────────────────────
         private bool _isSyncing = false;

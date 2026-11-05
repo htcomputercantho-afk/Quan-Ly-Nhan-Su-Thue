@@ -15,6 +15,7 @@ using ExcelDataReader;
 using System.Text.RegularExpressions;
 using System.Data;
 using ClosedXML.Excel;
+using TaxPersonnelManagement.Services;
 namespace TaxPersonnelManagement.Views
 {
     public partial class AnnualIncomeView : Page
@@ -34,17 +35,19 @@ namespace TaxPersonnelManagement.Views
 
         private void ApplyAuthorization()
         {
-            if (App.CurrentUser?.Role == UserRole.Staff)
-            {
-                // Hide action buttons
-                btnBulkAdd.Visibility = Visibility.Collapsed;
-                btnClearData.Visibility = Visibility.Collapsed;
-            }
+            bool canEdit = PermissionService.HasPermission(PermissionRegistry.Income_Edit);
+            bool canExport = PermissionService.HasPermission(PermissionRegistry.Income_Export);
+
+            btnBulkAdd.Visibility = canEdit ? Visibility.Visible : Visibility.Collapsed;
+            btnSave.Visibility = canEdit ? Visibility.Visible : Visibility.Collapsed;
+            btnClearData.Visibility = canEdit ? Visibility.Visible : Visibility.Collapsed;
+            btnExportExcel.Visibility = canExport ? Visibility.Visible : Visibility.Collapsed;
+            dgMonthlyIncome.IsReadOnly = !canEdit;
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
         {
-            if (App.CurrentUser?.Role == UserRole.Staff && sender is FrameworkElement element)
+            if (!PermissionService.HasPermission(PermissionRegistry.Income_Edit) && sender is FrameworkElement element)
             {
                 element.Visibility = Visibility.Collapsed;
             }
@@ -285,7 +288,7 @@ namespace TaxPersonnelManagement.Views
                         string currentNote = row.GetNote(month);
                         var dialog = new EditMonthlyIncomeDialog(row.IncomeType, month, currentNote);
                         if (Window.GetWindow(this) is Window parent) dialog.Owner = parent;
-                        if (dialog.ShowDialog() == true)
+                        if (dialog.ShowDialog() == true && PermissionService.HasPermission(PermissionRegistry.Income_Edit))
                         {
                             string newNote = dialog.ResultNote;
                             row.SetNote(month, newNote);
@@ -294,6 +297,14 @@ namespace TaxPersonnelManagement.Views
                             row.TriggerMonthChanged(month);
                             UpdateTotals();
                         }
+                    }
+                }
+                else
+                {
+                    if (!PermissionService.HasPermission(PermissionRegistry.Income_Edit))
+                    {
+                        e.Cancel = true;
+                        return;
                     }
                 }
             }
@@ -362,6 +373,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Income_Edit, "Lưu dữ liệu thu nhập")) return;
+
             if (lvPersonnel.SelectedItem is Personnel selectedPerson)
             {
                 int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
@@ -466,6 +479,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnClearData_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Income_Edit, "Xóa dữ liệu thu nhập")) return;
+
             if (lvPersonnel.SelectedItem is Personnel selectedPerson)
             {
                 int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
@@ -555,6 +570,8 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnBulkAdd_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Income_Edit, "Nhập thu nhập hàng loạt từ Excel")) return;
+
             int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
             var dialog = new BulkIncomeDialog(selectedYear) { Owner = Window.GetWindow(this) };
 
@@ -568,6 +585,8 @@ namespace TaxPersonnelManagement.Views
 
         private async void BtnExportExcel_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Income_Export, "Xuất dữ liệu thu nhập ra Excel")) return;
+
             int selectedYear = (int)(cboYear.SelectedItem ?? DateTime.Now.Year);
 
             var saveFileDialog = new SaveFileDialog

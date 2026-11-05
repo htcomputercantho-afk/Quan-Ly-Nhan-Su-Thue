@@ -109,13 +109,13 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="20 0 0 0">
-                        <Button Click="btnEditClass_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="36" Margin="0 0 0 10" Width="135" Padding="0" BorderBrush="#FB8C00" Foreground="#FB8C00">
+                        <Button x:Name="btnEditClass" Click="btnEditClass_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="36" Margin="0 0 0 10" Width="135" Padding="0" BorderBrush="#FB8C00" Foreground="#FB8C00">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Sửa thông tin" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
-                        <Button Click="btnDeleteClass_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="36" Width="135" Padding="0" BorderBrush="#E53935" Foreground="#E53935">
+                        <Button x:Name="btnDeleteClass" Click="btnDeleteClass_Click" Style="{DynamicResource MaterialDesignOutlinedButton}" Height="36" Width="135" Padding="0" BorderBrush="#E53935" Foreground="#E53935">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="TrashCan" Width="16" Height="16" Margin="0 0 6 0" VerticalAlignment="Center"/>
                                 <TextBlock Text="Xóa lớp" VerticalAlignment="Center" FontSize="13" FontWeight="SemiBold"/>
@@ -126,7 +126,7 @@
             </materialDesign:Card>
 
             <!-- Add Participant Area -->
-            <Grid Grid.Row="2" Margin="20 0 20 14">
+            <Grid x:Name="gridAddParticipant" Grid.Row="2" Margin="20 0 20 14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -318,7 +318,7 @@
                         </DataGridTemplateColumn>
 
                         <!-- HÀNH ĐỘNG -->
-                        <DataGridTemplateColumn Header="HÀNH ĐỘNG" Width="85">
+                        <DataGridTemplateColumn x:Name="colRemoveParticipant" Header="HÀNH ĐỘNG" Width="85">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Click="btnRemoveParticipant_Click" Tag="{Binding Id}"

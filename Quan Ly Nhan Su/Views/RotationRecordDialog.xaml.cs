@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
+using TaxPersonnelManagement.Services;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -343,7 +344,7 @@ namespace TaxPersonnelManagement.Views
             txtTitle.Text = "CHI TIẾT ĐIỀU ĐỘNG / LUÂN CHUYỂN";
             btnDelete.Visibility = Visibility.Collapsed;
             btnSave.Visibility = Visibility.Collapsed;
-            btnEditMode.Visibility = Visibility.Visible;
+            btnEditMode.Visibility = PermissionService.HasPermission(PermissionRegistry.Rotation_Manage) ? Visibility.Visible : Visibility.Collapsed;
             btnCancel.Content = "Đóng";
             btnChangePersonnel.Visibility = Visibility.Collapsed;
 
@@ -361,6 +362,7 @@ namespace TaxPersonnelManagement.Views
 
         private void BtnEditMode_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Rotation_Manage, "Chỉnh sửa luân chuyển điều động")) return;
             txtTitle.Text = "CHỈNH SỬA LUÂN CHUYỂN / ĐIỀU ĐỘNG";
             btnDelete.Visibility = Visibility.Visible;
             btnSave.Visibility = Visibility.Visible;

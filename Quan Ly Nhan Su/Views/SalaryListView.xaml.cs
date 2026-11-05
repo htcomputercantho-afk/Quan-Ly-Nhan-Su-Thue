@@ -6,6 +6,7 @@ using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using Microsoft.Win32;
 using ClosedXML.Excel;
+using TaxPersonnelManagement.Services;
 using TaxPersonnelManagement.Helpers;
 
 namespace TaxPersonnelManagement.Views
@@ -21,6 +22,7 @@ namespace TaxPersonnelManagement.Views
         public SalaryListView()
         {
             InitializeComponent();
+            this.Loaded += (s, e) => ApplyAuthorization();
             ApplyAuthorization();
             try
             {
@@ -39,11 +41,16 @@ namespace TaxPersonnelManagement.Views
 
         private void ApplyAuthorization()
         {
+            bool canUpdate = PermissionService.HasPermission(PermissionRegistry.Salary_Update);
+            bool canExport = PermissionService.HasPermission(PermissionRegistry.Salary_Export);
+
+            if (btnExport != null) btnExport.Visibility = canExport ? Visibility.Visible : Visibility.Collapsed;
+            if (colSalaryAction != null) colSalaryAction.Visibility = canUpdate ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void AdminOnly_Loaded(object sender, RoutedEventArgs e)
         {
-            if (App.CurrentUser?.Role == UserRole.Staff && sender is FrameworkElement element)
+            if (!PermissionService.HasPermission(PermissionRegistry.Salary_Update) && sender is FrameworkElement element)
             {
                 element.Visibility = Visibility.Collapsed;
             }
@@ -361,6 +368,7 @@ namespace TaxPersonnelManagement.Views
 
         private void btnExport_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(Window.GetWindow(this), PermissionRegistry.Salary_Export, "Xuất danh sách nâng lương ra Excel")) return;
             try
             {
                 var data = _fullSalaryList;

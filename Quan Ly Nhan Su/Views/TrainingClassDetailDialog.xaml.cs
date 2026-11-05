@@ -8,7 +8,7 @@ using TaxPersonnelManagement.Data;
 using TaxPersonnelManagement.Models;
 using ClosedXML.Excel;
 using Microsoft.Win32;
-
+using TaxPersonnelManagement.Services;
 
 namespace TaxPersonnelManagement.Views
 {
@@ -26,6 +26,17 @@ namespace TaxPersonnelManagement.Views
         {
             InitializeComponent();
             _classId = classId;
+
+            bool canManage = PermissionService.HasPermission(PermissionRegistry.Training_Manage);
+            bool canDelete = PermissionService.HasPermission(PermissionRegistry.Training_DeleteClass);
+            bool canExport = PermissionService.HasPermission(PermissionRegistry.Training_Export);
+
+            btnEditClass.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            btnDeleteClass.Visibility = canDelete ? Visibility.Visible : Visibility.Collapsed;
+            gridAddParticipant.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+            btnExportExcel.Visibility = canExport ? Visibility.Visible : Visibility.Collapsed;
+            colRemoveParticipant.Visibility = canManage ? Visibility.Visible : Visibility.Collapsed;
+
             LoadClassInfo();
             LoadParticipants();
             LoadPersonnelComboBox();
@@ -215,6 +226,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnAddParticipant_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Training_Manage, "Phân công học viên vào lớp")) return;
+
             if (cboAddPersonnel.SelectedValue == null)
             {
                 var warning = new WarningWindow("Vui lòng chọn một cán bộ từ danh sách!", "Thông báo");
@@ -264,6 +277,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnSelectMultiple_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Training_Manage, "Phân công nhiều học viên vào lớp")) return;
+
             var excludedIds = _participants.Select(p => p.Id).ToList();
             var dialog = new PersonnelSelectorDialog(excludedIds);
             dialog.Owner = this;
@@ -307,6 +322,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnRemoveParticipant_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Training_Manage, "Xóa học viên khỏi lớp")) return;
+
             if (sender is System.Windows.Controls.Button btn && btn.Tag is int personnelId)
             {
                 var confirm = new ConfirmWindow("Bạn có chắc chắn muốn xóa học viên này khỏi lớp học?", "Xác nhận");
@@ -341,6 +358,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnEditClass_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Training_Manage, "Chỉnh sửa thông tin lớp")) return;
+
             var dialog = new AddTrainingClassDialog(_classId);
             dialog.Owner = this;
             if (dialog.ShowDialog() == true)
@@ -352,6 +371,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnDeleteClass_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Training_DeleteClass, "Xóa lớp đào tạo")) return;
+
             var confirm = new ConfirmWindow("Bạn có chắc chắn muốn xóa lớp học/hội nghị này? Toàn bộ lịch sử tham gia của học viên sẽ bị xóa và không thể khôi phục!", "Cảnh báo");
             confirm.Owner = this;
             if (confirm.ShowDialog() == true)
@@ -383,6 +404,8 @@ namespace TaxPersonnelManagement.Views
 
         private void btnExportExcel_Click(object sender, RoutedEventArgs e)
         {
+            if (!PermissionService.CheckPermissionOrAlert(this, PermissionRegistry.Training_Export, "Xuất danh sách học viên ra Excel")) return;
+
             if (!_participants.Any())
             {
                 var warning = new WarningWindow("Không có học viên nào trong lớp để xuất!", "Thông báo");
